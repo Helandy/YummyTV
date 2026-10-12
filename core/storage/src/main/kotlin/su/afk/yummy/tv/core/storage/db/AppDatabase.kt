@@ -165,7 +165,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         PendingMutationEntry::class,
     ],
     version = 54,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun libraryDao(): LibraryDao

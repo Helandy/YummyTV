@@ -1,0 +1,4922 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 54,
+    "identityHash": "2d4b156b6a74b72ef1f3a56952fbb5af",
+    "entities": [
+      {
+        "tableName": "library",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `addedAt` INTEGER NOT NULL, `listId` INTEGER NOT NULL, `isFavorite` INTEGER NOT NULL, `listUpdatedAt` INTEGER NOT NULL, `favoriteUpdatedAt` INTEGER NOT NULL, `userRating` INTEGER, `year` INTEGER, `rating` REAL, `nextEpisodeAtSeconds` INTEGER, `season` TEXT, PRIMARY KEY(`animeId`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "addedAt",
+            "columnName": "addedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listUpdatedAt",
+            "columnName": "listUpdatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favoriteUpdatedAt",
+            "columnName": "favoriteUpdatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userRating",
+            "columnName": "userRating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "nextEpisodeAtSeconds",
+            "columnName": "nextEpisodeAtSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "season",
+            "columnName": "season",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_library_addedAt",
+            "unique": false,
+            "columnNames": [
+              "addedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_library_addedAt` ON `${TABLE_NAME}` (`addedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "library_sync_states",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `syncedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncedAt",
+            "columnName": "syncedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId"
+          ]
+        }
+      },
+      {
+        "tableName": "watch_progress",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `episode` TEXT NOT NULL, `videoId` INTEGER NOT NULL, `episodeUrl` TEXT NOT NULL, `positionMs` INTEGER NOT NULL, `durationMs` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `animeTitle` TEXT NOT NULL, `posterUrl` TEXT NOT NULL, `playerName` TEXT NOT NULL, `dubbing` TEXT NOT NULL, `screenshotUrl` TEXT NOT NULL, PRIMARY KEY(`animeId`, `episode`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "videoId",
+            "columnName": "videoId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episodeUrl",
+            "columnName": "episodeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "positionMs",
+            "columnName": "positionMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationMs",
+            "columnName": "durationMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeTitle",
+            "columnName": "animeTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerName",
+            "columnName": "playerName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dubbing",
+            "columnName": "dubbing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenshotUrl",
+            "columnName": "screenshotUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "episode"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_watch_progress_updatedAt",
+            "unique": false,
+            "columnNames": [
+              "updatedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_watch_progress_updatedAt` ON `${TABLE_NAME}` (`updatedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "continue_watching_suppressions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `suppressedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "suppressedAt",
+            "columnName": "suppressedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_continue_watching_suppressions_suppressedAt",
+            "unique": false,
+            "columnNames": [
+              "suppressedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_continue_watching_suppressions_suppressedAt` ON `${TABLE_NAME}` (`suppressedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_details",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `animeUrl` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `ratingAverage` REAL, `ratingCounters` INTEGER, `ratingKinopoisk` REAL, `ratingShikimori` REAL, `ratingMyAnimeList` REAL, `year` INTEGER, `ageRating` TEXT, `views` INTEGER, `status` TEXT, `type` TEXT, `episodesCount` INTEGER, `episodesAired` INTEGER, `episodesNextDateEpochSeconds` INTEGER, `episodesPrevDateEpochSeconds` INTEGER, `reviewsCount` INTEGER NOT NULL DEFAULT 0, `malId` INTEGER, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeUrl",
+            "columnName": "animeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ratingAverage",
+            "columnName": "ratingAverage",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "ratingCounters",
+            "columnName": "ratingCounters",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "ratingKinopoisk",
+            "columnName": "ratingKinopoisk",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "ratingShikimori",
+            "columnName": "ratingShikimori",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "ratingMyAnimeList",
+            "columnName": "ratingMyAnimeList",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "ageRating",
+            "columnName": "ageRating",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "views",
+            "columnName": "views",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "episodesCount",
+            "columnName": "episodesCount",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "episodesAired",
+            "columnName": "episodesAired",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "episodesNextDateEpochSeconds",
+            "columnName": "episodesNextDateEpochSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "episodesPrevDateEpochSeconds",
+            "columnName": "episodesPrevDateEpochSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "reviewsCount",
+            "columnName": "reviewsCount",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "malId",
+            "columnName": "malId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_details_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_details_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_detail_titles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `title` TEXT NOT NULL, PRIMARY KEY(`animeId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_detail_titles_animeId_language",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_detail_titles_animeId_language` ON `${TABLE_NAME}` (`animeId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_detail_named_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `kind` TEXT NOT NULL, `position` INTEGER NOT NULL, `itemId` INTEGER, `title` TEXT NOT NULL, `itemUrl` TEXT, PRIMARY KEY(`animeId`, `language`, `kind`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemId",
+            "columnName": "itemId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemUrl",
+            "columnName": "itemUrl",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "kind",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_detail_named_items_animeId_language_kind",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language",
+              "kind"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_detail_named_items_animeId_language_kind` ON `${TABLE_NAME}` (`animeId`, `language`, `kind`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_viewing_order",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `relatedAnimeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `relation` TEXT, `type` TEXT, `episodesCount` INTEGER, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `year` INTEGER, `rating` REAL, PRIMARY KEY(`animeId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relatedAnimeId",
+            "columnName": "relatedAnimeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relation",
+            "columnName": "relation",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "episodesCount",
+            "columnName": "episodesCount",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_viewing_order_animeId_language",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_viewing_order_animeId_language` ON `${TABLE_NAME}` (`animeId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_screenshots",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `screenshotId` INTEGER, `episode` TEXT, `smallUrl` TEXT, `fullUrl` TEXT, PRIMARY KEY(`animeId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenshotId",
+            "columnName": "screenshotId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "smallUrl",
+            "columnName": "smallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fullUrl",
+            "columnName": "fullUrl",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_screenshots_animeId_language",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_screenshots_animeId_language` ON `${TABLE_NAME}` (`animeId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_video_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_video_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_video_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_videos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `videoId` INTEGER NOT NULL, `episode` TEXT NOT NULL, `dubbing` TEXT NOT NULL, `player` TEXT NOT NULL, `playerId` INTEGER, `iframeUrl` TEXT NOT NULL, `durationSeconds` INTEGER, `views` INTEGER, `watchedEndTimeSeconds` INTEGER, `watchedDateSeconds` INTEGER, `subscribed` INTEGER NOT NULL, `openingStartMs` INTEGER, `openingEndMs` INTEGER, `endingStartMs` INTEGER, `endingEndMs` INTEGER, PRIMARY KEY(`animeId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "videoId",
+            "columnName": "videoId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dubbing",
+            "columnName": "dubbing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "player",
+            "columnName": "player",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerId",
+            "columnName": "playerId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "iframeUrl",
+            "columnName": "iframeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationSeconds",
+            "columnName": "durationSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "views",
+            "columnName": "views",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "watchedEndTimeSeconds",
+            "columnName": "watchedEndTimeSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "watchedDateSeconds",
+            "columnName": "watchedDateSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "subscribed",
+            "columnName": "subscribed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "openingStartMs",
+            "columnName": "openingStartMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "openingEndMs",
+            "columnName": "openingEndMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "endingStartMs",
+            "columnName": "endingStartMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "endingEndMs",
+            "columnName": "endingEndMs",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_videos_animeId_language",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_videos_animeId_language` ON `${TABLE_NAME}` (`animeId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_recommendation_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `fromAi` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `language`, `fromAi`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromAi",
+            "columnName": "fromAi",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "fromAi"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_recommendation_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_recommendation_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_recommendations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `fromAi` INTEGER NOT NULL, `position` INTEGER NOT NULL, `recommendationAnimeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `rating` REAL, `type` TEXT, `year` INTEGER, PRIMARY KEY(`animeId`, `language`, `fromAi`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromAi",
+            "columnName": "fromAi",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recommendationAnimeId",
+            "columnName": "recommendationAnimeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "fromAi",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_recommendations_animeId_language_fromAi",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language",
+              "fromAi"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_recommendations_animeId_language_fromAi` ON `${TABLE_NAME}` (`animeId`, `language`, `fromAi`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_trailer_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_trailer_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_trailer_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_trailers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `iframeUrl` TEXT NOT NULL, PRIMARY KEY(`animeId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iframeUrl",
+            "columnName": "iframeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_trailers_animeId_language",
+            "unique": false,
+            "columnNames": [
+              "animeId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_trailers_animeId_language` ON `${TABLE_NAME}` (`animeId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "home_feed_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `watchSignature` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`language`, `watchSignature`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "watchSignature",
+            "columnName": "watchSignature",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language",
+            "watchSignature"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_home_feed_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_home_feed_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "home_feed_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `watchSignature` TEXT NOT NULL, `container` TEXT NOT NULL, `position` INTEGER NOT NULL, `itemId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `rating` REAL, `year` INTEGER, `actionType` TEXT NOT NULL, `actionId` INTEGER NOT NULL, `episode` TEXT NOT NULL, `episodeUrl` TEXT NOT NULL, `positionMs` INTEGER NOT NULL, `durationMs` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `playerName` TEXT NOT NULL, `dubbing` TEXT NOT NULL, `screenshotUrl` TEXT NOT NULL, PRIMARY KEY(`language`, `watchSignature`, `container`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "watchSignature",
+            "columnName": "watchSignature",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "container",
+            "columnName": "container",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemId",
+            "columnName": "itemId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "actionType",
+            "columnName": "actionType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actionId",
+            "columnName": "actionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episodeUrl",
+            "columnName": "episodeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "positionMs",
+            "columnName": "positionMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationMs",
+            "columnName": "durationMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerName",
+            "columnName": "playerName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dubbing",
+            "columnName": "dubbing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenshotUrl",
+            "columnName": "screenshotUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language",
+            "watchSignature",
+            "container",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_home_feed_items_language_signature_container",
+            "unique": false,
+            "columnNames": [
+              "language",
+              "watchSignature",
+              "container"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_home_feed_items_language_signature_container` ON `${TABLE_NAME}` (`language`, `watchSignature`, `container`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_top_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `responseSize` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`type`, `language`, `limit`, `offset`))",
+        "fields": [
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "responseSize",
+            "columnName": "responseSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "type",
+            "language",
+            "limit",
+            "offset"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_top_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_top_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_top_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `position` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterUrl` TEXT, `rating` REAL, `year` INTEGER, PRIMARY KEY(`type`, `language`, `limit`, `offset`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "type",
+            "language",
+            "limit",
+            "offset",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_top_items_page",
+            "unique": false,
+            "columnNames": [
+              "type",
+              "language",
+              "limit",
+              "offset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_top_items_page` ON `${TABLE_NAME}` (`type`, `language`, `limit`, `offset`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_schedule_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`language`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_schedule_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_schedule_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "anime_schedule_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `position` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterUrl` TEXT, `nextDateEpochSeconds` INTEGER, `previousDateEpochSeconds` INTEGER, `airedEpisodes` INTEGER, `totalEpisodes` INTEGER, PRIMARY KEY(`language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nextDateEpochSeconds",
+            "columnName": "nextDateEpochSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "previousDateEpochSeconds",
+            "columnName": "previousDateEpochSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "airedEpisodes",
+            "columnName": "airedEpisodes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "totalEpisodes",
+            "columnName": "totalEpisodes",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_anime_schedule_items_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_anime_schedule_items_language` ON `${TABLE_NAME}` (`language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "search_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pageKey` TEXT NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `responseSize` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`pageKey`))",
+        "fields": [
+          {
+            "fieldPath": "pageKey",
+            "columnName": "pageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "responseSize",
+            "columnName": "responseSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pageKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_pages_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_pages_language` ON `${TABLE_NAME}` (`language`)"
+          },
+          {
+            "name": "index_search_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "search_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pageKey` TEXT NOT NULL, `position` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterUrl` TEXT, `rating` REAL, `year` INTEGER, PRIMARY KEY(`pageKey`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "pageKey",
+            "columnName": "pageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pageKey",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_items_pageKey",
+            "unique": false,
+            "columnNames": [
+              "pageKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_items_pageKey` ON `${TABLE_NAME}` (`pageKey`)"
+          }
+        ]
+      },
+      {
+        "tableName": "search_filter_options",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`language`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_filter_options_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_filter_options_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "search_genre_groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `position` INTEGER NOT NULL, `groupId` INTEGER NOT NULL, `title` TEXT NOT NULL, PRIMARY KEY(`language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_genre_groups_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_genre_groups_language` ON `${TABLE_NAME}` (`language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "search_genres",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `position` INTEGER NOT NULL, `genreId` TEXT NOT NULL, `title` TEXT NOT NULL, `groupId` INTEGER NOT NULL, PRIMARY KEY(`language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "genreId",
+            "columnName": "genreId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_genres_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_genres_language` ON `${TABLE_NAME}` (`language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "search_types",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`language` TEXT NOT NULL, `position` INTEGER NOT NULL, `typeId` TEXT NOT NULL, `title` TEXT NOT NULL, PRIMARY KEY(`language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "typeId",
+            "columnName": "typeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_types_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_types_language` ON `${TABLE_NAME}` (`language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "collection_details",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collectionId` INTEGER NOT NULL, `language` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `views` INTEGER NOT NULL, `posterUrl` TEXT, `likes` INTEGER NOT NULL, `dislikes` INTEGER NOT NULL, `vote` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, `ownerId` INTEGER NOT NULL DEFAULT 0, `isPublic` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`collectionId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "collectionId",
+            "columnName": "collectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "views",
+            "columnName": "views",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "likes",
+            "columnName": "likes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dislikes",
+            "columnName": "dislikes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vote",
+            "columnName": "vote",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "isPublic",
+            "columnName": "isPublic",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "collectionId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_details_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_details_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "collection_anime_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collectionId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterUrl` TEXT, `rating` REAL, `year` INTEGER, PRIMARY KEY(`collectionId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "collectionId",
+            "columnName": "collectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "collectionId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_anime_items_collectionId_language",
+            "unique": false,
+            "columnNames": [
+              "collectionId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_anime_items_collectionId_language` ON `${TABLE_NAME}` (`collectionId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "collection_catalog_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pageKey` TEXT NOT NULL, `language` TEXT NOT NULL, `pageLimit` INTEGER NOT NULL, `pageOffset` INTEGER NOT NULL, `responseSize` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`pageKey`))",
+        "fields": [
+          {
+            "fieldPath": "pageKey",
+            "columnName": "pageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pageLimit",
+            "columnName": "pageLimit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pageOffset",
+            "columnName": "pageOffset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "responseSize",
+            "columnName": "responseSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pageKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_catalog_pages_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_catalog_pages_language` ON `${TABLE_NAME}` (`language`)"
+          },
+          {
+            "name": "index_collection_catalog_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_catalog_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "collection_catalog_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pageKey` TEXT NOT NULL, `position` INTEGER NOT NULL, `collectionId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `posterUrl` TEXT, `likes` INTEGER NOT NULL, PRIMARY KEY(`pageKey`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "pageKey",
+            "columnName": "pageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionId",
+            "columnName": "collectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "likes",
+            "columnName": "likes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pageKey",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_catalog_items_pageKey",
+            "unique": false,
+            "columnNames": [
+              "pageKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_catalog_items_pageKey` ON `${TABLE_NAME}` (`pageKey`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_profiles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileKey` TEXT NOT NULL, `userId` INTEGER NOT NULL, `nickname` TEXT NOT NULL, `avatarUrl` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`profileKey`))",
+        "fields": [
+          {
+            "fieldPath": "profileKey",
+            "columnName": "profileKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avatarUrl",
+            "columnName": "avatarUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "profileKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_profiles_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_profiles_userId` ON `${TABLE_NAME}` (`userId`)"
+          },
+          {
+            "name": "index_account_profiles_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_profiles_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_list_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `listId` INTEGER NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `listId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "listId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_list_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_list_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_list_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `listId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `posterUrl` TEXT, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `rating` REAL, `userRating` INTEGER, `year` INTEGER, `userListId` INTEGER, `isFavorite` INTEGER NOT NULL, `updatedAtSeconds` INTEGER, `nextEpisodeAtSeconds` INTEGER, `season` TEXT, PRIMARY KEY(`userId`, `listId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "userRating",
+            "columnName": "userRating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "userListId",
+            "columnName": "userListId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtSeconds",
+            "columnName": "updatedAtSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "nextEpisodeAtSeconds",
+            "columnName": "nextEpisodeAtSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "season",
+            "columnName": "season",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "listId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_list_items_page",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "listId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_list_items_page` ON `${TABLE_NAME}` (`userId`, `listId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_anime_list_states",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `listId` INTEGER, `isFavorite` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `animeId`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "animeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_anime_list_states_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_anime_list_states_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_rating_bucket_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_rating_bucket_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_rating_bucket_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_rating_buckets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `rating` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_rating_buckets_animeId",
+            "unique": false,
+            "columnNames": [
+              "animeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_rating_buckets_animeId` ON `${TABLE_NAME}` (`animeId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_ratings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `rating` INTEGER, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `animeId`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "animeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_ratings_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_ratings_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_list_stats_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_list_stats_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_list_stats_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_list_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `listId` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `listId`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "listId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_list_stats_animeId",
+            "unique": false,
+            "columnNames": [
+              "animeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_list_stats_animeId` ON `${TABLE_NAME}` (`animeId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_collection_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pageKey` TEXT NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`pageKey`))",
+        "fields": [
+          {
+            "fieldPath": "pageKey",
+            "columnName": "pageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pageKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_collection_pages_language",
+            "unique": false,
+            "columnNames": [
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_collection_pages_language` ON `${TABLE_NAME}` (`language`)"
+          },
+          {
+            "name": "index_account_collection_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_collection_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_collection_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pageKey` TEXT NOT NULL, `position` INTEGER NOT NULL, `collectionId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `posterUrl` TEXT, `posterSmallUrl` TEXT, `posterMediumUrl` TEXT, `posterBigUrl` TEXT, `posterFullsizeUrl` TEXT, `posterMegaUrl` TEXT, `views` INTEGER, PRIMARY KEY(`pageKey`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "pageKey",
+            "columnName": "pageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionId",
+            "columnName": "collectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterSmallUrl",
+            "columnName": "posterSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMediumUrl",
+            "columnName": "posterMediumUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterBigUrl",
+            "columnName": "posterBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterFullsizeUrl",
+            "columnName": "posterFullsizeUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "posterMegaUrl",
+            "columnName": "posterMegaUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "views",
+            "columnName": "views",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pageKey",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_collection_items_pageKey",
+            "unique": false,
+            "columnNames": [
+              "pageKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_collection_items_pageKey` ON `${TABLE_NAME}` (`pageKey`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_video_subscription_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_video_subscription_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_video_subscription_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_video_subscriptions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `animeUrl` TEXT NOT NULL, `playerId` INTEGER, `player` TEXT NOT NULL, `dubbing` TEXT NOT NULL, `posterUrl` TEXT, `title` TEXT NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeUrl",
+            "columnName": "animeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerId",
+            "columnName": "playerId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "player",
+            "columnName": "player",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dubbing",
+            "columnName": "dubbing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_video_subscriptions_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_video_subscriptions_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_notification_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `limit`, `offset`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "limit",
+            "offset"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_notification_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_notification_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_notifications",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `position` INTEGER NOT NULL, `notificationId` INTEGER NOT NULL, `dateSeconds` INTEGER NOT NULL, `title` TEXT NOT NULL, `text` TEXT NOT NULL, `clickUri` TEXT NOT NULL, `type` TEXT NOT NULL, `subType` TEXT NOT NULL, `viewed` INTEGER NOT NULL, `objectId` INTEGER, `animeSlug` TEXT, `isNewEpisode` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `limit`, `offset`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationId",
+            "columnName": "notificationId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateSeconds",
+            "columnName": "dateSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clickUri",
+            "columnName": "clickUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subType",
+            "columnName": "subType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "viewed",
+            "columnName": "viewed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "objectId",
+            "columnName": "objectId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "animeSlug",
+            "columnName": "animeSlug",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isNewEpisode",
+            "columnName": "isNewEpisode",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "limit",
+            "offset",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_notifications_page",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language",
+              "limit",
+              "offset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_notifications_page` ON `${TABLE_NAME}` (`userId`, `language`, `limit`, `offset`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_profile_content_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `contentType` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `contentType`, `limit`, `offset`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contentType",
+            "columnName": "contentType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "contentType",
+            "limit",
+            "offset"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_profile_content_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_profile_content_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          },
+          {
+            "name": "index_account_user_profile_content_pages_scope",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language",
+              "contentType"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_profile_content_pages_scope` ON `${TABLE_NAME}` (`userId`, `language`, `contentType`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_friends",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `position` INTEGER NOT NULL, `friendId` INTEGER NOT NULL, `nickname` TEXT NOT NULL, `avatarUrl` TEXT, `lastOnlineSeconds` INTEGER NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`userId`, `language`, `limit`, `offset`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "friendId",
+            "columnName": "friendId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avatarUrl",
+            "columnName": "avatarUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastOnlineSeconds",
+            "columnName": "lastOnlineSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "limit",
+            "offset",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_friends_page",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language",
+              "limit",
+              "offset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_friends_page` ON `${TABLE_NAME}` (`userId`, `language`, `limit`, `offset`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_reviews",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `position` INTEGER NOT NULL, `reviewId` INTEGER NOT NULL, `animeId` INTEGER NOT NULL, `animeTitle` TEXT NOT NULL, `animePosterUrl` TEXT, `textPreview` TEXT NOT NULL, `rating` REAL, `likes` INTEGER NOT NULL, `dislikes` INTEGER NOT NULL, `commentsCount` INTEGER NOT NULL, `updatedAtSeconds` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `limit`, `offset`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewId",
+            "columnName": "reviewId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeTitle",
+            "columnName": "animeTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animePosterUrl",
+            "columnName": "animePosterUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "textPreview",
+            "columnName": "textPreview",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "likes",
+            "columnName": "likes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dislikes",
+            "columnName": "dislikes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "commentsCount",
+            "columnName": "commentsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtSeconds",
+            "columnName": "updatedAtSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "limit",
+            "offset",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_reviews_page",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language",
+              "limit",
+              "offset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_reviews_page` ON `${TABLE_NAME}` (`userId`, `language`, `limit`, `offset`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_posts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `limit` INTEGER NOT NULL, `offset` INTEGER NOT NULL, `position` INTEGER NOT NULL, `postId` INTEGER NOT NULL, `title` TEXT NOT NULL, `previewImageUrl` TEXT, `contentPreview` TEXT NOT NULL, `categoryTitle` TEXT NOT NULL, `createdAtSeconds` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `limit`, `offset`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offset",
+            "columnName": "offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postId",
+            "columnName": "postId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previewImageUrl",
+            "columnName": "previewImageUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "contentPreview",
+            "columnName": "contentPreview",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryTitle",
+            "columnName": "categoryTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtSeconds",
+            "columnName": "createdAtSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "limit",
+            "offset",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_posts_page",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language",
+              "limit",
+              "offset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_posts_page` ON `${TABLE_NAME}` (`userId`, `language`, `limit`, `offset`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_notification_count_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_notification_count_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_notification_count_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_notification_counts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `type` TEXT NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`userId`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_notification_counts_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_notification_counts_userId` ON `${TABLE_NAME}` (`userId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_notification_anime",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`slug` TEXT NOT NULL, `animeId` INTEGER, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`slug`))",
+        "fields": [
+          {
+            "fieldPath": "slug",
+            "columnName": "slug",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "slug"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_notification_anime_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_notification_anime_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_stats_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_stats_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_stats_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_genre_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `genreId` INTEGER NOT NULL, `title` TEXT NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "genreId",
+            "columnName": "genreId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_genre_stats_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_genre_stats_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_rating_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `rating` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_rating_stats_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_rating_stats_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_list_watch_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `listId` INTEGER NOT NULL, `title` TEXT NOT NULL, `href` TEXT NOT NULL, `seconds` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "href",
+            "columnName": "href",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seconds",
+            "columnName": "seconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_list_watch_stats_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_list_watch_stats_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_type_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `typeId` INTEGER NOT NULL, `title` TEXT NOT NULL, `shortName` TEXT NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "typeId",
+            "columnName": "typeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "shortName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_type_stats_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_type_stats_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_profile_summary_caches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, `nickname` TEXT NOT NULL, `avatarUrl` TEXT, `bannerUrl` TEXT, `registerDateSeconds` INTEGER NOT NULL, `birthDateSeconds` INTEGER NOT NULL, `sex` INTEGER NOT NULL, `about` TEXT NOT NULL, `daysOnline` INTEGER NOT NULL, `watchingCount` INTEGER NOT NULL, `plannedCount` INTEGER NOT NULL, `completedCount` INTEGER NOT NULL, `droppedCount` INTEGER NOT NULL, `postponedCount` INTEGER NOT NULL, `favoriteCount` INTEGER NOT NULL, `friendsCount` INTEGER NOT NULL, `reviewsCount` INTEGER NOT NULL, `commentsCount` INTEGER NOT NULL, `postsCount` INTEGER NOT NULL, `collectionsCount` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avatarUrl",
+            "columnName": "avatarUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "bannerUrl",
+            "columnName": "bannerUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "registerDateSeconds",
+            "columnName": "registerDateSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthDateSeconds",
+            "columnName": "birthDateSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sex",
+            "columnName": "sex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "about",
+            "columnName": "about",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "daysOnline",
+            "columnName": "daysOnline",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "watchingCount",
+            "columnName": "watchingCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannedCount",
+            "columnName": "plannedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedCount",
+            "columnName": "completedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "droppedCount",
+            "columnName": "droppedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postponedCount",
+            "columnName": "postponedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favoriteCount",
+            "columnName": "favoriteCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "friendsCount",
+            "columnName": "friendsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewsCount",
+            "columnName": "reviewsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "commentsCount",
+            "columnName": "commentsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postsCount",
+            "columnName": "postsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collectionsCount",
+            "columnName": "collectionsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_profile_summary_caches_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_profile_summary_caches_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_profile_watch_types",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `typeId` INTEGER NOT NULL, `alias` TEXT NOT NULL, `title` TEXT NOT NULL, `shortName` TEXT NOT NULL, `spentSeconds` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "typeId",
+            "columnName": "typeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alias",
+            "columnName": "alias",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "shortName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spentSeconds",
+            "columnName": "spentSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_profile_watch_types_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_profile_watch_types_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "account_user_profile_watch_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER NOT NULL, `language` TEXT NOT NULL, `position` INTEGER NOT NULL, `dateSeconds` INTEGER NOT NULL, `durationSeconds` INTEGER NOT NULL, `episodeCount` INTEGER NOT NULL, PRIMARY KEY(`userId`, `language`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateSeconds",
+            "columnName": "dateSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationSeconds",
+            "columnName": "durationSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episodeCount",
+            "columnName": "episodeCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "language",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_account_user_profile_watch_history_userId_language",
+            "unique": false,
+            "columnNames": [
+              "userId",
+              "language"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_account_user_profile_watch_history_userId_language` ON `${TABLE_NAME}` (`userId`, `language`)"
+          }
+        ]
+      },
+      {
+        "tableName": "comment_pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scopeType` TEXT NOT NULL, `ownerId` INTEGER NOT NULL, `sort` TEXT NOT NULL, `limit` INTEGER NOT NULL, `skip` INTEGER NOT NULL, `responseSize` INTEGER NOT NULL, `isModerator` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`scopeType`, `ownerId`, `sort`, `limit`, `skip`))",
+        "fields": [
+          {
+            "fieldPath": "scopeType",
+            "columnName": "scopeType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sort",
+            "columnName": "sort",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "skip",
+            "columnName": "skip",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "responseSize",
+            "columnName": "responseSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isModerator",
+            "columnName": "isModerator",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "scopeType",
+            "ownerId",
+            "sort",
+            "limit",
+            "skip"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_comment_pages_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_comment_pages_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          },
+          {
+            "name": "index_comment_pages_scope",
+            "unique": false,
+            "columnNames": [
+              "scopeType",
+              "ownerId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_comment_pages_scope` ON `${TABLE_NAME}` (`scopeType`, `ownerId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "comment_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scopeType` TEXT NOT NULL, `ownerId` INTEGER NOT NULL, `sort` TEXT NOT NULL, `limit` INTEGER NOT NULL, `skip` INTEGER NOT NULL, `position` INTEGER NOT NULL, `commentId` INTEGER NOT NULL, `authorId` INTEGER NOT NULL, `authorName` TEXT NOT NULL, `avatarSmallUrl` TEXT, `avatarBigUrl` TEXT, `avatarFullUrl` TEXT, `text` TEXT NOT NULL, `createdAtEpochSeconds` INTEGER NOT NULL, `parentId` INTEGER, `childrenCount` INTEGER NOT NULL, `likes` INTEGER NOT NULL, `dislikes` INTEGER NOT NULL, `vote` INTEGER NOT NULL, `roles` TEXT NOT NULL, `deletedAtEpochSeconds` INTEGER, PRIMARY KEY(`scopeType`, `ownerId`, `sort`, `limit`, `skip`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "scopeType",
+            "columnName": "scopeType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sort",
+            "columnName": "sort",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limit",
+            "columnName": "limit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "skip",
+            "columnName": "skip",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "commentId",
+            "columnName": "commentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "authorId",
+            "columnName": "authorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "authorName",
+            "columnName": "authorName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avatarSmallUrl",
+            "columnName": "avatarSmallUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "avatarBigUrl",
+            "columnName": "avatarBigUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "avatarFullUrl",
+            "columnName": "avatarFullUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochSeconds",
+            "columnName": "createdAtEpochSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentId",
+            "columnName": "parentId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "childrenCount",
+            "columnName": "childrenCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "likes",
+            "columnName": "likes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dislikes",
+            "columnName": "dislikes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vote",
+            "columnName": "vote",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roles",
+            "columnName": "roles",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAtEpochSeconds",
+            "columnName": "deletedAtEpochSeconds",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "scopeType",
+            "ownerId",
+            "sort",
+            "limit",
+            "skip",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_comment_items_page",
+            "unique": false,
+            "columnNames": [
+              "scopeType",
+              "ownerId",
+              "sort",
+              "limit",
+              "skip"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_comment_items_page` ON `${TABLE_NAME}` (`scopeType`, `ownerId`, `sort`, `limit`, `skip`)"
+          },
+          {
+            "name": "index_comment_items_commentId",
+            "unique": false,
+            "columnNames": [
+              "commentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_comment_items_commentId` ON `${TABLE_NAME}` (`commentId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "document_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cacheKey` TEXT NOT NULL, `payload` TEXT NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`cacheKey`))",
+        "fields": [
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cacheKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cacheKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_document_cache_cachedAt",
+            "unique": false,
+            "columnNames": [
+              "cachedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_document_cache_cachedAt` ON `${TABLE_NAME}` (`cachedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "video_downloads",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `animeId` INTEGER NOT NULL, `animeTitle` TEXT NOT NULL, `posterUrl` TEXT NOT NULL, `episode` TEXT NOT NULL, `videoId` INTEGER NOT NULL, `playerName` TEXT NOT NULL, `playerId` INTEGER, `dubbing` TEXT NOT NULL, `iframeUrl` TEXT NOT NULL, `screenshotUrl` TEXT NOT NULL, `qualityLabel` TEXT NOT NULL, `streamUrl` TEXT NOT NULL, `headersJson` TEXT NOT NULL, `cacheKey` TEXT NOT NULL, `cacheKeyScheme` INTEGER NOT NULL DEFAULT 0, `status` TEXT NOT NULL, `progress` REAL NOT NULL, `bytesDownloaded` INTEGER NOT NULL, `totalBytes` INTEGER, `errorMessage` TEXT, `exportStatus` TEXT NOT NULL DEFAULT 'Idle', `exportProgress` REAL NOT NULL DEFAULT 0, `exportDirectoryUri` TEXT, `exportedFileUri` TEXT, `exportErrorMessage` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeTitle",
+            "columnName": "animeTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "videoId",
+            "columnName": "videoId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerName",
+            "columnName": "playerName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerId",
+            "columnName": "playerId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dubbing",
+            "columnName": "dubbing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iframeUrl",
+            "columnName": "iframeUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenshotUrl",
+            "columnName": "screenshotUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "qualityLabel",
+            "columnName": "qualityLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "streamUrl",
+            "columnName": "streamUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "headersJson",
+            "columnName": "headersJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cacheKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKeyScheme",
+            "columnName": "cacheKeyScheme",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "progress",
+            "columnName": "progress",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytesDownloaded",
+            "columnName": "bytesDownloaded",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalBytes",
+            "columnName": "totalBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "errorMessage",
+            "columnName": "errorMessage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "exportStatus",
+            "columnName": "exportStatus",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'Idle'"
+          },
+          {
+            "fieldPath": "exportProgress",
+            "columnName": "exportProgress",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "exportDirectoryUri",
+            "columnName": "exportDirectoryUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "exportedFileUri",
+            "columnName": "exportedFileUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "exportErrorMessage",
+            "columnName": "exportErrorMessage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_video_downloads_duplicate_key",
+            "unique": true,
+            "columnNames": [
+              "animeId",
+              "episode"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_video_downloads_duplicate_key` ON `${TABLE_NAME}` (`animeId`, `episode`)"
+          },
+          {
+            "name": "index_video_downloads_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_video_downloads_status` ON `${TABLE_NAME}` (`status`)"
+          },
+          {
+            "name": "index_video_downloads_updatedAt",
+            "unique": false,
+            "columnNames": [
+              "updatedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_video_downloads_updatedAt` ON `${TABLE_NAME}` (`updatedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "alloha_track_preference",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `dubbing` TEXT NOT NULL, `player` TEXT NOT NULL, `audioLabel` TEXT, `subtitleLanguage` TEXT, `subtitleLabel` TEXT, `subtitleOff` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `dubbing`, `player`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dubbing",
+            "columnName": "dubbing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "player",
+            "columnName": "player",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "audioLabel",
+            "columnName": "audioLabel",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subtitleLanguage",
+            "columnName": "subtitleLanguage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subtitleLabel",
+            "columnName": "subtitleLabel",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subtitleOff",
+            "columnName": "subtitleOff",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "dubbing",
+            "player"
+          ]
+        }
+      },
+      {
+        "tableName": "watch_later",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`animeId` INTEGER NOT NULL, `episode` TEXT NOT NULL, `animeTitle` TEXT NOT NULL, `posterUrl` TEXT NOT NULL, `screenshotUrl` TEXT NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`animeId`, `episode`))",
+        "fields": [
+          {
+            "fieldPath": "animeId",
+            "columnName": "animeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "animeTitle",
+            "columnName": "animeTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posterUrl",
+            "columnName": "posterUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenshotUrl",
+            "columnName": "screenshotUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "addedAt",
+            "columnName": "addedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "animeId",
+            "episode"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_watch_later_addedAt",
+            "unique": false,
+            "columnNames": [
+              "addedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_watch_later_addedAt` ON `${TABLE_NAME}` (`addedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "pending_mutations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `payloadJson` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `attemptCount` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadJson",
+            "columnName": "payloadJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attemptCount",
+            "columnName": "attemptCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2d4b156b6a74b72ef1f3a56952fbb5af')"
+    ]
+  }
+}
