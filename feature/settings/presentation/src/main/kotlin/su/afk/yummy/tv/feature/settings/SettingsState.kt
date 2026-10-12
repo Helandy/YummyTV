@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.settings
 
-import android.os.Build
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -30,6 +29,7 @@ import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
+import su.afk.yummy.tv.core.utils.system.PlatformInfo
 
 class SettingsState {
     @Immutable
@@ -73,7 +73,7 @@ class SettingsState {
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
         val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
         /** Сжатие динамического диапазона (DynamicsProcessing) доступно только с Android 9 (API 28). */
-        val volumeStabilizationSupported: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P,
+        val volumeStabilizationSupported: Boolean = PlatformInfo.isAtLeastPie,
         val videoExportAutoEnabled: Boolean = false,
         val videoDownloadWifiOnly: Boolean = false,
         val yaniApplicationToken: String = "",

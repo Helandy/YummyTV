@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player.deeplink
+package su.afk.yummy.tv.feature.player.common.deeplink
 
 import android.content.ContentResolver
 import android.content.Context

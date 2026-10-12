@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.update
 
-import android.os.Build
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import su.afk.yummy.tv.core.analytics.utils.analyticsType
+import su.afk.yummy.tv.core.utils.system.PlatformInfo
 import su.afk.yummy.tv.domain.update.model.UpdateInstallCancelledException
 import su.afk.yummy.tv.domain.update.model.UpdatePermissionRequiredException
 import javax.inject.Inject
@@ -63,7 +63,7 @@ internal class UpdateAnalytics @Inject constructor(
         analyticsParamsOf(
             PARAM_VERSION to version,
             PARAM_PHASE to phase,
-            PARAM_SDK_INT to Build.VERSION.SDK_INT,
+            PARAM_SDK_INT to PlatformInfo.sdkInt,
             PARAM_ERROR_TYPE to error.analyticsType(),
             PARAM_ERROR_MESSAGE to error.analyticsMessage(),
         )

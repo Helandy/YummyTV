@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.account.passwordreset
 
-import android.util.Patterns
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -8,6 +7,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.validation.isValidEmail
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.feature.account.passwordreset.handler.PasswordResetHandler
 import javax.inject.Inject
@@ -53,7 +53,7 @@ class PasswordResetViewModel @Inject constructor(
 
     private fun submit(captchaResponse: String?) {
         val email = currentState.email.trim()
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!email.isValidEmail()) {
             setState { copy(validationError = true) }
             return
         }
