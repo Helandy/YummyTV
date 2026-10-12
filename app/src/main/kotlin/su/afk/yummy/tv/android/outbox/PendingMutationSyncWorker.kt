@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import io.ktor.client.plugins.ResponseException
 import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.storage.outbox.AnimeIdPayload
 import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
@@ -51,24 +52,39 @@ class PendingMutationSyncWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
-        var stillPending = false
-        outbox.pending().forEach { entry ->
+        // Очередь — лог «последняя запись побеждает» (SET_RATING → DELETE_RATING для одного аниме),
+        // поэтому на первой повторяемой ошибке останавливаемся: пропуск упавшей записи позволил бы
+        // старой мутации переиграться поверх более новых в следующем прогоне.
+        for (entry in outbox.pending()) {
             val applied = runSuspendCatching { apply(entry) }
-            if (applied.isSuccess) {
-                outbox.remove(entry.id)
-            } else {
-                val error = applied.exceptionOrNull()
-                if (error?.isNetworkError() == true) {
-                    // Всё ещё офлайн (или сеть моргнула повторно) — оставляем запись, повторим
-                    // в следующем прогоне вместо того, чтобы копить дубликаты.
-                    stillPending = true
-                } else {
-                    // Сервер отверг мутацию (не сетевая причина) — повторять бессмысленно.
-                    outbox.remove(entry.id)
+            val error = applied.exceptionOrNull()
+            when {
+                applied.isSuccess -> outbox.remove(entry.id)
+
+                // Сервер однозначно отверг мутацию (4xx) — повтор ничего не изменит.
+                error.isPermanentRejection() -> outbox.remove(entry.id)
+
+                // Всё ещё офлайн — оставляем запись без траты попыток (офлайн может длиться днями).
+                error?.isNetworkError() == true -> return Result.retry()
+
+                // Сервер долго отвечает ошибкой (5xx, мусор вместо JSON и т.п.) — не копим вечно.
+                entry.attemptCount + 1 >= MAX_ATTEMPTS -> outbox.remove(entry.id)
+
+                // 5xx, 429 или неразобранный ответ: оставляем запись и повторим в следующем прогоне,
+                // иначе оценка/список/«просмотрено» теряются молча.
+                else -> {
+                    outbox.recordAttemptFailure(entry.id)
+                    return Result.retry()
                 }
             }
         }
-        return if (stillPending) Result.retry() else Result.success()
+        return Result.success()
+    }
+
+    /** 4xx, кроме «повторить позже» (408/425/429): запрос заведомо не пройдёт и при повторе. */
+    private fun Throwable?.isPermanentRejection(): Boolean {
+        val status = (this as? ResponseException)?.response?.status?.value ?: return false
+        return status in 400..499 && status != 408 && status != 425 && status != 429
     }
 
     private suspend fun apply(entry: PendingMutationEntry) {
@@ -116,5 +132,9 @@ class PendingMutationSyncWorker @AssistedInject constructor(
 
             else -> Unit
         }
+    }
+
+    private companion object {
+        const val MAX_ATTEMPTS = 8
     }
 }

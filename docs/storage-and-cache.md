@@ -123,8 +123,11 @@ ViewModel/Handler  → сетевая ошибка → outbox.enqueue(type, payl
 PendingMutationSyncWorker (WorkManager, NetworkType.CONNECTED)
   для каждой записи: apply(entry)
     успех                → remove(id)
-    сетевая ошибка       → оставить, Result.retry() (экспоненциальный backoff от 15 минут)
-    отказ сервера        → remove(id): повторять бессмысленно
+    сетевая ошибка       → оставить, Result.retry() (экспоненциальный backoff от 15 минут), попытки не тратятся
+    4xx (кроме 408/425/429) → remove(id): повторять бессмысленно
+    5xx / 429 / неразобранный ответ → recordAttemptFailure(id), оставить, Result.retry();
+                           после 8 попыток (MAX_ATTEMPTS) → remove(id)
+  на первой повторяемой ошибке прогон останавливается (порядок записей сохраняется)
 ```
 
 Типы (`PendingMutationTypes`, строки, чтобы БД переживала переименование enum'ов): `mark_watched`,
