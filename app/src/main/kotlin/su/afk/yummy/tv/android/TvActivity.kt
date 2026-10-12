@@ -3,8 +3,8 @@ package su.afk.yummy.tv.android
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
@@ -34,7 +34,7 @@ class TvActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
         tvIntegration.bindBrowsableChannelRequests(this, lifecycleScope)
 
         setContent {
