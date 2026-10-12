@@ -8,6 +8,7 @@
     <string name="video_download_notification_pause">Pause</string>
     <string name="video_download_notification_resume">Resume</string>
     <string name="video_download_worker_stopped">Download stopped. Tap to restart it.</string>
+    <string name="video_download_no_space">Not enough free storage. Free up some space and try again.</string>
     <string name="video_export_notification_channel">Video exports</string>
     <string name="video_export_notification_title">Exporting episode %1$s</string>
     <string name="video_export_notification_progress">Preparing MP4 • %1$d%%</string>

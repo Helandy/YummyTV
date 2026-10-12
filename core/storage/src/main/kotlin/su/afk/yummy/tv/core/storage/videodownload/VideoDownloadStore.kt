@@ -44,4 +44,16 @@ internal class VideoDownloadStore(private val dao: VideoDownloadDao) : VideoDown
     override suspend fun insert(entry: VideoDownloadEntry): Long = dao.insert(entry)
 
     override suspend fun update(entry: VideoDownloadEntry) = dao.update(entry)
+
+    override suspend fun updateStatusUnlessFrozen(
+        id: Long,
+        status: String,
+        progress: Float?,
+        bytesDownloaded: Long?,
+        totalBytes: Long?,
+        errorMessage: String?,
+        updatedAt: Long,
+    ): Boolean = dao.updateStatusUnlessFrozen(
+        id, status, progress, bytesDownloaded, totalBytes, errorMessage, updatedAt,
+    ) > 0
 }

@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.engine.DownloadIntegrityVerifier
 import su.afk.yummy.tv.data.videodownload.engine.VideoDownloadExecutor
@@ -73,6 +74,14 @@ class VideoDownloadWorker @AssistedInject internal constructor(
 
     private suspend fun downloadWithRetries(id: Long, initialItem: VideoDownloadItem): Result {
         var item = initialItem
+        // Полный внутренний диск на ТВ-боксе ломает не только загрузку, но и Room/DataStore приложения.
+        if (applicationContext.filesDir.usableSpace < MIN_FREE_STORAGE_BYTES) {
+            val message = applicationContext.getString(R.string.video_download_no_space)
+            analyticsTracker.logDownloadInfo { "Download id=$id not started: free space below reserve" }
+            repository.updateStatus(id = id, status = VideoDownloadStatus.Failed, errorMessage = message)
+            analytics.reportFailed(item, message)
+            return Result.failure()
+        }
         var strategy = strategyResolver.resolve(item)
         val refreshBeforeStart = shouldRefreshBeforeStart(item)
         if (!refreshBeforeStart) {
@@ -475,6 +484,9 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         private const val TRANSIENT_RETRY_DELAY_MS = 3_000L
         private const val FINGERPRINT_BYTES = 4
         private const val MAX_PARALLEL_DOWNLOADS = 2
+
+        // Запас, который не отдаём под загрузки: на нём живут БД и настройки приложения.
+        private const val MIN_FREE_STORAGE_BYTES = 300L * 1024 * 1024
 
         // Общий на процесс: WorkManager запускает CoroutineWorker'ы без оглядки на свой executor,
         // и сезон целиком превращался бы в десяток параллельных загрузок с одного балансера

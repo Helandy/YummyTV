@@ -27,6 +27,11 @@ VideoDownloadWorker (foreground, до 2 одновременно)
 Статусы `VideoDownloadStatus`: `Idle`, `Resolving`, `Queued`, `Downloading`, `Paused`, `Downloaded`,
 `Failed`, `Deleting`, `Deleted`.
 
+Запись статуса атомарна: `VideoDownloadDao.updateStatusUnlessFrozen` проверяет «не `Deleted`/`Paused`»
+прямо в `UPDATE`, поэтому поздний снимок прогресса не перетирает паузу пользователя. Перед стартом
+воркер проверяет свободное место: ниже 300 МБ на внутреннем диске загрузка сразу получает `Failed`
+с понятным сообщением (иначе падают Room и DataStore приложения).
+
 ## Модули
 
 | Слой           | Содержимое                                                                            |

@@ -35,4 +35,15 @@ interface VideoDownloadStorage {
     suspend fun insert(entry: VideoDownloadEntry): Long
 
     suspend fun update(entry: VideoDownloadEntry)
+
+    /** Атомарно меняет статус, если запись не удалена и не на паузе. `false` — запись заморожена. */
+    suspend fun updateStatusUnlessFrozen(
+        id: Long,
+        status: String,
+        progress: Float?,
+        bytesDownloaded: Long?,
+        totalBytes: Long?,
+        errorMessage: String?,
+        updatedAt: Long,
+    ): Boolean
 }

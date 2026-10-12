@@ -254,20 +254,16 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
         errorMessage: String?,
     ) {
         val entry = store.getById(id) ?: return
-        val currentStatus = entry.status.toVideoDownloadStatus()
-        if (currentStatus == VideoDownloadStatus.Deleted || currentStatus == VideoDownloadStatus.Paused) {
-            return
-        }
-        store.update(
-            entry.copy(
-                status = status.storageName(),
-                progress = progress ?: entry.progress,
-                bytesDownloaded = bytesDownloaded ?: entry.bytesDownloaded,
-                totalBytes = totalBytes ?: entry.totalBytes,
-                errorMessage = errorMessage,
-                updatedAt = System.currentTimeMillis(),
-            )
+        val applied = store.updateStatusUnlessFrozen(
+            id = id,
+            status = status.storageName(),
+            progress = progress,
+            bytesDownloaded = bytesDownloaded,
+            totalBytes = totalBytes,
+            errorMessage = errorMessage,
+            updatedAt = System.currentTimeMillis(),
         )
+        if (!applied) return
         if (status == VideoDownloadStatus.Downloaded) {
             store.markOtherFailedEpisodeDownloadsDeleted(
                 animeId = entry.animeId,

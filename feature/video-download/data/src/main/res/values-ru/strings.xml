@@ -8,6 +8,7 @@
     <string name="video_download_notification_pause">Пауза</string>
     <string name="video_download_notification_resume">Продолжить</string>
     <string name="video_download_worker_stopped">Загрузка остановилась. Нажмите, чтобы перезапустить.</string>
+    <string name="video_download_no_space">Недостаточно свободного места. Освободите память и повторите.</string>
     <string name="video_export_notification_channel">Экспорт видео</string>
     <string name="video_export_notification_title">Экспорт серии %1$s</string>
     <string name="video_export_notification_progress">Подготовка MP4 • %1$d%%</string>
