@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 
 @Composable
 internal fun MobilePlayerTopBar(
@@ -68,7 +69,7 @@ internal fun MobilePlayerTopBar(
                 IconButton(onClick = onBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
+                        contentDescription = stringResource(DesignSystemR.string.common_back),
                         tint = Color.White
                     )
                 }

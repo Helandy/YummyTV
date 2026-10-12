@@ -30,11 +30,13 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.designsystem.R
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
 
 @Composable
@@ -91,7 +93,7 @@ internal fun DetailsMobileHero(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.common_back),
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.92f),
             )
         }
