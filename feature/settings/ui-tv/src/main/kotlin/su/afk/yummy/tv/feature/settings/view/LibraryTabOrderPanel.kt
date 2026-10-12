@@ -14,8 +14,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.utils.label
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
+import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Composable
 internal fun LibraryTabOrderPanel(

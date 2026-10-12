@@ -13,6 +13,8 @@ import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Composable
 internal fun SettingsTvAppearanceContent(

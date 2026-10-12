@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.settings.common.utils.color
 
 /** Отступ между блоками внутри одной категории настроек. */
 @Composable

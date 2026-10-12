@@ -31,6 +31,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /**
  * Пункт настройки с выбором из вариантов: название и текущее значение.

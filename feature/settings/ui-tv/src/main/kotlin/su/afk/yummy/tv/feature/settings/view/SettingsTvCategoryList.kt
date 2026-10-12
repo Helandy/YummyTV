@@ -13,6 +13,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /** Левый вертикальный список категорий настроек (master); контент выбранной категории — справа. */
 @Composable

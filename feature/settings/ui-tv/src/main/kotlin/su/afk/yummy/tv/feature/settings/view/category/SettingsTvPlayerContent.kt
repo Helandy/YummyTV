@@ -10,16 +10,17 @@ import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.utils.detailsText
-import su.afk.yummy.tv.feature.settings.utils.label
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
-import su.afk.yummy.tv.feature.settings.utils.videoQualitySliderEntries
 import su.afk.yummy.tv.feature.settings.view.DetailsButtonOrderResetRow
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
 import su.afk.yummy.tv.feature.settings.view.SettingsSliderRow
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
+import su.afk.yummy.tv.feature.settings.common.utils.detailsText
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
 
 @Composable
 internal fun SettingsTvPlayerContent(

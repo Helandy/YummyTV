@@ -31,12 +31,13 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
-import su.afk.yummy.tv.feature.settings.utils.availableAppThemes
-import su.afk.yummy.tv.feature.settings.utils.color
 import su.afk.yummy.tv.feature.settings.utils.hint
-import su.afk.yummy.tv.feature.settings.utils.label
-import su.afk.yummy.tv.feature.settings.utils.newEpisodesSourcesValue
-import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
+import su.afk.yummy.tv.feature.settings.common.utils.availableAppThemes
+import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
+import su.afk.yummy.tv.feature.settings.common.utils.toDetailsButtonOrderItems
 
 /** Текущее значение пункта-пикера для строки в центральной колонке. */
 @Composable

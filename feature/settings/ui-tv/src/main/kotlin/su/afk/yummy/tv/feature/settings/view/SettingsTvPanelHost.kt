@@ -34,6 +34,7 @@ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPlayerContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvStorageContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvSubtitlesContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvWatchProgressContent
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

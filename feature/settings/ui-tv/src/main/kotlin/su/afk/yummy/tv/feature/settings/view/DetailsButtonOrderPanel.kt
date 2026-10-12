@@ -13,7 +13,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
-import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
+import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.toDetailsButtonOrderItems
 
 @Composable
 internal fun DetailsButtonOrderPanel(

@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:settings:presentation"))
+    implementation(project(":feature:settings:ui-common"))
 
     implementation(libs.bundles.compose.screen)
     implementation(libs.bundles.navigation.serialization)

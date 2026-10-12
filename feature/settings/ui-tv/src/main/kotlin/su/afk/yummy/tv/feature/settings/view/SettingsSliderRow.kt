@@ -30,6 +30,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
+import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /**
  * Строка настройки с непрерывным числовым значением: фокус + стрелки влево/вправо меняют value.

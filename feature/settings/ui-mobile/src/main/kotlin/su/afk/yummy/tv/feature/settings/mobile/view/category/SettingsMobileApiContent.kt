@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Composable
 internal fun SettingsMobileApiContent(

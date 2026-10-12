@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.feature.settings.common.utils.color
 
 /** Шторка «Что нового»: история изменений установленной и предыдущих версий. */
 @OptIn(ExperimentalMaterial3Api::class)

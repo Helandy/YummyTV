@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Composable
 internal fun SettingsMobileLibraryTabOrder(

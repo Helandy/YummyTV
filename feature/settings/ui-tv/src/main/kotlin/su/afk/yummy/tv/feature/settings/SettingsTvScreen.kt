@@ -44,8 +44,6 @@ import su.afk.yummy.tv.core.utils.system.restartApplication
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.utils.color
-import su.afk.yummy.tv.feature.settings.utils.label
 import su.afk.yummy.tv.feature.settings.view.SettingsTvCategoryList
 import su.afk.yummy.tv.feature.settings.view.SettingsTvPanelHost
 import su.afk.yummy.tv.feature.settings.view.SettingsTvPickerPanel
@@ -53,6 +51,8 @@ import su.afk.yummy.tv.feature.settings.view.SettingsTvValueRow
 import su.afk.yummy.tv.feature.settings.view.TvInterfaceModeConfirmationDialog
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPickerRow
 import su.afk.yummy.tv.feature.settings.view.valueText
+import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Preview(
     name = "Default",

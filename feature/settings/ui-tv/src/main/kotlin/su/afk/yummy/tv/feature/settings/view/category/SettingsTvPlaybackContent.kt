@@ -8,10 +8,12 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
-import su.afk.yummy.tv.feature.settings.utils.toNextEpisodeSwitchDelayText
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSliderRow
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.toNextEpisodeSwitchDelayText
 
 @Composable
 internal fun SettingsTvPlaybackContent(

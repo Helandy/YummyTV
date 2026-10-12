@@ -139,6 +139,7 @@ include(":feature:player:ui-tv")
 include(":feature:player:ui-mobile")
 
 include(":feature:settings:presentation")
+include(":feature:settings:ui-common")
 include(":feature:settings:ui-tv")
 include(":feature:settings:ui-mobile")
 
