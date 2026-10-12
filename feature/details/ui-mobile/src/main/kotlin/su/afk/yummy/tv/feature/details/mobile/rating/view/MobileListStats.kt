@@ -13,6 +13,7 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -59,7 +60,7 @@ internal fun MobileListStats(
     ).filter { it.third > 0 }
     if (items.isEmpty()) return
 
-    val integerFormat = NumberFormat.getIntegerInstance()
+    val integerFormat = remember { NumberFormat.getIntegerInstance() }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
             text = stringResource(R.string.details_mobile_list_stats),

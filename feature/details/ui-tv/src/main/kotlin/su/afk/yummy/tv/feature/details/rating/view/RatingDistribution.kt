@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,7 +32,7 @@ import kotlin.math.roundToInt
 @Composable
 internal fun RatingDistribution(distribution: List<AnimeRatingBucket>) {
     val total = distribution.sumOf { it.count }
-    val integerFormat = NumberFormat.getIntegerInstance()
+    val integerFormat = remember { NumberFormat.getIntegerInstance() }
     if (total <= 0) {
         Text(
             text = stringResource(R.string.details_rating_empty),

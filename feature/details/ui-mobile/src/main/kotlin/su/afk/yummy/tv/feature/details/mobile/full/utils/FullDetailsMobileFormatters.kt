@@ -7,13 +7,9 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.feature.details.mobile.details.utils.rememberReleaseCountdown
 import su.afk.yummy.tv.feature.details.presentation.R
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateTimeSeconds
 
-private val epochSecondsFormatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-
-internal fun Long.formatEpochSeconds(): String = epochSecondsFormatter.format(Date(this * 1000))
+internal fun Long.formatEpochSeconds(): String = formatLocalizedDateTimeSeconds()
 
 /** «5 из 12»; `null`, пока не вышло ни одной серии. */
 @Composable

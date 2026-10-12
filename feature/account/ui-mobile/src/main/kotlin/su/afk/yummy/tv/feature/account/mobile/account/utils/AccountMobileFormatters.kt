@@ -17,9 +17,10 @@ import su.afk.yummy.tv.domain.account.model.ratingsByValue
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatSlice
 import su.afk.yummy.tv.feature.account.mobile.account.model.ProfileWatchSlice
 import su.afk.yummy.tv.feature.account.presentation.R
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
+import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateTimeSeconds
+import su.afk.yummy.tv.core.utils.formatting.formatLocalizedShortDateSeconds
+import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateSeconds
 
 internal fun UserStats.isEmpty(): Boolean =
     genres.isEmpty() && ratings.isEmpty() && lists.isEmpty() && types.isEmpty()
@@ -35,18 +36,14 @@ internal fun Long.toDurationLabel(): String {
     }
 }
 
-private val dateFormatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-private val profileDateFormatter = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
-private val userListDateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
 internal fun Long.formatDate(): String =
-    if (this <= 0L) "" else dateFormatter.format(Date(this * 1000L))
+    if (this <= 0L) "" else formatLocalizedDateTimeSeconds()
 
 internal fun Long.formatProfileDate(): String =
-    if (this <= 0L) "" else profileDateFormatter.format(Date(this * 1000L))
+    if (this <= 0L) "" else formatLocalizedShortDateSeconds()
 
 internal fun Long.formatUserListDate(): String =
-    if (this <= 0L) "" else userListDateFormatter.format(Date(this * 1000L))
+    if (this <= 0L) "" else formatLocalizedDateSeconds()
 
 @Composable
 internal fun Long.toProfileHoursLabel(): String {

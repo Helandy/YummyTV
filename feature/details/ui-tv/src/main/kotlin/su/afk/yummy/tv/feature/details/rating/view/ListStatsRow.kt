@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.rating.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
@@ -43,7 +44,7 @@ internal fun ListStatsRow(listStats: AnimeListStats) {
     ).filter { it.third > 0 }
     if (items.isEmpty()) return
 
-    val integerFormat = NumberFormat.getIntegerInstance()
+    val integerFormat = remember { NumberFormat.getIntegerInstance() }
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),

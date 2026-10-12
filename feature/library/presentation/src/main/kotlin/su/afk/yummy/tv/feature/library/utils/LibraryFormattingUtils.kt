@@ -7,9 +7,7 @@ import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.model.LibraryTab
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateMillis
 
 fun LibraryItem.dateText(tab: LibraryTab): String? =
     when (tab) {
@@ -22,10 +20,8 @@ fun LibraryItem.dateText(tab: LibraryTab): String? =
 fun LibraryItem.validUserRating(): Double? =
     userRating?.takeIf { it in 1..10 }?.toDouble()
 
-private val libraryDateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
 private fun Long.formatLibraryDate(): String? =
-    takeIf { it > 0L }?.let { libraryDateFormatter.format(Date(it)) }
+    takeIf { it > 0L }?.formatLocalizedDateMillis()
 
 fun HomeContinueWatchingItem.timingLabel(): String? =
     if (durationMs > 0L) {
