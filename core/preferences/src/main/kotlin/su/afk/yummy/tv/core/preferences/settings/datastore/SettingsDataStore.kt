@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -18,7 +19,12 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
+// Битый файл заменяется пустыми настройками: иначе каждая запись (`edit`) падает с
+// CorruptionException на каждом запуске, а чтение в `data` лишь маскирует проблему.
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+    name = "app_settings",
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+)
 
 /**
  * Единственная точка доступа к DataStore настроек: делегат `preferencesDataStore` допускает ровно

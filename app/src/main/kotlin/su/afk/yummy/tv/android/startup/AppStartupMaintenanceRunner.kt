@@ -29,9 +29,12 @@ class AppStartupMaintenanceRunner @Inject constructor(
 
     fun run() {
         scope.launch {
-            settingsStore.ensureYaniContentLanguageInitialized()
-            if (settingsStore.markStartedVersion(BuildConfig.VERSION_CODE)) {
-                deleteDownloadedUpdateApk()
+            // Фоновая обслуживающая задача не должна ронять процесс (диск полон, битый файл настроек).
+            runSuspendCatching {
+                settingsStore.ensureYaniContentLanguageInitialized()
+                if (settingsStore.markStartedVersion(BuildConfig.VERSION_CODE)) {
+                    deleteDownloadedUpdateApk()
+                }
             }
             // Без одноразового флага: pruner сам отказывается работать, пока жива хоть одна
             // загрузка со старой схемой ключей, — зато подберёт их данные, как только не останется.
