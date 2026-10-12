@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
+import su.afk.yummy.tv.core.model.mutation.PendingMutation
+import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
@@ -34,6 +36,7 @@ internal class PlayerProgressHandler @Inject constructor(
     private val suppressContinueWatchingDisplayUseCase: SuppressContinueWatchingDisplayUseCase,
     private val settingsStore: SettingsStore,
     private val saveVideoWatchProgress: SaveVideoWatchProgressUseCase,
+    private val pendingMutationQueue: PendingMutationQueue,
 ) {
     /**
      * Сериализует отправку на сервер: [saveProgress] зовут и с Main, и из app-scope (уход из плеера),
@@ -131,7 +134,11 @@ internal class PlayerProgressHandler @Inject constructor(
 
         // Плановая отправка не встаёт в очередь за идущей: следующий тик пришлёт дельту. Финальная
         // (уход с экрана) дожидается, иначе накопленные секунды потерялись бы вместе с VM.
-        if (force) syncMutex.lock() else if (!syncMutex.tryLock()) return
+        if (force) {
+            syncMutex.lock()
+        } else if (!syncMutex.tryLock()) {
+            return
+        }
         try {
             syncRemoteProgressLocked(snapshot, force)
         } finally {
@@ -165,17 +172,31 @@ internal class PlayerProgressHandler @Inject constructor(
         val delta = synchronized(watchedLock) {
             watchedSecondsByVideoId[videoId].orEmpty() - synced
         }.sorted()
-        val accepted = runSuspendCatching {
+        val result = runSuspendCatching {
             saveVideoWatchProgress(
                 videoId = videoId,
                 timeSeconds = timeSeconds,
                 durationSeconds = durationSeconds,
                 times = delta,
             )
-        }.getOrDefault(false)
-        if (accepted) {
+        }
+        if (result.getOrDefault(false)) {
             synced.addAll(delta)
             if (watchedEnough) completedRemoteVideoIds += videoId
+        } else if (force || watchedEnough) {
+            // Выход с экрана или досмотр без сети: позицию не теряем и досылаем, когда сеть вернётся.
+            // Плановые тики в очередь не ставим — следующий пришлёт свежую позицию. Секунды (`times`)
+            // в очередь не кладём: сервер засчитает позицию, но не время просмотра.
+            result.exceptionOrNull()?.let { error ->
+                pendingMutationQueue.enqueueOnNetworkFailure(
+                    PendingMutation.MarkWatched(
+                        videoId = videoId,
+                        timeSeconds = timeSeconds,
+                        durationSeconds = durationSeconds,
+                    ),
+                    error,
+                )
+            }
         }
     }
 
@@ -183,7 +204,6 @@ internal class PlayerProgressHandler @Inject constructor(
         val lastAttempt = lastRemoteSyncAttemptAt[videoId] ?: return true
         return now - lastAttempt >= REMOTE_PROGRESS_SYNC_INTERVAL_MS
     }
-
 }
 
 /** Метаданные экрана, нужные для сохранения записи прогресса. */
