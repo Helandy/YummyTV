@@ -44,7 +44,7 @@ release-вариант.
 | Workflow            | Когда                                  | Что делает                                                   |
 |---------------------|----------------------------------------|--------------------------------------------------------------|
 | `android-build.yml` | `pull_request`, push в `main`/`master` | Lint, unit-тесты, `assembleDebug`, `assembleRelease`, сводка |
-| `unit-tests.yml`    | push в любую ветку                     | `testDebugUnitTest`, при падении выгружает отчёты на 7 дней  |
+| `unit-tests.yml`    | push в любую ветку, кроме `main`/`master` | `testDebugUnitTest`, при падении выгружает отчёты на 7 дней |
 
 Особенности `android-build.yml`:
 
@@ -57,6 +57,9 @@ release-вариант.
 - `concurrency` отменяет устаревшие прогоны одной ветки.
 - `assembleRelease` в CI собирается без секретов (поля `BuildConfig` пустые) и без подписи:
   проверяется, что release-вариант вообще собирается и R8 проходит. APK из CI не публикуется.
+  Поэтому `mapping.txt` из CI не соответствует выпущенному APK: для расшифровки крэшей AppMetrica
+  сохраняйте `app/build/outputs/mapping/release/mapping.txt` из локальной релизной сборки рядом с
+  релизом.
 
 ## Выпуск релиза
 

@@ -1,9 +1,11 @@
 name: Unit Tests
 
+# main/master и PR уже покрывает android-build.yml (там же lint и сборки) — без дубля прогона.
 on:
     push:
-        branches:
-            - '**'
+        branches-ignore:
+            - main
+            - master
 
 permissions:
     contents: read
