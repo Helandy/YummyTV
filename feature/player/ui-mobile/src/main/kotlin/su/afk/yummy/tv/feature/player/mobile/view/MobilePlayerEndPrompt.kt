@@ -19,13 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/** Промпт конца серии: вторичное действие слева, основное справа. */
 @Composable
 internal fun MobilePlayerEndPrompt(
     title: String,
     primaryLabel: String,
-    stayLabel: String,
+    secondaryLabel: String,
     onPrimary: () -> Unit,
-    onStay: () -> Unit,
+    onSecondary: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -43,6 +44,14 @@ internal fun MobilePlayerEndPrompt(
             color = Color.White,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            OutlinedButton(
+                onClick = onSecondary,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.White,
+                ),
+            ) {
+                Text(secondaryLabel)
+            }
             Button(
                 onClick = onPrimary,
                 colors = ButtonDefaults.buttonColors(
@@ -51,14 +60,6 @@ internal fun MobilePlayerEndPrompt(
                 ),
             ) {
                 Text(primaryLabel)
-            }
-            OutlinedButton(
-                onClick = onStay,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.White,
-                ),
-            ) {
-                Text(stayLabel)
             }
         }
     }

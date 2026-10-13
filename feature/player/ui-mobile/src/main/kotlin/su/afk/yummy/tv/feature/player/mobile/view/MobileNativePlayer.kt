@@ -310,6 +310,11 @@ internal fun MobileNativePlayer(
         onLeftEnd = endFlow::onLeftEnd,
     )
 
+    fun watchAgain() {
+        episodeEnd.watchAgain(seekController::restartFromBeginning)
+        overlay.show()
+    }
+
     // Объявлен раньше PlayerListenerEffect и MobilePlayerPipEffect, поэтому освобождается после них:
     // clearMediaItems()/stop() идут уже без слушателя, иначе пустой плейлист выглядит концом серии.
     PlayerLifecycleEffect(
@@ -737,12 +742,9 @@ internal fun MobileNativePlayer(
                     nextEpisodeDubbing = ui.nextEpisodeDubbing,
                 ),
                 primaryLabel = stringResource(R.string.player_watch_next),
-                stayLabel = stringResource(R.string.player_stay),
+                secondaryLabel = stringResource(R.string.player_watch_again),
                 onPrimary = episodeEnd::playNextEpisode,
-                onStay = {
-                    endFlow.dismissNextEpisode()
-                    overlay.show()
-                },
+                onSecondary = ::watchAgain,
                 modifier = Modifier.align(Alignment.Center),
             )
         }
@@ -753,7 +755,7 @@ internal fun MobileNativePlayer(
             MobilePlayerEndPrompt(
                 title = playerFinalEpisodePromptTitle(finalAction),
                 primaryLabel = playerFinalEpisodePrimaryLabel(finalAction),
-                stayLabel = stringResource(R.string.player_stay),
+                secondaryLabel = stringResource(R.string.player_watch_again),
                 onPrimary = {
                     if (managesSubscriptions) {
                         episodeEnd.manageSubscriptions()
@@ -761,10 +763,7 @@ internal fun MobileNativePlayer(
                         episodeEnd.rateTitle()
                     }
                 },
-                onStay = {
-                    endFlow.finalEpisodeActionPrompt = null
-                    overlay.show()
-                },
+                onSecondary = ::watchAgain,
                 modifier = Modifier.align(Alignment.Center),
             )
         }

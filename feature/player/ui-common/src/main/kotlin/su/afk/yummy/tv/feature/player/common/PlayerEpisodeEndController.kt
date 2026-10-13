@@ -57,6 +57,18 @@ class PlayerEpisodeEndController(
         onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
     }
 
+    /**
+     * «Смотреть снова» из промпта конца серии. Перемотку делает платформенный [restart]
+     * (seek-контроллер создаётся после этого контроллера); уход от конца сам сбросит сценарий
+     * через onLeftEnd, и при повторном досмотре промпт появится снова.
+     */
+    fun watchAgain(restart: () -> Unit) {
+        if (blocksActions()) return
+        endFlow.hideAll()
+        onActionStarted()
+        restart()
+    }
+
     fun rateTitle() {
         if (blocksActions()) return
         endFlow.finalEpisodeActionPrompt = null

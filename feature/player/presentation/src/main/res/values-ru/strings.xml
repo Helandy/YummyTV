@@ -66,7 +66,8 @@
     <string name="player_rate_title">Оценить</string>
     <string name="player_manage_notifications">Уведомления</string>
     <string name="player_notifications_prompt">Подписаться на уведомления о новых сериях?</string>
-    <string name="player_watch_next">Смотреть</string>
+    <string name="player_watch_next">Следующая серия</string>
+    <string name="player_watch_again">Смотреть снова</string>
     <string name="player_stay">Остаться</string>
     <string name="player_tv_controls_tutorial_heading">Управление плеером с пульта</string>
     <string name="player_tv_controls_tutorial_step">Шаг %1$d из %2$d</string>

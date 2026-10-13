@@ -14,7 +14,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.presentation.R
 
-/** Промпты по центру: следующий эпизод и финальное действие тайтла. */
+/** Промпты по центру: следующий эпизод и финальное действие тайтла; оба предлагают «Смотреть снова». */
 @Composable
 internal fun BoxScope.TvPlayerEndPrompts(
     prompts: PlayerEndFlowState,
@@ -22,6 +22,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
     hasNextEpisode: Boolean,
     nextEpisodeDubbing: String?,
     onPlayNextEpisode: () -> Unit,
+    onWatchAgain: () -> Unit,
     onRateTitle: () -> Unit,
     onManageSubscriptions: () -> Unit,
     onInteraction: () -> Unit,
@@ -35,13 +36,10 @@ internal fun BoxScope.TvPlayerEndPrompts(
             nextEpisodeDubbing = nextEpisodeDubbing,
         ),
         primaryLabel = stringResource(R.string.player_watch_next),
-        stayLabel = stringResource(R.string.player_stay),
+        secondaryLabel = stringResource(R.string.player_watch_again),
         primaryFocusRequester = focus.nextEpisode,
         onPrimary = onPlayNextEpisode,
-        onStay = {
-            prompts.dismissNextEpisode()
-            onInteraction()
-        },
+        onSecondary = onWatchAgain,
         onInteraction = onInteraction,
         modifier = Modifier.align(Alignment.Center),
     )
@@ -51,7 +49,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
         visible = finalAction != null,
         title = playerFinalEpisodePromptTitle(finalAction),
         primaryLabel = playerFinalEpisodePrimaryLabel(finalAction),
-        stayLabel = stringResource(R.string.player_stay),
+        secondaryLabel = stringResource(R.string.player_watch_again),
         primaryFocusRequester = focus.finalEpisodeAction,
         onPrimary = {
             if (finalAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
@@ -60,10 +58,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
                 onRateTitle()
             }
         },
-        onStay = {
-            prompts.finalEpisodeActionPrompt = null
-            onInteraction()
-        },
+        onSecondary = onWatchAgain,
         onInteraction = onInteraction,
         modifier = Modifier.align(Alignment.Center),
     )

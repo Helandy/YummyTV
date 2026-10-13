@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,15 +14,19 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * Промпт конца серии: вторичное действие слева, основное справа. Фокус по умолчанию получает
+ * основное через [primaryFocusRequester] (его запрашивает TvPlayerFocusEffects).
+ */
 @Composable
 internal fun TvPlayerEndPrompt(
     visible: Boolean,
     title: String,
     primaryLabel: String,
-    stayLabel: String,
+    secondaryLabel: String,
     primaryFocusRequester: FocusRequester,
     onPrimary: () -> Unit,
-    onStay: () -> Unit,
+    onSecondary: () -> Unit,
     onInteraction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -42,6 +45,16 @@ internal fun TvPlayerEndPrompt(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 TvControlButton(
+                    onClick = onSecondary,
+                    onFocused = onInteraction,
+                ) { color ->
+                    Text(
+                        text = secondaryLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = color,
+                    )
+                }
+                TvControlButton(
                     onClick = onPrimary,
                     onFocused = onInteraction,
                     focusRequester = primaryFocusRequester,
@@ -49,17 +62,6 @@ internal fun TvPlayerEndPrompt(
                 ) { color ->
                     Text(
                         text = primaryLabel,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = color,
-                    )
-                }
-                TvControlButton(
-                    onClick = onStay,
-                    onFocused = onInteraction,
-                    modifier = Modifier.width(120.dp),
-                ) { color ->
-                    Text(
-                        text = stayLabel,
                         style = MaterialTheme.typography.labelLarge,
                         color = color,
                     )

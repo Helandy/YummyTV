@@ -50,6 +50,12 @@ class PlayerSeekController internal constructor(
         seekTo(player.currentPosition + offset)
         stepSeekToast.showToast(direction)
     }
+
+    /** «Смотреть снова»: в начало серии и воспроизведение, даже если плеер стоял на паузе в конце. */
+    fun restartFromBeginning() {
+        seekTo(0L)
+        player.play()
+    }
 }
 
 @Composable

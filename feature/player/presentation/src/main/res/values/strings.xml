@@ -66,7 +66,8 @@
     <string name="player_rate_title">Rate</string>
     <string name="player_manage_notifications">Notifications</string>
     <string name="player_notifications_prompt">Get notified about new episodes?</string>
-    <string name="player_watch_next">Watch</string>
+    <string name="player_watch_next">Next episode</string>
+    <string name="player_watch_again">Watch again</string>
     <string name="player_stay">Stay</string>
     <string name="player_tv_controls_tutorial_heading">Control the player with your remote</string>
     <string name="player_tv_controls_tutorial_step">Step %1$d of %2$d</string>

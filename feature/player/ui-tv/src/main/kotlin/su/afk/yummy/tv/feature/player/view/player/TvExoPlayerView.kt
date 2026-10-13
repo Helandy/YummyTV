@@ -601,6 +601,10 @@ internal fun TvExoPlayerView(
             hasNextEpisode = playback.hasNextEpisode,
             nextEpisodeDubbing = playback.nextEpisodeDubbing,
             onPlayNextEpisode = episodeEnd::playNextEpisode,
+            onWatchAgain = {
+                episodeEnd.watchAgain(seekController::restartFromBeginning)
+                onInteraction()
+            },
             onRateTitle = episodeEnd::rateTitle,
             onManageSubscriptions = episodeEnd::manageSubscriptions,
             onInteraction = ::onInteraction,
