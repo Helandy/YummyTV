@@ -34,8 +34,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,8 +52,11 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -115,8 +120,22 @@ fun PostDetailsTvScreen(
             val contentBlocks = remember(details.contentHtml, details.previewImageUrl) {
                 details.contentHtml.parsePostContent(details.previewImageUrl)
             }
+            // Картинка в фокусе должна помещаться на экран целиком: выше области списка её не
+            // видно полностью, а FillWidth ещё и обрезал бы её по верху и низу.
+            val density = LocalDensity.current
+            var viewportHeightPx by remember { mutableIntStateOf(0) }
+            val imageMaxHeight = if (viewportHeightPx > 0) {
+                with(density) {
+                    (viewportHeightPx.toDp() - TvScreenPadding.Vertical * 2 - ImageFocusMargin * 2)
+                        .coerceAtLeast(MinImageHeight)
+                }
+            } else {
+                Dp.Infinity
+            }
             LazyColumn(
-                Modifier.fillMaxSize(),
+                Modifier
+                    .fillMaxSize()
+                    .onSizeChanged { viewportHeightPx = it.height },
                 state = listState,
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
@@ -203,7 +222,9 @@ fun PostDetailsTvScreen(
                             details.title,
                             Modifier
                                 .fillMaxWidth()
-                                .heightIn(max = 520.dp)
+                                .bringIntoViewRequester(bringIntoViewRequester)
+                                .padding(vertical = ImageFocusMargin)
+                                .heightIn(max = imageMaxHeight)
                                 .clip(shape)
                                 .then(
                                     if (focused) {
@@ -216,7 +237,6 @@ fun PostDetailsTvScreen(
                                         Modifier
                                     },
                                 )
-                                .bringIntoViewRequester(bringIntoViewRequester)
                                 .onFocusChanged {
                                     if (it.isFocused) {
                                         coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
@@ -228,7 +248,7 @@ fun PostDetailsTvScreen(
                                     interactionSource = interactionSource,
                                     focusedScale = 1f,
                                 ),
-                            contentScale = ContentScale.FillWidth,
+                            contentScale = ContentScale.Fit,
                         )
                     }
                 }
@@ -267,7 +287,9 @@ fun PostDetailsTvScreen(
                                 block.description,
                                 Modifier
                                     .fillMaxWidth()
-                                    .heightIn(min = 180.dp, max = 620.dp)
+                                    .bringIntoViewRequester(bringIntoViewRequester)
+                                    .padding(vertical = ImageFocusMargin)
+                                    .heightIn(min = MinImageHeight, max = imageMaxHeight)
                                     .clip(shape)
                                     .then(
                                         if (focused) {
@@ -280,7 +302,6 @@ fun PostDetailsTvScreen(
                                             Modifier
                                         },
                                     )
-                                    .bringIntoViewRequester(bringIntoViewRequester)
                                     .onFocusChanged {
                                         if (it.isFocused) {
                                             coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
@@ -294,7 +315,7 @@ fun PostDetailsTvScreen(
                                         interactionSource = interactionSource,
                                         focusedScale = 1f,
                                     ),
-                                contentScale = ContentScale.FillWidth,
+                                contentScale = ContentScale.Fit,
                             )
                         }
                     }
@@ -455,3 +476,11 @@ fun PostDetailsTvScreen(
         }
     }
 }
+
+private val MinImageHeight = 180.dp
+
+/**
+ * Воздух вокруг картинки в фокусе. Входит в область bringIntoView, поэтому прокрутка не прижимает
+ * рамку к краю экрана, а высота картинки считается с учётом этого запаса.
+ */
+private val ImageFocusMargin = 24.dp
