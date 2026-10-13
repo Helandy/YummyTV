@@ -14,4 +14,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":feature:account:domain"))
     implementation(libs.javax.inject)
+
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

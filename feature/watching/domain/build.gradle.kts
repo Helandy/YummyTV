@@ -16,4 +16,7 @@ dependencies {
     implementation(project(":feature:player:domain"))
 
     implementation(libs.javax.inject)
+
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

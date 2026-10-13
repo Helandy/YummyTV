@@ -14,7 +14,8 @@ internal class PlayerArtworkHandler @Inject constructor(
         return resolveContinueWatchingImage(
             screenshotUrl = source.screenshotUrl,
             episodeUrl = source.episodeUrl,
-            posterUrl = source.posterUrl,
+            // Пустой постер — «постера нет»: иначе резолвер вернул бы "" вместо null.
+            posterUrl = poster,
             resolveKodikThumbnail = { resolveKodikThumbnailUrl(it) },
         ) ?: poster
     }
