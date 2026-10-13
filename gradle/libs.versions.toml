@@ -40,6 +40,7 @@ work = "2.12.0"
 
 # Media / Images
 coil = "3.6.3"
+libavif = "1.3.0.841110fd"
 jsoup = "1.23.2"
 media3 = "1.11.1"
 play-services-auth-blockstore = "16.4.0"
@@ -141,6 +142,7 @@ coil-core = { module = "io.coil-kt.coil3:coil-core", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+libavif-android = { module = "org.aomedia.avif.android:avif", version.ref = "libavif" }
 
 # Media3
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }

@@ -174,6 +174,7 @@ dependencies {
     implementation(project(":feature:update:ui"))
 
     implementation(libs.bundles.coil.full)
+    implementation(libs.libavif.android)
     implementation(libs.ktor.client.okhttp)
     // manifest ссылается на классы Cast/mediarouter напрямую, implementation в feature:player их не пробрасывает
     implementation(libs.media3.cast)
