@@ -3,7 +3,8 @@ package su.afk.yummy.tv.feature.player.mobile.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/** Промпт конца серии: вторичное действие слева, основное справа. */
+/**
+ * Промпт конца серии: вторичное действие слева, основное справа. Подписи в одну строку: если
+ * кнопки не помещаются рядом, основная уходит на следующую строку, а не рвёт слово.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MobilePlayerEndPrompt(
     title: String,
@@ -31,7 +36,7 @@ internal fun MobilePlayerEndPrompt(
 ) {
     Column(
         modifier = modifier
-            .widthIn(max = 320.dp)
+            .widthIn(max = 440.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color.Black.copy(alpha = 0.82f))
             .padding(horizontal = 18.dp, vertical = 16.dp),
@@ -43,14 +48,17 @@ internal fun MobilePlayerEndPrompt(
             style = MaterialTheme.typography.titleMedium,
             color = Color.White,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             OutlinedButton(
                 onClick = onSecondary,
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.White,
                 ),
             ) {
-                Text(secondaryLabel)
+                Text(secondaryLabel, maxLines = 1)
             }
             Button(
                 onClick = onPrimary,
@@ -59,7 +67,7 @@ internal fun MobilePlayerEndPrompt(
                     contentColor = Color.Black,
                 ),
             ) {
-                Text(primaryLabel)
+                Text(primaryLabel, maxLines = 1)
             }
         }
     }
