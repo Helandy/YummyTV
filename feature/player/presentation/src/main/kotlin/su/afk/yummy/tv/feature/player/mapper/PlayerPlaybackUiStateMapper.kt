@@ -44,9 +44,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
             activeDubbing?.episodes?.map { it.number }.orEmpty()
         }
     }
-    val globalViews = displayedDubbingNames.map { name ->
-        globalDubbingViews(this, name).takeIf { it > 0 } ?: activeDubbing?.views ?: 0
-    }
+    val globalViews = displayedDubbingNames.map { name -> globalDubbingViews(this, name) }
     val globalSourceNames = displayedDubbingNames.map { name ->
         globalDubbingSourceNames(this, name, playerNamePrefix)
     }
