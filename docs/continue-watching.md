@@ -99,3 +99,27 @@ playback-цель. Presentation превращает её в destination пле�
   источник той же серии или первый поддерживаемый.
 - Запись с placeholder episode может быть мигрирована на доверенный реальный episode, если совпал
   `videoId` или `episodeUrl`.
+
+## Запуск извне: ярлыки и виджет
+
+`yummytv://continue/{animeId}` запускает «продолжить просмотр» так же, как карточка на главной.
+`ContinueWatchingDeepLinkResolver` открывает `ContinueWatchingLaunchDestination` — экран-лоадер
+(`ContinueWatchingLaunchViewModel`, `:feature:home`), который берёт запись тайтла из
+`ObserveContinueWatchingUseCase`, разрешает её через `ResolveContinueWatchingLaunchUseCase` и
+заменяет себя плеером (`nav.replace`). Нет записи, цели запуска или запуск упал — детали тайтла.
+Тост о переключении на серверный прогресс здесь не показывается: экран сразу уходит. Экран
+зарегистрирован и в мобильном, и в ТВ-графе, потому что резолверы общие для обоих интерфейсов.
+
+Мобильный интерфейс публикует две поверхности на том же списке (`app/.../android`), обе
+обновляются, пока жива `MobileActivity`:
+
+- **Ярлыки** (`AppShortcutsPublisher`): два последних тайтла + «Поиск» (`ACTION_SEARCH` →
+  `SystemSearchIntentHandler`) + «Загрузки» (`yummytv://downloads`). Все динамические: статический
+  `shortcuts.xml` требует литерального `targetPackage`, а у debug/releasedebug свой суффикс
+  applicationId.
+- **Виджет** (`ContinueWatchingWidget`, Glance, `SizeMode.Exact`): до трёх карточек по ширине
+  (не уже ~110dp). Перерисовывает его `ContinueWatchingWidgetUpdater`; периодического обновления
+  нет — список локальный и вне приложения не меняется.
+
+Постеры для обеих поверхностей — software-bitmap через синглтон Coil (`ContinueWatchingPosterUtils`):
+hardware-bitmap не сериализуется ни в иконку ярлыка, ни в RemoteViews.

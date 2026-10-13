@@ -188,6 +188,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.glance.appwidget)
     implementation(libs.androidx.appcompat)
     // APK ставится мимо Play (самообновление) — без profileinstaller профиль не применится
     implementation(libs.androidx.profileinstaller)

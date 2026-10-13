@@ -9,4 +9,12 @@
     <string name="interface_mode_mobile">Mobile interface</string>
     <string name="interface_mode_mobile_hint">Compact layout optimized for touchscreen controls</string>
     <string name="episode_push_notification_channel">New episodes</string>
+    <string name="shortcut_search">Search</string>
+    <string name="shortcut_downloads">Downloads</string>
+    <string name="shortcut_continue_long">Continue: %1$s</string>
+    <string name="widget_continue_watching_title">Continue watching</string>
+    <string name="widget_continue_watching_description">Recent titles: tap to resume playback</string>
+    <string name="widget_continue_watching_empty">What you watch will appear here</string>
+    <string name="widget_episode">Episode</string>
+    <string name="widget_episode_number">Episode %1$s</string>
 </resources>

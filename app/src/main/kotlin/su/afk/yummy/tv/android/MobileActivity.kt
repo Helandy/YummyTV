@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import su.afk.yummy.tv.android.shortcuts.AppShortcutsPublisher
+import su.afk.yummy.tv.android.widget.ContinueWatchingWidgetUpdater
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
@@ -34,6 +38,12 @@ class MobileActivity : ComponentActivity() {
     @Inject
     lateinit var keyboardShortcuts: MobileKeyboardShortcuts
 
+    @Inject
+    lateinit var appShortcutsPublisher: AppShortcutsPublisher
+
+    @Inject
+    lateinit var continueWatchingWidgetUpdater: ContinueWatchingWidgetUpdater
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -47,6 +57,10 @@ class MobileActivity : ComponentActivity() {
         }
 
         handleIncomingIntent(intent)
+
+        // Ярлыки и виджет — только мобильный интерфейс; обновляются, пока открыто приложение.
+        lifecycleScope.launch { appShortcutsPublisher.run() }
+        lifecycleScope.launch { continueWatchingWidgetUpdater.run() }
     }
 
     override fun onNewIntent(intent: Intent) {

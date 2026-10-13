@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.home.mobile.navigator
 
+import su.afk.yummy.tv.feature.home.launch.ContinueWatchingLaunchViewModel
+import su.afk.yummy.tv.feature.home.navigator.ContinueWatchingLaunchDestination
+import su.afk.yummy.tv.feature.home.mobile.launch.ContinueWatchingLaunchMobileScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -18,6 +21,15 @@ class HomeNavRegistrar @Inject constructor() : IMobileHomeEntry {
                 val viewModel = hiltViewModel<HomeViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     HomeMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<ContinueWatchingLaunchDestination> { dest ->
+                val viewModel = hiltViewModel<ContinueWatchingLaunchViewModel, ContinueWatchingLaunchViewModel.Factory>(
+                    key = "mobile-continue-launch-${dest.animeId}",
+                    creationCallback = { factory -> factory.create(dest.animeId) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    ContinueWatchingLaunchMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
         }

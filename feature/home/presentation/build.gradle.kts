@@ -12,6 +12,7 @@ dependencies {
     api(project(":feature:home:domain"))
 
     implementation(project(":core:analytics"))
+    implementation(project(":core:deeplink:api"))
     implementation(project(":core:error:api"))
     implementation(project(":core:featuretoggle"))
     implementation(project(":core:model"))

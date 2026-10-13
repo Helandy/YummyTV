@@ -37,6 +37,7 @@ kotlinx-coroutines = "1.11.0"
 datastore = "1.2.1"
 room = "2.8.5"
 work = "2.12.0"
+glance = "1.1.1"
 
 # Media / Images
 coil = "3.6.3"
@@ -166,6 +167,7 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 
 # TV
 androidx-tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "androidx-tv-tvprovider" }

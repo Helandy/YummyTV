@@ -9,4 +9,12 @@
     <string name="interface_mode_mobile">Мобільний інтерфейс</string>
     <string name="interface_mode_mobile_hint">Компактне компонування для сенсорного керування</string>
     <string name="episode_push_notification_channel">Нові серії</string>
+    <string name="shortcut_search">Пошук</string>
+    <string name="shortcut_downloads">Завантаження</string>
+    <string name="shortcut_continue_long">Продовжити: %1$s</string>
+    <string name="widget_continue_watching_title">Продовжити перегляд</string>
+    <string name="widget_continue_watching_description">Останні тайтли: тап — одразу до перегляду</string>
+    <string name="widget_continue_watching_empty">Тут з’явиться те, що ви дивитеся</string>
+    <string name="widget_episode">Серія</string>
+    <string name="widget_episode_number">Серія %1$s</string>
 </resources>
