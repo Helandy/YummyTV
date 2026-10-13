@@ -2,6 +2,8 @@
 
 package su.afk.yummy.tv.feature.account.view
 
+import su.afk.yummy.tv.feature.account.account.model.rememberNotificationsTabState
+import su.afk.yummy.tv.feature.account.account.model.NotificationsTabState
 import android.widget.Toast
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -114,10 +116,10 @@ internal fun NotificationsTab(
                         unreadCount = state.unreadNotificationCount,
                         selectedTabFocusRequester = selectedTabFocusRequester,
                         // Вниз с таба — на «Мои подписки»: дальше по колонке фокус ходит сам.
-                        contentFocusRequester = notificationsTabState.mySubscriptionsFocusRequester,
+                        contentFocusRequester = notificationsTabState.focusRequesters.mySubscriptionsFocusRequester,
                         onContentRequested = {
                             notificationsTabState.requestFocusSafely(
-                                notificationsTabState.mySubscriptionsFocusRequester
+                                notificationsTabState.focusRequesters.mySubscriptionsFocusRequester
                             )
                         },
                         autoFocusSelected = !notificationsTabState.notificationContentHasFocus &&
@@ -129,7 +131,7 @@ internal fun NotificationsTab(
                         onClick = { onEvent(AccountState.Event.MySubscriptionsSelected) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .focusRequester(notificationsTabState.mySubscriptionsFocusRequester),
+                            .focusRequester(notificationsTabState.focusRequesters.mySubscriptionsFocusRequester),
                     )
                     if (state.notificationCounts.any { it.count > 0 } || state.notifications.isNotEmpty()) {
                         NotificationTypeBadges(state.notificationCounts)
@@ -144,11 +146,11 @@ internal fun NotificationsTab(
                                     onClick = { notificationsTabState.showReadAllConfirm = true },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .focusRequester(notificationsTabState.markAllReadFocusRequester)
+                                        .focusRequester(notificationsTabState.focusRequesters.markAllReadFocusRequester)
                                         .focusProperties {
                                             if (state.notifications.isNotEmpty()) {
                                                 right =
-                                                    notificationsTabState.deleteAllFocusRequester
+                                                    notificationsTabState.focusRequesters.deleteAllFocusRequester
                                             }
                                         },
                                     enabled = markAllReadEnabled,
@@ -161,11 +163,11 @@ internal fun NotificationsTab(
                                     onClick = { notificationsTabState.showDeleteAllConfirm = true },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .focusRequester(notificationsTabState.deleteAllFocusRequester)
+                                        .focusRequester(notificationsTabState.focusRequesters.deleteAllFocusRequester)
                                         .focusProperties {
                                             if (onMarkAllRead != null) {
                                                 left =
-                                                    notificationsTabState.markAllReadFocusRequester
+                                                    notificationsTabState.focusRequesters.markAllReadFocusRequester
                                             }
                                         },
                                     enabled = !state.isNotificationsLoading,
@@ -192,7 +194,7 @@ internal fun NotificationsTab(
                 item {
                     Column(
                         modifier = Modifier
-                            .focusRequester(notificationsTabState.contentFocusRequester)
+                            .focusRequester(notificationsTabState.focusRequesters.contentFocusRequester)
                             .onFocusChanged {
                                 if (it.isFocused) {
                                     notificationsTabState.markContentFocused()
@@ -242,7 +244,7 @@ internal fun NotificationsTab(
             TvLoadingScreen(
                 modifier = Modifier
                     .fillMaxSize()
-                    .focusRequester(notificationsTabState.openingOverlayFocusRequester)
+                    .focusRequester(notificationsTabState.focusRequesters.openingOverlayFocusRequester)
                     .onPreviewKeyEvent { true }
                     .focusable(),
             )

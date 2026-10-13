@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.view
 
+import su.afk.yummy.tv.feature.account.account.model.NotificationsTabState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,9 +30,9 @@ internal fun NotificationsTabRow(
     selectedTabFocusRequester: FocusRequester?,
     onEvent: (AccountState.Event) -> Unit,
 ) {
-    val rowFocusRequester = notificationsTabState.rowFocusRequester(index, notification.id)
-    val readFocusRequester = notificationsTabState.readFocusRequester(notification.id)
-    val deleteFocusRequester = notificationsTabState.deleteFocusRequester(notification.id)
+    val rowFocusRequester = notificationsTabState.focusRequesters.rowFocusRequester(index, notification.id)
+    val readFocusRequester = notificationsTabState.focusRequesters.readFocusRequester(notification.id)
+    val deleteFocusRequester = notificationsTabState.focusRequesters.deleteFocusRequester(notification.id)
     val firstActionFocusRequester =
         readFocusRequester.takeIf { !notification.viewed } ?: deleteFocusRequester
     var rowIsFocused by remember(notification.id) { mutableStateOf(false) }
@@ -55,12 +56,12 @@ internal fun NotificationsTabRow(
             onEvent(AccountState.Event.NotificationSelected(notification.id))
         },
         onRead = {
-            notificationsTabState.beginPendingReadFocus(notification.id)
+            notificationsTabState.pendingFocus.beginPendingReadFocus(notification.id)
             notificationsTabState.requestDeleteFocus(index, notificationIds)
             onEvent(AccountState.Event.NotificationReadSelected(notification.id))
         },
         onDelete = {
-            notificationsTabState.beginPendingDeleteFocus(notification.id, index)
+            notificationsTabState.pendingFocus.beginPendingDeleteFocus(notification.id, index)
             val immediateTarget = if (index < notificationIds.lastIndex) index + 1 else index - 1
             if (immediateTarget >= 0) {
                 notificationsTabState.requestNotificationFocus(immediateTarget, notificationIds)
