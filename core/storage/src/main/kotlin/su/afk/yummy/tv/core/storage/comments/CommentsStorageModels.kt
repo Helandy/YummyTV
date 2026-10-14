@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.comments
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 data class CommentsPageCache(
     val entry: CommentPageEntry,
     val items: List<CommentItemEntry>,
@@ -8,4 +10,4 @@ data class CommentsPageCache(
 }
 
 fun CommentsPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

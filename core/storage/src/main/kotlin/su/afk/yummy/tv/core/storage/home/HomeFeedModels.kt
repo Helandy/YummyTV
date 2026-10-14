@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.home
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 const val HOME_FEED_CONTAINER_HERO = "hero"
 const val HOME_FEED_CONTAINER_SCHEDULE = "schedule"
 const val HOME_FEED_CONTAINER_CONTINUE_WATCHING = "continue_watching"
@@ -20,4 +22,4 @@ data class HomeFeedCache(
 }
 
 fun HomeFeedCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

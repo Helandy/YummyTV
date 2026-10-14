@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.collection
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 data class CollectionDetailCache(
     val entry: CollectionDetailEntry,
     val items: List<CollectionAnimeItemEntry>,
@@ -8,7 +10,7 @@ data class CollectionDetailCache(
 }
 
 fun CollectionDetailCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 data class CollectionCatalogPageCache(
     val entry: CollectionCatalogPageEntry,
@@ -18,4 +20,4 @@ data class CollectionCatalogPageCache(
 }
 
 fun CollectionCatalogPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.account
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 const val ACCOUNT_PROFILE_KEY_CURRENT = "current"
 const val ACCOUNT_USER_PROFILE_CONTENT_FRIENDS = "friends"
 const val ACCOUNT_USER_PROFILE_CONTENT_REVIEWS = "reviews"
@@ -96,49 +98,49 @@ data class AccountUserProfileSummaryCache(
 }
 
 fun AccountProfileEntry.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserListCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountAnimeListStateEntry.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountRatingBucketsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserRatingEntry.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountListStatsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountCollectionsPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountVideoSubscriptionsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountNotificationsPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserFriendsPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserReviewsPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserPostsPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountNotificationCountsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountNotificationAnimeEntry.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserStatsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AccountUserProfileSummaryCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

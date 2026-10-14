@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.anime
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 data class AnimeDetailsCache(
     val entry: AnimeDetailsEntry,
     val otherTitles: List<AnimeDetailTitleEntry>,
@@ -34,13 +36,13 @@ data class AnimeTrailersCache(
 }
 
 fun AnimeDetailsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AnimeVideosCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AnimeRecommendationsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun AnimeTrailersCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

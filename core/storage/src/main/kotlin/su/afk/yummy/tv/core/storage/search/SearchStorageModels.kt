@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.search
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 data class SearchPageCache(
     val entry: SearchPageEntry,
     val items: List<SearchItemEntry>,
@@ -17,7 +19,7 @@ data class SearchFilterOptionsCache(
 }
 
 fun SearchPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)
 
 fun SearchFilterOptionsCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

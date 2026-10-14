@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.top
 
+import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
+
 data class AnimeTopPageCache(
     val entry: AnimeTopPageEntry,
     val items: List<AnimeTopItemEntry>,
@@ -8,4 +10,4 @@ data class AnimeTopPageCache(
 }
 
 fun AnimeTopPageCache.isFresh(ttlMs: Long): Boolean =
-    System.currentTimeMillis() - cachedAt < ttlMs
+    isCacheFresh(cachedAt, ttlMs)

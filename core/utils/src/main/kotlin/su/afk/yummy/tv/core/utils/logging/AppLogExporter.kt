@@ -52,7 +52,8 @@ class AppLogExporter @Inject constructor(
             }
             val resolver = context.contentResolver
             val uri = checkNotNull(resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
-            resolver.openOutputStream(uri)!!.use { out -> dump.inputStream().use { it.copyTo(out) } }
+            val output = checkNotNull(resolver.openOutputStream(uri)) { "Не удалось открыть поток записи для $uri" }
+            output.use { out -> dump.inputStream().use { it.copyTo(out) } }
             "${Environment.DIRECTORY_DOWNLOADS}/${dump.name}"
         } else {
             val dir = checkNotNull(context.getExternalFilesDir(null))
