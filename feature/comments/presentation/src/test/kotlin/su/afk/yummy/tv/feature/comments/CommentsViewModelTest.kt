@@ -18,6 +18,7 @@ import org.junit.Test
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -199,6 +200,7 @@ class CommentsViewModelTest : BaseUnitTest() {
     @Test
     fun `failed submit shows a toast and keeps the text`() = runTest {
         coEvery { mutationHandler.create(any(), any(), any()) } returns Result.failure(IllegalStateException("boom"))
+        every { errorHandler.parse(any(), any(), any(), any()) } returns ErrorItem(title = "", message = "boom")
         val vm = createViewModel()
         val effects = collectEmissions(vm.effect)
         vm.setEvent(Event.ComposerTextChanged("hello"))
