@@ -43,6 +43,7 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
@@ -172,9 +173,11 @@ internal fun LibraryGrid(
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
         val gridHorizontalPadding = TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
-        val gridColumnCount =
-            (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
-                    (cardWidth.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+        val gridColumnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - gridHorizontalPadding,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
         val gridSpacingWidth = horizontalSpacing * (gridColumnCount - 1).coerceAtLeast(0)
         val adaptiveCardWidth =
             (maxWidth - gridHorizontalPadding - gridSpacingWidth) / gridColumnCount

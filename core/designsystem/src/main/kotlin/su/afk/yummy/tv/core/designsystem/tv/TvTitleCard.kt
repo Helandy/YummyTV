@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
@@ -48,7 +48,6 @@ fun TvTitleCard(
     val shape = MaterialTheme.shapes.medium
     val cardDimensions = currentTvTitleCardDimensions()
     val cardWidth = width ?: cardDimensions.width
-    val posterHeight = width?.div(TITLE_POSTER_ASPECT_RATIO) ?: cardDimensions.posterHeight
     var isFocused by remember { mutableStateOf(false) }
 
     Card(
@@ -69,7 +68,8 @@ fun TvTitleCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(posterHeight)
+                    // Высота от фактической ширины: в гриде ячейка может быть уже или шире cardWidth.
+                    .aspectRatio(TITLE_POSTER_ASPECT_RATIO)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {

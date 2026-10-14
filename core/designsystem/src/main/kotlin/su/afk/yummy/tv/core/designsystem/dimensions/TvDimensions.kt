@@ -9,8 +9,8 @@ object TvScreenPadding {
 }
 
 object TvCardSpacing {
-    val Horizontal = 12.dp
-    val Vertical = 12.dp
+    val Horizontal = 10.dp
+    val Vertical = 10.dp
 }
 
 const val TITLE_POSTER_ASPECT_RATIO = 570f / 800f

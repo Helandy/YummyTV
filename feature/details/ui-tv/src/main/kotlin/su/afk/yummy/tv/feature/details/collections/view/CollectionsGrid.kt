@@ -30,6 +30,7 @@ import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -99,9 +100,11 @@ internal fun CollectionsGrid(
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
-        val gridColumnCount =
-            (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                (cardWidth.value + horizontalSpacing.value)).toInt()
+        val gridColumnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
                 .coerceAtLeast(1)
 
         val gridStartExtent = rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
@@ -111,7 +114,7 @@ internal fun CollectionsGrid(
         ) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Adaptive(minSize = cardWidth),
+                columns = GridCells.Fixed(gridColumnCount),
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
                     end = TvScreenPadding.Horizontal,

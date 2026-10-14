@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -77,9 +78,11 @@ private fun MySubscriptionsGrid(
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
-        val columnCount =
-            (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                    (cardWidth.value + horizontalSpacing.value)).toInt()
+        val columnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
                 .coerceAtLeast(1)
 
         val gridStartExtent = rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
@@ -87,7 +90,7 @@ private fun MySubscriptionsGrid(
         CompositionLocalProvider(LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical)) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Adaptive(minSize = cardWidth),
+                columns = GridCells.Fixed(columnCount),
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
                     end = TvScreenPadding.Horizontal,

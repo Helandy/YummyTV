@@ -43,6 +43,7 @@ import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -73,9 +74,11 @@ internal fun CollectionsCatalogGrid(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
-        val gridColumnCount =
-            (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                    (cardWidth.value + horizontalSpacing.value)).toInt()
+        val gridColumnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
                 .coerceAtLeast(1)
 
         CompositionLocalProvider(
@@ -83,7 +86,7 @@ internal fun CollectionsCatalogGrid(
         ) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Adaptive(minSize = cardWidth),
+                columns = GridCells.Fixed(gridColumnCount),
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
                     end = TvScreenPadding.Horizontal,

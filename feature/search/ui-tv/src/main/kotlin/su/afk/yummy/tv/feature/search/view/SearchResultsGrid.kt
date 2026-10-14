@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -67,16 +68,18 @@ internal fun SearchResultsGrid(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
-        val gridColumnCount =
-            (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                    (cardWidth.value + horizontalSpacing.value)).toInt()
+        val gridColumnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
                 .coerceAtLeast(1)
         CompositionLocalProvider(
             LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
         ) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Adaptive(minSize = cardWidth),
+                columns = GridCells.Fixed(gridColumnCount),
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
                     end = TvScreenPadding.Horizontal,

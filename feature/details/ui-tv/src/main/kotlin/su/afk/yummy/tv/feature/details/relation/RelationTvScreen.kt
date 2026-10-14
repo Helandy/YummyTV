@@ -45,6 +45,7 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
@@ -186,9 +187,11 @@ fun RelationTvScreen(
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val cardWidth = currentTvTitleCardDimensions().width
                     val horizontalSpacing = TvCardSpacing.Horizontal
-                    val gridColumnCount =
-                        (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                            (cardWidth.value + horizontalSpacing.value)).toInt()
+                    val gridColumnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
                             .coerceAtLeast(1)
                     val gridStartExtent =
                         rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
@@ -198,7 +201,7 @@ fun RelationTvScreen(
                     ) {
                         LazyVerticalGrid(
                             state = gridState,
-                            columns = GridCells.Adaptive(cardWidth),
+                            columns = GridCells.Fixed(gridColumnCount),
                             contentPadding = PaddingValues(
                                 horizontal = TvScreenPadding.Horizontal,
                                 vertical = TvScreenPadding.Vertical,

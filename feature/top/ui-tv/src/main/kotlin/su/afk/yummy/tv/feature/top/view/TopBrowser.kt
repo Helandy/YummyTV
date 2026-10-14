@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -281,16 +282,18 @@ internal fun TopBrowser(
                     val horizontalSpacing = TvCardSpacing.Horizontal
                     val gridHorizontalPadding =
                         TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
-                    val gridColumnCount =
-                        (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
-                            (cardWidth.value + horizontalSpacing.value)).toInt()
+                    val gridColumnCount = tvPosterGridColumns(
+            availableWidth = maxWidth - gridHorizontalPadding,
+            cardWidth = cardWidth,
+            spacing = horizontalSpacing,
+        )
                             .coerceAtLeast(1)
 
                     CompositionLocalProvider(
                         LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
                     ) {
                         LazyVerticalGrid(
-                            columns = GridCells.Adaptive(minSize = cardWidth),
+                            columns = GridCells.Fixed(gridColumnCount),
                             state = gridState,
                             // Без собственного .focusable() на гриде: если сделать контейнер грида
                             // самостоятельной точкой фокуса, ремоут-BACK на сфокусированной карточке
