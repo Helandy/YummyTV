@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
@@ -14,40 +16,44 @@ import su.afk.yummy.tv.feature.details.utils.statusColor
 import java.text.NumberFormat
 
 @Composable
-internal fun ListStatsRow(listStats: AnimeListStats) {
+internal fun ListStatsRow(
+    listStats: AnimeListStats,
+    modifier: Modifier = Modifier,
+) {
     val items = listOf(
         Triple(
             UserAnimeList.WATCHING,
             R.string.details_library_list_watching,
-            listStats.count(UserAnimeList.WATCHING)
+            listStats.count(UserAnimeList.WATCHING),
         ),
         Triple(
             UserAnimeList.PLANNED,
             R.string.details_library_list_planned,
-            listStats.count(UserAnimeList.PLANNED)
+            listStats.count(UserAnimeList.PLANNED),
         ),
         Triple(
             UserAnimeList.COMPLETED,
             R.string.details_library_list_completed,
-            listStats.count(UserAnimeList.COMPLETED)
+            listStats.count(UserAnimeList.COMPLETED),
         ),
         Triple(
             UserAnimeList.POSTPONED,
             R.string.details_library_list_postponed,
-            listStats.count(UserAnimeList.POSTPONED)
+            listStats.count(UserAnimeList.POSTPONED),
         ),
         Triple(
             UserAnimeList.DROPPED,
             R.string.details_library_list_dropped,
-            listStats.count(UserAnimeList.DROPPED)
+            listStats.count(UserAnimeList.DROPPED),
         ),
     ).filter { it.third > 0 }
     if (items.isEmpty()) return
 
     val integerFormat = remember { NumberFormat.getIntegerInstance() }
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         items.forEach { (status, labelRes, count) ->
             RatingSummaryPill(
@@ -57,6 +63,7 @@ internal fun ListStatsRow(listStats: AnimeListStats) {
                     integerFormat.format(count),
                 ),
                 accentColor = status.statusColor(),
+                compact = true,
             )
         }
     }

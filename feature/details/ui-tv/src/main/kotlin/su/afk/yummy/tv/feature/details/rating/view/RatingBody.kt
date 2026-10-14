@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -53,57 +55,56 @@ internal fun RatingBody(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(22.dp),
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(0.78f),
-                verticalArrangement = Arrangement.spacedBy(22.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = stringResource(R.string.details_rating_button),
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    selectedUserRating?.let { rating ->
-                        RatingSummaryPill(stringResource(R.string.details_your_rating, rating))
-                        RatingAction(
-                            label = stringResource(R.string.details_rating_delete),
-                            onClick = onRatingDeleted
-                        )
-                    } ?: RatingSummaryPill(stringResource(R.string.details_rating_not_set))
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    (1..10).forEach { rating ->
-                        RatingAction(
-                            label = rating.toString(),
-                            onClick = { onRatingSelected(rating) },
-                            selected = selectedUserRating == rating,
-                            focusRequester = ratingFocusRequesters[rating - 1],
-                            modifier = Modifier.weight(1f),
-                            compact = true,
-                            icon = { Icon(Icons.Filled.Star, contentDescription = null) },
-                        )
-                    }
-                }
-
-                RatingDistribution(ratingSummary.distribution)
+                selectedUserRating?.let { rating ->
+                    RatingSummaryPill(stringResource(R.string.details_your_rating, rating))
+                    RatingAction(
+                        label = stringResource(R.string.details_rating_delete),
+                        onClick = onRatingDeleted
+                    )
+                } ?: RatingSummaryPill(stringResource(R.string.details_rating_not_set))
             }
 
-            ListStatsRow(listStats)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                (1..10).forEach { rating ->
+                    RatingAction(
+                        label = rating.toString(),
+                        onClick = { onRatingSelected(rating) },
+                        selected = selectedUserRating == rating,
+                        focusRequester = ratingFocusRequesters[rating - 1],
+                        modifier = Modifier.weight(1f),
+                        compact = true,
+                        icon = { Icon(Icons.Filled.Star, contentDescription = null) },
+                    )
+                }
+            }
+
+            RatingDistribution(
+                distribution = ratingSummary.distribution,
+                headerTrailing = {
+                    ListStatsRow(listStats = listStats, modifier = Modifier.weight(1f))
+                },
+            )
         }
     }
 }

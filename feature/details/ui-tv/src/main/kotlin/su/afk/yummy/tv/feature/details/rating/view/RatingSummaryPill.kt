@@ -22,13 +22,14 @@ import androidx.compose.ui.unit.dp
 internal fun RatingSummaryPill(
     label: String,
     accentColor: Color? = null,
+    compact: Boolean = false,
 ) {
     val background = accentColor?.copy(alpha = 0.18f)
         ?: MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     Row(
         modifier = Modifier
             .background(background, RoundedCornerShape(8.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(horizontal = if (compact) 10.dp else 14.dp, vertical = if (compact) 6.dp else 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (accentColor != null) {
@@ -42,7 +43,7 @@ internal fun RatingSummaryPill(
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
+            style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
         )

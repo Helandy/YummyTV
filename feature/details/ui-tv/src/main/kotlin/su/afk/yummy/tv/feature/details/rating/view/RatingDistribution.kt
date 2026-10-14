@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -30,22 +31,22 @@ import java.text.NumberFormat
 import kotlin.math.roundToInt
 
 @Composable
-internal fun RatingDistribution(distribution: List<AnimeRatingBucket>) {
+internal fun RatingDistribution(
+    distribution: List<AnimeRatingBucket>,
+    headerTrailing: @Composable RowScope.() -> Unit = {},
+) {
     val total = distribution.sumOf { it.count }
     val integerFormat = remember { NumberFormat.getIntegerInstance() }
     if (total <= 0) {
-        Text(
-            text = stringResource(R.string.details_rating_empty),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(modifier = Modifier.fillMaxWidth()) { headerTrailing() }
         return
     }
 
     val average = distribution.weightedAverage()
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -66,6 +67,7 @@ internal fun RatingDistribution(distribution: List<AnimeRatingBucket>) {
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            headerTrailing()
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -75,7 +77,7 @@ internal fun RatingDistribution(distribution: List<AnimeRatingBucket>) {
             distribution.sortedByDescending { it.rating }.chunked(5).forEach { column ->
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     column.forEach { bucket ->
                         RatingDistributionRow(
