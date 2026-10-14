@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
@@ -52,7 +53,6 @@ import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.isAlloha
-import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

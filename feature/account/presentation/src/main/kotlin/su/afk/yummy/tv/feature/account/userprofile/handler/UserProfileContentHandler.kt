@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.account.userprofile.handler
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats

@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.preferences.settings
+package su.afk.yummy.tv.core.preferences.api
 
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.model.settings.YaniApplicationTokenState

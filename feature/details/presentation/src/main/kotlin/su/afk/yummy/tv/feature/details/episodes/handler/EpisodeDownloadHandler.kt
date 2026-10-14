@@ -1,13 +1,13 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
 import kotlinx.collections.immutable.toImmutableList
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.common.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
@@ -156,7 +156,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
 
                 is PlayerStreamResolveResult.Failed,
                 PlayerStreamResolveResult.Unsupported,
-                -> EpisodeDownloadPrepareResult.Failure(
+                    -> EpisodeDownloadPrepareResult.Failure(
                     key,
                     strings.get(R.string.details_download_resolve_error),
                 )

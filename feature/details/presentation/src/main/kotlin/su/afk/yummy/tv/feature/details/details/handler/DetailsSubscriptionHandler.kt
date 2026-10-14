@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase

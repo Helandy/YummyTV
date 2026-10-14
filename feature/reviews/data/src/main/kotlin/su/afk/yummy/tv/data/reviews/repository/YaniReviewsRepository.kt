@@ -1,11 +1,9 @@
 package su.afk.yummy.tv.data.reviews.repository
 
-import su.afk.yummy.tv.domain.reviews.model.ReviewVoteNotSavedException
-import su.afk.yummy.tv.domain.reviews.model.ReviewNotFoundException
-import su.afk.yummy.tv.core.storage.document.UserScopedCache
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
+import su.afk.yummy.tv.core.storage.document.UserScopedCache
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewDto
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewResponseDto
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewsFeedResponseDto
@@ -14,10 +12,12 @@ import su.afk.yummy.tv.data.reviews.mapper.toDetailsOrNull
 import su.afk.yummy.tv.data.reviews.mapper.toReviewPage
 import su.afk.yummy.tv.data.reviews.network.YaniReviewsApi
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewDetails
+import su.afk.yummy.tv.domain.reviews.model.ReviewNotFoundException
 import su.afk.yummy.tv.domain.reviews.model.ReviewPage
 import su.afk.yummy.tv.domain.reviews.model.ReviewReactions
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
+import su.afk.yummy.tv.domain.reviews.model.ReviewVoteNotSavedException
 import su.afk.yummy.tv.domain.reviews.repository.ReviewsRepository
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject

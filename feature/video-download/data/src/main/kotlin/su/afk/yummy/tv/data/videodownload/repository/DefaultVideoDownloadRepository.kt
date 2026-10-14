@@ -22,9 +22,9 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.cache.downloadResourcePrefixes
@@ -111,9 +111,9 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
                     forceStreamRefresh = true,
                 )
                 return (
-                        store.getById(duplicate.id)?.toDomain()
-                            ?: error("Restarted video download is missing: ${duplicate.id}")
-                        ).also { analytics.reportEnqueued(it, restarted = true) }
+                    store.getById(duplicate.id)?.toDomain()
+                        ?: error("Restarted video download is missing: ${duplicate.id}")
+                    ).also { analytics.reportEnqueued(it, restarted = true) }
             }
             return duplicate.toDomain()
         }
@@ -121,9 +121,9 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
         val id = store.insert(request.toEntry(now, request.cacheKeyScheme()))
         scheduleWorker(id)
         return (
-                store.getById(id)?.toDomain()
-                    ?: error("Inserted video download is missing: $id")
-                ).also { analytics.reportEnqueued(it, restarted = false) }
+            store.getById(id)?.toDomain()
+                ?: error("Inserted video download is missing: $id")
+            ).also { analytics.reportEnqueued(it, restarted = false) }
     }
 
     override suspend fun pause(id: Long) {
@@ -349,8 +349,8 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
                 }.getOrNull() ?: return@forEach
                 val hasActiveWork = workInfos.any { workInfo ->
                     workInfo.state == WorkInfo.State.ENQUEUED ||
-                            workInfo.state == WorkInfo.State.RUNNING ||
-                            workInfo.state == WorkInfo.State.BLOCKED
+                        workInfo.state == WorkInfo.State.RUNNING ||
+                        workInfo.state == WorkInfo.State.BLOCKED
                 }
                 if (hasActiveWork) return@forEach
 
@@ -392,7 +392,7 @@ private fun List<VideoDownloadItem>.visibleAfterLatestEpisodeDeletion(): List<Vi
                 .maxOfOrNull { it.updatedAt }
             episodeDownloads.filter { item ->
                 item.status != VideoDownloadStatus.Deleted &&
-                        (deletedAt == null || item.updatedAt > deletedAt)
+                    (deletedAt == null || item.updatedAt > deletedAt)
             }
         }
         // порядок задаёт момент добавления: прогресс параллельных загрузок не должен тасовать список

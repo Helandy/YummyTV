@@ -15,8 +15,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.coroutines.ioScope
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import java.io.OutputStream
 import java.net.InetAddress
 import java.net.ServerSocket

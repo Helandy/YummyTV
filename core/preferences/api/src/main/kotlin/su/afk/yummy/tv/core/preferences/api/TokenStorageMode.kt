@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.preferences.auth
+package su.afk.yummy.tv.core.preferences.api
 
 /**
  * Каким шифром лежит refresh-токен. На кастомных прошивках (SlimBox и прочие сборки для

@@ -13,8 +13,8 @@ import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
+import su.afk.yummy.tv.core.common.player.isOkCdnHost
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
-import su.afk.yummy.tv.core.utils.player.isOkCdnHost
 import java.io.IOException
 
 /**

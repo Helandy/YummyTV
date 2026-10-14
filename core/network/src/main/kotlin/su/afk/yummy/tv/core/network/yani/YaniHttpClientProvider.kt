@@ -7,8 +7,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import javax.inject.Inject
 import javax.inject.Singleton

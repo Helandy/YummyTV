@@ -8,11 +8,11 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
-import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton

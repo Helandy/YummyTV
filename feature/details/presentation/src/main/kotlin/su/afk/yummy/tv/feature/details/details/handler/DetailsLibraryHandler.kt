@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase

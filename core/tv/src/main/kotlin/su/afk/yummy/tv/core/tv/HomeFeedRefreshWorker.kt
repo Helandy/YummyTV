@@ -6,8 +6,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.tv.api.TvChannelContentProvider
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 
 @HiltWorker
 class HomeFeedRefreshWorker @AssistedInject constructor(

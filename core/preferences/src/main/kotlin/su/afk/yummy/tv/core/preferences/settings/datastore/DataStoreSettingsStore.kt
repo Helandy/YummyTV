@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
@@ -61,7 +62,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniUnre
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore.Companion.defaultPosterQuality
 import javax.inject.Inject
 import javax.inject.Singleton

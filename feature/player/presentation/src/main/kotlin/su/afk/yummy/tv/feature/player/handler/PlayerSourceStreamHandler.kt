@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.player.handler
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics

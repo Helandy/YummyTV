@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.core.storage.offlinefirst
 
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 
 /**
  * Orchestration for the project's offline-first pattern: read a TTL-cached [Cache] entity,

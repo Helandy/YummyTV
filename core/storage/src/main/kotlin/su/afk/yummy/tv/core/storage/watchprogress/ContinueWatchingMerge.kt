@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.core.storage.watchprogress
 
-import su.afk.yummy.tv.core.utils.episode.episodeNumberOrNull
+import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 
 object ContinueWatchingMerge {
 

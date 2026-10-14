@@ -7,9 +7,9 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 
 class WatchProgressUseCasesTest : BaseUnitTest() {

@@ -9,6 +9,7 @@ import dagger.assisted.AssistedInject
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.storage.outbox.AnimeIdPayload
 import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
@@ -20,7 +21,6 @@ import su.afk.yummy.tv.core.storage.outbox.SetFavoritePayload
 import su.afk.yummy.tv.core.storage.outbox.SetListPayload
 import su.afk.yummy.tv.core.storage.outbox.SetRatingPayload
 import su.afk.yummy.tv.core.storage.outbox.VoteReviewPayload
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase

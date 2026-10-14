@@ -5,8 +5,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.watchlater.model.WatchLaterItem
 import su.afk.yummy.tv.domain.watchlater.repository.WatchLaterRepository
 

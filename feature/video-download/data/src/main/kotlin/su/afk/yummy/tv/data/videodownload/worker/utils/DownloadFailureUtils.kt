@@ -3,7 +3,7 @@ package su.afk.yummy.tv.data.videodownload.worker.utils
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.HttpDataSource
-import su.afk.yummy.tv.core.utils.player.isOkCdnHost
+import su.afk.yummy.tv.core.common.player.isOkCdnHost
 import su.afk.yummy.tv.data.videodownload.worker.findDownloadFailureCause
 import java.net.SocketTimeoutException
 

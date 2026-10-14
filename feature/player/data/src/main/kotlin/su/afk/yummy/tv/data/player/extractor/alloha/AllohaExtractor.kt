@@ -13,8 +13,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.utils.coroutines.ioScope
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession

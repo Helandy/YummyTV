@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.data.videodownload.strategy
 
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.common.player.isCvhPlayerUrl
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadCacheKeyScheme
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import javax.inject.Inject

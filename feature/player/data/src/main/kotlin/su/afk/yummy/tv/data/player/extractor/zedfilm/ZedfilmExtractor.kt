@@ -6,10 +6,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
-import su.afk.yummy.tv.core.utils.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.hasKnownUrlScheme
@@ -44,6 +44,7 @@ internal class ZedfilmExtractor @Inject constructor(
     // Zedfilm embeds stream metadata as: video_Init('eyJ2X2lkIj...')
     // The Base64 payload is JSON with fields such as url, url2, dash, type, and tracks.
     private val VIDEO_INIT_PATTERN = Regex("""(?i)video_Init\(\s*['"]([^'"]+)['"]""")
+
     // Длинные значения первыми и `(?!\d)` после числа: иначе `1440` читалось бы как `144`.
     private val QUALITY_FROM_TEXT = Regex("(?i)(?<!\\d)(2160|1440|1080|720|480|360|240|144)(?!\\d)p?")
     private val URL_ORIGIN_PATTERN = Regex("^(?:https?:)?//[^/?#]+")

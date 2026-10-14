@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.utils.player
+package su.afk.yummy.tv.core.common.player
 
 import java.net.URL
 

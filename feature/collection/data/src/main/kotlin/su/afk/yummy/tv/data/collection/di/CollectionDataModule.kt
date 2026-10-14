@@ -4,12 +4,12 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import su.afk.yummy.tv.data.collection.repository.DefaultCollectionMutationRepository
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.collection.CollectionStorage
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
+import su.afk.yummy.tv.data.collection.repository.DefaultCollectionMutationRepository
 import su.afk.yummy.tv.data.collection.repository.YaniCollectionDetailRepository
 import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository

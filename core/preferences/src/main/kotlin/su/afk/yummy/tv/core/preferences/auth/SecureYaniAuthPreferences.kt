@@ -17,7 +17,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import javax.inject.Inject
 
 /** При первом чтении once чистит легаси access-token, мигрировавший из [YaniAccountSettingsStore]. */

@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.videodownload.mobile.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.core.utils.player.playerDisplayName
+import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus

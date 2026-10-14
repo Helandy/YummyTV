@@ -5,7 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.comments.CommentsStorage
 import su.afk.yummy.tv.data.comments.network.YaniCommentsApi
 import su.afk.yummy.tv.data.comments.repository.YaniCommentsRepository

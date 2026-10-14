@@ -4,8 +4,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.auth.SecureYaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.SharedPreferencesAppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
@@ -17,7 +18,6 @@ import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLogRecordingSettings
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore

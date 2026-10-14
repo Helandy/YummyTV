@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.domain.watching.utils
 
+import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
-import su.afk.yummy.tv.core.utils.episode.episodeNumberOrNull
 import su.afk.yummy.tv.domain.watching.model.ServerContinueProgress
 
 /** Самый свежий серверный прогресс среди видео тайтла, который стоит предлагать к продолжению. */

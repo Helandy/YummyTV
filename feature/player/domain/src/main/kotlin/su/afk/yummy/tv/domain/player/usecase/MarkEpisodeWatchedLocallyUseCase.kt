@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.domain.player.usecase
 
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 import javax.inject.Inject
 

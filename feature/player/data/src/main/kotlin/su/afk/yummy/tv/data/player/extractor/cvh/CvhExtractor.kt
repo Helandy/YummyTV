@@ -8,11 +8,11 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
+import su.afk.yummy.tv.core.common.player.cdnHostOrNull
+import su.afk.yummy.tv.core.common.player.isCvhPlayerUrl
+import su.afk.yummy.tv.core.common.player.isIpv4Host
+import su.afk.yummy.tv.core.common.player.withCdnHost
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
-import su.afk.yummy.tv.core.utils.player.cdnHostOrNull
-import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isIpv4Host
-import su.afk.yummy.tv.core.utils.player.withCdnHost
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure

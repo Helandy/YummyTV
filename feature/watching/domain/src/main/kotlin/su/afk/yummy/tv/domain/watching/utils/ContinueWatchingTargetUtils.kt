@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.domain.watching.utils
 
+import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
+import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
-import su.afk.yummy.tv.core.utils.episode.isPlaceholderEpisode
-import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
 
 /** Подбирает видео, с которого лучше продолжить: точное совпадение или ближайшее рабочее. */
 internal fun resolveContinueWatchingTarget(
@@ -31,15 +31,15 @@ private fun List<ContinueWatchingPlaybackVideo>.findExactMatch(
     firstOrNull { progressVideo.id > 0 && it.id == progressVideo.id }
         ?: firstOrNull {
             progressVideo.iframeUrl.isNotBlank() &&
-                    it.iframeUrl == progressVideo.iframeUrl
+                it.iframeUrl == progressVideo.iframeUrl
         }
         ?: firstOrNull {
             !progressVideo.episode.isPlaceholderEpisode() &&
-                    it.episode == progressVideo.episode &&
-                    it.player == progressVideo.player &&
-                    it.dubbing == progressVideo.dubbing
+                it.episode == progressVideo.episode &&
+                it.player == progressVideo.player &&
+                it.dubbing == progressVideo.dubbing
         }
         ?: firstOrNull {
             !progressVideo.episode.isPlaceholderEpisode() &&
-                    it.episode == progressVideo.episode
+                it.episode == progressVideo.episode
         }

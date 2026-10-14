@@ -14,7 +14,7 @@ import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.dto.auth.SessionTransferDto
 import su.afk.yummy.tv.data.account.dto.auth.SessionTransferErrorDto
 import su.afk.yummy.tv.data.account.dto.auth.SessionTransferOkDto

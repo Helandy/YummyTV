@@ -6,14 +6,14 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.common.anime.isReleasedAnimeStatus
+import su.afk.yummy.tv.core.common.episode.EpisodeReleaseCountdown
+import su.afk.yummy.tv.core.common.episode.releaseCountdown
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
-import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
-import su.afk.yummy.tv.core.utils.episode.releaseCountdown
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
-import su.afk.yummy.tv.core.utils.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import java.util.Locale

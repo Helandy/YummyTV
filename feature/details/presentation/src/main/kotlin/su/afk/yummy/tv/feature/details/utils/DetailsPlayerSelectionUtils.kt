@@ -1,18 +1,18 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.common.player.isAksorPlayerUrl
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.common.player.isCvhPlayerUrl
+import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.common.player.isRutubePlayerUrl
+import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.common.player.isVkPlayerUrl
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
-import su.afk.yummy.tv.core.utils.player.isAksorPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isRutubePlayerUrl
-import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isVkPlayerUrl
 
 internal fun String.matchesPreferredPlayer(preferred: PreferredPlayer): Boolean =
     when (preferred) {

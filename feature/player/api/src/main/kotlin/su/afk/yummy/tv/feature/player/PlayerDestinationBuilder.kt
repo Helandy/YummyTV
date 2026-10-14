@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.player
 
 import androidx.navigation3.runtime.NavKey
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
-import su.afk.yummy.tv.core.utils.episode.isPlaceholderEpisode
-import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
+import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
 
 data class PlayerVideoSource(
     val id: Int,

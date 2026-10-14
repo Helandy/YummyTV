@@ -8,7 +8,7 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 
 /*
  * Дженерик-обвязка над Paging 3 для offset-пагинации.

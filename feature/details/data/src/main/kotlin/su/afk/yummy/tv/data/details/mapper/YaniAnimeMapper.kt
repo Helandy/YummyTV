@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.details.mapper
 
+import su.afk.yummy.tv.core.common.episode.normalizedEpisodeNumber
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeGenre
@@ -9,7 +10,6 @@ import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.anime.AnimeStudio
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
-import su.afk.yummy.tv.core.utils.episode.normalizedEpisodeNumber
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto

@@ -11,13 +11,13 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase

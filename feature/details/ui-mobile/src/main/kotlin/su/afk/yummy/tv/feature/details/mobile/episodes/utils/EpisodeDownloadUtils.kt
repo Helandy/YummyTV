@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes.utils
 
-import su.afk.yummy.tv.core.utils.player.playerDisplayName
+import su.afk.yummy.tv.core.common.player.playerDisplayName
 import java.util.Locale
 
 internal fun String.playerLabel(): String = playerDisplayName()

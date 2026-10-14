@@ -6,9 +6,9 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.player.isRutubePlayerUrl
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
-import su.afk.yummy.tv.core.utils.player.isRutubePlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.fetchText
@@ -193,6 +193,7 @@ internal class RutubeExtractor @Inject constructor(
             // варианты мастер-плейлиста лежат на хосте балансера.
             trimmed.startsWith("/") ->
                 resolveRelativeUrl(trimmed, baseUrl) { "$RUTUBE_ORIGIN$trimmed" }
+
             else -> resolveRelativeUrl(trimmed, baseUrl) { "https://$trimmed" }
         }
     }

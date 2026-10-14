@@ -4,7 +4,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.cache.CacheKeyFactory
-import su.afk.yummy.tv.core.utils.player.isOkCdnHost
+import su.afk.yummy.tv.core.common.player.isOkCdnHost
 import su.afk.yummy.tv.feature.player.common.utils.okCdnStableCacheKey
 
 /**

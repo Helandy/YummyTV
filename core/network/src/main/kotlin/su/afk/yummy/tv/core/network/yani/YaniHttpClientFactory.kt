@@ -20,8 +20,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 
 private const val YANI_API_HOST = "api.yani.tv"
 private const val YANI_APPLICATION_HEADER = "X-Application"

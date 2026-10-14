@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.utils.coroutines.SystemAppClock
 import su.afk.yummy.tv.core.utils.coroutines.defaultScope
 import su.afk.yummy.tv.core.utils.coroutines.ioScope

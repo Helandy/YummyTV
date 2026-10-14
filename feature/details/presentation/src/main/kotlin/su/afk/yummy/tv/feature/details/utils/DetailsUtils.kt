@@ -1,17 +1,17 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
+import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
-import su.afk.yummy.tv.core.utils.episode.isPlaceholderEpisode
 import su.afk.yummy.tv.feature.details.mapper.toPlayerVideoSource
 import su.afk.yummy.tv.feature.details.model.DetailsContinueTarget
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
-import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
 
 fun resolveDetailsContinueTarget(
@@ -69,13 +69,13 @@ private fun List<PlayerVideoSource>.findProgressVideo(
         ?: firstOrNull { entry.episodeUrl.isNotBlank() && it.iframeUrl == entry.episodeUrl }
         ?: firstOrNull {
             !entry.episode.isPlaceholderEpisode() &&
-                    it.episode.episodeGroupKey() == entry.episode.episodeGroupKey() &&
-                    it.player == entry.playerName &&
-                    it.dubbing == entry.dubbing
+                it.episode.episodeGroupKey() == entry.episode.episodeGroupKey() &&
+                it.player == entry.playerName &&
+                it.dubbing == entry.dubbing
         }
         ?: firstOrNull {
             !entry.episode.isPlaceholderEpisode() &&
-                    it.episode.episodeGroupKey() == entry.episode.episodeGroupKey()
+                it.episode.episodeGroupKey() == entry.episode.episodeGroupKey()
         }
 
 private fun List<PlayerVideoSource>.nextAfter(episode: String): PlayerVideoSource? {

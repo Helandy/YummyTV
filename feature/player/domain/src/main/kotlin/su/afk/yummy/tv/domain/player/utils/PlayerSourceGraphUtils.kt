@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.domain.player.utils
 
-import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
-import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.common.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.domain.player.model.PlayerSourceBalancer
 import su.afk.yummy.tv.domain.player.model.PlayerSourceDubbing
 import su.afk.yummy.tv.domain.player.model.PlayerSourceEpisode

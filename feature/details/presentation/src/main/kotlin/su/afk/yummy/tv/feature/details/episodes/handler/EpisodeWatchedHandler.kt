@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.ClearEpisodeWatchProgressUseCase
@@ -93,8 +93,7 @@ internal class EpisodeWatchedHandler @Inject constructor(
 
         if (!isSignedIn) return true
         val videoIds = videos.map { it.id }.filter { it > 0 }
-        if (videoIds.isEmpty()) return true
-        return runCatchingMutation(PendingMutation.RemoveWatched(videoIds)) {
+        return videoIds.isEmpty() || runCatchingMutation(PendingMutation.RemoveWatched(videoIds)) {
             removeWatchedVideos(videoIds)
         }
     }

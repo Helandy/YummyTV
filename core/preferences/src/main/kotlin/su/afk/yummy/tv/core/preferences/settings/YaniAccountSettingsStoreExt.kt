@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 
 suspend fun YaniAccountSettingsStore.currentLanguageCode(): String =
     yaniContentLanguage.first().apiCode

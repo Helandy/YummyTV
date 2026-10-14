@@ -11,8 +11,8 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
@@ -417,7 +417,7 @@ class AccountViewModel @Inject internal constructor(
                     errorMessage = null,
                     captchaError = null,
                     // Капчу не размонтируем, пока проверяем её же токен.
-                    isCaptchaRequired = if (isCaptchaAttempt) isCaptchaRequired else false,
+                    isCaptchaRequired = isCaptchaAttempt && isCaptchaRequired,
                     captchaChallengeId = if (isCaptchaAttempt) {
                         captchaChallengeId
                     } else {

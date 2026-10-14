@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.core.storage.document
 
 import kotlinx.coroutines.flow.first
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import javax.inject.Inject
 
 /**

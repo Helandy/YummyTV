@@ -5,13 +5,14 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.model.UpdateCollectionRequest
@@ -20,7 +21,6 @@ import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.RemoveCollectionVoteUseCase
 import su.afk.yummy.tv.domain.collection.usecase.UpdateCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.VoteCollectionUseCase
-import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.feature.collection.presentation.R
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator

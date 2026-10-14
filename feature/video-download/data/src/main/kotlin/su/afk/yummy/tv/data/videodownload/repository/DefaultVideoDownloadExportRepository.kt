@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.mapper.toDomain
 import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
@@ -105,7 +105,7 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
             DirectoryMetadata(
                 displayName = if (nameIndex >= 0) cursor.getString(nameIndex).orEmpty() else "",
                 supportsCreate = flags and
-                        DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE.toLong() != 0L,
+                    DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE.toLong() != 0L,
             )
         }
 
@@ -114,16 +114,14 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
         val parsedUri = Uri.parse(uri)
         val hasPersistedWrite = context.contentResolver.persistedUriPermissions
             .any { it.uri == parsedUri && it.isWritePermission }
-        if (!hasPersistedWrite) return false
-        // Носитель могли извлечь, папку — удалить: проверяем, что каталог ещё отвечает
-        return runCatching { readDirectoryMetadata(parsedUri) }
+        return hasPersistedWrite && runCatching { readDirectoryMetadata(parsedUri) }
             .getOrNull()
             ?.supportsCreate == true
+        // Носитель могли извлечь, папку — удалить: проверяем, что каталог ещё отвечает
     }
 
     override suspend fun exportedFileExists(uri: String): Boolean {
-        if (uri.isBlank()) return false
-        return runCatching {
+        return uri.isNotBlank() && runCatching {
             context.contentResolver.query(
                 Uri.parse(uri),
                 arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
@@ -254,8 +252,8 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
                 }.getOrNull() ?: return@forEach
                 val hasActiveWork = workInfos.any { workInfo ->
                     workInfo.state == WorkInfo.State.ENQUEUED ||
-                            workInfo.state == WorkInfo.State.RUNNING ||
-                            workInfo.state == WorkInfo.State.BLOCKED
+                        workInfo.state == WorkInfo.State.RUNNING ||
+                        workInfo.state == WorkInfo.State.BLOCKED
                 }
                 if (hasActiveWork) return@forEach
                 updateState(

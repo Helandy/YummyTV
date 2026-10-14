@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.library.model
 
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 
 /**
  * Модель для Coil: превью серии из истории просмотров по animeId+episode.

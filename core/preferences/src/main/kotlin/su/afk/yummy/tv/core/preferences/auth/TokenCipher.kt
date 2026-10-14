@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.preferences.auth
 
+import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
+
 /** Шифрование токена. Вынесено за интерфейс ради подмены в тестах и запасного режима. */
 internal interface TokenCipher {
     val mode: TokenStorageMode

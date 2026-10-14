@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.domain.account.model.LocalAuthError

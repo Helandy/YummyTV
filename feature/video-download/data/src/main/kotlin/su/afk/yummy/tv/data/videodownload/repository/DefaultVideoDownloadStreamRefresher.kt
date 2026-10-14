@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.videodownload.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
 import su.afk.yummy.tv.domain.player.model.PlayerSourceVideo
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest

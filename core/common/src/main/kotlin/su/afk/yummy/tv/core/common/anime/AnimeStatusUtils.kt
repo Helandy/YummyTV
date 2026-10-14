@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.utils.anime
+package su.afk.yummy.tv.core.common.anime
 
 import java.util.Locale
 

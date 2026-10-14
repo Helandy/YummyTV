@@ -8,13 +8,13 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.core.tv.api.TvChannelContentProvider
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
-import su.afk.yummy.tv.data.home.tv.HomeTvChannelContentProvider
 import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
+import su.afk.yummy.tv.data.home.tv.HomeTvChannelContentProvider
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import javax.inject.Singleton
 

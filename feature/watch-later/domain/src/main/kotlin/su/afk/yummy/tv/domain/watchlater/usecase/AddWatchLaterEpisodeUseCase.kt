@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.domain.watchlater.usecase
 
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.domain.watchlater.model.WatchLaterItem
 import su.afk.yummy.tv.domain.watchlater.repository.WatchLaterRepository
 import javax.inject.Inject

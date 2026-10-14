@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.utils.player
+package su.afk.yummy.tv.core.common.player
 
 fun String.isKodikPlayerUrl(): Boolean =
     contains("kodik", ignoreCase = true)

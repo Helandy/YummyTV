@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.utils.player
+package su.afk.yummy.tv.core.common.player
 
 private const val RU_PLAYER_PREFIX = "Плеер "
 private const val EN_PLAYER_PREFIX = "Player "

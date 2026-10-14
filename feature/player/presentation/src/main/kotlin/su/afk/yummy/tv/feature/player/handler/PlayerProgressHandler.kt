@@ -3,12 +3,12 @@ package su.afk.yummy.tv.feature.player.handler
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveContinueTargetUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveWatchProgressUseCase

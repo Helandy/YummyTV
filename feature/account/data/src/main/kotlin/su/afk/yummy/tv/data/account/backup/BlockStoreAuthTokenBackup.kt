@@ -7,7 +7,7 @@ import com.google.android.gms.auth.blockstore.RetrieveBytesRequest
 import com.google.android.gms.auth.blockstore.StoreBytesData
 import kotlinx.coroutines.tasks.await
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 
 /**
  * [AuthTokenBackup] поверх Google Block Store. Без Google Play Services (кастомные прошивки

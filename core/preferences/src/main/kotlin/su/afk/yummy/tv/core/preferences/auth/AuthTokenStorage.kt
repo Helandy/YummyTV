@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.preferences.auth
 
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 
 /** Плоское хранилище записи токена — абстракция над SharedPreferences ради тестов. */
 internal interface TokenRecordStore {

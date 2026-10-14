@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
+import su.afk.yummy.tv.core.common.episode.normalizedEpisodeNumber
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeGenre
@@ -39,7 +40,6 @@ import su.afk.yummy.tv.core.storage.anime.AnimeVideoCacheEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideoEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideosCache
 import su.afk.yummy.tv.core.storage.anime.AnimeViewingOrderEntry
-import su.afk.yummy.tv.core.utils.episode.normalizedEpisodeNumber
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
@@ -390,7 +390,7 @@ internal fun AnimeTrailersCache.toAnimeTrailers(): List<AnimeTrailer> =
         .distinctBy { it.iframeUrl }
 
 private fun List<Triple<YaniScreenshotDto, String?, String?>>.filterDistinctScreenshots():
-        List<Triple<YaniScreenshotDto, String?, String?>> {
+    List<Triple<YaniScreenshotDto, String?, String?>> {
     val seenImageUrls = mutableSetOf<String>()
     return filter { (_, small, full) ->
         val imageUrl = full?.takeIf { it.isNotBlank() } ?: small?.takeIf { it.isNotBlank() }

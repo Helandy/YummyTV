@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.YaniApplicationTokenState
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.hiddenRecommendationIdsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniAccessTokenKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniApplicationTokenKey
@@ -13,7 +14,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniNick
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniTokenRefreshAtKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniUnreadNotificationsCountKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniUserIdKey
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.videodownload.worker
 
-import su.afk.yummy.tv.core.utils.player.playerDisplayName
 import android.content.Context
 import android.net.Uri
 import android.os.StatFs
@@ -32,6 +31,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.cache.downloadCacheKeyFactoryFor
@@ -160,7 +160,7 @@ class VideoExportWorker @AssistedInject internal constructor(
     private fun ensureTemporarySpace(item: VideoDownloadItem) {
         val available = StatFs(applicationContext.cacheDir.path).availableBytes
         val required = item.bytesDownloaded.coerceAtLeast(MINIMUM_ESTIMATED_EXPORT_BYTES) +
-                TEMP_SPACE_RESERVE_BYTES
+            TEMP_SPACE_RESERVE_BYTES
         check(available >= required) {
             applicationContext.getString(R.string.video_export_error_no_space)
         }
@@ -364,7 +364,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                         updateProgress(
                             item,
                             TRANSFORM_PROGRESS_SHARE +
-                                    copyFraction.coerceIn(0f, 1f) * COPY_PROGRESS_SHARE,
+                                copyFraction.coerceIn(0f, 1f) * COPY_PROGRESS_SHARE,
                             VideoExportStatus.Copying,
                         )
                     }

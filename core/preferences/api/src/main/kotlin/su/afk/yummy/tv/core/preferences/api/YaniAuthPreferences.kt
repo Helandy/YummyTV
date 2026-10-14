@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.preferences.auth
+package su.afk.yummy.tv.core.preferences.api
 
 import kotlinx.coroutines.flow.Flow
 

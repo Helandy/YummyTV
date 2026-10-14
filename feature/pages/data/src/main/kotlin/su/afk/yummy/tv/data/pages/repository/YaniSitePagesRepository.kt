@@ -1,17 +1,17 @@
 package su.afk.yummy.tv.data.pages.repository
 
-import su.afk.yummy.tv.domain.pages.model.SitePageEmptyException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
 import su.afk.yummy.tv.data.pages.mapper.findString
 import su.afk.yummy.tv.data.pages.network.YaniPagesApi
 import su.afk.yummy.tv.domain.pages.model.SitePage
+import su.afk.yummy.tv.domain.pages.model.SitePageEmptyException
 import su.afk.yummy.tv.domain.pages.model.SitePageType
 import su.afk.yummy.tv.domain.pages.repository.SitePagesRepository
 import javax.inject.Inject

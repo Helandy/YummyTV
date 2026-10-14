@@ -10,10 +10,10 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
-import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient

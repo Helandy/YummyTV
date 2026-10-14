@@ -2,11 +2,11 @@ package su.afk.yummy.tv.feature.account.registration
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.RegistrationException
 import su.afk.yummy.tv.domain.account.model.UserRegistration
@@ -40,6 +40,7 @@ class RegistrationViewModel @Inject constructor(
                     register(captchaToken = event.token)
                 }
             }
+
             RegistrationState.Event.CaptchaExpired -> setState {
                 copy(
                     isLoading = false,
@@ -76,7 +77,7 @@ class RegistrationViewModel @Inject constructor(
                     error = null,
                     errorMessage = null,
                     // Капчу не размонтируем, пока проверяем её же токен.
-                    isCaptchaRequired = if (isCaptchaAttempt) isCaptchaRequired else false,
+                    isCaptchaRequired = isCaptchaAttempt && isCaptchaRequired,
                     captchaChallengeId = if (isCaptchaAttempt) {
                         captchaChallengeId
                     } else {

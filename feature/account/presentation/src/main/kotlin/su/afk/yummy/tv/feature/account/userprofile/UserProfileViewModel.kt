@@ -11,12 +11,12 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
@@ -249,7 +249,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
             UserProfileState.Tab.POSTS,
             UserProfileState.Tab.REVIEWS,
             UserProfileState.Tab.FRIENDS,
-            -> Unit
+                -> Unit
         }
     }
 
@@ -261,7 +261,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
             UserProfileState.Tab.POSTS,
             UserProfileState.Tab.REVIEWS,
             UserProfileState.Tab.FRIENDS,
-            -> Unit
+                -> Unit
         }
     }
 

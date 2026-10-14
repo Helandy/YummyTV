@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.account.userprofile.handler
 
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.usecase.AddFriendUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase

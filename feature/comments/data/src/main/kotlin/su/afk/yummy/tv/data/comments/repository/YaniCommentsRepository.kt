@@ -3,7 +3,8 @@ package su.afk.yummy.tv.data.comments.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.comments.CommentsPageCache
 import su.afk.yummy.tv.core.storage.comments.CommentsStorage
@@ -21,7 +22,6 @@ import su.afk.yummy.tv.data.comments.network.YaniCommentsApi
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.domain.comments.model.CommentSort
-import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 

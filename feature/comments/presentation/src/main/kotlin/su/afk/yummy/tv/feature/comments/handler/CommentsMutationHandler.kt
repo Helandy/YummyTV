@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.comments.handler
 
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
-import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.model.CommentVoteResult
 import su.afk.yummy.tv.domain.comments.usecase.AddCommentUseCase

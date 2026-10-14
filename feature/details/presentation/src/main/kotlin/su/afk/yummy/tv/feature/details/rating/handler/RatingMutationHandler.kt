@@ -2,9 +2,9 @@ package su.afk.yummy.tv.feature.details.rating.handler
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase

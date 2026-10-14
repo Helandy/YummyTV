@@ -14,7 +14,7 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import okio.Buffer
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.kodik.di.KodikThumbnailDiskCache
 import javax.inject.Inject

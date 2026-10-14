@@ -8,9 +8,9 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.unreadBadgeCount
 import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase

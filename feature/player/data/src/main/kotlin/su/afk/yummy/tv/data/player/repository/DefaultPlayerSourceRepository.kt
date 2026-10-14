@@ -2,7 +2,7 @@ package su.afk.yummy.tv.data.player.repository
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.player.mapper.toPlayerSourceVideo
 import su.afk.yummy.tv.data.player.mapper.toScreenshotByEpisode
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository

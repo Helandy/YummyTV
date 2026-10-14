@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.utils.episode
+package su.afk.yummy.tv.core.common.episode
 
 fun String.episodeNumberOrNull(): Double? {
     val normalized = trim().replace(',', '.')

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.preferences.auth
 
 import android.util.Base64
+import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 import java.nio.charset.StandardCharsets
 
 /**

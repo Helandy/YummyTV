@@ -9,8 +9,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.library.model.LocalLibraryPushResult
 import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult

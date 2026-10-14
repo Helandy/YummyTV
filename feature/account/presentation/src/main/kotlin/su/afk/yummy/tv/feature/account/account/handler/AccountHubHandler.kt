@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.account.account.handler
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary

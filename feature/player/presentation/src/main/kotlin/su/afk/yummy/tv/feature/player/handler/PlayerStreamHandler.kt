@@ -3,10 +3,10 @@ package su.afk.yummy.tv.feature.player.handler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack

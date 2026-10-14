@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.domain.watching.utils
 
+import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
-import su.afk.yummy.tv.core.utils.episode.isPlaceholderEpisode
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 
@@ -37,5 +37,5 @@ private fun ContinueWatchingPlaybackVideo.isTrustedMigrationTarget(
     }
     if (episode == targetVideo.episode) return false
     return (id > 0 && targetVideo.id == id) ||
-            (iframeUrl.isNotBlank() && targetVideo.iframeUrl == iframeUrl)
+        (iframeUrl.isNotBlank() && targetVideo.iframeUrl == iframeUrl)
 }

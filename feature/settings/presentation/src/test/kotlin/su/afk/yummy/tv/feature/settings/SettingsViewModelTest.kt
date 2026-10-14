@@ -32,8 +32,8 @@ import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.preferences.auth.TokenStorageMode
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore

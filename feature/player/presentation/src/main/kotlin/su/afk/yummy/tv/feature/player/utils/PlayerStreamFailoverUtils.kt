@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.player.utils
 
-import su.afk.yummy.tv.core.utils.player.isOkCdnUrl
-import su.afk.yummy.tv.core.utils.player.withCdnHost
+import su.afk.yummy.tv.core.common.player.isOkCdnUrl
+import su.afk.yummy.tv.core.common.player.withCdnHost
 import su.afk.yummy.tv.feature.player.PlayerState
 
 /*

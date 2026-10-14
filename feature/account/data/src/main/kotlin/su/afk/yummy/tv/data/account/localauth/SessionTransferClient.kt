@@ -10,7 +10,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.di.LocalAuthHttpClient
 import su.afk.yummy.tv.data.account.dto.auth.SessionTransferDto
 import su.afk.yummy.tv.data.account.dto.auth.SessionTransferErrorDto

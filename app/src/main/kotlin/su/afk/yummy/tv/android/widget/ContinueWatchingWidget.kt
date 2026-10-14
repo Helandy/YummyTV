@@ -51,7 +51,7 @@ import su.afk.yummy.tv.R
 import su.afk.yummy.tv.android.InterfaceRouterActivity
 import su.afk.yummy.tv.android.continuewatching.loadSoftwarePoster
 import su.afk.yummy.tv.android.continuewatching.surfacePosterUrl
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 

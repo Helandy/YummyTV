@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 
 /**
  * Фасад над доменными хранилищами настроек ([YaniAccountSettingsStore], [PlayerSettingsStore],

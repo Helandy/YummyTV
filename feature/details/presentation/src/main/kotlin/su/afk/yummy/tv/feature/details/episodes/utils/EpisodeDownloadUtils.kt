@@ -4,9 +4,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
-import su.afk.yummy.tv.core.utils.episode.episodeNumberOrNull
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 
@@ -33,14 +33,14 @@ internal fun resolveDownloadStatuses(
     episodeGroups.associate { group ->
         val statuses = group.videos.mapNotNull { downloadStatuses[it.toDownloadStatusKey()] }
         group.episode to (
-                statuses.firstOrNull {
-                    it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                            it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
-                }
-                    ?: statuses.firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Paused }
-                    ?: statuses.firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded }
-                    ?: statuses.firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Failed }
-                )
+            statuses.firstOrNull {
+                it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+                    it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+            }
+                ?: statuses.firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Paused }
+                ?: statuses.firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded }
+                ?: statuses.firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Failed }
+            )
     }.toImmutableMap()
 
 internal val VideoDownloadItem.uiStatusKey: String
@@ -58,7 +58,7 @@ internal fun List<AnimeVideo>.aggregateDubbingDownloadStatus(
     return when {
         present.all {
             it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                    it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+                it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
         } -> present.first()
 
         present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded } -> present.first()

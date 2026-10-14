@@ -3,11 +3,11 @@ package su.afk.yummy.tv.feature.details.mobile.full.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.common.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
-import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
+import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateTimeSeconds
 import su.afk.yummy.tv.feature.details.mobile.details.utils.rememberReleaseCountdown
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateTimeSeconds
 
 internal fun Long.formatEpochSeconds(): String = formatLocalizedDateTimeSeconds()
 

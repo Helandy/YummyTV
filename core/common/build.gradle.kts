@@ -9,7 +9,7 @@ java {
 }
 
 // Чистые Kotlin-хелперы без Android: их могут брать JVM-domain модули.
-// Пакеты оставлены прежними (core.utils.*), core:utils ре-экспортирует модуль через api.
+// Пакеты — core.common.*, core:utils ре-экспортирует модуль через api.
 dependencies {
     api(libs.kotlinx.coroutines.core)
 }

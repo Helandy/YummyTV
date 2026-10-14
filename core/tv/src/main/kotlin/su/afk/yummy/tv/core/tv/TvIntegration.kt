@@ -14,12 +14,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.analytics.api.coroutine.ErrorCoroutineAnalytics
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.tv.api.TvChannelContentProvider
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds

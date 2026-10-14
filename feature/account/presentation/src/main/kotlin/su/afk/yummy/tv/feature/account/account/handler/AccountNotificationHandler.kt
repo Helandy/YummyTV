@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.account.account.handler
 
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.domain.account.usecase.DeleteAllNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.DeleteNotificationUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase

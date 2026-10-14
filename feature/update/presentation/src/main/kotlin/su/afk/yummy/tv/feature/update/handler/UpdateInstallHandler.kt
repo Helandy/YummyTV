@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.update.handler
 
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadException
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadState
 import su.afk.yummy.tv.domain.update.repository.ApkInstallRepository

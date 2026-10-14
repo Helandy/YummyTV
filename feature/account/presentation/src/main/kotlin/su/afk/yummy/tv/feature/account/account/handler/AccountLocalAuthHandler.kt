@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState

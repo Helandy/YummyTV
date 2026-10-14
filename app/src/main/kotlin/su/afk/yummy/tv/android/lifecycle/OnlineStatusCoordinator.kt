@@ -9,10 +9,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator.Companion.HEARTBEAT_INTERVAL_MS
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.system.DeviceHashProvider
 import su.afk.yummy.tv.core.utils.system.ProcessLifecycleCoordinator
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase

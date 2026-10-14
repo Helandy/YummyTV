@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.utils.coroutines
+package su.afk.yummy.tv.core.common.coroutines
 
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive

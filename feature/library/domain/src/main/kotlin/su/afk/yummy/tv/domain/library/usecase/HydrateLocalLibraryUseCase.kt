@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.domain.library.usecase
 
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.library.model.FAVORITE_ONLY_LIBRARY_LIST_ID
 import su.afk.yummy.tv.domain.library.model.LibraryItem

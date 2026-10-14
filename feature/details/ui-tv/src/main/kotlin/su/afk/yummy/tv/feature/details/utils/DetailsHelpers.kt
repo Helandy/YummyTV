@@ -1,18 +1,18 @@
 package su.afk.yummy.tv.feature.details.utils
 
-import su.afk.yummy.tv.core.utils.anime.isReleasedAnimeStatus
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.common.anime.isReleasedAnimeStatus
+import su.afk.yummy.tv.core.common.episode.EpisodeReleaseCountdown
+import su.afk.yummy.tv.core.common.episode.releaseCountdown
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
-import su.afk.yummy.tv.core.utils.episode.releaseCountdown
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable

@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.data.account.repository
 
-import kotlinx.coroutines.Dispatchers
 import io.ktor.client.plugins.ClientRequestException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.combine
@@ -10,18 +10,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.storage.account.ACCOUNT_PROFILE_KEY_CURRENT
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.account.accountProfileUserKey
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
-import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
-import su.afk.yummy.tv.data.account.dto.profile.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.auth.YaniRegistrationBodyDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
 import su.afk.yummy.tv.data.account.mapper.toEditableProfile
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
