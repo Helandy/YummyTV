@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
@@ -42,6 +43,6 @@ internal class SessionTransferClient @Inject constructor(
     }
 
     /** ТВ присылает имя [LocalAuthError] — телефон показывает причину тому, кто вводит PIN. */
-    private suspend fun io.ktor.client.statement.HttpResponse.failureReason(): LocalAuthError? =
+    private suspend fun HttpResponse.failureReason(): LocalAuthError? =
         runSuspendCatching { LocalAuthError.valueOf(body<SessionTransferErrorDto>().error) }.getOrNull()
 }

@@ -14,11 +14,7 @@ import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.SessionManagerListener
 import su.afk.yummy.tv.core.utils.cast.CastSupport
-
-/** Имя подключённого Cast-устройства, или null вне активной сессии. */
-internal data class MobileCastConnectionState(val deviceName: String?) {
-    val isCasting: Boolean get() = deviceName != null
-}
+import su.afk.yummy.tv.feature.player.mobile.model.MobileCastConnectionState
 
 /**
  * Отслеживает активную Cast-сессию процесса напрямую через [Cast]/[CastSession] - в отличие от

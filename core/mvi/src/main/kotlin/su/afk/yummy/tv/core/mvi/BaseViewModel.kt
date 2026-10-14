@@ -11,12 +11,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
-import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.model.error.isNetworkError
+import su.afk.yummy.tv.core.model.text.UiText
 
 /**
  * База MVI-экрана: держит [state], раздаёт одноразовые [effect] и сводит обработку ошибок
  * к [ErrorHandler] — наследнику остаётся описать начальное состояние и реакцию на события.
+ * как в yummytv
  */
 abstract class BaseViewModel<S : UiState, E : UiEvent, F : UiEffect> : CoroutineViewModel() {
 

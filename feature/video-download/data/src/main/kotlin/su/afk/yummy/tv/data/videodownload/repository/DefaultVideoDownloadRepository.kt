@@ -32,6 +32,7 @@ import su.afk.yummy.tv.data.videodownload.mapper.storageName
 import su.afk.yummy.tv.data.videodownload.mapper.toDomain
 import su.afk.yummy.tv.data.videodownload.mapper.toEntry
 import su.afk.yummy.tv.data.videodownload.mapper.toVideoDownloadHeadersJson
+import su.afk.yummy.tv.data.videodownload.mapper.toVideoDownloadStatus
 import su.afk.yummy.tv.data.videodownload.notification.VideoDownloadNotificationService
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
 import su.afk.yummy.tv.data.videodownload.worker.VideoDownloadAnalytics
@@ -398,6 +399,3 @@ private fun List<VideoDownloadItem>.visibleAfterLatestEpisodeDeletion(): List<Vi
         .sortedWith(
             compareByDescending<VideoDownloadItem> { it.createdAt }.thenByDescending { it.id },
         )
-
-private fun String.toVideoDownloadStatus(): VideoDownloadStatus =
-    runCatching { VideoDownloadStatus.valueOf(this) }.getOrDefault(VideoDownloadStatus.Failed)

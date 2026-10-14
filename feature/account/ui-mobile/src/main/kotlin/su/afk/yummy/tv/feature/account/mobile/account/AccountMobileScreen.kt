@@ -43,13 +43,13 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
+import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileQuickAction
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoginCard
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLogoutConfirmDialog
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileNotificationsTab
-import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickAction
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsGrid
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileTabs

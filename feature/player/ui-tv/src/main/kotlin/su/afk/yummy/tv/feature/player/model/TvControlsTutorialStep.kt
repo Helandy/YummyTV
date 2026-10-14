@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player.view.tutorial
+package su.afk.yummy.tv.feature.player.model
 
 internal enum class TvControlsTutorialStep {
     ShowControls,

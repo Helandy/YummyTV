@@ -6,17 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-
-internal data class AccountMobileQuickAction(
-    val key: String,
-    val title: String,
-    val icon: ImageVector,
-    val onClick: () -> Unit,
-    val focusRequester: FocusRequester? = null,
-)
+import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileQuickAction
 
 private const val ColumnsPerRow = 3
 

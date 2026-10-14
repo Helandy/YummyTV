@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.account.localauth
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.EmbeddedServer
@@ -107,7 +108,7 @@ internal class LocalAuthServer @Inject constructor(
         }
     }
 
-    private suspend fun io.ktor.server.application.ApplicationCall.reject(
+    private suspend fun ApplicationCall.reject(
         status: HttpStatusCode,
         reason: LocalAuthError,
     ) = respond(status, SessionTransferErrorDto(reason.name))

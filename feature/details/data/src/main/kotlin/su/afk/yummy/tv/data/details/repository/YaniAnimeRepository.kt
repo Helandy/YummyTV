@@ -39,6 +39,7 @@ import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsWithReactions
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailersCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideosCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeWatchProgress
@@ -152,7 +153,12 @@ class YaniAnimeRepository(
                         }
                     },
                 ).response
-                mapRecommendations(response, animeId, languageCode, fromAi)
+                response.toAnimeRecommendationsWithReactions(
+                    animeId = animeId,
+                    language = languageCode,
+                    fromAi = fromAi,
+                    cachedAt = System.currentTimeMillis(),
+                )
             }.getOrElse { error ->
                 stored?.toStoredAnimeRecommendations()
                     ?: emptyList()
@@ -346,31 +352,6 @@ class YaniAnimeRepository(
                 cachedAt = System.currentTimeMillis(),
             )
         animeStorage.saveRecommendations(cache)
-    }
-
-    private fun mapRecommendations(
-        response: List<YaniRecommendationItemDto>,
-        animeId: Int,
-        languageCode: String,
-        fromAi: Boolean,
-    ): List<AnimeRecommendation> {
-        val cache = response.toAnimeRecommendationsCache(
-            animeId = animeId,
-            language = languageCode,
-            fromAi = fromAi,
-            cachedAt = System.currentTimeMillis(),
-        )
-        val reactionsByAnimeId = response.mapNotNull { item ->
-            item.animeId?.let { id -> id to item.likes }
-        }.toMap()
-        return cache.toStoredAnimeRecommendations().map { recommendation ->
-            val reaction = reactionsByAnimeId[recommendation.animeId]
-            if (reaction == null) recommendation else recommendation.copy(
-                likes = reaction.likes,
-                dislikes = reaction.dislikes,
-                vote = AnimeRecommendationVote.fromApi(reaction.vote),
-            )
-        }
     }
 
     private suspend fun invalidateRecommendationCache() {

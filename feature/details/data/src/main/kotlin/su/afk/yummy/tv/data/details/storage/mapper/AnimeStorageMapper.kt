@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.model.anime.AnimePerson
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
+import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.anime.AnimeStudio
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
@@ -310,6 +311,36 @@ internal fun List<YaniRecommendationItemDto>.toAnimeRecommendationsCache(
             )
         },
     )
+
+/**
+ * Рекомендации из ответа сервера в доменные модели: сначала через тот же cache-конверт, что и при
+ * чтении из кэша (чтобы свежая загрузка не расходилась с последующим чтением), затем поверх
+ * накладываются реакции (лайки/дизлайки/голос) из DTO.
+ */
+internal fun List<YaniRecommendationItemDto>.toAnimeRecommendationsWithReactions(
+    animeId: Int,
+    language: String,
+    fromAi: Boolean,
+    cachedAt: Long,
+): List<AnimeRecommendation> {
+    val cache = toAnimeRecommendationsCache(
+        animeId = animeId,
+        language = language,
+        fromAi = fromAi,
+        cachedAt = cachedAt,
+    )
+    val reactionsByAnimeId = mapNotNull { item ->
+        item.animeId?.let { id -> id to item.likes }
+    }.toMap()
+    return cache.toAnimeRecommendations().map { recommendation ->
+        val reaction = reactionsByAnimeId[recommendation.animeId]
+        if (reaction == null) recommendation else recommendation.copy(
+            likes = reaction.likes,
+            dislikes = reaction.dislikes,
+            vote = AnimeRecommendationVote.fromApi(reaction.vote),
+        )
+    }
+}
 
 internal fun AnimeRecommendationsCache.toAnimeRecommendations(): List<AnimeRecommendation> =
     recommendations

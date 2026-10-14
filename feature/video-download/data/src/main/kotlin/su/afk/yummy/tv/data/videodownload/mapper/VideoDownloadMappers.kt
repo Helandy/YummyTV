@@ -29,7 +29,7 @@ internal fun VideoDownloadEntry.toDomain(): VideoDownloadItem =
             .getOrDefault(emptyMap()),
         cacheKey = cacheKey,
         cacheKeyScheme = VideoDownloadCacheKeyScheme.fromStorageValue(cacheKeyScheme),
-        status = status.toStatus(),
+        status = status.toVideoDownloadStatus(),
         progress = progress,
         bytesDownloaded = bytesDownloaded,
         totalBytes = totalBytes,
@@ -82,7 +82,7 @@ internal fun Map<String, String>.toVideoDownloadHeadersJson(): String =
 
 internal fun VideoDownloadStatus.storageName(): String = name
 
-private fun String.toStatus(): VideoDownloadStatus =
+internal fun String.toVideoDownloadStatus(): VideoDownloadStatus =
     runCatching { VideoDownloadStatus.valueOf(this) }.getOrDefault(VideoDownloadStatus.Failed)
 
 private fun String.toExportStatus(): VideoExportStatus =

@@ -16,7 +16,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
 
 class PlayerSettingsHandlerTest : BaseUnitTest() {
 

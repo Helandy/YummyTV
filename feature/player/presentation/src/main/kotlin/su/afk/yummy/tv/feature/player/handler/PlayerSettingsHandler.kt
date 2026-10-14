@@ -7,7 +7,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
-import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 

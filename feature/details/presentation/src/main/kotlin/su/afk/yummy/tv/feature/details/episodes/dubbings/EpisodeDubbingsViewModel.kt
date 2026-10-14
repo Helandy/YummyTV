@@ -21,7 +21,7 @@ import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
-import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
+import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl

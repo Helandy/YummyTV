@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import su.afk.yummy.tv.feature.player.model.TvControlsTutorialStep
 
 /** Схема пульта с подсвеченной активной зоной для текущего шага обучения. */
 @Composable

@@ -9,7 +9,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
-import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
 import javax.inject.Inject
 
 /**

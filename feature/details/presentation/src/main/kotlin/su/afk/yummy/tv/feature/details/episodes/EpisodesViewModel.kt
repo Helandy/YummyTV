@@ -38,7 +38,7 @@ import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
 import su.afk.yummy.tv.domain.watchlater.usecase.ObserveWatchLaterEpisodesUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
-import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
+import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState

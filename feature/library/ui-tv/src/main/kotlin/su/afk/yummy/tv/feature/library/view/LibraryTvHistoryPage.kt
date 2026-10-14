@@ -65,7 +65,7 @@ import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.presentation.R
-import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnail
+import su.afk.yummy.tv.feature.library.model.HistoryEpisodeThumbnail
 import su.afk.yummy.tv.feature.library.utils.historyFocusKeys
 import su.afk.yummy.tv.feature.library.utils.historyProgressKey
 import su.afk.yummy.tv.feature.library.utils.timingLabel

@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.player.handler
 
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingEpisodes
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName

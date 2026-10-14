@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.library.thumbnail
+package su.afk.yummy.tv.feature.library.model
 
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 

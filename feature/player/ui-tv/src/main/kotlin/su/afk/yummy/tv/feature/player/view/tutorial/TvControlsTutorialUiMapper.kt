@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.view.tutorial
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.feature.player.model.TvControlsTutorialStep
 import su.afk.yummy.tv.feature.player.presentation.R
 
 internal fun TvControlsTutorialStep.titleRes(): Int = when (this) {

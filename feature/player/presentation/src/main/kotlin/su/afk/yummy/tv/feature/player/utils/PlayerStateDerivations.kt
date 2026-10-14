@@ -7,6 +7,7 @@ import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.model.DubbingSource
 import su.afk.yummy.tv.feature.player.model.PlayerArtworkSource
 
 internal fun normalizedSourceSelection(state: PlayerState.State): PlayerSourceSelection =
@@ -274,18 +275,6 @@ internal fun isFinalAvailableEpisode(
         .maxOrNull()
     return maxNumber == null || currentNumber >= maxNumber
 }
-
-internal data class DubbingSource(
-    val balancerIndex: Int,
-    val dubbingIndex: Int,
-    val episodeIndex: Int,
-)
-
-internal data class PlayerResizeSettingsScope(
-    val animeId: Int,
-    val animeTitle: String,
-    val playerName: String,
-)
 
 internal fun PlayerState.State.artworkSource(): PlayerArtworkSource = PlayerArtworkSource(
     screenshotUrl = activeScreenshotUrl(this),

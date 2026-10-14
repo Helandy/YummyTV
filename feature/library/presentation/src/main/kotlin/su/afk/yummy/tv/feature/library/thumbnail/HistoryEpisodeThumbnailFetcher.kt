@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailCacheIO
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
+import su.afk.yummy.tv.feature.library.model.HistoryEpisodeThumbnail
 
 /**
  * Резолвит kodik-превью серии из истории просмотров, у которой нет iframe-урла под рукой:

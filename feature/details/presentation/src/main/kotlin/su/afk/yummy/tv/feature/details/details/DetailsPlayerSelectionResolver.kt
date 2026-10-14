@@ -6,6 +6,7 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
+import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
 import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
