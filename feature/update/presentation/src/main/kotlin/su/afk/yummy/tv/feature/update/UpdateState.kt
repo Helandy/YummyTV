@@ -25,6 +25,7 @@ class UpdateState {
             data class Error(
                 val message: String,
                 val apkUrl: String? = null,
+                val required: Boolean = false,
             ) : Status()
         }
     }

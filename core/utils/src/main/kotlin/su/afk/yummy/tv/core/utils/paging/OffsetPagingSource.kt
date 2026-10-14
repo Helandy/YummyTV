@@ -115,7 +115,7 @@ fun <T : Any> pagingFlow(
  * источник перескакивает на `nextOffset` и грузит дальше, чтобы отфильтрованные страницы не
  * обрывали список.
  *
- * @param initialOffset offset первой страницы (и нижняя граница refresh-ключа).
+ * @param initialOffset offset первой страницы (с него же начинается refresh).
  * @param itemKey       уникальный ID; повторы удаляются в пределах одного источника,
  *                      серверные offset и признак конца страницы сохраняются.
  * @param loadPage      загрузка страницы `(limit, offset) -> OffsetPage<T>`.
@@ -165,8 +165,10 @@ class OffsetPagingSource<T : Any>(
             )
         }.getOrElse { error -> LoadResult.Error(error) }
 
-    override fun getRefreshKey(state: PagingState<Int, T>): Int? =
-        state.anchorPosition?.let { anchorPosition ->
-            (anchorPosition - state.config.initialLoadSize / 2).coerceAtLeast(initialOffset)
-        }
+    /**
+     * Обновление всегда начинается с [initialOffset]. `anchorPosition` — индекс среди уже
+     * отфильтрованных и дедуплицированных элементов, а не серверное смещение, а страницы не
+     * отдают `prevKey`, поэтому ключ «около позиции скролла» терял бы всё, что выше него.
+     */
+    override fun getRefreshKey(state: PagingState<Int, T>): Int? = null
 }

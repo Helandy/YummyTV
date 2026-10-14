@@ -78,7 +78,7 @@ class ProfileEditViewModel @Inject constructor(
             setState { copy(unlinkingAccount = provider) }
             runSuspendCatching { handler.unlinkAccount(provider) }
                 .onSuccess {
-                    applyProfile(it)
+                    applyLinkedAccounts(it)
                     setState { copy(pendingUnlinkAccount = null, unlinkingAccount = null) }
                     setEffect(ProfileEditState.Effect.Message(ProfileEditState.MessageType.ACCOUNT_UNLINKED))
                 }
@@ -116,7 +116,7 @@ class ProfileEditViewModel @Inject constructor(
                 )
             )
         }.onSuccess {
-            applyProfile(it)
+            applyForm(it)
             setEffect(ProfileEditState.Effect.Message(ProfileEditState.MessageType.PROFILE_SAVED))
         }.onFailure {
             setState { copy(isSaving = false) }
@@ -135,7 +135,7 @@ class ProfileEditViewModel @Inject constructor(
         }
         runSuspendCatching { handler.upload(event.kind, event.bytes) }
             .onSuccess {
-                applyProfile(it)
+                applyImages(it)
                 setEffect(ProfileEditState.Effect.Message(ProfileEditState.MessageType.IMAGE_SAVED))
             }
             .onFailure {
@@ -156,7 +156,7 @@ class ProfileEditViewModel @Inject constructor(
             setState { copy(isImageLoading = true) }
             runSuspendCatching { handler.delete(event.kind) }
                 .onSuccess {
-                    applyProfile(it)
+                    applyImages(it)
                     setEffect(ProfileEditState.Effect.Message(ProfileEditState.MessageType.IMAGE_SAVED))
                 }
                 .onFailure {
@@ -193,18 +193,24 @@ class ProfileEditViewModel @Inject constructor(
             }
     }
 
+    /** Первичная загрузка: применяем профиль целиком. */
     private fun applyProfile(profile: EditableProfile) {
+        applyForm(profile)
+        applyImages(profile)
+        applyLinkedAccounts(profile)
+    }
+
+    /**
+     * Поля формы и флаги загрузки/сохранения. Не трогает картинки и привязки, чтобы сохранение,
+     * пересёкшееся с загрузкой аватара или отвязкой, не сбрасывало чужой прогресс.
+     */
+    private fun applyForm(profile: EditableProfile) {
         setState {
             copy(
                 isLoading = false,
                 isSaving = false,
-                isImageLoading = false,
                 hasLoadError = false,
                 nickname = profile.nickname,
-                avatarUrl = profile.avatarUrl,
-                bannerUrl = profile.bannerUrl,
-                pendingAvatarPreview = null,
-                pendingBannerPreview = null,
                 about = profile.about,
                 birthDate = profile.birthDateSeconds.toIsoDate(),
                 sex = profile.sex,
@@ -215,9 +221,25 @@ class ProfileEditViewModel @Inject constructor(
                 showDiscord = profile.showDiscord,
                 notifyTelegram = profile.notifyTelegram,
                 notifyVk = profile.notifyVk,
-                linkedAccounts = profile.linkedAccounts.toImmutableSet(),
             )
         }
+    }
+
+    /** Аватар и баннер: несохранённые правки формы остаются как есть. */
+    private fun applyImages(profile: EditableProfile) {
+        setState {
+            copy(
+                isImageLoading = false,
+                avatarUrl = profile.avatarUrl,
+                bannerUrl = profile.bannerUrl,
+                pendingAvatarPreview = null,
+                pendingBannerPreview = null,
+            )
+        }
+    }
+
+    private fun applyLinkedAccounts(profile: EditableProfile) {
+        setState { copy(linkedAccounts = profile.linkedAccounts.toImmutableSet()) }
     }
 
 }

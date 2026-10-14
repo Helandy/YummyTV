@@ -47,7 +47,7 @@ class UpdateViewModel @Inject internal constructor(
             )
 
             UpdateState.Event.Dismiss -> {
-                if ((currentState.status as? UpdateState.State.Status.Available)?.required == true) return
+                if (availableStatus?.required == true) return
                 analytics.eventDismiss(currentUpdateVersion())
                 setState { copy(status = UpdateState.State.Status.Idle) }
                 nav.back()
@@ -164,6 +164,7 @@ class UpdateViewModel @Inject internal constructor(
                     message = error.message
                         ?: stringProvider.get(R.string.update_error_fallback_message),
                     apkUrl = apkUrl,
+                    required = availableStatus?.required == true,
                 )
             )
         }

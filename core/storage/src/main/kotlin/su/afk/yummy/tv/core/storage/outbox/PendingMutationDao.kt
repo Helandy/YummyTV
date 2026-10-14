@@ -20,6 +20,9 @@ interface PendingMutationDao {
     @Query("DELETE FROM pending_mutations WHERE id = :id")
     suspend fun delete(id: Long)
 
+    @Query("DELETE FROM pending_mutations")
+    suspend fun deleteAll()
+
     @Query("UPDATE pending_mutations SET attemptCount = attemptCount + 1 WHERE id = :id")
     suspend fun incrementAttempt(id: Long)
 }

@@ -462,18 +462,20 @@ private fun ErrorContent(
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .focusRequester(closeFocus)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                    .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(CoreR.string.common_close),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelLarge,
-                )
+            if (!status.required) {
+                Box(
+                    modifier = Modifier
+                        .focusRequester(closeFocus)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                        .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                ) {
+                    Text(
+                        text = stringResource(CoreR.string.common_close),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
         }
     }

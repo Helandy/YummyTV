@@ -7,6 +7,8 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.ktor.client.plugins.ResponseException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.storage.outbox.AnimeIdPayload
 import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
@@ -51,7 +53,9 @@ class PendingMutationSyncWorker @AssistedInject constructor(
     private val voteReview: VoteReviewUseCase,
 ) : CoroutineWorker(appContext, params) {
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = flushLock.withLock { flush() }
+
+    private suspend fun flush(): Result {
         // Очередь — лог «последняя запись побеждает» (SET_RATING → DELETE_RATING для одного аниме),
         // поэтому на первой повторяемой ошибке останавливаемся: пропуск упавшей записи позволил бы
         // старой мутации переиграться поверх более новых в следующем прогоне.
@@ -136,5 +140,11 @@ class PendingMutationSyncWorker @AssistedInject constructor(
 
     private companion object {
         const val MAX_ATTEMPTS = 8
+
+        /**
+         * Периодический и одноразовый воркеры — разные work-имена и могут стартовать одновременно;
+         * без замка они переигрывали бы одни и те же записи, нарушая порядок «последняя запись побеждает».
+         */
+        val flushLock = Mutex()
     }
 }

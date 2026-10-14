@@ -223,6 +223,8 @@ internal class AccountStorageStore(
             notificationsDao.deleteNotificationCounts(userId)
             userProfileDao.deleteUserProfileContentForUser(userId)
             userProfileDao.deleteUserStatsForUser(userId)
+            // Офлайн-мутации не привязаны к пользователю: после смены аккаунта они ушли бы с чужим токеном.
+            db.pendingMutationDao().deleteAll()
         }
     }
 }

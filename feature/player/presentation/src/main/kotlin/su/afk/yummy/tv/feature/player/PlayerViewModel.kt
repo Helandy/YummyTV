@@ -177,6 +177,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         // Результаты старой серии отменяем, а не сверяем с activeDest: его переписывает и
         // syncBackStackDestination, и такая сверка выбрасывала граф, пришедший позже потока.
         sourceGraphJob?.cancel()
+        // Онлайн-резолв прежней серии: без отмены он дописал бы своё поверх офлайн/локального потока
+        // (loadStream() отменяет его сам, а загруженная и локальная ветки его не вызывают).
+        extractionJob?.cancel()
         changePlayerHint.cancel()
         activeDest = newDest
         pendingDestinationResumeMs = newDest.resumeFromMs.takeIf { it > 0L }

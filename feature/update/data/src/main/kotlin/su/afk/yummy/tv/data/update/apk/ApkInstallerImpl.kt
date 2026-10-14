@@ -9,6 +9,7 @@ import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -22,6 +23,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+
+private const val URI_GRANT_FLAGS =
+    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+        Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
 
 internal class ApkInstallerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -73,7 +80,7 @@ internal class ApkInstallerImpl @Inject constructor(
                 override fun onReceive(context: Context, intent: Intent) {
                     when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
                         PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                            val confirmIntent = intent.confirmIntent()
+                            val confirmIntent = intent.confirmIntent()?.takeIf { it.isSafeToLaunch() }
                             if (confirmIntent == null) {
                                 unregisterReceiver(this)
                                 continuation.resumeWithException(
@@ -85,6 +92,7 @@ internal class ApkInstallerImpl @Inject constructor(
                             }
 
                             confirmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            confirmIntent.removeFlags(URI_GRANT_FLAGS)
                             context.startActivity(confirmIntent)
                         }
 
@@ -128,12 +136,9 @@ internal class ApkInstallerImpl @Inject constructor(
     }
 
     private fun registerReceiver(receiver: BroadcastReceiver, filter: IntentFilter) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            @Suppress("DEPRECATION")
-            context.registerReceiver(receiver, filter)
-        }
+        // До API 33 флаг RECEIVER_NOT_EXPORTED не существует и обычный registerReceiver делает
+        // приёмник доступным любому приложению; ContextCompat закрывает его собственным разрешением.
+        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     private fun Intent.installErrorMessage(status: Int): String {
@@ -150,6 +155,10 @@ internal class ApkInstallerImpl @Inject constructor(
             else -> context.getString(R.string.update_install_error_unknown)
         }
     }
+
+    /** Подтверждение установки открывает системный установщик — собственные компоненты приложения не допускаем. */
+    private fun Intent.isSafeToLaunch(): Boolean =
+        component?.packageName != context.packageName && `package` != context.packageName
 
     private fun Intent.confirmIntent(): Intent? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

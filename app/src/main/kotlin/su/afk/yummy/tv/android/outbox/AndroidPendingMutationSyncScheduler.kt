@@ -19,6 +19,10 @@ import javax.inject.Singleton
  * [scheduleFlush] enqueues an immediate one-shot attempt (`NetworkType.CONNECTED` constraint means
  * `WorkManager` itself waits for a network if there isn't one yet); [schedule] additionally arms a
  * periodic safety net so a mutation queued while the process was killed still gets flushed.
+ *
+ * Flush uses `APPEND_OR_REPLACE`: a mutation queued while a flush is already running gets its own
+ * run right after it instead of waiting for the periodic job. Runs never overlap — see
+ * `PendingMutationSyncWorker`.
  */
 @Singleton
 class AndroidPendingMutationSyncScheduler @Inject constructor(
@@ -46,7 +50,7 @@ class AndroidPendingMutationSyncScheduler @Inject constructor(
     override fun scheduleFlush() {
         WorkManager.getInstance(context).enqueueUniqueWork(
             FLUSH_WORK_NAME,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
             OneTimeWorkRequestBuilder<PendingMutationSyncWorker>()
                 .setConstraints(networkConstraints())
                 .setBackoffCriteria(
