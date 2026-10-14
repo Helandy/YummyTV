@@ -29,12 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -192,36 +187,8 @@ internal fun NotificationsTab(
                 }
             } else if (state.notifications.isEmpty()) {
                 item {
-                    Column(
-                        modifier = Modifier
-                            .focusRequester(notificationsTabState.focusRequesters.contentFocusRequester)
-                            .onFocusChanged {
-                                if (it.isFocused) {
-                                    notificationsTabState.markContentFocused()
-                                }
-                            }
-                            .focusable()
-                            .onPreviewKeyEvent { event ->
-                                if (
-                                    event.type == KeyEventType.KeyDown &&
-                                    event.key == Key.DirectionLeft
-                                ) {
-                                    onEvent(AccountState.Event.TabSelected(AccountState.AccountTab.STATS))
-                                    true
-                                } else if (
-                                    event.type == KeyEventType.KeyDown &&
-                                    event.key == Key.DirectionUp
-                                ) {
-                                    notificationsTabState.requestSelectedTabFocus(
-                                        selectedTabFocusRequester
-                                    )
-                                } else {
-                                    false
-                                }
-                            },
-                    ) {
-                        EmptyText(stringResource(R.string.account_notifications_empty))
-                    }
+                    // Не фокусируется: подсветки у текста нет, фокус в нём был бы невидим.
+                    EmptyText(stringResource(R.string.account_notifications_empty))
                 }
             } else {
                 itemsIndexed(

@@ -98,6 +98,7 @@ internal class NotificationsTabState internal constructor(
     // ---------------- FocusRequester choice ----------------
 
     fun preferredNotificationFocusRequester(notificationIds: List<Int>): FocusRequester {
+        if (notificationIds.isEmpty()) return focusRequesters.mySubscriptionsFocusRequester
         val index =
             focusRestoreState.targetIndex(notificationIds)?.takeIf { it in notificationIds.indices }
                 ?: return focusRequesters.contentFocusRequester
@@ -180,19 +181,21 @@ internal class NotificationsTabState internal constructor(
         }
     }
 
+    /**
+     * Пустой список не фокусируется (без подсветки фокус в нём невидим), поэтому «верх списка»
+     * для пустого состояния — кнопка «Мои подписки».
+     */
     suspend fun requestEmptyFocusAfterScroll(animateScroll: Boolean = false) {
+        notificationContentHasFocus = false
         if (animateScroll) {
-            listState.animateScrollToItem(NOTIFICATIONS_CONTENT_ITEM_INDEX)
+            listState.animateScrollToItem(NOTIFICATIONS_HEADER_ITEM_INDEX)
         } else {
-            listState.scrollToItem(NOTIFICATIONS_CONTENT_ITEM_INDEX)
+            listState.scrollToItem(NOTIFICATIONS_HEADER_ITEM_INDEX)
         }
         snapshotFlow {
-            listState.layoutInfo.visibleItemsInfo.any { it.index == NOTIFICATIONS_CONTENT_ITEM_INDEX }
+            listState.layoutInfo.visibleItemsInfo.any { it.index == NOTIFICATIONS_TABS_ITEM_INDEX }
         }.first { it }
-        requestFocusUntilTimeout(focusRequesters.contentFocusRequester)
-        if (!animateScroll) {
-            listState.scrollToItem(NOTIFICATIONS_CONTENT_ITEM_INDEX)
-        }
+        requestFocusUntilTimeout(focusRequesters.mySubscriptionsFocusRequester)
     }
 
     private suspend fun requestSelectedTabFocusAfterScroll(
@@ -307,17 +310,10 @@ internal class NotificationsTabState internal constructor(
     fun requestContentFocusFromTabs(notificationIds: List<Int>) {
         focusMoveJob?.cancel()
         focusMoveJob = scope.launch {
-            notificationContentHasFocus = true
             if (notificationIds.isEmpty()) {
-                if (listState.layoutInfo.visibleItemsInfo.any { it.index == NOTIFICATIONS_CONTENT_ITEM_INDEX }) {
-                    requestFocusKeepingCurrentScroll(focusRequesters.contentFocusRequester)
-                } else {
-                    // Restoring a remembered position is automatic, not user-paced, so jump
-                    // straight there instead of animating - animateScrollToItem snaps most of
-                    // the way for distant targets anyway, which reads as a jerky double-jump.
-                    requestEmptyFocusAfterScroll(animateScroll = false)
-                }
+                requestEmptyFocusAfterScroll(animateScroll = false)
             } else {
+                notificationContentHasFocus = true
                 val targetIndex = focusRestoreState.targetIndex(notificationIds) ?: 0
                 handleNotificationFocus(targetIndex, notificationIds)
                 val requester = focusRequesters.rowFocusRequester(targetIndex, notificationIds[targetIndex])

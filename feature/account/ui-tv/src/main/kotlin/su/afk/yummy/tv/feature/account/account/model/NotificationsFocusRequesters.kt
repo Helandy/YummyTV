@@ -8,11 +8,8 @@ import androidx.compose.ui.focus.FocusRequester
  */
 internal class NotificationsFocusRequesters {
     /**
-     * Triple role, intentional: passed to AccountTabs as its `contentFocusRequester` (Down/
-     * Center/Enter on the tab focuses here), is row index 0's own focus requester, AND is the
-     * empty-state placeholder's focus requester. Only one of the latter two is ever composed at
-     * a time, so a single shared requester is safe and is what lets AccountTabs hand off focus
-     * to "whatever the first thing in the list is" without knowing if the list is empty.
+     * Focus requester of row index 0. The empty-state placeholder is not focusable, so for an
+     * empty list "the top of the list" is [mySubscriptionsFocusRequester] instead.
      */
     val contentFocusRequester = FocusRequester()
 
