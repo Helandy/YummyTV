@@ -54,6 +54,10 @@ internal class LiveAllohaStreamSession(
     private val selectedAudioId = AtomicReference<String?>(null)
     private val selectedQuality = AtomicReference<String?>(null)
     private val proxy = AtomicReference<AllohaStreamProxy?>(null)
+
+    /** Invoked (from any thread) when the CDN rejects this session's identity itself. */
+    @Volatile
+    var onIdentityRejected: ((marker: String) -> Unit)? = null
     private val streamStateLock = Any()
 
     /**
@@ -228,6 +232,7 @@ internal class LiveAllohaStreamSession(
                 masterProvider = ::masterFor,
                 requestSessionRefresh = ::refresh,
                 analytics = analytics,
+                onIdentityRejected = { marker -> onIdentityRejected?.invoke(marker) },
             )
         )
     }

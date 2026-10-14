@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.player.extractor.alloha
 import android.annotation.SuppressLint
 import android.content.Context
 import android.webkit.CookieManager
+import android.webkit.WebStorage
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -78,6 +79,21 @@ internal class AllohaWebViewPool {
             setAcceptThirdPartyCookies(webView, true)
         }
         return webView
+    }
+
+    /**
+     * Drops everything the site could use to recognise this install: cookies, DOM storage, and the
+     * idle (warm) WebViews that still hold them. Main thread only. Used after the CDN rejected a
+     * session's identity - every later "fresh" session otherwise inherits the same flagged cookie
+     * jar and is rejected the same way.
+     */
+    fun resetIdentity() {
+        generateSequence { idleWebViews.poll() }.forEach(WebView::destroy)
+        CookieManager.getInstance().apply {
+            removeAllCookies(null)
+            flush()
+        }
+        WebStorage.getInstance().deleteAllData()
     }
 
     fun release(webView: WebView) {

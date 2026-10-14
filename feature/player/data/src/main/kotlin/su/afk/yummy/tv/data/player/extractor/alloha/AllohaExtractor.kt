@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.random.Random
@@ -54,6 +56,11 @@ internal class AllohaExtractor @Inject constructor(
     // bot farm looks like. The fingerprint has to be stable across sessions for the same reason the
     // reload path below keeps it stable within one.
     private val sessionUserAgent: String by lazy { desktopUserAgent() }
+
+    // Set when a session's identity (cookie jar) was rejected by the CDN; consumed by the next
+    // open, which starts from a clean browser state. See AllohaWebViewPool.resetIdentity().
+    private val identityRejected = AtomicBoolean(false)
+    private var lastIdentityResetAtMs = 0L
 
     override fun supports(url: String): Boolean = url.isAllohaPlayerUrl()
 
@@ -117,6 +124,20 @@ internal class AllohaExtractor @Inject constructor(
         var wrapperReloads = 0
         var reloadWrapper: (() -> Unit)? = null
         val liveSession = LiveAllohaStreamSession(handler, iframeUrl, analyticsTracker)
+        var hostChangeRestarts = 0
+        if (identityRejected.getAndSet(false)) {
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastIdentityResetAtMs >= IDENTITY_RESET_MIN_INTERVAL_MS) {
+                lastIdentityResetAtMs = now
+                analyticsTracker.log(LOG_TAG) { "previous session identity was rejected, resetting cookies and storage" }
+                webViewPool.resetIdentity()
+            }
+        }
+        liveSession.onIdentityRejected = { marker ->
+            if (identityRejected.compareAndSet(false, true)) {
+                analyticsTracker.log(LOG_TAG) { "identity rejected marker=$marker, next session starts clean" }
+            }
+        }
         val hostChangeFallback = Runnable {
             if (pendingHostChangeMaster != null) {
                 // No fresh config_update confirmed the new host in time - the held headers are
@@ -201,7 +222,7 @@ internal class AllohaExtractor @Inject constructor(
             analyticsTracker.logExtractorFailure(
                 "Alloha",
                 iframeUrl,
-                "timed out waiting for signed HLS session"
+                "timed out waiting for signed HLS session",
             )
             fail()
         }
@@ -214,7 +235,7 @@ internal class AllohaExtractor @Inject constructor(
                     val parsed = runCatching {
                         Pair(
                             parseSources(responseJson, analyticsTracker),
-                            parseHeaders(headersJson)
+                            parseHeaders(headersJson),
                         )
                     }
                     handler.post {
@@ -236,7 +257,7 @@ internal class AllohaExtractor @Inject constructor(
                             analyticsTracker.logExtractorFailure(
                                 "Alloha",
                                 iframeUrl,
-                                it.message ?: "invalid response"
+                                it.message ?: "invalid response",
                             )
                             if (it is AllohaSourceUnavailableException) {
                                 // it.message is an internal debug reason (already logged above),
@@ -298,12 +319,21 @@ internal class AllohaExtractor @Inject constructor(
                             // some CDNs the player's WebSocket dies seconds after opening and none
                             // ever arrives. Waiting then only ever ends in that same fallback, so
                             // take it straight away instead of stalling for HOST_CHANGE_CONFIG_WAIT_MS.
-                            if (!liveSession.hasSeenConfigUpdate) {
+                            if (!liveSession.hasSeenConfigUpdate && hostChangeRestarts < MAX_HOST_CHANGE_RESTARTS) {
+                                hostChangeRestarts++
                                 analyticsTracker.log(LOG_TAG) {
                                     "master host changed $previousHost -> $newHost and no " +
-                                        "config_update was ever seen, restarting session now"
+                                        "config_update was ever seen, restarting session now " +
+                                        "attempt=$hostChangeRestarts/$MAX_HOST_CHANGE_RESTARTS"
                                 }
                                 liveSession.refresh()
+                            } else if (!liveSession.hasSeenConfigUpdate) {
+                                // Restarting has not produced a config_update; stop the reload
+                                // storm and let the proxy's own rejection handling decide.
+                                analyticsTracker.log(LOG_TAG) {
+                                    "master host changed $previousHost -> $newHost, restart budget spent"
+                                }
+                                liveSession.updateMasterUrl(masterUrl)
                             } else {
                                 pendingHostChangeMaster = masterUrl
                                 handler.removeCallbacks(hostChangeFallback)
@@ -418,5 +448,12 @@ internal class AllohaExtractor @Inject constructor(
         // little headroom over that.
         const val MASTER_WAIT_TIMEOUT_MS = 6_000L
         const val HOST_CHANGE_CONFIG_WAIT_MS = 10_000L
+
+        // Full session restarts allowed per opened session when the host keeps changing and no
+        // config_update ever arrives (logs showed ~150 restarts in 6 minutes).
+        const val MAX_HOST_CHANGE_RESTARTS = 3
+
+        // Keeps a rejection burst from wiping cookies on every consecutive open.
+        const val IDENTITY_RESET_MIN_INTERVAL_MS = 30_000L
     }
 }

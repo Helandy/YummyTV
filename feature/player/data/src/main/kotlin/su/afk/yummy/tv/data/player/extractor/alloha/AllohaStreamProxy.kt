@@ -57,6 +57,7 @@ internal class AllohaStreamProxy(
     private val masterProvider: (audioId: String?, quality: String?) -> String?,
     private val requestSessionRefresh: () -> Unit,
     private val analytics: AnalyticsTracker,
+    private val onIdentityRejected: (marker: String) -> Unit = {},
 ) : AutoCloseable {
     private val scope = ioScope()
 
@@ -578,6 +579,7 @@ internal class AllohaStreamProxy(
             if (rejectedSessionGeneration.compareAndSet(previous, state.generation)) {
                 lastRejectionMarker.set(marker)
                 analytics.log(LOG_TAG) { "Session generation confirmed rejected marker=$marker ${state.summary()}" }
+                if (marker != null && marker in IDENTITY_REJECTION_MARKERS) onIdentityRejected(marker)
                 return
             }
         }
@@ -817,6 +819,10 @@ internal class AllohaStreamProxy(
         }
 
         const val TOKEN_DECRYPT_MARKER = "token_decrypt"
+
+        // Rejections that say the site distrusts this browser identity (cookie jar / storage), as
+        // opposed to a header problem such as client_blocked: only a clean identity can recover.
+        val IDENTITY_REJECTION_MARKERS = setOf("session_blocked", TOKEN_DECRYPT_MARKER)
         val SESSION_REJECTION_MARKERS =
             setOf("session_blocked", TOKEN_DECRYPT_MARKER, "client_blocked")
         val EMPTY_TS_PACKET = ByteArray(188).also {
