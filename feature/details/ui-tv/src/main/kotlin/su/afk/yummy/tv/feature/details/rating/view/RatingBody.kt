@@ -73,7 +73,10 @@ internal fun RatingBody(
                     modifier = Modifier.weight(1f),
                 )
                 selectedUserRating?.let { rating ->
-                    RatingSummaryPill(stringResource(R.string.details_your_rating, rating))
+                    RatingSummaryPill(
+                        label = stringResource(R.string.details_your_rating, rating),
+                        highlight = rating.toString(),
+                    )
                     RatingAction(
                         label = stringResource(R.string.details_rating_delete),
                         onClick = onRatingDeleted

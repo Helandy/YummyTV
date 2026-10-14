@@ -11,11 +11,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -23,6 +27,7 @@ internal fun RatingSummaryPill(
     label: String,
     accentColor: Color? = null,
     compact: Boolean = false,
+    highlight: String? = null,
 ) {
     val background = accentColor?.copy(alpha = 0.18f)
         ?: MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
@@ -41,8 +46,26 @@ internal fun RatingSummaryPill(
             )
             Spacer(Modifier.width(8.dp))
         }
+        val highlightColor = MaterialTheme.colorScheme.primary
+        val text = remember(label, highlight, highlightColor) {
+            buildAnnotatedString {
+                append(label)
+                val start = highlight?.let { label.lastIndexOf(it) } ?: -1
+                if (start >= 0) {
+                    addStyle(
+                        SpanStyle(
+                            color = highlightColor,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                        ),
+                        start,
+                        start + highlight!!.length,
+                    )
+                }
+            }
+        }
         Text(
-            text = label,
+            text = text,
             style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,

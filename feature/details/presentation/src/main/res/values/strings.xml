@@ -133,7 +133,6 @@
     <string name="details_rating_delete">Delete rating</string>
     <string name="details_mobile_rating_not_set">Not rated yet</string>
     <string name="details_mobile_rating_pick">Pick your rating</string>
-    <string name="details_mobile_rating_average">%1$s average</string>
     <string name="details_full_rating_votes">%1$s ratings</string>
     <string name="details_mobile_rating_empty">No ratings yet</string>
     <string name="details_mobile_rating_distribution">Distribution</string>

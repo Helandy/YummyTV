@@ -145,7 +145,6 @@
     <string name="details_rating_delete">Видалити оцінку</string>
     <string name="details_mobile_rating_not_set">Ви ще не оцінювали</string>
     <string name="details_mobile_rating_pick">Виберіть оцінку</string>
-    <string name="details_mobile_rating_average">Середня %1$s</string>
     <string name="details_full_rating_votes">%1$s оцінок</string>
     <string name="details_mobile_rating_empty">Оцінок поки немає</string>
     <string name="details_mobile_rating_distribution">Розподіл</string>
