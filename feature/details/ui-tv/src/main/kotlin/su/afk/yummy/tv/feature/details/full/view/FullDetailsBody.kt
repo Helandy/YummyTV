@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,19 +39,33 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.feature.details.full.model.FullDetailsFocusOrder
+import su.afk.yummy.tv.feature.details.full.model.LocalFullDetailsFocusOrder
 import su.afk.yummy.tv.feature.details.full.utils.formatEpochSeconds
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatAiredProgress
 
-/** Индекс ряда жанров в [FullDetailsBody]: всегда после тайтла и (если есть) описания. */
-private fun genresItemIndex(details: AnimeDetails): Int? {
-    if (details.genres.isEmpty()) return null
+private const val GenreChipPrefix = "genre:"
+private const val StudioChipPrefix = "studio:"
+private const val CreatorChipPrefix = "creator:"
+
+/**
+ * Индекс ряда чипов в [FullDetailsBody] по ключу чипа. Порядок рядов тот же, что в [LazyColumn]:
+ * тайтл, описание, жанры, тип, возраст, статус, год, студии, режиссёры.
+ */
+private fun chipRowIndex(details: AnimeDetails, chipKey: String): Int? {
     var index = 1
     if (details.description.isNotBlank()) index++
-    return index
+    if (chipKey.startsWith(GenreChipPrefix)) return index.takeIf { details.genres.isNotEmpty() }
+    if (details.genres.isNotEmpty()) index++
+    listOf(details.type, details.ageRating, details.status, details.year).forEach { if (it != null) index++ }
+    if (chipKey.startsWith(StudioChipPrefix)) return index.takeIf { details.studios.isNotEmpty() }
+    if (details.studios.isNotEmpty()) index++
+    if (chipKey.startsWith(CreatorChipPrefix)) return index.takeIf { details.creators.isNotEmpty() }
+    return null
 }
 
-private suspend fun restoreGenreChipFocus(
+private suspend fun restoreChipFocus(
     listState: LazyListState,
     itemIndex: Int,
     requester: FocusRequester,
@@ -107,206 +122,242 @@ internal fun FullDetailsBody(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val firstFocusRequester = remember { FocusRequester() }
+    val focusOrder = remember { FullDetailsFocusOrder(firstFocusRequester) }
     val episodeProgress = details.episodes?.formatAiredProgress()
-    var itemIndex = 0
 
-    // Запоминаем чип жанра, с которого ушли на экран жанра, чтобы при возврате назад
+    // Запоминаем чип, с которого ушли на экран жанра/студии/режиссёра, чтобы при возврате назад
     // вернуть фокус именно на него, а не на первый фокусируемый элемент.
-    var lastSelectedGenreId by rememberSaveable(details.id) { mutableStateOf<Int?>(null) }
-    val genreFocusRequesters = remember(details.genres) {
-        details.genres.mapNotNull { it.id }.associateWith { FocusRequester() }
+    var lastSelectedChip by rememberSaveable(details.id) { mutableStateOf<String?>(null) }
+    val chipFocusRequesters = remember(details.genres, details.studios, details.creators) {
+        buildMap {
+            details.genres.forEach { g -> g.id?.let { put("$GenreChipPrefix$it", FocusRequester()) } }
+            details.studios.forEach { st -> st.id?.let { put("$StudioChipPrefix$it", FocusRequester()) } }
+            details.creators.forEach { c -> c.id?.let { put("$CreatorChipPrefix$it", FocusRequester()) } }
+        }
     }
 
     LaunchedEffect(details.id) {
-        val genreIndex = lastSelectedGenreId?.let { genresItemIndex(details) }
-        val genreRequester = lastSelectedGenreId?.let { genreFocusRequesters[it] }
-        if (genreIndex != null && genreRequester != null) {
-            restoreGenreChipFocus(listState, genreIndex, genreRequester)
+        val chipIndex = lastSelectedChip?.let { chipRowIndex(details, it) }
+        val chipRequester = lastSelectedChip?.let { chipFocusRequesters[it] }
+        if (chipIndex != null && chipRequester != null) {
+            restoreChipFocus(listState, chipIndex, chipRequester)
         } else {
             firstFocusRequester.requestFocus()
         }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 28.dp, vertical = 22.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        fun nextIndex() = itemIndex++
+    CompositionLocalProvider(LocalFullDetailsFocusOrder provides focusOrder) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 28.dp, vertical = 22.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            // Счётчик живёт внутри билдера: лямбда перезапускается, и внешний счётчик
+            // уезжал бы дальше, сдвигая индексы рядов.
+            var itemIndex = 0
+            fun nextIndex() = itemIndex++
 
-        item {
-            FocusableDetailsItem(
-                index = nextIndex(),
-                listState = listState,
-                firstFocusRequester = firstFocusRequester,
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FullRatingRow(details)
-                    Text(
-                        text = details.title,
-                        style = MaterialTheme.typography.displaySmall.copy(fontSize = 30.sp),
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    if (details.otherTitles.isNotEmpty()) {
+            val rowIndex0 = nextIndex()
+            item {
+                FocusableDetailsItem(
+                    index = rowIndex0,
+                    listState = listState,
+                    firstFocusRequester = firstFocusRequester,
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FullRatingRow(details)
                         Text(
-                            text = details.otherTitles.joinToString(" | "),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.58f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
+                            text = details.title,
+                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 30.sp),
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        if (details.otherTitles.isNotEmpty()) {
+                            Text(
+                                text = details.otherTitles.joinToString(" | "),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.58f),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (details.description.isNotBlank()) {
+                val rowIndex1 = nextIndex()
+                item {
+                    FocusableDetailsItem(
+                        index = rowIndex1,
+                        listState = listState,
+                        onPreviewKeyEvent = scrollWithinItemKeyEvent(
+                            scope,
+                            listState,
+                            rowIndex1,
+                        ),
+                    ) {
+                        Text(
+                            text = details.description,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f),
                         )
                     }
                 }
             }
-        }
 
-        if (details.description.isNotBlank()) {
-            item {
-                val descriptionIndex = itemIndex
-                FocusableDetailsItem(
-                    index = nextIndex(),
-                    listState = listState,
-                    onPreviewKeyEvent = scrollWithinItemKeyEvent(
-                        scope,
-                        listState,
-                        descriptionIndex
-                    ),
-                ) {
-                    Text(
-                        text = details.description,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f),
-                    )
-                }
-            }
-        }
-
-        if (details.genres.isNotEmpty()) {
-            item {
-                FocusableDetailsItem(
-                    index = nextIndex(),
-                    listState = listState,
-                    focusable = false
-                ) {
-                    FullDetailsRow(label = stringResource(R.string.details_full_genres)) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            details.genres.forEach { genre ->
-                                FullDetailsChip(
-                                    label = genre.title,
-                                    onClick = genre.id?.let { id ->
-                                        {
-                                            lastSelectedGenreId = id
-                                            onGenreSelected(id)
-                                        }
-                                    },
-                                    modifier = genre.id?.let { id ->
-                                        genreFocusRequesters[id]?.let { Modifier.focusRequester(it) }
-                                    } ?: Modifier,
-                                )
+            if (details.genres.isNotEmpty()) {
+                val rowIndex2 = nextIndex()
+                item {
+                    FocusableDetailsItem(
+                        index = rowIndex2,
+                        listState = listState,
+                        focusable = false
+                    ) {
+                        FullDetailsRow(label = stringResource(R.string.details_full_genres)) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                details.genres.forEach { genre ->
+                                    FullDetailsChip(
+                                        label = genre.title,
+                                        onClick = genre.id?.let { id ->
+                                            {
+                                                lastSelectedChip = "$GenreChipPrefix$id"
+                                                onGenreSelected(id)
+                                            }
+                                        },
+                                        modifier = genre.id?.let { id ->
+                                            chipFocusRequesters["$GenreChipPrefix$id"]
+                                                ?.let { Modifier.focusRequester(it) }
+                                        } ?: Modifier,
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        details.type?.let { value ->
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_type), value)
+            details.type?.let { value ->
+                val rowIndex3 = nextIndex()
+                item {
+                    FocusableDetailsItem(index = rowIndex3, listState = listState) {
+                        FullDetailsTextRow(stringResource(R.string.details_full_type), value)
+                    }
                 }
             }
-        }
-        details.ageRating?.let { value ->
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_age_rating), value)
+            details.ageRating?.let { value ->
+                val rowIndex4 = nextIndex()
+                item {
+                    FocusableDetailsItem(index = rowIndex4, listState = listState) {
+                        FullDetailsTextRow(stringResource(R.string.details_full_age_rating), value)
+                    }
                 }
             }
-        }
-        details.status?.let { value ->
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_status), value)
+            details.status?.let { value ->
+                val rowIndex5 = nextIndex()
+                item {
+                    FocusableDetailsItem(index = rowIndex5, listState = listState) {
+                        FullDetailsTextRow(stringResource(R.string.details_full_status), value)
+                    }
                 }
             }
-        }
-        details.year?.let { value ->
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_year), value.toString())
+            details.year?.let { value ->
+                val rowIndex6 = nextIndex()
+                item {
+                    FocusableDetailsItem(index = rowIndex6, listState = listState) {
+                        FullDetailsTextRow(stringResource(R.string.details_full_year), value.toString())
+                    }
                 }
             }
-        }
-        if (details.studios.isNotEmpty()) {
-            item {
-                FocusableDetailsItem(
-                    index = nextIndex(),
-                    listState = listState,
-                    focusable = false
-                ) {
-                    FullDetailsRow(label = stringResource(R.string.details_relation_studio)) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            details.studios.forEach { studio ->
-                                FullDetailsChip(
-                                    label = studio.title,
-                                    onClick = studio.id?.let { id ->
-                                        { onStudioSelected(id, studio.url) }
-                                    },
-                                )
+            if (details.studios.isNotEmpty()) {
+                val rowIndex7 = nextIndex()
+                item {
+                    FocusableDetailsItem(
+                        index = rowIndex7,
+                        listState = listState,
+                        focusable = false
+                    ) {
+                        FullDetailsRow(label = stringResource(R.string.details_relation_studio)) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                details.studios.forEach { studio ->
+                                    FullDetailsChip(
+                                        label = studio.title,
+                                        onClick = studio.id?.let { id ->
+                                            {
+                                                lastSelectedChip = "$StudioChipPrefix$id"
+                                                onStudioSelected(id, studio.url)
+                                            }
+                                        },
+                                        modifier = studio.id?.let { id ->
+                                            chipFocusRequesters["$StudioChipPrefix$id"]
+                                                ?.let { Modifier.focusRequester(it) }
+                                        } ?: Modifier,
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        if (details.creators.isNotEmpty()) {
-            item {
-                FocusableDetailsItem(
-                    index = nextIndex(),
-                    listState = listState,
-                    focusable = false
-                ) {
-                    FullDetailsRow(label = stringResource(R.string.details_relation_director)) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            details.creators.forEach { creator ->
-                                FullDetailsChip(
-                                    label = creator.title,
-                                    onClick = creator.id?.let { id -> { onDirectorSelected(id) } },
-                                )
+            if (details.creators.isNotEmpty()) {
+                val rowIndex8 = nextIndex()
+                item {
+                    FocusableDetailsItem(
+                        index = rowIndex8,
+                        listState = listState,
+                        focusable = false
+                    ) {
+                        FullDetailsRow(label = stringResource(R.string.details_relation_director)) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                details.creators.forEach { creator ->
+                                    FullDetailsChip(
+                                        label = creator.title,
+                                        onClick = creator.id?.let { id ->
+                                            {
+                                                lastSelectedChip = "$CreatorChipPrefix$id"
+                                                onDirectorSelected(id)
+                                            }
+                                        },
+                                        modifier = creator.id?.let { id ->
+                                            chipFocusRequesters["$CreatorChipPrefix$id"]
+                                                ?.let { Modifier.focusRequester(it) }
+                                        } ?: Modifier,
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        episodeProgress?.let {
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_episodes_progress), it)
+            episodeProgress?.let {
+                val rowIndex9 = nextIndex()
+                item {
+                    FocusableDetailsItem(index = rowIndex9, listState = listState) {
+                        FullDetailsTextRow(stringResource(R.string.details_full_episodes_progress), it)
+                    }
                 }
             }
-        }
-        details.episodes?.nextDateEpochSeconds?.let {
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(
-                        stringResource(R.string.details_full_next_episode),
-                        it.formatEpochSeconds()
-                    )
+            details.episodes?.nextDateEpochSeconds?.let {
+                val rowIndex10 = nextIndex()
+                item {
+                    FocusableDetailsItem(index = rowIndex10, listState = listState) {
+                        FullDetailsTextRow(
+                            stringResource(R.string.details_full_next_episode),
+                            it.formatEpochSeconds()
+                        )
+                    }
                 }
             }
         }
