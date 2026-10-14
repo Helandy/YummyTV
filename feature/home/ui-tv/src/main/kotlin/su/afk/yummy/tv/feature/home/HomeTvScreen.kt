@@ -42,6 +42,7 @@ import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
 import su.afk.yummy.tv.feature.home.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
+import su.afk.yummy.tv.feature.home.view.HomePreviewChannelPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.view.TvRecommendationActionsDialog
 
@@ -193,6 +194,13 @@ fun HomeTvScreen(
     if (state.supportPromptVisible) {
         HomeSupportPromptDialog(
             onDismiss = { onEvent(HomeState.Event.SupportPromptDismissed) },
+        )
+    }
+
+    if (state.previewChannelPromptVisible) {
+        HomePreviewChannelPromptDialog(
+            onAccept = { onEvent(HomeState.Event.PreviewChannelPromptAccepted) },
+            onDismiss = { onEvent(HomeState.Event.PreviewChannelPromptDismissed) },
         )
     }
 

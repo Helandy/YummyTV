@@ -45,6 +45,8 @@ internal class TvIntegration @Inject constructor(
     private val scope =
         CoroutineScope(ioApplicationScope.coroutineContext + coroutineExceptionHandler)
 
+    override val isSupported: Boolean = true
+
     override val browsableChannelRequest: SharedFlow<Long> = previewChannelManager.browsableRequest
     override val previewChannelBrowsable: StateFlow<Boolean> = previewChannelManager.isBrowsable
 

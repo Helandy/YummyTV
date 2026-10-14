@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -29,6 +30,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
+import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
@@ -51,6 +53,7 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
+import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
@@ -86,6 +89,7 @@ class HomeViewModel @Inject internal constructor(
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
     private val playerNavigator: IPlayerNavigator,
     private val settingsStore: SettingsStore,
+    private val tvIntegration: ITvIntegration,
     private val featureToggleProvider: FeatureToggleProvider,
     private val featureToggleUpdateObserver: FeatureToggleUpdateObserver,
     private val analytics: HomeAnalytics,
@@ -97,6 +101,10 @@ class HomeViewModel @Inject internal constructor(
 
     private var supportPromptTimerJob: Job? = null
     private var supportPromptDisplayedThisSession = false
+
+    /** Ответ на предложение preview-канала не пришёл из хранилища — до него не показываем. */
+    private var previewChannelPromptAnswered = true
+    private var previewChannelBrowsable = false
 
     /** Лента без скрытых рекомендаций — из неё тайтл возвращается при откате. */
     private var rawFeed: HomeFeed? = null
@@ -128,6 +136,7 @@ class HomeViewModel @Inject internal constructor(
                         isContinueWatchingLoaded = true,
                     )
                 }
+                updatePreviewChannelPrompt()
             }
             .launchIn(viewModelScope)
         observeLibraryAnimeIds()
@@ -135,6 +144,7 @@ class HomeViewModel @Inject internal constructor(
         observeHiddenRecommendations()
         observeSupportPrompt()
         observeAnnouncement()
+        observePreviewChannelPrompt()
         loadBloggerVideos()
         load()
         reloadOnContentLanguageChange()
@@ -199,6 +209,8 @@ class HomeViewModel @Inject internal constructor(
                 nav.navigate(bloggerVideosNavigator.video(event.video.id))
 
             HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
+            HomeState.Event.PreviewChannelPromptAccepted -> answerPreviewChannelPrompt(accepted = true)
+            HomeState.Event.PreviewChannelPromptDismissed -> answerPreviewChannelPrompt(accepted = false)
 
             HomeState.Event.AnnouncementDismissed -> dismissAnnouncement()
 
@@ -382,6 +394,7 @@ class HomeViewModel @Inject internal constructor(
     private fun showSupportPromptOnce() {
         supportPromptDisplayedThisSession = true
         setState { copy(supportPromptVisible = true) }
+        updatePreviewChannelPrompt()
         viewModelScope.launch {
             settingsStore.dismissSupportPrompt()
         }
@@ -390,8 +403,48 @@ class HomeViewModel @Inject internal constructor(
     /** Закрывает окно поддержки и запоминает отказ, чтобы больше не показывать. */
     private fun dismissSupportPrompt() {
         setState { copy(supportPromptVisible = false) }
+        updatePreviewChannelPrompt()
         viewModelScope.launch {
             settingsStore.dismissSupportPrompt()
+        }
+    }
+
+    /** Следит за ответом пользователя и статусом preview-канала; только на телевизоре. */
+    private fun observePreviewChannelPrompt() {
+        if (!tvIntegration.isSupported) return
+        combine(
+            settingsStore.previewChannelPromptAnswered,
+            tvIntegration.previewChannelBrowsable,
+        ) { answered, browsable -> answered to browsable }
+            .onEach { (answered, browsable) ->
+                previewChannelPromptAnswered = answered
+                previewChannelBrowsable = browsable
+                updatePreviewChannelPrompt()
+            }
+            .launchIn(viewModelScope)
+    }
+
+    /** Показывает предложение, когда оно уместно и не перекрывает другие диалоги главной. */
+    private fun updatePreviewChannelPrompt() {
+        val visible = shouldOfferPreviewChannel(
+            isSupported = tvIntegration.isSupported,
+            answered = previewChannelPromptAnswered,
+            browsable = previewChannelBrowsable,
+            hasContinueWatching = currentState.continueWatching.isNotEmpty(),
+            otherDialogVisible = currentState.supportPromptVisible || currentState.announcement != null,
+        )
+        if (visible != currentState.previewChannelPromptVisible) {
+            setState { copy(previewChannelPromptVisible = visible) }
+        }
+    }
+
+    /** Запоминает ответ; при согласии открывает системный запрос на добавление канала. */
+    private fun answerPreviewChannelPrompt(accepted: Boolean) {
+        previewChannelPromptAnswered = true
+        setState { copy(previewChannelPromptVisible = false) }
+        if (accepted) tvIntegration.requestPreviewChannelBrowsable()
+        viewModelScope.launch {
+            settingsStore.markPreviewChannelPromptAnswered()
         }
     }
 
@@ -438,6 +491,7 @@ class HomeViewModel @Inject internal constructor(
                     ),
                 )
             }
+            updatePreviewChannelPrompt()
         }
     }
 
@@ -445,6 +499,7 @@ class HomeViewModel @Inject internal constructor(
     private fun dismissAnnouncement() {
         val id = currentState.announcement?.id ?: return
         setState { copy(announcement = null) }
+        updatePreviewChannelPrompt()
         viewModelScope.launch {
             settingsStore.markAnnouncementSeen(id)
         }

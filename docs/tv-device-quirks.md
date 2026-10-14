@@ -79,3 +79,11 @@ AndroidKeyStore бывает нерабочим, и тогда приложен�
 Вызовы Block Store best-effort: на устройстве без Google Play Services `Task` падает, ошибка
 пишется в `AnalyticsTracker.log` (тег `AuthTokenBackup`) и глотается; вход, выход и обновление
 токена работают без бэкапа ([block-store-session-restore.md](block-store-session-restore.md)).
+
+## Preview-канал «Новинки»: запрос на добавление
+
+Системный диалог `ACTION_REQUEST_CHANNEL_BROWSABLE` открывается не на всех прошивках;
+`bindBrowsableChannelRequests` глушит ошибку запуска через `runCatching`, поэтому на таких
+приставках канал можно не получить. Главная ТВ один раз предлагает добавить канал (когда есть
+«продолжить просмотр», канал не добавлен и нет других диалогов); ответ хранится в
+`previewChannelPromptAnswered`, дальше добавить канал можно только из настроек.

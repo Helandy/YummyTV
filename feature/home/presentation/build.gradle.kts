@@ -19,6 +19,7 @@ dependencies {
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
+    implementation(project(":core:tv:api"))
     implementation(project(":core:utils"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:bloggers:api"))

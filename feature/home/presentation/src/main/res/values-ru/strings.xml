@@ -33,4 +33,8 @@
     <string name="home_tv_recommendation_hide_title">Не рекомендовать «%1$s»?</string>
     <string name="home_tv_recommendation_hide_message">Тайтл пропадёт из блока рекомендаций. Вернуть его можно на экране «Похожее» этого аниме</string>
     <string name="home_tv_recommendation_hide">Не рекомендовать</string>
+    <string name="home_preview_channel_prompt_title">Показывать новинки на главном экране ТВ?</string>
+    <string name="home_preview_channel_prompt_message">Добавьте ряд «Новинки» на главный экран Android TV, чтобы открывать свежие серии, не запуская приложение. Это можно сделать и позже в настройках.</string>
+    <string name="home_preview_channel_prompt_accept">Добавить</string>
+    <string name="home_preview_channel_prompt_dismiss">Не сейчас</string>
 </resources>

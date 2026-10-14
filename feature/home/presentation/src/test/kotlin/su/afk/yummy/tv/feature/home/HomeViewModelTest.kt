@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
@@ -81,6 +82,9 @@ class HomeViewModelTest : BaseUnitTest() {
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase = mockk()
     private val playerNavigator: IPlayerNavigator = mockk()
     private val settingsStore: SettingsStore = mockk(relaxed = true)
+    private val tvIntegration: ITvIntegration = mockk(relaxed = true) {
+        every { isSupported } returns false
+    }
     private val featureToggleProvider: FeatureToggleProvider = mockk()
     private val featureToggleUpdateObserver: FeatureToggleUpdateObserver = mockk()
     private val analytics: HomeAnalytics = mockk(relaxed = true)
@@ -148,6 +152,7 @@ class HomeViewModelTest : BaseUnitTest() {
         resolveContinueWatchingLaunch = resolveContinueWatchingLaunch,
         playerNavigator = playerNavigator,
         settingsStore = settingsStore,
+        tvIntegration = tvIntegration,
         featureToggleProvider = featureToggleProvider,
         featureToggleUpdateObserver = featureToggleUpdateObserver,
         analytics = analytics,

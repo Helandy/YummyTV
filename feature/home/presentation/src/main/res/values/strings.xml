@@ -33,4 +33,8 @@
     <string name="home_tv_recommendation_hide_title">Do not recommend "%1$s"?</string>
     <string name="home_tv_recommendation_hide_message">The title will disappear from the recommendations row. You can restore it on the Similar screen of this anime</string>
     <string name="home_tv_recommendation_hide">Do not recommend</string>
+    <string name="home_preview_channel_prompt_title">Show new releases on your TV home screen?</string>
+    <string name="home_preview_channel_prompt_message">Add the “New releases” row to the Android TV home screen so you can open fresh episodes without launching the app. You can also do this later in Settings.</string>
+    <string name="home_preview_channel_prompt_accept">Add</string>
+    <string name="home_preview_channel_prompt_dismiss">Not now</string>
 </resources>

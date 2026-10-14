@@ -22,6 +22,9 @@ interface AppLifecycleSettingsStore {
     /** Запрашивалось ли уже разрешение на уведомления через гейт (чтобы не спрашивать повторно). */
     val notificationPermissionRequested: Flow<Boolean>
 
+    /** Отвечал ли пользователь на предложение добавить preview-канал на главный экран ТВ. */
+    val previewChannelPromptAnswered: Flow<Boolean>
+
     suspend fun setWatchNextEnabled(enabled: Boolean)
     suspend fun setBetaUpdatesEnabled(enabled: Boolean)
     suspend fun setAppLogRecordingEnabled(enabled: Boolean)
@@ -33,6 +36,9 @@ interface AppLifecycleSettingsStore {
 
     /** Помечает, что разрешение на уведомления уже запрашивалось. */
     suspend fun markNotificationPermissionRequested()
+
+    /** Помечает, что предложение добавить preview-канал уже показывалось и получило ответ. */
+    suspend fun markPreviewChannelPromptAnswered()
 
     /** Returns `true` when [versionCode] differs from the previously started one. */
     suspend fun markStartedVersion(versionCode: Int): Boolean

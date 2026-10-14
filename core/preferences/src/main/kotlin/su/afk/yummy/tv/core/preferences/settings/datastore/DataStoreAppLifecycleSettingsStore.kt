@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.betaUpda
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastSeenAnnouncementIdKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastStartedVersionCodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.notificationPermissionRequestedKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewChannelPromptAnsweredKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.supportPromptDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.supportPromptFirstInstallTimeMsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchNextEnabledKey
@@ -39,6 +40,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
     override val notificationPermissionRequested: Flow<Boolean> =
         store.boolean(notificationPermissionRequestedKey, false)
 
+    override val previewChannelPromptAnswered: Flow<Boolean> =
+        store.boolean(previewChannelPromptAnsweredKey, false)
+
     override suspend fun setWatchNextEnabled(enabled: Boolean) =
         store.setBoolean(watchNextEnabledKey, enabled)
 
@@ -65,6 +69,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override suspend fun markNotificationPermissionRequested() =
         store.setBoolean(notificationPermissionRequestedKey, true)
+
+    override suspend fun markPreviewChannelPromptAnswered() =
+        store.setBoolean(previewChannelPromptAnsweredKey, true)
 
     override suspend fun markStartedVersion(versionCode: Int): Boolean {
         var isFreshVersion = true

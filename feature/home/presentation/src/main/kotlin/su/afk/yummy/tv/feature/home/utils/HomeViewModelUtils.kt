@@ -59,3 +59,15 @@ private val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
 /** Сколько ещё ждать до показа окна поддержки: неделя с момента, когда оно стало доступно. */
 internal fun SupportPromptSnapshot.supportPromptRemainingMs(nowMs: Long): Long =
     SUPPORT_PROMPT_DELAY_MS - (nowMs - firstEligibleTimeMs)
+
+/**
+ * Предложение добавить preview-канал показывается один раз на телевизоре, когда пользователь уже
+ * смотрел что-то, канал ещё не добавлен, а поверх главной нет других диалогов.
+ */
+fun shouldOfferPreviewChannel(
+    isSupported: Boolean,
+    answered: Boolean,
+    browsable: Boolean,
+    hasContinueWatching: Boolean,
+    otherDialogVisible: Boolean,
+): Boolean = isSupported && !answered && !browsable && hasContinueWatching && !otherDialogVisible

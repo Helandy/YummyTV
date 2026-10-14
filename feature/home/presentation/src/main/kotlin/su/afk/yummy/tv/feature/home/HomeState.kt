@@ -29,6 +29,8 @@ class HomeState {
         val launchingContinueWatchingAnimeId: Int? = null,
         val supportPromptVisible: Boolean = false,
         val announcement: HomeAnnouncement? = null,
+        /** Предложение добавить preview-канал «Новинки» на главный экран ТВ. */
+        val previewChannelPromptVisible: Boolean = false,
         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),
         val isBloggerVideosLoading: Boolean = true,
         val bloggerVideosError: UiText? = null,
@@ -78,6 +80,12 @@ class HomeState {
 
         /** Пользователь отказался от предложения поддержать проект. */
         data object SupportPromptDismissed : Event
+
+        /** Пользователь согласился добавить preview-канал на главный экран ТВ. */
+        data object PreviewChannelPromptAccepted : Event
+
+        /** Пользователь отказался от предложения добавить preview-канал. */
+        data object PreviewChannelPromptDismissed : Event
 
         /** Пользователь закрыл объявление кнопкой ОК. */
         data object AnnouncementDismissed : Event

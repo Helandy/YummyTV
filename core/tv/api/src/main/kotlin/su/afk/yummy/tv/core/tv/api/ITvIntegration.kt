@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface ITvIntegration {
+    /** `true` только на телевизоре: на остальных устройствах preview-каналов нет. */
+    val isSupported: Boolean
     val browsableChannelRequest: SharedFlow<Long>
     val previewChannelBrowsable: StateFlow<Boolean>
     fun start()
