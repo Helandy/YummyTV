@@ -15,9 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Flag
@@ -54,8 +52,6 @@ internal fun CommentCard(
     isModerator: Boolean,
     isMutating: Boolean,
     depth: Int,
-    onReply: (Int) -> Unit,
-    onEdit: (Int) -> Unit,
     onDelete: (Int, FocusRequester) -> Unit,
     onReport: (Int, FocusRequester) -> Unit,
     onVote: (Int, CommentVote) -> Unit,
@@ -158,12 +154,6 @@ internal fun CommentCard(
                 if (comment.deletedAtEpochSeconds == null) {
                     if (canEdit) {
                         CommentActionButton(
-                            label = stringResource(R.string.comments_edit),
-                            icon = Icons.Filled.Edit,
-                            enabled = !isMutating,
-                            onClick = { onEdit(comment.id) },
-                        )
-                        CommentActionButton(
                             label = stringResource(CoreR.string.common_delete),
                             icon = Icons.Filled.Delete,
                             enabled = !isMutating,
@@ -171,12 +161,6 @@ internal fun CommentCard(
                             onClick = { onDelete(comment.id, deleteFocusRequester) },
                         )
                     }
-                    CommentActionButton(
-                        label = stringResource(R.string.comments_reply),
-                        icon = Icons.AutoMirrored.Filled.Reply,
-                        enabled = !isMutating,
-                        onClick = { onReply(comment.id) },
-                    )
                     CommentActionButton(
                         label = stringResource(R.string.comments_report),
                         icon = Icons.Filled.Flag,
@@ -201,8 +185,6 @@ internal fun CommentCard(
                             isModerator = isModerator,
                             isMutating = isMutating,
                             depth = (depth + 1).coerceAtMost(2),
-                            onReply = onReply,
-                            onEdit = onEdit,
                             onDelete = onDelete,
                             onReport = onReport,
                             onVote = onVote,

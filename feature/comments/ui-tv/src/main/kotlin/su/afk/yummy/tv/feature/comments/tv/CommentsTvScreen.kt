@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
@@ -38,11 +37,11 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
-import su.afk.yummy.tv.feature.comments.tv.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsDialogs
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsHeader
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsList
 import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 fun CommentsTvScreen(
@@ -56,8 +55,6 @@ fun CommentsTvScreen(
     val listState = rememberLazyListState()
     val headerFocusRequester = remember { FocusRequester() }
     val retryFocusRequester = remember { FocusRequester() }
-    val composerFocusRequester = remember { FocusRequester() }
-    var isComposerEditing by remember { mutableStateOf(false) }
     var dialogReturnFocusRequester by remember { mutableStateOf<FocusRequester?>(null) }
 
     val visibleComments = remember(
@@ -91,12 +88,6 @@ fun CommentsTvScreen(
     LaunchedEffect(visibleComments) {
         onEvent(CommentsState.Event.VisibleCommentsChanged(visibleComments))
     }
-    LaunchedEffect(state.composerMode) {
-        if (state.composerMode !is CommentsState.ComposerMode.New) {
-            isComposerEditing = true
-            requestFocusUntilTimeout(composerFocusRequester)
-        }
-    }
     LaunchedEffect(state.pendingDelete, state.pendingReport) {
         if (state.pendingDelete == null && state.pendingReport == null) {
             val requester = dialogReturnFocusRequester ?: return@LaunchedEffect
@@ -107,13 +98,7 @@ fun CommentsTvScreen(
     }
 
     BackHandler(enabled = state.pendingDelete == null && state.pendingReport == null) {
-        when {
-            isComposerEditing -> isComposerEditing = false
-            state.composerMode !is CommentsState.ComposerMode.New ->
-                onEvent(CommentsState.Event.ComposerCancelled)
-
-            else -> onEvent(CommentsState.Event.BackSelected)
-        }
+        onEvent(CommentsState.Event.BackSelected)
     }
 
     Column(
@@ -175,8 +160,6 @@ fun CommentsTvScreen(
                     comments = comments,
                     listState = listState,
                     fallbackFocusRequester = headerFocusRequester,
-                    onReply = { onEvent(CommentsState.Event.ReplySelected(it)) },
-                    onEdit = { onEvent(CommentsState.Event.EditSelected(it)) },
                     onDelete = { id, requester ->
                         dialogReturnFocusRequester = requester
                         onEvent(CommentsState.Event.DeleteSelected(id))
@@ -199,21 +182,6 @@ fun CommentsTvScreen(
                 )
             }
         }
-        CommentsComposer(
-            isSignedIn = state.isSignedIn,
-            text = state.composerText,
-            mode = state.composerMode,
-            enabled = !state.isMutating,
-            isEditing = isComposerEditing,
-            focusRequester = composerFocusRequester,
-            onEditingChanged = { isComposerEditing = it },
-            onTextChanged = { onEvent(CommentsState.Event.ComposerTextChanged(it)) },
-            onSubmit = { onEvent(CommentsState.Event.SubmitSelected) },
-            onCancel = {
-                isComposerEditing = false
-                onEvent(CommentsState.Event.ComposerCancelled)
-            },
-        )
     }
     CommentsDialogs(
         pendingDelete = state.pendingDelete,
