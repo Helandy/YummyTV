@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 
 /**
@@ -19,13 +20,23 @@ import androidx.compose.ui.unit.Dp
  * показывал и шапку.
  */
 @Stable
-class TvGridStartExtent internal constructor(private val fixedPx: Float) {
+class TvGridStartExtent internal constructor(
+    private val fixedPx: Float,
+    private val viewportPx: Float,
+) {
     private var headerHeightPx by mutableIntStateOf(0)
 
     /** Вешается на корень item'а шапки грида. */
     val measure: Modifier = Modifier.onSizeChanged { headerHeightPx = it.height }
 
-    internal fun px(): Float = fixedPx + headerHeightPx
+    /**
+     * Если шапка вместе с рядом высотой [itemHeightPx] не помещается в экран (высокая шапка с
+     * чипами), показывать её незачем: возвращаем 0, и ряд просто встаёт наверх, как в обычном гриде.
+     */
+    internal fun px(itemHeightPx: Float): Float {
+        val extent = fixedPx + headerHeightPx
+        return if (viewportPx > 0f && extent + itemHeightPx > viewportPx) 0f else extent
+    }
 }
 
 /**
@@ -42,5 +53,6 @@ fun rememberTvGridStartExtent(
     val fixedPx = with(LocalDensity.current) {
         contentTopPadding.toPx() + if (hasHeader) rowSpacing.toPx() else 0f
     }
-    return remember(fixedPx) { TvGridStartExtent(fixedPx) }
+    val viewportPx = LocalWindowInfo.current.containerSize.height.toFloat()
+    return remember(fixedPx, viewportPx) { TvGridStartExtent(fixedPx, viewportPx) }
 }

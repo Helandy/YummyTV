@@ -45,7 +45,7 @@ private class WholeItemBringIntoViewResponder : BringIntoViewResponder {
         } else {
             Rect(0f, 0f, size.width.toFloat(), size.height.toFloat())
         }
-        val extent = gridStart?.px() ?: return itemRect
+        val extent = gridStart?.px(itemRect.height) ?: return itemRect
         return itemRect.copy(top = itemRect.top - extent)
     }
 

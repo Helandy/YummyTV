@@ -208,7 +208,9 @@ fun RelationTvScreen(
                         ) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
                                 Column(
-                                    modifier = gridStartExtent.measure,
+                                    // Фокус на чипе шапки прокручивает грид к шапке целиком, а не
+                                    // к самому чипу, иначе панель обрезается по верхнему краю.
+                                    modifier = gridStartExtent.measure.tvWholeItemBringIntoView(),
                                     verticalArrangement = Arrangement.spacedBy(20.dp),
                                 ) {
                                     RelationTvHeaderCard(
