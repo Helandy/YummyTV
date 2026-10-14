@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
+import su.afk.yummy.tv.core.navigation.manager.BackStackHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.model.tvMenuItems
@@ -29,6 +30,7 @@ import javax.inject.Singleton
 @Singleton
 class TvMainGraph @Inject constructor(
     private val navManager: INavigationManager,
+    private val backStackHost: BackStackHost,
     private val navigationHolder: TvNavigationHolder,
 ) : MainGraph {
 
@@ -74,6 +76,7 @@ class TvMainGraph @Inject constructor(
                     ) {
                         AppNavHost(
                             navManager = navManager,
+                            backStackHost = backStackHost,
                             registrars = navigationHolder.registrars,
                             modifier = Modifier.fillMaxSize(),
                             transitionSpec = tvNavTransitionSpec,

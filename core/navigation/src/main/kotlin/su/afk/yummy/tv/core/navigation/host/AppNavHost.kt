@@ -23,8 +23,8 @@ import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.defaultPopTransitionSpec
 import androidx.navigation3.ui.defaultTransitionSpec
+import su.afk.yummy.tv.core.navigation.manager.BackStackHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.manager.NavigationManager
 import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.BottomOverlaySceneStrategy
@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.navigation.scene.BottomOverlaySceneStrategy
 @Composable
 fun AppNavHost(
     navManager: INavigationManager,
+    backStackHost: BackStackHost,
     registrars: Set<@JvmSuppressWildcards NavRegistrar>,
     modifier: Modifier = Modifier,
     transitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
@@ -59,9 +60,7 @@ fun AppNavHost(
     }
 
     LaunchedEffect(appBackStack, rootBackStacks) {
-        // attachBackStacks — internal wiring, недоступно через INavigationManager;
-        // единственная реализация интерфейса, которую отдаёт DI, — NavigationManager.
-        (navManager as NavigationManager).attachBackStacks(
+        backStackHost.attachBackStacks(
             appBackStack = appBackStack,
             rootStacks = rootBackStacks,
         )

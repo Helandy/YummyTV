@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
+import su.afk.yummy.tv.core.navigation.manager.BackStackHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
@@ -37,6 +38,7 @@ import javax.inject.Singleton
 @Singleton
 class MobileMainGraph @Inject internal constructor(
     private val navManager: INavigationManager,
+    private val backStackHost: BackStackHost,
     private val navigationHolder: MobileNavigationHolder,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) : MainGraph {
@@ -93,6 +95,7 @@ class MobileMainGraph @Inject internal constructor(
                     ) {
                         AppNavHost(
                             navManager = navManager,
+                            backStackHost = backStackHost,
                             registrars = navigationHolder.registrars,
                             modifier = Modifier.fillMaxSize(),
                             extraSceneStrategies = listOf(

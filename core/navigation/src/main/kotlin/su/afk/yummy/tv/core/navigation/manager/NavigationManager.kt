@@ -22,7 +22,7 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 internal class NavigationManager(
     override val roots: Map<RootTab, NavKey>,
     initialRoot: RootTab,
-) : INavigationManager {
+) : INavigationManager, BackStackHost {
     override var appBackStack: MutableList<NavKey> by mutableStateOf(mutableStateListOf())
         private set
 
@@ -45,7 +45,7 @@ internal class NavigationManager(
         }
     }
 
-    fun attachBackStacks(
+    override fun attachBackStacks(
         appBackStack: NavBackStack<NavKey>,
         rootStacks: Map<RootTab, NavBackStack<NavKey>>,
     ) {

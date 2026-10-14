@@ -6,7 +6,7 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 /**
  * Узкая, немутабельная граница [NavigationManager] для потребителей вне модуля навигации
  * (core:error, core:deeplink и т.п.), которым не нужен доступ к internal wiring
- * (см. [NavigationManager.attachBackStacks]).
+ * (см. [BackStackHost.attachBackStacks]).
  */
 interface INavigationManager {
     val backStack: List<NavKey>
