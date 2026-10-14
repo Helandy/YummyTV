@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.lazy.KeepLazyListAtStartOnNewHead
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterSpacing
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -44,7 +45,7 @@ internal fun HomeFeedSectionRow(
         LazyRow(
             state = listState,
             contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(currentMobilePosterSpacing()),
         ) {
             items(section.items, key = { lazyKey("homeitem", it.id) }) { item ->
                 Box(modifier = Modifier.testTag("anime_card")) {

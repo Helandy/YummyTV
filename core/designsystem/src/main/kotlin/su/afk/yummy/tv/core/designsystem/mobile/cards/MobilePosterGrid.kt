@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
 
 @Composable
@@ -21,6 +22,7 @@ fun MobilePosterGrid(
     content: LazyGridScope.() -> Unit,
 ) {
     val posterWidth = currentMobilePosterWidth()
+    val spacing = currentMobilePosterSpacing()
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(posterWidth),
@@ -32,8 +34,8 @@ fun MobilePosterGrid(
             end = 16.dp,
             bottom = contentPadding.calculateBottomPadding() + 16.dp,
         ),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing),
         content = content,
     )
 }

@@ -32,6 +32,7 @@ internal fun LibraryMobileContinueWatchingGrid(
     onDetailsSelected: (HomeContinueWatchingItem) -> Unit,
     onDeleteSelected: (HomeContinueWatchingItem) -> Unit,
 ) {
+    val spacing = cardSize.mobileGridSpacing
     LazyVerticalGrid(
         columns = GridCells.Adaptive(cardSize.mobileGridMinWidth),
         modifier = Modifier.fillMaxSize(),
@@ -41,8 +42,8 @@ internal fun LibraryMobileContinueWatchingGrid(
             end = 16.dp,
             bottom = MobileBottomBarDefaults.contentBottomPadding,
         ),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing),
     ) {
         if (showRemoteLoader) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -92,4 +93,11 @@ private val LibraryContinueWatchingCardSize.mobileGridMinWidth: Dp
         LibraryContinueWatchingCardSize.COMPACT -> 156.dp
         LibraryContinueWatchingCardSize.STANDARD -> 220.dp
         LibraryContinueWatchingCardSize.LARGE -> 320.dp
+    }
+
+private val LibraryContinueWatchingCardSize.mobileGridSpacing: Dp
+    get() = when (this) {
+        LibraryContinueWatchingCardSize.COMPACT -> 6.dp
+        LibraryContinueWatchingCardSize.STANDARD,
+        LibraryContinueWatchingCardSize.LARGE -> 12.dp
     }
