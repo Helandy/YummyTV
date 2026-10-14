@@ -16,7 +16,8 @@ import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
 
 /**
  * Управление фокусом TV-плеера. Приоритет: следующий эпизод -> финальное действие ->
- * контролы (внешняя цель -> возврат из панели -> play) -> скрытый оверлей.
+ * контролы (внешняя цель -> возврат из панели -> play) -> скрытый оверлей. Заявка [skipFocusRequested]
+ * от авто-скипа отдаёт фокус «Пропустить» вместо play.
  * Каждая панель получает фокус своим отдельным LaunchedEffect.
  */
 @Composable
@@ -28,9 +29,13 @@ internal fun TvPlayerFocusEffects(
     recoveryHintVisible: Boolean,
     tutorialActive: Boolean = false,
     restoreControlFocusTarget: PlayerControlFocusTarget?,
+    skipFocusRequested: Boolean = false,
+    onSkipFocusHandled: () -> Unit = {},
     onControlFocusRestored: () -> Unit,
 ) {
     val currentOnControlFocusRestored by rememberUpdatedState(onControlFocusRestored)
+    val currentSkipFocusRequested by rememberUpdatedState(skipFocusRequested)
+    val currentOnSkipFocusHandled by rememberUpdatedState(onSkipFocusHandled)
 
     fun requestPanelReturnFocus(): Boolean {
         val target = panels.pendingReturnFocusTarget ?: return false
@@ -60,18 +65,28 @@ internal fun TvPlayerFocusEffects(
         } else if (recoveryHintVisible) {
             // Хинт восстановления сам запрашивает фокус на свои кнопки — не перехватываем
         } else if (controllerVisible && !panels.isAnyOpen) {
+            // Заявку на «Пропустить» исполняет отдельный эффект ниже; play не запрашиваем, чтобы его не перебить.
+            val skipFocusOwnsFocus = currentSkipFocusRequested
             withFrameNanos { }
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
                 focus.requestControl(target).also { restored ->
                     if (restored) currentOnControlFocusRestored()
                 }
             } ?: false
-            if (!restoredExternalTarget && !requestPanelReturnFocus()) {
+            if (!restoredExternalTarget && !requestPanelReturnFocus() && !skipFocusOwnsFocus) {
                 requestFocusUntilTimeout(focus.play)
             }
         } else if (!controllerVisible) {
             requestFocusUntilTimeout(focus.overlay)
         }
+    }
+
+    LaunchedEffect(skipFocusRequested, controllerVisible) {
+        if (!skipFocusRequested || !controllerVisible) return@LaunchedEffect
+        if (!panels.isAnyOpen && !prompts.anyVisible && !tutorialActive) {
+            requestFocusUntilTimeout(focus.skip)
+        }
+        currentOnSkipFocusHandled()
     }
 
     LaunchedEffect(panels.isOpen(TvPlayerPanel.Quality)) {

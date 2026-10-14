@@ -129,6 +129,9 @@ internal fun TvExoPlayerView(
         onHide = { controllerVisible = false },
     )
 
+    // Заявка авто-скипа на фокус «Пропустить»; исполняет и снимает TvPlayerFocusEffects.
+    var skipFocusRequested by remember { mutableStateOf(false) }
+
     fun onInteraction() {
         controllerVisible = true
         when {
@@ -319,17 +322,20 @@ internal fun TvExoPlayerView(
         recoveryHintVisible = recoveryHintVisible,
         tutorialActive = state.tvControlsTutorialReady && state.showTvControlsTutorial,
         restoreControlFocusTarget = restoreControlFocusTarget,
+        skipFocusRequested = skipFocusRequested,
+        onSkipFocusHandled = { skipFocusRequested = false },
         onControlFocusRestored = onControlFocusRestored,
     )
 
     TvPlayerAutoSkipEffect(
         activeSkip = activeSkip,
+        isMediaReady = isMediaReady,
         autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
         delaySeconds = state.autoSkipDelaySeconds,
         isPlaying = playbackShouldPlay,
         skipUi = skipUi,
-        focus = focus,
         autoHide = autoHide,
+        onRequestSkipFocus = { skipFocusRequested = true },
         onControllerVisibleChange = { controllerVisible = it },
         onSkipActiveSegment = { reportSelection -> skipActiveSegment(reportSelection) },
     )
