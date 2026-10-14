@@ -5,6 +5,10 @@ plugins {
 
 android {
     namespace = "su.afk.yummy.tv.feature.schedule.mobile"
+
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 dependencies {
@@ -19,4 +23,10 @@ dependencies {
     implementation(libs.bundles.navigation.serialization)
 
     implementation(libs.coil.compose)
+
+    debugImplementation(libs.compose.uiTest.manifest)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.compose.uiTest.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

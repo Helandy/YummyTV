@@ -8,6 +8,7 @@ val appVersionName = providers.gradleProperty("yummytv.versionName").get()
 android {
     namespace = "su.afk.yummy.tv.feature.settings.mobile"
     defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "VERSION_NAME", "\"$appVersionName\"")
     }
     buildFeatures {
@@ -29,4 +30,10 @@ dependencies {
     implementation(libs.bundles.navigation.serialization)
 
     implementation(libs.androidx.material.icons.extended)
+
+    debugImplementation(libs.compose.uiTest.manifest)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.compose.uiTest.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

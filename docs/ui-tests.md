@@ -89,3 +89,18 @@ class FaqMobileScreenTest {
 - Устройство должно быть разбужено: у спящей приставки нет окна, все тесты падают с
   `No compose hierarchies found in the app`. Лечится `adb shell input keyevent KEYCODE_WAKEUP`.
 - Отчёт: `<модуль>/build/reports/androidTests/connected/debug/index.html`.
+
+## Частые ловушки
+
+- **Paging.** `PagingData.from(...)` и `PagingData.empty()` без `sourceLoadStates` оставляют список в
+  состоянии Loading: экран рисует скелетон, а не данные. Передавайте
+  `LoadStates(refresh = NotLoading(false), prepend = NotLoading(true), append = NotLoading(true))`.
+- **Дубли текста.** Название экрана часто встречается дважды (топ-бар и заголовок секции), а в
+  русской локали ещё и совпадает с подписью кнопки. Кнопку ищите по
+  `hasText(...) and hasClickAction()`, дубль заголовка проверяйте через `assertCountEquals`.
+- **LazyColumn.** Ниже экрана элементы не скомпонованы, `performScrollTo()` их не найдёт. Сначала
+  `onNode(hasScrollAction()).performScrollToNode(hasText(...))`.
+- **HTML-контент.** Парсер публикаций и рецензий разбирает теги: передавайте `<p>текст</p>`, а не
+  голый текст.
+- **Экраны с сервисами.** `PlayerMobileScreen` поднимает Hilt-сервис воспроизведения и без
+  `@HiltAndroidApp` падает. Для плеера тестируем отдельные `view`-компоненты.

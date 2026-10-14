@@ -5,6 +5,10 @@ plugins {
 
 android {
     namespace = "su.afk.yummy.tv.feature.player.mobile"
+
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 dependencies {
@@ -28,4 +32,10 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.activity.compose)
+
+    debugImplementation(libs.compose.uiTest.manifest)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.compose.uiTest.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

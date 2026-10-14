@@ -3,7 +3,13 @@ plugins {
     id("yummytv.android.hilt")
 }
 
-android { namespace = "su.afk.yummy.tv.feature.reviews.mobile" }
+android {
+    namespace = "su.afk.yummy.tv.feature.reviews.mobile"
+
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+}
 
 dependencies {
     implementation(project(":core:designsystem"))
@@ -19,4 +25,10 @@ dependencies {
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
+
+    debugImplementation(libs.compose.uiTest.manifest)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.compose.uiTest.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

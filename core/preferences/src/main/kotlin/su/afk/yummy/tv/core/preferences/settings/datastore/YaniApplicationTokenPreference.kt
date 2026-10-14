@@ -8,14 +8,11 @@ internal const val DEFAULT_YANI_APPLICATION_TOKEN = "ze645twqfeql6l1u"
 
 /** Токен приложения: пользовательский, если задан, иначе встроенный по умолчанию. */
 internal fun Preferences.yaniApplicationToken(): String =
-    this[yaniApplicationTokenKey]?.takeIf { it.isNotBlank() } ?: DEFAULT_YANI_APPLICATION_TOKEN
+    this[yaniApplicationTokenKey]?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_YANI_APPLICATION_TOKEN
 
 /** Отличает пользовательский токен от встроенного — на этом строится подсказка в настройках. */
-internal fun Preferences.yaniApplicationTokenState(): YaniApplicationTokenState {
-    val token = this[yaniApplicationTokenKey]?.trim().orEmpty()
-    return if (token.isNotBlank() && token != DEFAULT_YANI_APPLICATION_TOKEN) {
-        YaniApplicationTokenState.CUSTOM
-    } else {
-        YaniApplicationTokenState.DEFAULT
-    }
+internal fun Preferences.yaniApplicationTokenState(): YaniApplicationTokenState = if (yaniApplicationToken() != DEFAULT_YANI_APPLICATION_TOKEN) {
+    YaniApplicationTokenState.CUSTOM
+} else {
+    YaniApplicationTokenState.DEFAULT
 }
