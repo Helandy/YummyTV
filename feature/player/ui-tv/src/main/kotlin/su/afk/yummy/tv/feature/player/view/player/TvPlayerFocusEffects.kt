@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.withFrameNanos
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.feature.player.common.PlayerEndFlowState
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
@@ -67,14 +66,18 @@ internal fun TvPlayerFocusEffects(
         } else if (controllerVisible && !panels.isAnyOpen) {
             // Заявку на «Пропустить» исполняет отдельный эффект ниже; play не запрашиваем, чтобы его не перебить.
             val skipFocusOwnsFocus = currentSkipFocusRequested
-            withFrameNanos { }
-            val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
-                focus.requestControl(target).also { restored ->
-                    if (restored) currentOnControlFocusRestored()
-                }
-            } ?: false
-            if (!restoredExternalTarget && !requestPanelReturnFocus() && !skipFocusOwnsFocus) {
-                requestFocusUntilTimeout(focus.play)
+            // Контролы могли только что появиться — вся цепочка повторяется по кадрам, пока
+            // какая-то цель не возьмёт фокус.
+            requestFocusUntilTimeout {
+                val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
+                    focus.requestControl(target).also { restored ->
+                        if (restored) currentOnControlFocusRestored()
+                    }
+                } ?: false
+                restoredExternalTarget ||
+                    requestPanelReturnFocus() ||
+                    skipFocusOwnsFocus ||
+                    focus.play.requestFocus()
             }
         } else if (!controllerVisible) {
             requestFocusUntilTimeout(focus.overlay)

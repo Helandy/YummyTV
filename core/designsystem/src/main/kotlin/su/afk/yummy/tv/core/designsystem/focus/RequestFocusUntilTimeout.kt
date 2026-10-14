@@ -2,6 +2,7 @@ package su.afk.yummy.tv.core.designsystem.focus
 
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -21,12 +22,34 @@ private val TvLazyGridFocusRestoreTimeout = 500.milliseconds
 suspend fun requestFocusUntilTimeout(
     requester: FocusRequester,
     timeout: Duration = TvLazyGridFocusRestoreTimeout,
+): Boolean = requestFocusUntilTimeout(timeout) { requester.requestFocus() }
+
+/**
+ * Same as the [FocusRequester] overload, but for targets that are not a single requester - e.g. a
+ * row that picks its own child to focus, or a control resolved by a focus-target enum. [attempt]
+ * returns whether focus was taken; it is tried once per frame until [timeout].
+ *
+ * The first attempt deliberately waits one frame: callers launched from a LaunchedEffect rely on
+ * landing after focus moves made in the same frame (e.g. the main scaffold handing focus to the
+ * screen's preferred requester) - trying synchronously lets those moves override the result.
+ */
+suspend fun requestFocusUntilTimeout(
+    timeout: Duration = TvLazyGridFocusRestoreTimeout,
+    attempt: suspend () -> Boolean,
 ): Boolean =
     withTimeoutOrNull(timeout) {
-        var focused = false
-        while (!focused) {
+        do {
             withFrameNanos { }
-            focused = runCatching { requester.requestFocus() }.getOrDefault(false)
-        }
-        focused
+        } while (!tryAttempt(attempt))
+        true
     } ?: false
+
+// requestFocus() throws while the target is not attached yet - treat it as "not this frame".
+private suspend fun tryAttempt(attempt: suspend () -> Boolean): Boolean =
+    try {
+        attempt()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        false
+    }

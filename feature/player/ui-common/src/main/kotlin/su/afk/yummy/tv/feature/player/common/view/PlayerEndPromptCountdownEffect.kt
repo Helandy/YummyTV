@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import kotlin.time.Duration.Companion.seconds
@@ -23,7 +22,6 @@ fun PlayerEndPromptCountdownEffect(
         val countdown = promptState as? PlayerEndPromptState.WithCountdown
             ?: return@LaunchedEffect
         if (countdown.seconds <= 0) {
-            withFrameNanos { }
             currentOnFinished()
         } else {
             delay(1.seconds)

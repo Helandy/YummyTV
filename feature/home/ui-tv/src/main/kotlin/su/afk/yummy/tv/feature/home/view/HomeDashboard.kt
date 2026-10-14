@@ -27,7 +27,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -41,7 +40,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
@@ -51,6 +50,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.presentation.R
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -211,18 +211,10 @@ internal fun HomeDashboard(
             }.first { it }
             // FocusRequester ряда прикреплён к карточке внутри вложенного LazyRow,
             // которая может быть ещё не скомпонована на этом кадре — повторяем по кадрам
-            val focused = withTimeoutOrNull(ROW_FOCUS_TIMEOUT_MILLIS) {
-                var ok = false
-                while (!ok) {
-                    val handler = targetRowKey?.let { rowFocusHandlers[it] }
-                    ok = runSuspendCatching {
-                        handler?.invoke()
-                            ?: focusRequesterForLazyIndex(target).requestFocus()
-                    }.getOrDefault(false)
-                    if (!ok) withFrameNanos { }
-                }
-                true
-            } ?: false
+            val focused = requestFocusUntilTimeout(ROW_FOCUS_TIMEOUT) {
+                val handler = targetRowKey?.let { rowFocusHandlers[it] }
+                handler?.invoke() ?: focusRequesterForLazyIndex(target).requestFocus()
+            }
             if (!focused) {
                 // Фокус фактически остался в прежнем ряду — возвращаем ключ, иначе подсветка
                 // заголовков и fallback восстановления будут указывать не на тот ряд.
@@ -370,14 +362,16 @@ internal fun HomeDashboard(
                         fun scrollHeroToTopWhileFocused() {
                             heroEnterScrollJob?.cancel()
                             heroEnterScrollJob = scope.launch {
-                                withTimeoutOrNull(ROW_FOCUS_TIMEOUT_MILLIS) {
-                                    while (heroRowHasFocus) {
-                                        val atTop =
-                                            lazyColumnState.firstVisibleItemIndex == heroLazyIdx &&
-                                                lazyColumnState.firstVisibleItemScrollOffset == 0
-                                        if (atTop) return@withTimeoutOrNull
-                                        lazyColumnState.scrollToItem(heroLazyIdx)
-                                        withFrameNanos { }
+                                // Пока фокус в hero, держим его у верхней кромки: реагируем на
+                                // каждое смещение колонки, пока не встанет ровно.
+                                withTimeoutOrNull(ROW_FOCUS_TIMEOUT) {
+                                    snapshotFlow {
+                                        heroRowHasFocus &&
+                                            (lazyColumnState.firstVisibleItemIndex != heroLazyIdx ||
+                                                lazyColumnState.firstVisibleItemScrollOffset != 0)
+                                    }.first { needsScroll ->
+                                        if (needsScroll) lazyColumnState.scrollToItem(heroLazyIdx)
+                                        !needsScroll
                                     }
                                 }
                             }
@@ -465,4 +459,4 @@ private object HomeColumnNoAutoBringIntoViewSpec : BringIntoViewSpec {
 private const val SECTION_HERO = "__hero"
 private const val ROW_CONTINUE_WATCHING = "continue_watching"
 private const val ROW_HERO = "hero_carousel"
-private const val ROW_FOCUS_TIMEOUT_MILLIS = 500L
+private val ROW_FOCUS_TIMEOUT = 500.milliseconds
