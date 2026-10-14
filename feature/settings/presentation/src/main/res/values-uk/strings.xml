@@ -43,6 +43,8 @@
     <string name="settings_background_light_hint">Білий фон із темним текстом</string>
     <string name="settings_background_dark">Темна</string>
     <string name="settings_background_dark_hint">Темний фон (за замовчуванням)</string>
+    <string name="settings_background_amoled">AMOLED</string>
+    <string name="settings_background_amoled_hint">Суто чорний фон для OLED-екранів</string>
     <string name="settings_interface_type">Тип інтерфейсу</string>
     <string name="settings_interface_mobile">Мобільний</string>
     <string name="settings_interface_mobile_hint">Керування із сенсорного екрана</string>

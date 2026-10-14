@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -171,15 +172,20 @@ fun YummyTvTheme(
     val darkTheme = when (backgroundStyle) {
         BackgroundStyle.SYSTEM -> isSystemInDarkTheme()
         BackgroundStyle.LIGHT -> false
-        BackgroundStyle.DARK -> true
+        BackgroundStyle.DARK, BackgroundStyle.AMOLED -> true
     }
+    val amoled = backgroundStyle == BackgroundStyle.AMOLED
     val context = LocalContext.current
     val palette = appTheme.palette
     val colorScheme = when {
         appTheme == AppTheme.DYNAMIC && isDynamicColorSupported ->
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkTheme) {
+                dynamicDarkColorScheme(context).withAmoled(amoled)
+            } else {
+                dynamicLightColorScheme(context)
+            }
 
-        darkTheme -> palette.toDarkColorScheme()
+        darkTheme -> palette.toDarkColorScheme().withAmoled(amoled)
         else -> palette.toLightColorScheme(LightNeutralsWhite)
     }
 
@@ -281,6 +287,30 @@ private fun YummyTvPalette.toDarkColorScheme() = darkColorScheme(
     inverseOnSurface = background,
     inversePrimary = primaryContainer,
 )
+
+/**
+ * AMOLED: фон и самые тёмные контейнеры — чистый чёрный (пиксели OLED гаснут), ближайшие
+ * поверхности чуть выше, чтобы карточки и шторки не сливались с фоном.
+ */
+private fun ColorScheme.withAmoled(enabled: Boolean): ColorScheme =
+    if (!enabled) {
+        this
+    } else {
+        copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceDim = Color.Black,
+            surfaceContainerLowest = Color.Black,
+            surfaceContainerLow = AmoledSurfaceLow,
+            surfaceContainer = AmoledSurface,
+            surfaceContainerHigh = lerp(AmoledSurface, surfaceVariant, 0.6f),
+            surfaceVariant = lerp(AmoledSurface, surfaceVariant, 0.8f),
+            surfaceContainerHighest = surfaceVariant,
+        )
+    }
+
+private val AmoledSurfaceLow = Color(0xFF070707)
+private val AmoledSurface = Color(0xFF0E0E0E)
 
 private fun YummyTvPalette.toLightColorScheme(neutrals: LightNeutrals) = lightColorScheme(
     background = neutrals.background,

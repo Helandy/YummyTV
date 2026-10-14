@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
-import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -112,6 +111,7 @@ fun BackgroundStyle.label(): String = stringResource(
         BackgroundStyle.SYSTEM -> R.string.settings_background_system
         BackgroundStyle.LIGHT -> R.string.settings_background_light
         BackgroundStyle.DARK -> R.string.settings_background_dark
+        BackgroundStyle.AMOLED -> R.string.settings_background_amoled
     },
 )
 
@@ -121,6 +121,7 @@ fun BackgroundStyle.hint(): String = stringResource(
         BackgroundStyle.SYSTEM -> R.string.settings_background_system_hint
         BackgroundStyle.LIGHT -> R.string.settings_background_light_hint
         BackgroundStyle.DARK -> R.string.settings_background_dark_hint
+        BackgroundStyle.AMOLED -> R.string.settings_background_amoled_hint
     },
 )
 
@@ -242,7 +243,7 @@ fun PreferredVideoQuality.hint(): String = stringResource(
         PreferredVideoQuality.P720,
         PreferredVideoQuality.P480,
         PreferredVideoQuality.P360,
-        -> R.string.settings_preferred_video_quality_fallback_hint
+            -> R.string.settings_preferred_video_quality_fallback_hint
     },
 )
 

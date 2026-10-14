@@ -43,6 +43,8 @@
     <string name="settings_background_light_hint">White background with dark text</string>
     <string name="settings_background_dark">Dark</string>
     <string name="settings_background_dark_hint">Dark background (default)</string>
+    <string name="settings_background_amoled">AMOLED</string>
+    <string name="settings_background_amoled_hint">Pure black background for OLED screens</string>
     <string name="settings_interface_type">Interface type</string>
     <string name="settings_interface_mobile">Mobile</string>
     <string name="settings_interface_mobile_hint">Optimized for touchscreen controls</string>
