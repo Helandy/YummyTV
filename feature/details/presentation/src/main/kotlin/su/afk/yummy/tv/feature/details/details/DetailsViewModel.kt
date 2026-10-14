@@ -407,7 +407,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        error = e.userText(UiText.Res(R.string.details_load_error)),
+                        error = UiText.Failure(e, UiText.Res(R.string.details_load_error)),
                     )
                 }
             },
@@ -432,7 +432,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     copy(
-                        videosState = VideosUiState.Error(it.userMessage()),
+                        videosState = VideosUiState.Error(UiText.Failure(it)),
                         watchProgress = DetailsWatchProgressIndex.Empty,
                         isWatchLaunchPending = false,
                         isSubscriptionsLoading = false,

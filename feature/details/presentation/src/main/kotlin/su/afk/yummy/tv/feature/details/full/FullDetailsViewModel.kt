@@ -77,7 +77,7 @@ class FullDetailsViewModel @AssistedInject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            error = e.userText(UiText.Res(R.string.details_load_error)),
+                            error = UiText.Failure(e, UiText.Res(R.string.details_load_error)),
                         )
                     }
                 },

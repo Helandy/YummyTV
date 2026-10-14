@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
@@ -109,7 +110,7 @@ class SimilarViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     if (this.fromAi == fromAi) {
-                        copy(similarState = SimilarUiState.Error(it.userMessage()))
+                        copy(similarState = SimilarUiState.Error(UiText.Failure(it)))
                     } else {
                         this
                     }

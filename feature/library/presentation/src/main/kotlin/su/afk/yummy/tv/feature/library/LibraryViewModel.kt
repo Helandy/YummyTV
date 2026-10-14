@@ -282,7 +282,7 @@ class LibraryViewModel @Inject internal constructor(
                     result.pushErrors.forEach { analytics.eventLoadError(it) }
                     setState {
                         copy(
-                            remoteError = result.pushErrors.firstOrNull()?.userText(),
+                            remoteError = result.pushErrors.firstOrNull()?.let { UiText.Failure(it) },
                             isRemoteLoading = false,
                         )
                     }
@@ -292,7 +292,7 @@ class LibraryViewModel @Inject internal constructor(
                     analytics.eventLoadError(result.error)
                     setState {
                         copy(
-                            remoteError = result.error.userText(),
+                            remoteError = UiText.Failure(result.error),
                             isRemoteLoading = false,
                         )
                     }
@@ -321,7 +321,7 @@ class LibraryViewModel @Inject internal constructor(
                     .onSuccess { removeLocalEntry(event) }
                     .onFailure { error ->
                         analytics.eventRemoveError(event.target, error)
-                        setState { copy(remoteError = error.userText()) }
+                        setState { copy(remoteError = UiText.Failure(error)) }
                     }
             } else {
                 removeLocalEntry(event)

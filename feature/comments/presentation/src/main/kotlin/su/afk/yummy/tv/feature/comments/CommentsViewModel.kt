@@ -210,7 +210,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 analytics.eventLoadError(target, sort, error)
                 setState {
                     copy(
-                        error = error.userText(UiText.Res(R.string.comments_load_error)),
+                        error = UiText.Failure(error, UiText.Res(R.string.comments_load_error)),
                     )
                 }
                 throw error
@@ -471,7 +471,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                             commentOverlays = commentOverlays + (
                                 commentId to current.copy(
                                     childrenLoading = false,
-                                    childrenError = error.userText(UiText.Res(R.string.comments_load_error)),
+                                    childrenError = UiText.Failure(error, UiText.Res(R.string.comments_load_error)),
                                 )
                                 ),
                         )
@@ -523,7 +523,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     }
 
     private fun showMutationError(error: Throwable, keepDialog: Boolean = false) {
-        val message = error.userMessage(stringProvider.get(R.string.comments_action_error))
+        val message = errorHandler.parse(error).message
         setEffect(CommentsState.Effect.ShowToast(message))
         setState {
             copy(

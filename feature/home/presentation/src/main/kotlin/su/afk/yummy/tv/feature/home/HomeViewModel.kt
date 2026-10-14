@@ -509,7 +509,7 @@ class HomeViewModel @Inject internal constructor(
                         copy(
                             isLoading = false,
                             error = if (feed == null) {
-                                e.userText(UiText.Res(R.string.home_load_error))
+                                UiText.Failure(e, UiText.Res(R.string.home_load_error))
                             } else {
                                 error
                             },
@@ -537,7 +537,7 @@ class HomeViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isBloggerVideosLoading = false,
-                            bloggerVideosError = error.userText(UiText.Res(R.string.home_blogger_videos_load_error)),
+                            bloggerVideosError = UiText.Failure(error, UiText.Res(R.string.home_blogger_videos_load_error)),
                         )
                     }
                 },
@@ -562,7 +562,7 @@ class HomeViewModel @Inject internal constructor(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = e.userText(UiText.Res(R.string.home_load_error)),
+                                error = UiText.Failure(e, UiText.Res(R.string.home_load_error)),
                             )
                         }
                     } else if (showInitialLoading) {

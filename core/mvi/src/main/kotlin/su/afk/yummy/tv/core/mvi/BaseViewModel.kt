@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.core.mvi
 
-import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -11,8 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
-import su.afk.yummy.tv.core.model.error.isNetworkError
-import su.afk.yummy.tv.core.model.text.UiText
 
 /**
  * База MVI-экрана: держит [state], раздаёт одноразовые [effect] и сводит обработку ошибок
@@ -57,29 +54,4 @@ abstract class BaseViewModel<S : UiState, E : UiEvent, F : UiEffect> : Coroutine
     }
 
     protected open fun onRetry() {}
-
-    /**
-     * Текст ошибки для inline-состояния экрана. Сетевые сбои — локализованным сообщением из
-     * [ErrorHandler], а исходный текст (`Unable to resolve host ...`) второй строкой;
-     * HTTP-ответ с ошибкой — локализованным сообщением по коду (у `ResponseException` в `message`
-     * техническая строка Ktor с URL и телом ответа); остальное — как раньше: текст исключения,
-     * иначе [fallback].
-     */
-    protected fun Throwable.userMessage(fallback: String? = null): String = when {
-        isNetworkError() -> {
-            val text = errorHandler.parse(this).message
-            message?.takeIf { it.isNotBlank() }?.let { "$text\n$it" } ?: text
-        }
-
-        this is ResponseException -> errorHandler.parse(this).message
-
-        else -> message ?: fallback ?: errorHandler.parse(this).message
-    }
-
-    /**
-     * Причина ошибки для inline-состояния экрана в виде [UiText]: текст локализуется при отрисовке,
-     * а не фиксируется на языке момента ошибки. [fallback] показывается, когда у исключения нет
-     * собственного сообщения.
-     */
-    protected fun Throwable.userText(fallback: UiText? = null): UiText = UiText.Failure(this, fallback)
 }

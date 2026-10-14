@@ -182,7 +182,8 @@ class DetailsViewModelTest : BaseUnitTest() {
     fun `failed videos are shown as an error state`() {
         coEvery { videoHandler.load(any(), any()) } returns Result.failure(IllegalStateException("offline"))
 
-        assertEquals(VideosUiState.Error("offline"), createViewModel().currentState.videosState)
+        val error = createViewModel().currentState.videosState as VideosUiState.Error
+        assertEquals("offline", (error.message as UiText.Failure).cause.message)
     }
 
     @Test

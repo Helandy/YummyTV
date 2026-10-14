@@ -50,7 +50,7 @@ class TrailersViewModel @AssistedInject internal constructor(
             onSuccess = { trailers ->
                 setState { copy(isLoading = false, trailers = trailers.toImmutableList()) }
             },
-            onFailure = { setState { copy(isLoading = false, error = it.userText()) } },
+            onFailure = { setState { copy(isLoading = false, error = UiText.Failure(it)) } },
         )
     }
 }

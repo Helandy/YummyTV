@@ -90,7 +90,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
                 val dubbings = videos.episodeDubbingItems(episode)
                 setState { copy(isLoading = false, dubbings = dubbings.toImmutableList()) }
             },
-            onFailure = { e -> setState { copy(isLoading = false, error = e.userText()) } },
+            onFailure = { e -> setState { copy(isLoading = false, error = UiText.Failure(e)) } },
         )
     }
 

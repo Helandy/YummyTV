@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationReaction
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -104,7 +105,7 @@ class SimilarViewModelTest : BaseUnitTest() {
     fun `failed load is an error state and retry recovers`() {
         coEvery { repository.getAnimeRecommendations(ANIME_ID, false) } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals(SimilarUiState.Error("boom"), vm.currentState.similarState)
+        assertEquals("boom", ((vm.currentState.similarState as SimilarUiState.Error).message as UiText.Failure).cause.message)
         coEvery { repository.getAnimeRecommendations(ANIME_ID, false) } returns listOf(recommendation(1))
 
         vm.setEvent(Event.RetrySelected)

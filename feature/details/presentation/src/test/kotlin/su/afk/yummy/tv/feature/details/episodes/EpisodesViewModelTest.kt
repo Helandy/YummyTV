@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -155,7 +156,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
     fun `failed load is an error state and retry recovers`() {
         coEvery { animeRepository.getAnimeVideos(ANIME_ID) } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals(VideosUiState.Error("boom"), vm.currentState.videosState)
+        assertEquals("boom", ((vm.currentState.videosState as VideosUiState.Error).message as UiText.Failure).cause.message)
         coEvery { animeRepository.getAnimeVideos(ANIME_ID) } returns listOf(v1)
 
         vm.setEvent(Event.RetryVideosSelected)

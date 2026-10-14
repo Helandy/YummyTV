@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -80,7 +81,7 @@ fun EpisodesMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.videosState is VideosUiState.Loading,
-            error = (state.videosState as? VideosUiState.Error)?.message,
+            error = (state.videosState as? VideosUiState.Error)?.message?.asString(),
             onRetry = { onEvent(EpisodesState.Event.RetryVideosSelected) },
             empty = state.videosState is VideosUiState.Empty,
             emptyText = stringResource(R.string.details_episodes_empty),

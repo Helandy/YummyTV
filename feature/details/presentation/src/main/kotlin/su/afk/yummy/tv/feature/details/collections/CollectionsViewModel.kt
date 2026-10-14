@@ -72,7 +72,7 @@ class CollectionsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        error = e.userText(),
+                        error = UiText.Failure(e),
                         collections = persistentListOf()
                     )
                 }

@@ -57,7 +57,7 @@ class ViewingOrderViewModel @AssistedInject internal constructor(
             onSuccess = { details ->
                 setState { copy(isLoading = false, items = details.viewingOrder.toImmutableList()) }
             },
-            onFailure = { e -> setState { copy(isLoading = false, error = e.userText()) } },
+            onFailure = { e -> setState { copy(isLoading = false, error = UiText.Failure(e)) } },
         )
     }
 }

@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
@@ -408,7 +409,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     copy(
-                        videosState = VideosUiState.Error(it.userMessage()),
+                        videosState = VideosUiState.Error(UiText.Failure(it)),
                         watchProgress = DetailsWatchProgressIndex.Empty
                     )
                 }

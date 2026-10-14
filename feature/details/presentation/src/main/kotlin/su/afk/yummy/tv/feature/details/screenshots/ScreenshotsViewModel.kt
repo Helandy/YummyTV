@@ -77,7 +77,7 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
                     )
                 }
             },
-            onFailure = { e -> setState { copy(isLoading = false, error = e.userText()) } },
+            onFailure = { e -> setState { copy(isLoading = false, error = UiText.Failure(e)) } },
         )
     }
 

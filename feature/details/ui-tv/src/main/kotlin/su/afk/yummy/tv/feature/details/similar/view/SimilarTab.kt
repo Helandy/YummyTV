@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.TvCenteredCarouselBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
@@ -120,7 +121,7 @@ internal fun SimilarTab(
                 contentAlignment = Alignment.Center,
             ) {
                 TvStateMessage(
-                    title = state.message ?: stringResource(R.string.details_similar_empty),
+                    title = state.message.asString(),
                     icon = Icons.Filled.Warning,
                     onRetry = onRetry,
                 )

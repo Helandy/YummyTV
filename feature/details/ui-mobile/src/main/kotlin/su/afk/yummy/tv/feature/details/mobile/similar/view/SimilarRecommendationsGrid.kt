@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
@@ -77,8 +78,7 @@ internal fun SimilarRecommendationsGrid(
 
             is SimilarUiState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
                 MobileMessage(
-                    title = similarState.message
-                        ?: stringResource(R.string.details_mobile_similar_empty),
+                    title = similarState.message.asString(),
                     icon = Icons.Filled.Warning,
                     actionLabel = onRetry?.let { stringResource(CoreR.string.common_retry) },
                     onAction = onRetry,
