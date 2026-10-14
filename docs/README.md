@@ -70,3 +70,4 @@
 
 - [git-hooks-and-code-style.md](git-hooks-and-code-style.md) — хуки, формат коммитов, ktlint, lint.
 - [unit.md](unit.md) — как оформлять unit-тесты.
+- [ui-tests.md](ui-tests.md) — как оформлять инструментальные UI-тесты Compose (androidTest).
