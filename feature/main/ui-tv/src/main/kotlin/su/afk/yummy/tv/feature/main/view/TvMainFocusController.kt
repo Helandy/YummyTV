@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.view
 
+import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +19,9 @@ import su.afk.yummy.tv.feature.main.utils.requestFocusOnFrameBoundary
 
 /** Дольше nav-перехода (280 мс): фолбэк на пейн — только после ухода старого экрана */
 private const val PENDING_CONTENT_FOCUS_FALLBACK_DELAY_MILLIS = 400L
+
+/** Фокус в меню, пришедший позже этого окна после нажатия клавиши, — системный, а не от пользователя */
+private const val USER_KEY_INTENT_WINDOW_MILLIS = 300L
 
 internal class TvMainFocusController(
     initialShowMainMenu: Boolean,
@@ -46,6 +50,16 @@ internal class TvMainFocusController(
         private set
     var menuFocusRestoreAfterContentStealToken by mutableIntStateOf(0)
         private set
+
+    private var lastUserKeyUptimeMillis = Long.MIN_VALUE / 2
+
+    fun onUserKey() {
+        lastUserKeyUptimeMillis = SystemClock.uptimeMillis()
+    }
+
+    /** Фокус в меню вызван нажатием пользователя (LEFT/BACK), а не системным возвратом фокуса */
+    fun isMenuFocusUserInitiated(): Boolean =
+        SystemClock.uptimeMillis() - lastUserKeyUptimeMillis <= USER_KEY_INTENT_WINDOW_MILLIS
 
     val menuCanFocus: Boolean
         get() = isContentFocusInitialized
@@ -161,7 +175,10 @@ internal fun TvMainFocusEffects(
             return@LaunchedEffect
         }
         val focused = requestFocusOnFrameBoundary(focusController.contentFocusRequester)
-        focusController.onInitialContentFocusRequested(focused)
+        // Неудачу не фиксируем: эффект перезапустится по смене ключа/preferred requester'а
+        if (focused) {
+            focusController.onInitialContentFocusRequested(true)
+        }
     }
 
     LaunchedEffect(

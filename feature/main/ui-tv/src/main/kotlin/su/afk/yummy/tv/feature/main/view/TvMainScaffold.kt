@@ -22,6 +22,9 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
@@ -118,6 +121,10 @@ fun TvMainScaffold(
                         }
                     }
                 }
+                .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown) focusController.onUserKey()
+                    false
+                }
                 .focusGroup(),
         ) {
             Box(
@@ -155,8 +162,16 @@ fun TvMainScaffold(
                         onExpandedChange = { expanded ->
                             // Пока запрос фокуса контента в полёте, меню не должно
                             // само раскрываться, перехватив временно потерянный фокус
-                            menuExpanded = expanded &&
-                                    focusController.pendingContentFocusRequest == null
+                            if (expanded && !menuExpanded &&
+                                !focusController.isMenuFocusUserInitiated()
+                            ) {
+                                // Фокус попал в меню без нажатия (системный возврат при смене
+                                // экрана на старте): не раскрываем, отдаём фокус контенту
+                                focusController.requestContentFocus(selectedRoot)
+                            } else {
+                                menuExpanded = expanded &&
+                                        focusController.pendingContentFocusRequest == null
+                            }
                         },
                         onEvent = onEvent,
                         rootFocusRequesters = focusController.rootFocusRequesters,
