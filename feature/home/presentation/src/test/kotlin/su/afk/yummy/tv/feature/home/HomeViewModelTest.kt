@@ -54,6 +54,7 @@ import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.HomeState.Effect
 import su.afk.yummy.tv.feature.home.HomeState.Event
+import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
@@ -390,6 +391,25 @@ class HomeViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { detailsNavigator.getDetailsDest(5) }
         verify(exactly = 1) { nav.navigate(navKey) }
         coVerify(exactly = 0) { resolveContinueWatchingLaunch(any(), any()) }
+    }
+
+    @Test
+    fun `missing suggested next episode shows a toast and opens the details`() = runTest {
+        every { settingsStore.refreshContinueWatchingProgressOnLaunch } returns flowOf(false)
+        every { stringProvider.get(any<Int>(), *anyVararg()) } answers { "res${firstArg<Int>()}:${secondArg<Array<Any>>().joinToString()}" }
+        coEvery { resolveContinueWatchingLaunch(any(), any()) } returns null
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.ContinueWatchingSelected(watching(episode = "13")))
+
+        assertEquals(
+            Effect.ShowToast("res${R.string.home_next_episode_unavailable_toast}:13"),
+            effects.single(),
+        )
+        verify(exactly = 1) { detailsNavigator.getDetailsDest(5) }
+        verify(exactly = 1) { nav.navigate(navKey) }
+        assertNull(vm.currentState.launchingContinueWatchingAnimeId)
     }
 
     @Test

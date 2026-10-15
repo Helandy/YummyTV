@@ -8,7 +8,6 @@
     - вызывает `unmockkAll()` после каждого теста.
       `@get:Rule val mainDispatcher` и свой `@After { unmockkAll() }` в тестах не нужны.
 - JUnit4, mockk. `@MockK` и `MockKAnnotations` не используем.
-- Тесты пишем только по явной просьбе (см. `AGENTS.md`).
 
 ## Моки
 

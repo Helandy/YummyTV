@@ -1,7 +1,6 @@
 # Project Instructions
 
 - Stick to clean architecture.
-- Do not write tests unless explicitly asked.
 
 ## Domain Structure
 
