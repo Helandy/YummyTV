@@ -28,6 +28,9 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTextPadding
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTitleStyle
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTitleWeight
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
@@ -116,14 +119,14 @@ fun MobilePosterCard(
                     )
                 }
             }
-            Column(Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
+            Column(Modifier.padding(horizontal = currentMobilePosterTextPadding(), vertical = 8.dp)) {
                 Text(
                     text = title,
                     minLines = titleMinLines,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = currentMobilePosterTitleStyle(),
+                    fontWeight = currentMobilePosterTitleWeight(),
                 )
                 if (!subtitle.isNullOrBlank()) {
                     Spacer(Modifier.height(4.dp))
