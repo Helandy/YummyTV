@@ -91,6 +91,7 @@ internal fun SimilarRecommendationsGrid(
                     MobilePosterCard(
                         title = item.title,
                         posterUrl = item.poster.bestUrl(),
+                        animeId = item.animeId,
                         rating = item.rating,
                         posterOverlay = {
                             item.year?.let { year ->

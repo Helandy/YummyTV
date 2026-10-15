@@ -11,7 +11,7 @@ fun currentMobilePosterWidth(): Dp = LocalPosterCardSize.current.mobilePosterWid
 
 private val PosterCardSize.mobilePosterWidth: Dp
     get() = when (this) {
-        PosterCardSize.COMPACT -> 104.dp
-        PosterCardSize.STANDARD -> 140.dp
-        PosterCardSize.LARGE -> 168.dp
+        PosterCardSize.COMPACT -> 88.dp
+        PosterCardSize.STANDARD -> 100.dp
+        PosterCardSize.LARGE -> 140.dp
     }

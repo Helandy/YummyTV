@@ -143,6 +143,7 @@ fun CollectionMobileScreen(
                     MobilePosterCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
+                        animeId = item.id,
                         rating = item.rating,
                         posterOverlay = {
                             item.year?.let { year ->

@@ -120,6 +120,7 @@ internal fun SearchResultsGrid(
                     TvTitleCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
+                        animeId = item.id,
                         onClick = stableOnClick,
                         onFocused = stableOnFocused,
                         modifier = Modifier

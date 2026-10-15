@@ -112,6 +112,7 @@ class MainSideEffectsHandlerTest : BaseUnitTest() {
         refreshAccount = refreshAccount,
         restoreAccountSession = restoreAccountSession,
         settingsStore = settingsStore,
+        syncRemoteLibrary = mockk(relaxed = true),
         versionName = CURRENT,
     )
 

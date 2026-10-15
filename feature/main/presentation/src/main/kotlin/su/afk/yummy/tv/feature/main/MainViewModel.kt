@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferenc
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
+import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryListStatusesUseCase
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
 import su.afk.yummy.tv.feature.main.presentation.R
@@ -39,6 +40,7 @@ class MainViewModel @Inject internal constructor(
     private val stringProvider: StringProvider,
     private val networkConnectivityMonitor: NetworkConnectivityMonitor,
     private val interfaceModePreferences: AppInterfaceModePreferences,
+    private val observeLibraryListStatuses: ObserveLibraryListStatusesUseCase,
 ) : BaseViewModel<MainState.State, MainState.Event, MainState.Effect>() {
 
     override fun createInitialState() = MainState.State()
@@ -56,6 +58,7 @@ class MainViewModel @Inject internal constructor(
         analytics.eventScreenOpened()
         observeSettings()
         observeConnectivity()
+        observeListStatuses()
         observeFeatureToggleUpdates()
         observeAccountMutationErrors()
         refreshAccountIfNeeded()
@@ -73,6 +76,12 @@ class MainViewModel @Inject internal constructor(
     private fun observeConnectivity() {
         networkConnectivityMonitor.isOnline
             .onEach { isOnline -> setState { copy(isOnline = isOnline) } }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeListStatuses() {
+        observeLibraryListStatuses.invoke()
+            .onEach { statuses -> setState { copy(libraryListStatuses = statuses) } }
             .launchIn(viewModelScope)
     }
 
@@ -114,6 +123,9 @@ class MainViewModel @Inject internal constructor(
                     isAuthorized = signedIn,
                     yaniApplicationTokenState = tokenState,
                 )
+                if (signedIn && session.userId > 0) {
+                    launch { mainSideEffectsHandler.syncLibrary(session.userId) }
+                }
                 setState {
                     copy(
                         isYaniSignedIn = signedIn,

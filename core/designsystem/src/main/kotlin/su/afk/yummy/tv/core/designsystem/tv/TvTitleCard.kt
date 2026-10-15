@@ -27,10 +27,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 
 @Composable
 fun TvTitleCard(
@@ -43,6 +46,8 @@ fun TvTitleCard(
     onFocused: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
     width: Dp? = null,
+    /** Если задан — карточка подписывается списком пользователя, в котором лежит тайтл. */
+    animeId: Int? = null,
     posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     val shape = MaterialTheme.shapes.medium
@@ -89,7 +94,23 @@ fun TvTitleCard(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f),
                     )
                 }
-                posterOverlay?.invoke(this)
+                val listStatus = animeId?.let { LocalLibraryListStatuses.current[it] }
+                // Плашка занимает нижнюю кромку постера, поэтому нижние оверлеи (год) поднимаем над ней.
+                if (posterOverlay != null) {
+                    Box(
+                        Modifier
+                            .matchParentSize()
+                            .padding(bottom = if (listStatus != null) ListStatusBadgeHeight else 0.dp),
+                    ) {
+                        posterOverlay.invoke(this)
+                    }
+                }
+                listStatus?.let { status ->
+                    ListStatusBadge(
+                        status = status,
+                        modifier = Modifier.align(Alignment.BottomStart),
+                    )
+                }
             }
 
             Column(modifier = Modifier.padding(10.dp)) {

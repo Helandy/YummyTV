@@ -30,4 +30,9 @@
     <string name="common_sign_in">Войти</string>
     <string name="common_delete">Удалить</string>
     <string name="common_done">Готово</string>
+    <string name="core_list_status_watching">Смотрю</string>
+    <string name="core_list_status_planned">В планах</string>
+    <string name="core_list_status_completed">Просмотрено</string>
+    <string name="core_list_status_postponed">Отложено</string>
+    <string name="core_list_status_dropped">Брошено</string>
 </resources>

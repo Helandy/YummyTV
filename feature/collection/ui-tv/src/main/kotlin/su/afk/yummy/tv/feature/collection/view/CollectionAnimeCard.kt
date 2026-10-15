@@ -24,6 +24,7 @@ internal fun CollectionAnimeCard(
     TvTitleCard(
         title = item.title,
         posterUrl = item.posterUrl,
+        animeId = item.id,
         onClick = onClick,
         onFocused = onFocused,
         modifier = modifier,

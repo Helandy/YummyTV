@@ -128,6 +128,7 @@ fun RelationMobileScreen(
                         MobilePosterCard(
                             title = item.title,
                             posterUrl = item.posterUrl,
+                            animeId = item.animeId,
                             rating = item.rating,
                             posterOverlay = {
                                 item.year?.let { year ->

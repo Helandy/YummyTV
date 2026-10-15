@@ -8,6 +8,7 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -36,6 +37,8 @@ import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
+import su.afk.yummy.tv.domain.library.repository.LibraryRepository
+import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryListStatusesUseCase
 import su.afk.yummy.tv.feature.main.MainState.Effect
 import su.afk.yummy.tv.feature.main.MainState.Event
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
@@ -55,6 +58,7 @@ class MainViewModelTest : BaseUnitTest() {
     private val accountMutationErrorRepository: AccountMutationErrorRepository = mockk()
     private val stringProvider: StringProvider = mockk()
     private val networkConnectivityMonitor: NetworkConnectivityMonitor = mockk()
+    private val libraryRepository: LibraryRepository = mockk()
 
     private val snapshot = MutableStateFlow(snapshot(nickname = "sandy", unread = 4))
     private val tokenState = MutableStateFlow(YaniApplicationTokenState.DEFAULT)
@@ -69,6 +73,7 @@ class MainViewModelTest : BaseUnitTest() {
         every { settingsStore.yaniApplicationTokenState } returns tokenState
         every { accountRepository.observeSession() } returns session
         every { networkConnectivityMonitor.isOnline } returns isOnline
+        every { libraryRepository.observeAll() } returns flowOf(emptyList())
         every { accountMutationErrorRepository.events } returns mutationErrors
         every { featureToggleUpdateObserver.currentActivationId } returns 1L
         every { featureToggleUpdateObserver.updates } returns toggleUpdates
@@ -76,6 +81,7 @@ class MainViewModelTest : BaseUnitTest() {
         coEvery { mainSideEffectsHandler.checkForUpdates() } returns MainUpdateCheckResult.NotAvailable
         coEvery { mainSideEffectsHandler.restoreAccountIfMissing() } returns Unit
         coEvery { mainSideEffectsHandler.refreshAccountIfStale(any()) } returns Unit
+        coEvery { mainSideEffectsHandler.syncLibrary(any()) } returns Unit
     }
 
     private fun createViewModel() = MainViewModel(
@@ -91,6 +97,7 @@ class MainViewModelTest : BaseUnitTest() {
         stringProvider = stringProvider,
         networkConnectivityMonitor = networkConnectivityMonitor,
         interfaceModePreferences = mockk(relaxed = true),
+        observeLibraryListStatuses = ObserveLibraryListStatusesUseCase(libraryRepository),
     )
 
     private fun snapshot(nickname: String, unread: Int) = MainSettingsSnapshot(

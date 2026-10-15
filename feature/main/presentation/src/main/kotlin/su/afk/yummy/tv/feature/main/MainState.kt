@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main
 
+import su.afk.yummy.tv.core.model.anime.CardListStatus
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -22,6 +23,8 @@ class MainState {
         val isYaniAuthResolved: Boolean = false,
         val unreadNotificationsCount: Int = 0,
         val isOnline: Boolean = true,
+        /** Списки пользователя по animeId — для подписи карточек тайтлов. */
+        val libraryListStatuses: Map<Int, CardListStatus> = emptyMap(),
     ) : UiState
 
     /** Пользовательские действия в корневом контейнере приложения. */

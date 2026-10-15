@@ -247,6 +247,7 @@ fun RelationTvScreen(
                                 TvTitleCard(
                                     title = item.title,
                                     posterUrl = item.posterUrl,
+                                    animeId = item.animeId,
                                     onClick = {
                                         lastFocusTarget = RelationFocusTarget.Anime(item.animeId)
                                         onEvent(RelationState.Event.AnimeSelected(item.animeId))

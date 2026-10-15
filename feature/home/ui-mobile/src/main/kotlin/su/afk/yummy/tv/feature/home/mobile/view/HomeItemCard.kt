@@ -29,6 +29,7 @@ internal fun HomeItemCard(
     MobilePosterCard(
         title = item.title,
         posterUrl = item.poster.bestUrl(),
+        animeId = item.id,
         subtitle = subtitle ?: item.description.takeIf { showMetadata && it.isNotBlank() },
         badge = badge,
         rating = item.rating.takeIf { showMetadata },

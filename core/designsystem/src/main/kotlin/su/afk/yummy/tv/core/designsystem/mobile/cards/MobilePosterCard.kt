@@ -25,8 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 import su.afk.yummy.tv.core.designsystem.mobile.input.onSecondaryClick
 
@@ -40,6 +43,8 @@ fun MobilePosterCard(
     badge: String? = null,
     rating: Double? = null,
     titleMinLines: Int = 2,
+    /** Если задан — карточка подписывается списком пользователя, в котором лежит тайтл. */
+    animeId: Int? = null,
     posterOverlay: @Composable BoxScope.() -> Unit = {},
     /** Слот под карточкой — например кнопки голосования. Живёт внутри Card, клик не перехватывает. */
     footer: @Composable ColumnScope.() -> Unit = {},
@@ -95,9 +100,23 @@ fun MobilePosterCard(
                             .padding(4.dp),
                     )
                 }
-                posterOverlay()
+                val listStatus = animeId?.let { LocalLibraryListStatuses.current[it] }
+                // Плашка занимает нижнюю кромку постера, поэтому нижние оверлеи (год) поднимаем над ней.
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .padding(bottom = if (listStatus != null) ListStatusBadgeHeight else 0.dp),
+                ) {
+                    posterOverlay()
+                }
+                listStatus?.let { status ->
+                    ListStatusBadge(
+                        status = status,
+                        modifier = Modifier.align(Alignment.BottomStart),
+                    )
+                }
             }
-            Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
                 Text(
                     text = title,
                     minLines = titleMinLines,

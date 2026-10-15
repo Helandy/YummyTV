@@ -93,6 +93,7 @@ internal fun TopMobileGrid(
                 MobilePosterCard(
                     title = item.title,
                     posterUrl = item.posterUrl,
+                    animeId = item.id,
                     rating = item.rating,
                     posterOverlay = {
                         TopMobileRankBadge(

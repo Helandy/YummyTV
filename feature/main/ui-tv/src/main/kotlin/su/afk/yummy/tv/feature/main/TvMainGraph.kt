@@ -10,6 +10,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
@@ -63,6 +64,7 @@ class TvMainGraph @Inject constructor(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalLibraryListStatuses provides state.libraryListStatuses,
                 ) {
                     TvMainScaffold(
                         selectedRoot = navManager.currentRoot,

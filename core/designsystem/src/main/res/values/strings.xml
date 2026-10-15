@@ -30,4 +30,9 @@
     <string name="common_sign_in">Sign in</string>
     <string name="common_delete">Delete</string>
     <string name="common_done">Done</string>
+    <string name="core_list_status_watching">Watching</string>
+    <string name="core_list_status_planned">Planned</string>
+    <string name="core_list_status_completed">Completed</string>
+    <string name="core_list_status_postponed">Postponed</string>
+    <string name="core_list_status_dropped">Dropped</string>
 </resources>
