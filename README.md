@@ -124,7 +124,7 @@
 
 <p align="center">
   <b>Плеер</b><br/>
-  <img src="docs/screenshots/mobile/player.webp" width="360" alt="Mobile player screen" />
+  <img src="docs/screenshots/mobile/player.webp" width="640" alt="Mobile player screen" />
 </p>
 
 ---

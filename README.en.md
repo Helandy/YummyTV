@@ -121,7 +121,7 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
 
 <p align="center">
   <b>Player</b><br/>
-  <img src="docs/screenshots/mobile/player.webp" width="360" alt="Mobile player screen" />
+  <img src="docs/screenshots/mobile/player.webp" width="640" alt="Mobile player screen" />
 </p>
 
 ---
