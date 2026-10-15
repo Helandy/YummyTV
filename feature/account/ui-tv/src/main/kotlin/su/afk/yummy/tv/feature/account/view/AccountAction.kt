@@ -52,6 +52,7 @@ internal fun AccountAction(
     selected: Boolean = false,
     enabled: Boolean = true,
     iconOnly: Boolean = false,
+    labelMaxLines: Int = 1,
     onDirectionLeft: (() -> Boolean)? = null,
     onDirectionRight: (() -> Boolean)? = null,
 ) {
@@ -141,7 +142,7 @@ internal fun AccountAction(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = contentColor,
-                maxLines = 1,
+                maxLines = labelMaxLines,
                 overflow = TextOverflow.Ellipsis,
             )
             hint?.let {

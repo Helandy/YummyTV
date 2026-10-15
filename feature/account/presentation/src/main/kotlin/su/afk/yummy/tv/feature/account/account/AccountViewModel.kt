@@ -17,6 +17,7 @@ import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.isExpandable
 import su.afk.yummy.tv.domain.account.model.totalUnreadCount
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
@@ -284,6 +285,8 @@ class AccountViewModel @Inject internal constructor(
                 nav.navigate(accountNavigator.getRegistrationDest())
 
             is AccountState.Event.NotificationSelected -> openNotification(event.id)
+            is AccountState.Event.NotificationExpandToggled -> toggleNotificationExpanded(event.id)
+            is AccountState.Event.NotificationLinkSelected -> openNotificationLink(event.notificationId, event.slug)
             is AccountState.Event.NotificationReadSelected -> {
                 analytics.eventNotificationReadSelected(event.id)
                 markNotificationReadOptimistically(event.id)
@@ -366,10 +369,35 @@ class AccountViewModel @Inject internal constructor(
     }
 
     private fun openNotification(id: Int) {
-        if (currentState.isNotificationOpening) return
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
         if (!notification.isNewEpisode) return
         val slug = notification.animeSlug ?: return
+        openNotificationAnime(notification, slug)
+    }
+
+    private fun openNotificationLink(notificationId: Int, slug: String) {
+        val notification = currentState.notifications.firstOrNull { it.id == notificationId } ?: return
+        openNotificationAnime(notification, slug)
+    }
+
+    private fun toggleNotificationExpanded(id: Int) {
+        val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
+        if (!notification.isExpandable) return
+        val expanding = id !in currentState.expandedNotificationIds
+        setState {
+            copy(
+                expandedNotificationIds = if (expanding) {
+                    expandedNotificationIds.add(id)
+                } else {
+                    expandedNotificationIds.remove(id)
+                },
+            )
+        }
+        if (expanding && !notification.viewed) markNotificationReadOptimistically(id)
+    }
+
+    private fun openNotificationAnime(notification: ProfileNotification, slug: String) {
+        if (currentState.isNotificationOpening) return
         viewModelScope.launch {
             setState { copy(isNotificationOpening = true, hubError = null) }
             when (val result = notificationHandler.resolveAnimeId(slug)) {

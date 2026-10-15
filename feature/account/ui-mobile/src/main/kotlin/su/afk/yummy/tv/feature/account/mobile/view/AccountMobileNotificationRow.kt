@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,18 +22,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.hasOpenAction
+import su.afk.yummy.tv.domain.account.model.isExpandable
+import su.afk.yummy.tv.feature.account.mobile.account.utils.buildNotificationText
 import su.afk.yummy.tv.feature.account.mobile.account.utils.notificationTypeIcon
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.common.utils.formatDate
@@ -43,9 +52,24 @@ internal fun AccountMobileNotificationRow(
     onRead: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    expanded: Boolean = false,
+    onToggleExpand: () -> Unit = {},
+    onLinkClick: (slug: String) -> Unit = {},
 ) {
-    val isOpenable = notification.isNewEpisode && notification.animeSlug != null
+    val isOpenable = notification.hasOpenAction
+    val isExpandable = notification.isExpandable
     val openLabel = stringResource(R.string.account_open)
+    val linkStyle = SpanStyle(
+        color = MaterialTheme.colorScheme.primary,
+        textDecoration = TextDecoration.Underline,
+    )
+    val bodyText = remember(notification.text, notification.links, expanded, linkStyle) {
+        if (expanded) {
+            buildNotificationText(notification.text, notification.links, linkStyle, onLinkClick)
+        } else {
+            AnnotatedString(notification.text)
+        }
+    }
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -54,6 +78,8 @@ internal fun AccountMobileNotificationRow(
                     Modifier
                         .clickable(onClick = onClick)
                         .semantics { contentDescription = openLabel }
+                } else if (isExpandable) {
+                    Modifier.clickable(onClick = onToggleExpand)
                 } else {
                     Modifier
                 }
@@ -97,14 +123,14 @@ internal fun AccountMobileNotificationRow(
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = if (notification.viewed) FontWeight.Medium else FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
+                    maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = notification.text,
+                    text = bodyText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
@@ -114,6 +140,22 @@ internal fun AccountMobileNotificationRow(
                 )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (isExpandable) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = stringResource(
+                            if (expanded) {
+                                R.string.account_notification_collapse
+                            } else {
+                                R.string.account_notification_expand
+                            },
+                        ),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
+                        modifier = Modifier
+                            .padding(vertical = 6.dp)
+                            .size(24.dp),
+                    )
+                }
                 if (!notification.viewed) {
                     IconButton(
                         onClick = onRead,

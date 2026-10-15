@@ -256,4 +256,6 @@
             <string name="account_tv_error_local_auth_sign_in_failed">Код правильний, але увійти не вдалося.</string>
     <string name="account_tv_error_local_auth_invalid_qr">Це не QR-код YummyTV.</string>
     <string name="account_tv_error_local_auth_scanner_unavailable">Сканер QR недоступний на цьому пристрої.</string>
+    <string name="account_notification_expand">Розгорнути</string>
+    <string name="account_notification_collapse">Згорнути</string>
 </resources>

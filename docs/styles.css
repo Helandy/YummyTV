@@ -375,6 +375,10 @@ h3 {
   align-self: start;
 }
 
+.screenshot-grid-mobile .screenshot-wide {
+  grid-column: 2 / span 2;
+}
+
 .screenshot-grid figure {
   min-width: 0;
   margin: 0;
@@ -454,6 +458,10 @@ h3 {
 }
 
 @media (max-width: 980px) {
+  .screenshot-grid-mobile .screenshot-wide {
+    grid-column: span 2;
+  }
+
   .hero-section {
     grid-template-columns: 1fr;
     min-height: auto;

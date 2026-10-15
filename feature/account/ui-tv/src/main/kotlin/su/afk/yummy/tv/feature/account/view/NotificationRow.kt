@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.hasOpenAction
+import su.afk.yummy.tv.domain.account.model.isExpandable
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.utils.notificationTypeIcon
 import su.afk.yummy.tv.feature.account.common.utils.formatDate
@@ -51,14 +56,18 @@ internal fun NotificationRow(
     deleteModifier: Modifier = Modifier,
     onReadDirectionRight: (() -> Boolean)? = null,
     onDeleteDirectionLeft: (() -> Boolean)? = null,
+    expanded: Boolean = false,
+    onLinkClick: (slug: String) -> Unit = {},
+    linkModifier: (index: Int) -> Modifier = { Modifier },
 ) {
     val shape = RoundedCornerShape(12.dp)
     val interactionSource = remember { MutableInteractionSource() }
-    val isOpenable = notification.isNewEpisode && notification.animeSlug != null
+    val isOpenable = notification.hasOpenAction
+    val isActionable = isOpenable || notification.isExpandable
     val rowModifier = modifier
         .fillMaxWidth()
         .tvFocusableClick(
-            onClick = if (isOpenable) onClick else ({ }),
+            onClick = if (isActionable) onClick else ({ }),
             interactionSource = interactionSource,
             shape = shape,
             focusedScale = 1.01f,
@@ -107,13 +116,38 @@ internal fun NotificationRow(
                     text = notification.text,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+                if (expanded) {
+                    notification.links.forEachIndexed { linkIndex, link ->
+                        AccountAction(
+                            label = link.label,
+                            icon = Icons.Filled.PlayCircle,
+                            labelMaxLines = 2,
+                            onClick = { onLinkClick(link.slug) },
+                            modifier = linkModifier(linkIndex).padding(top = 6.dp),
+                        )
+                    }
+                }
                 Text(
                     text = notification.dateSeconds.formatDate(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                )
+            }
+            if (notification.isExpandable) {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = stringResource(
+                        if (expanded) {
+                            R.string.account_notification_collapse
+                        } else {
+                            R.string.account_notification_expand
+                        },
+                    ),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(32.dp),
                 )
             }
             // IntrinsicSize.Min + aspectRatio: корзина ровно квадратная и той же высоты,

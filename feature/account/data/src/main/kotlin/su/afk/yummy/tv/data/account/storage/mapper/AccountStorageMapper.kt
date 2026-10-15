@@ -26,6 +26,7 @@ import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.model.NotificationCount
+import su.afk.yummy.tv.data.account.utils.fromLinksJson
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
@@ -172,6 +173,7 @@ internal fun AccountNotificationsPageCache.toNotifications(): List<ProfileNotifi
             objectId = it.objectId,
             animeSlug = it.animeSlug,
             isNewEpisode = it.isNewEpisode,
+            links = it.linksJson.fromLinksJson(),
         )
     }
 

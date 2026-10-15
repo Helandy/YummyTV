@@ -200,6 +200,7 @@ internal fun NotificationsTab(
                         notificationIds = notificationIds,
                         index = index,
                         notification = notification,
+                        expanded = notification.id in state.expandedNotificationIds,
                         mainMenuFocusRequester = mainMenuFocusRequester,
                         selectedTabFocusRequester = selectedTabFocusRequester,
                         onEvent = onEvent,

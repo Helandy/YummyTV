@@ -254,4 +254,6 @@
             <string name="account_tv_error_local_auth_sign_in_failed">The code is correct, but signing in failed.</string>
     <string name="account_tv_error_local_auth_invalid_qr">This QR code is not from YummyTV.</string>
     <string name="account_tv_error_local_auth_scanner_unavailable">QR scanner is unavailable on this device.</string>
+    <string name="account_notification_expand">Expand</string>
+    <string name="account_notification_collapse">Collapse</string>
 </resources>

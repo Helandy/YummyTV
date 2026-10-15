@@ -99,21 +99,25 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
 <table>
   <tr>
     <td align="center"><b>Home</b></td>
-    <td align="center"><b>Title details</b></td>
+    <td align="center"><b>Title page</b></td>
     <td align="center"><b>Top</b></td>
+    <td align="center"><b>Library</b></td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile home screen" /></td>
     <td><img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile details screen" /></td>
     <td><img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile top screen" /></td>
+    <td><img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Library</b></td>
+    <td align="center"><b>Episodes</b></td>
+    <td align="center"><b>Downloads</b></td>
     <td align="center"><b>Profile</b></td>
     <td align="center"><b>Balancers</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
+    <td><img src="docs/screenshots/mobile/episodes.webp" width="210" alt="Mobile episodes screen" /></td>
+    <td><img src="docs/screenshots/mobile/downloads.webp" width="210" alt="Mobile downloads screen" /></td>
     <td><img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
     <td><img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
   </tr>

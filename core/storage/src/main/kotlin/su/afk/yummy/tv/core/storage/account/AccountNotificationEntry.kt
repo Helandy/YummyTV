@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.account
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 
@@ -30,4 +31,6 @@ data class AccountNotificationEntry(
     val objectId: Int? = null,
     val animeSlug: String? = null,
     val isNewEpisode: Boolean,
+    /** JSON-массив ссылок на аниме из текста уведомления. */
+    @ColumnInfo(defaultValue = "[]") val linksJson: String = "[]",
 )

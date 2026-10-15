@@ -12,7 +12,16 @@ data class ProfileNotification(
     val objectId: Int?,
     val animeSlug: String? = null,
     val isNewEpisode: Boolean = false,
+    val links: List<NotificationLink> = emptyList(),
 )
+
+/** У уведомления есть собственное действие по клику (переход на аниме), разворачивать его не нужно. */
+val ProfileNotification.hasOpenAction: Boolean
+    get() = isNewEpisode && animeSlug != null
+
+/** Клик по уведомлению разворачивает его: полный текст и ссылки на аниме. */
+val ProfileNotification.isExpandable: Boolean
+    get() = !hasOpenAction && (text.isNotBlank() || links.isNotEmpty())
 
 /**
  * Сколько непрочитанных в этой выборке ленты — число для бейджа аккаунта. Личные сообщения

@@ -38,6 +38,9 @@ import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
 import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
+import su.afk.yummy.tv.data.account.utils.toCatalogItemSlug
+import su.afk.yummy.tv.data.account.utils.toLinksJson
+import su.afk.yummy.tv.data.account.utils.toNotificationLinks
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.account.dto.common.YaniAccountPosterDto
 import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeListStatDto
@@ -210,6 +213,7 @@ internal fun List<YaniNotificationDto>.toNotificationsPageCache(
                 objectId = item.objectId,
                 animeSlug = item.clickUri.toCatalogItemSlug(),
                 isNewEpisode = item.type == "anime_episode" && item.subType == "new_episode",
+                linksJson = (item.titleHtml + " " + item.textHtml).toNotificationLinks().toLinksJson(),
             )
         },
     )
@@ -335,9 +339,3 @@ private fun JsonElement?.toFlexibleInt(): Int? {
     return primitive.content.toIntOrNull()
 }
 
-private fun String.toCatalogItemSlug(): String? =
-    substringAfter("/catalog/item/", missingDelimiterValue = "")
-        .substringBefore("?")
-        .substringBefore("#")
-        .substringBefore("/")
-        .takeIf { it.isNotBlank() }

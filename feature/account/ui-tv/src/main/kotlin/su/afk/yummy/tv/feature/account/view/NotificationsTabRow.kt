@@ -17,6 +17,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.hasOpenAction
 import su.afk.yummy.tv.feature.account.account.AccountState
 
 /** One row in the notifications list: wires [NotificationRow]'s focus/click plumbing to [notificationsTabState]. */
@@ -26,6 +27,7 @@ internal fun NotificationsTabRow(
     notificationIds: List<Int>,
     index: Int,
     notification: ProfileNotification,
+    expanded: Boolean,
     mainMenuFocusRequester: FocusRequester?,
     selectedTabFocusRequester: FocusRequester?,
     onEvent: (AccountState.Event) -> Unit,
@@ -36,6 +38,10 @@ internal fun NotificationsTabRow(
     val firstActionFocusRequester =
         readFocusRequester.takeIf { !notification.viewed } ?: deleteFocusRequester
     var rowIsFocused by remember(notification.id) { mutableStateOf(false) }
+    val linkRequesters = remember(notification.id, notification.links.size) {
+        List(notification.links.size) { FocusRequester() }
+    }
+    val showLinks = expanded && linkRequesters.isNotEmpty()
 
     fun previous(): FocusRequester? = notificationsTabState.previousVerticalFocusRequester(
         index,
@@ -50,10 +56,58 @@ internal fun NotificationsTabRow(
         notification = notification,
         onClick = {
             notificationsTabState.handleNotificationFocus(index, notificationIds)
-            if (notification.isNewEpisode && notification.animeSlug != null) {
+            if (notification.hasOpenAction) {
                 notificationsTabState.beginOpeningNotification(notification.id)
+                onEvent(AccountState.Event.NotificationSelected(notification.id))
+            } else {
+                onEvent(AccountState.Event.NotificationExpandToggled(notification.id))
             }
-            onEvent(AccountState.Event.NotificationSelected(notification.id))
+        },
+        expanded = expanded,
+        onLinkClick = { slug ->
+            notificationsTabState.handleNotificationFocus(index, notificationIds)
+            notificationsTabState.beginOpeningNotification(notification.id)
+            onEvent(AccountState.Event.NotificationLinkSelected(notification.id, slug))
+        },
+        linkModifier = { linkIndex ->
+            val lastLink = linkRequesters.lastIndex
+            Modifier
+                .focusRequester(linkRequesters[linkIndex])
+                .focusProperties {
+                    left = rowFocusRequester
+                    up = if (linkIndex == 0) rowFocusRequester else linkRequesters[linkIndex - 1]
+                    if (linkIndex < lastLink) {
+                        down = linkRequesters[linkIndex + 1]
+                    } else {
+                        next()?.let { down = it }
+                    }
+                }
+                .onPreviewKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when (event.key) {
+                        Key.DirectionLeft -> notificationsTabState.requestFocusSafely(rowFocusRequester)
+                        Key.DirectionRight -> true
+                        Key.DirectionUp ->
+                            notificationsTabState.requestFocusSafely(
+                                if (linkIndex == 0) rowFocusRequester else linkRequesters[linkIndex - 1],
+                            )
+
+                        Key.DirectionDown ->
+                            if (linkIndex < lastLink) {
+                                notificationsTabState.requestFocusSafely(linkRequesters[linkIndex + 1])
+                            } else {
+                                notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
+                            }
+
+                        else -> false
+                    }
+                }
+                .onFocusChanged {
+                    if (it.isFocused) {
+                        notificationsTabState.markContentFocused()
+                        notificationsTabState.handleNotificationFocus(index, notificationIds)
+                    }
+                }
         },
         onRead = {
             notificationsTabState.pendingFocus.beginPendingReadFocus(notification.id)
@@ -85,7 +139,7 @@ internal fun NotificationsTabRow(
             .focusProperties {
                 mainMenuFocusRequester?.let { left = it }
                 previous()?.let { up = it }
-                next()?.let { down = it }
+                if (showLinks) down = linkRequesters.first() else next()?.let { down = it }
                 right = firstActionFocusRequester
             }
             .onPreviewKeyEvent { event ->
@@ -107,7 +161,11 @@ internal fun NotificationsTabRow(
                     }
 
                     Key.DirectionDown -> {
-                        notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
+                        if (showLinks) {
+                            notificationsTabState.requestFocusSafely(linkRequesters.first())
+                        } else {
+                            notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
+                        }
                     }
 
                     Key.DirectionUp -> {

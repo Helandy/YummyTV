@@ -259,3 +259,13 @@ internal val MIGRATION_53_54 = object : Migration(53, 54) {
         )
     }
 }
+
+/**
+ * Ссылки на аниме из текста уведомлений. Кэш ленты короткоживущий и перезаполняется при
+ * ближайшей загрузке, поэтому для старых строк достаточно пустого списка.
+ */
+internal val MIGRATION_54_55 = object : Migration(54, 55) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE account_notifications ADD COLUMN linksJson TEXT NOT NULL DEFAULT '[]'")
+    }
+}

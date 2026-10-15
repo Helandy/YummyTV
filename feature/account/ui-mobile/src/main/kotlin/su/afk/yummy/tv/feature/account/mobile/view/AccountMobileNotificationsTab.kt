@@ -150,6 +150,14 @@ internal fun AccountMobileNotificationsTab(
                             onEvent(AccountState.Event.NotificationSelected(notification.id))
                         },
                         onRead = { onEvent(AccountState.Event.NotificationReadSelected(notification.id)) },
+                        expanded = notification.id in state.expandedNotificationIds,
+                        onToggleExpand = {
+                            onEvent(AccountState.Event.NotificationExpandToggled(notification.id))
+                        },
+                        onLinkClick = { slug ->
+                            isOpeningNotification = true
+                            onEvent(AccountState.Event.NotificationLinkSelected(notification.id, slug))
+                        },
                         onDelete = {
                             onEvent(
                                 AccountState.Event.NotificationDeleteSelected(

@@ -2,7 +2,9 @@ package su.afk.yummy.tv.feature.account.account
 
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -34,6 +36,8 @@ class AccountState {
         val notifications: ImmutableList<ProfileNotification> = persistentListOf(),
         val notificationCounts: ImmutableList<NotificationCount> = persistentListOf(),
         val isNotificationOpening: Boolean = false,
+        /** Уведомления, развёрнутые пользователем до полного текста. */
+        val expandedNotificationIds: PersistentSet<Int> = persistentSetOf(),
         val isStatsLoading: Boolean = false,
         val isNotificationsLoading: Boolean = false,
         val isCaptchaRequired: Boolean = false,
@@ -126,6 +130,12 @@ class AccountState {
 
         /** Пользователь открыл уведомление с указанным идентификатором. */
         data class NotificationSelected(val id: Int) : Event
+
+        /** Пользователь развернул или свернул уведомление с указанным идентификатором. */
+        data class NotificationExpandToggled(val id: Int) : Event
+
+        /** Пользователь выбрал ссылку на аниме [slug] в тексте уведомления [notificationId]. */
+        data class NotificationLinkSelected(val notificationId: Int, val slug: String) : Event
 
         /** Пользователь отметил уведомление с указанным идентификатором прочитанным. */
         data class NotificationReadSelected(val id: Int) : Event

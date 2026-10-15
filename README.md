@@ -104,19 +104,23 @@
     <td align="center"><b>Главная</b></td>
     <td align="center"><b>Страница тайтла</b></td>
     <td align="center"><b>Топ</b></td>
+    <td align="center"><b>Библиотека</b></td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile home screen" /></td>
     <td><img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile details screen" /></td>
     <td><img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile top screen" /></td>
+    <td><img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Библиотека</b></td>
+    <td align="center"><b>Серии</b></td>
+    <td align="center"><b>Загрузки</b></td>
     <td align="center"><b>Профиль</b></td>
     <td align="center"><b>Балансеры</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
+    <td><img src="docs/screenshots/mobile/episodes.webp" width="210" alt="Mobile episodes screen" /></td>
+    <td><img src="docs/screenshots/mobile/downloads.webp" width="210" alt="Mobile downloads screen" /></td>
     <td><img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
     <td><img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
   </tr>
