@@ -115,6 +115,11 @@ class YaniAnimeRepository(
             )
         }
 
+    override suspend fun fetchAnimeVideos(animeId: Int): List<AnimeVideo> =
+        withContext(Dispatchers.IO) {
+            fetchVideosFromNetwork(animeId, settingsStore.currentLanguageCode()).toStoredAnimeVideos()
+        }
+
     override suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>? =
         withContext(Dispatchers.IO) {
             animeStorage.getVideos(animeId, settingsStore.currentLanguageCode())
@@ -123,7 +128,7 @@ class YaniAnimeRepository(
 
     override suspend fun getAnimeRecommendations(
         animeId: Int,
-        fromAi: Boolean
+        fromAi: Boolean,
     ): List<AnimeRecommendation> =
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
@@ -231,12 +236,13 @@ class YaniAnimeRepository(
     ): AnimeRelation = withContext(Dispatchers.IO) {
         val language = settingsStore.currentLanguageCode()
         val referenceKey = when (reference.kind) {
-            AnimeRelationKind.STUDIO -> reference.url
-                ?.substringBefore('?')
-                ?.trimEnd('/')
-                ?.substringAfterLast('/')
-                ?.takeIf { it.isNotBlank() }
-                ?: throw StudioUrlUnavailableException()
+            AnimeRelationKind.STUDIO ->
+                reference.url
+                    ?.substringBefore('?')
+                    ?.trimEnd('/')
+                    ?.substringAfterLast('/')
+                    ?.takeIf { it.isNotBlank() }
+                    ?: throw StudioUrlUnavailableException()
 
             else -> reference.id.toString()
         }
@@ -320,7 +326,7 @@ class YaniAnimeRepository(
                 userId = userId,
                 animeId = animeId,
                 cachedAt = cachedAt,
-            )
+            ),
         )
     }
 

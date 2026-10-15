@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
@@ -39,6 +40,7 @@ class YaniHomeFeedRepository(
     private val homeFeedStore: HomeFeedStorage,
     private val stringProvider: StringProvider,
     private val settingsStore: YaniAccountSettingsStore,
+    private val playerSettingsStore: PlayerSettingsStore,
     private val watchProgressStore: WatchProgressStorage,
     private val analyticsTracker: AnalyticsTracker,
 ) : HomeFeedRepository {
@@ -119,6 +121,9 @@ class YaniHomeFeedRepository(
     override fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>> =
         watchProgressStore.observeContinueWatchingSuppressionTimestamps()
             .distinctUntilChanged()
+
+    override fun observeSuggestNextEpisodeOnWatched(): Flow<Boolean> =
+        playerSettingsStore.suggestNextEpisodeOnWatched.distinctUntilChanged()
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
         // Единый снимок на весь вызов: используется во всех трёх ветках (свежий кэш, сеть,

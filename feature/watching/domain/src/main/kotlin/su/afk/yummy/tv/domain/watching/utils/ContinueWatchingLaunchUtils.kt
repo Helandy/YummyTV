@@ -93,6 +93,34 @@ private fun resolveRemoteEntryLaunch(
     )
 }
 
+/**
+ * Запуск следующей серии с начала: серия ищется по номеру («1» и «01» — одна серия), озвучка и плеер —
+ * как у последнего просмотра тайтла на сервере (`watched` в `/videos`). null — такой серии нет.
+ */
+internal fun resolveNextEpisodeLaunch(
+    entry: HomeContinueWatchingItem,
+    availableVideos: List<AnimeVideo>,
+): ContinueWatchingLaunch? {
+    val episodeKey = entry.episode.episodeGroupKey()
+    val episodeVideos = availableVideos.filter { it.episode.episodeGroupKey() == episodeKey }
+    val episode = episodeVideos.firstOrNull()?.episode ?: return null
+    val lastWatched = availableVideos
+        .filter { (it.watchedDateSeconds ?: 0L) > 0L }
+        .maxByOrNull { it.watchedDateSeconds ?: 0L }
+    val progressVideo = entry.toContinueWatchingPlaybackVideo().copy(
+        episode = episode,
+        player = lastWatched?.player.orEmpty(),
+        dubbing = lastWatched?.dubbing.orEmpty(),
+    )
+    // Подбираем только среди видео этой серии: без рабочего плеера подбор ушёл бы в другую.
+    val target = resolveContinueWatchingTarget(progressVideo, episodeVideos)
+    return entry.toLaunch(
+        posterUrl = entry.poster.bestUrl().orEmpty(),
+        video = target,
+        resumeFromMs = 0L,
+    )
+}
+
 private fun resolveServerProgressLaunch(
     entry: HomeContinueWatchingItem,
     serverProgress: ServerContinueProgress,

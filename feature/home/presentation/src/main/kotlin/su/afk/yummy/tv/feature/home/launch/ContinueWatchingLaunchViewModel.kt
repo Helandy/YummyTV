@@ -55,7 +55,7 @@ class ContinueWatchingLaunchViewModel @AssistedInject internal constructor(
             val launch = resolveContinueWatchingLaunch(
                 entry = entry,
                 refreshProgressOnLaunch = settingsStore.refreshContinueWatchingProgressOnLaunch.first(),
-            )
+            ) ?: return@runSuspendCatching null
             playerNavigator.getPlayerDest(launch)
         }.getOrNull()
         // Пока шёл запуск, пользователь мог уйти назад или открыть другой ярлык: заменяем только

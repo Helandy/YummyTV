@@ -8,6 +8,7 @@
     <string name="home_recommendation_error">Could not update recommendations</string>
     <string name="home_recommendation_hidden">We will not recommend this anime anymore</string>
     <string name="home_remote_continue_progress_toast">Remote progress found. Episode %1$s (%2$s)</string>
+    <string name="home_next_episode_unavailable_toast">Episode %1$s is not available yet</string>
     <string name="home_section_my_new_episodes">New episodes from your lists</string>
     <string name="home_mobile_schedule">Schedule</string>
     <string name="home_mobile_reviews">Reviews</string>

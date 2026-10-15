@@ -15,12 +15,14 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.MigrateContinueWatchingProgressUseCase
+import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 
 class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
 
     private val getAnimeVideos: GetAnimeVideosUseCase = mockk()
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase = mockk()
     private val migrateProgress: MigrateContinueWatchingProgressUseCase = mockk(relaxed = true)
+    private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase = mockk(relaxed = true)
 
     private val ep2 = video(id = 2, episode = "2")
     private val ep3 = video(id = 3, episode = "3")
@@ -90,7 +92,8 @@ class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
         ResolveContinueWatchingLaunchUseCase(
             LoadContinueWatchingVideosUseCase(getAnimeVideos, refreshAnimeVideos),
             migrateProgress,
-        )(entry, refreshProgressOnLaunch = refresh)
+            ResolveNextEpisodeLaunchUseCase(mockk(), mockk(), removeCachedContinueWatching),
+        )(entry, refreshProgressOnLaunch = refresh)!!
 
     private fun entry(videoId: Int, episode: String, positionMs: Long) = HomeContinueWatchingItem(
         animeId = ANIME_ID,

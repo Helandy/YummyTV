@@ -510,7 +510,10 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
-    /** Открывает плеер по записи «продолжить просмотр», а без цели для запуска — детали тайтла. */
+    /**
+     * Открывает плеер по записи «продолжить просмотр», а без цели для запуска — детали тайтла.
+     * Если предложенной следующей серии нет, сообщает об этом и тоже открывает детали.
+     */
     private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
         if (!entry.hasPlayableTarget()) {
             nav.navigate(detailsNavigator.getDetailsDest(entry.animeId))
@@ -526,6 +529,15 @@ class HomeViewModel @Inject internal constructor(
                         .refreshContinueWatchingProgressOnLaunch
                         .first(),
                 )
+                if (result == null) {
+                    setEffect(
+                        HomeState.Effect.ShowToast(
+                            stringProvider.get(R.string.home_next_episode_unavailable_toast, entry.episode),
+                        ),
+                    )
+                    nav.navigate(detailsNavigator.getDetailsDest(entry.animeId))
+                    return@launch
+                }
                 result.remoteProgressSwitch?.let { progress ->
                     setEffect(
                         HomeState.Effect.ShowToast(

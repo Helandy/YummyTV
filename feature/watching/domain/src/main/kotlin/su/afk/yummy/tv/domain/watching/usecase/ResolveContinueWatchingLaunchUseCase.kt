@@ -7,16 +7,24 @@ import su.afk.yummy.tv.domain.home.usecase.MigrateContinueWatchingProgressUseCas
 import su.afk.yummy.tv.domain.watching.utils.resolveContinueWatchingLaunch
 import javax.inject.Inject
 
-/** Resolves the source and resume position for a Continue Watching launch. */
+/**
+ * Разрешает, какое видео и с какой позиции запускать по карточке «Продолжить просмотр».
+ * Возвращает null, только если у карточки следующей серии ([ContinueWatchingSource.REMOTE_NEXT_EPISODE])
+ * этой серии нет — тогда вызывающий открывает детали тайтла.
+ */
 class ResolveContinueWatchingLaunchUseCase @Inject internal constructor(
     private val loadContinueWatchingVideos: LoadContinueWatchingVideosUseCase,
     private val migrateContinueWatchingProgress: MigrateContinueWatchingProgressUseCase,
+    private val resolveNextEpisodeLaunch: ResolveNextEpisodeLaunchUseCase,
 ) {
 
     suspend operator fun invoke(
         entry: HomeContinueWatchingItem,
         refreshProgressOnLaunch: Boolean,
-    ): ContinueWatchingLaunch {
+    ): ContinueWatchingLaunch? {
+        if (entry.source == ContinueWatchingSource.REMOTE_NEXT_EPISODE) {
+            return resolveNextEpisodeLaunch(entry)
+        }
         // Карточка из серверной истории всегда стартует с серверного прогресса, без оглядки на настройку.
         val useServerProgress =
             refreshProgressOnLaunch || entry.source == ContinueWatchingSource.REMOTE

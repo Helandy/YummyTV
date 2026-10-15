@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import kotlin.math.abs
+import kotlin.math.floor
 
 // Плеер шлёт на сервер позицию, зажатую в [0, duration − 10 с].
 private const val ECHO_POSITION_TOLERANCE_MS = 15_000L
@@ -16,13 +17,16 @@ private const val ECHO_POSITION_TOLERANCE_MS = 15_000L
  * Серверная запись, совпавшая с локальной из [localHistory], — эхо нашей же выгрузки (после входа
  * сервер ставит ей время синхронизации), поэтому берёт локальную дату.
  * Серверная запись, удалённая вручную не позже своей даты ([suppressedAt]), игнорируется.
- * Досмотренная серверная серия не перебивает локальную цель «следующая серия»; если она свежее
- * локальной и не раньше её по номеру — скрывает тайтл, как локальное правило для watched-записей.
+ * Досмотренная серверная серия не перебивает локальную цель «следующая серия». Если она свежее
+ * локальной и не раньше её по номеру, то, как и плеер после watched-порога, предлагаем следующую
+ * серию с начала при [suggestNextEpisode] (карточка [ContinueWatchingSource.REMOTE_NEXT_EPISODE]),
+ * иначе скрываем тайтл.
  */
 fun List<HomeContinueWatchingItem>.mergeWithRemote(
     remote: List<HomeContinueWatchingItem>,
     localHistory: List<HomeContinueWatchingItem>,
     suppressedAt: Map<Int, Long>,
+    suggestNextEpisode: Boolean,
 ): List<HomeContinueWatchingItem> {
     val localByAnime = filter { it.animeId > 0 }
         .groupBy { it.animeId }
@@ -36,7 +40,11 @@ fun List<HomeContinueWatchingItem>.mergeWithRemote(
 
     return (localByAnime.keys + remoteByAnime.keys)
         .mapNotNull { animeId ->
-            pickCard(local = localByAnime[animeId], remote = remoteByAnime[animeId])
+            pickCard(
+                local = localByAnime[animeId],
+                remote = remoteByAnime[animeId],
+                suggestNextEpisode = suggestNextEpisode,
+            )
         }
         .sortedByDescending { it.updatedAt }
 }
@@ -54,11 +62,27 @@ private fun HomeContinueWatchingItem.withEchoDate(
 private fun pickCard(
     local: HomeContinueWatchingItem?,
     remote: HomeContinueWatchingItem?,
+    suggestNextEpisode: Boolean,
 ): HomeContinueWatchingItem? {
     if (remote == null || remote.updatedAt <= (local?.updatedAt ?: Long.MIN_VALUE)) return local
     if (remote.isResumable()) return remote
-    if (local != null && remote.isWatched() && remote.isNotBeforeEpisodeOf(local)) return null
-    return local
+    if (!remote.isWatched()) return local
+    if (local != null && !remote.isNotBeforeEpisodeOf(local)) return local
+    return if (suggestNextEpisode) remote.toNextEpisodeCard() else null
+}
+
+/** Карточка следующей серии с начала; номер не распознан — предлагать нечего, тайтл скрыт. */
+private fun HomeContinueWatchingItem.toNextEpisodeCard(): HomeContinueWatchingItem? {
+    val nextEpisode = episode.episodeNumberOrNull()
+        ?.let { floor(it).toLong() + 1 }
+        ?: return null
+    return copy(
+        episode = nextEpisode.toString(),
+        positionMs = 0L,
+        durationMs = 0L,
+        screenshotUrl = "",
+        source = ContinueWatchingSource.REMOTE_NEXT_EPISODE,
+    )
 }
 
 private fun HomeContinueWatchingItem.isResumable(): Boolean =

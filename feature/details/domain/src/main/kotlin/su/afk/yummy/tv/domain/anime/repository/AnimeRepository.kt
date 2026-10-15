@@ -17,6 +17,9 @@ interface AnimeRepository {
     suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails?
     suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo>
     suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo>
+
+    /** Видео только из сети (с сохранением в кеш); ошибка сети пробрасывается, без отката на кеш. */
+    suspend fun fetchAnimeVideos(animeId: Int): List<AnimeVideo>
     suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>?
     suspend fun getAnimeEpisodeInfo(animeId: Int): Map<String, AnimeEpisodeInfo>
     suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer>

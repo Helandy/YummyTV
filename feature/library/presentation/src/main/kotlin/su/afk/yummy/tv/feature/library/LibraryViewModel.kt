@@ -354,6 +354,10 @@ class LibraryViewModel @Inject internal constructor(
                         .refreshContinueWatchingProgressOnLaunch
                         .first(),
                 )
+                if (result == null) {
+                    nav.navigate(detailsNavigator.getDetailsDest(entry.animeId))
+                    return@launch
+                }
                 result.remoteProgressSwitch?.let { progress ->
                     setEffect(
                         LibraryState.Effect.ShowToast(

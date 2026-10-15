@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
@@ -48,6 +49,7 @@ object HomeDataModule {
         homeFeedStore: HomeFeedStorage,
         stringProvider: StringProvider,
         settingsStore: YaniAccountSettingsStore,
+        playerSettingsStore: PlayerSettingsStore,
         watchProgressStore: WatchProgressStorage,
         analyticsTracker: AnalyticsTracker,
     ): HomeFeedRepository =
@@ -56,6 +58,7 @@ object HomeDataModule {
             homeFeedStore,
             stringProvider,
             settingsStore,
+            playerSettingsStore,
             watchProgressStore,
             analyticsTracker,
         )
