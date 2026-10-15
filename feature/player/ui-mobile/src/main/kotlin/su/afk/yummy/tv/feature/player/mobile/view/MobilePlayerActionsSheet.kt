@@ -98,7 +98,7 @@ internal fun PlayerMobileActionsSheet(
                                     PressInteraction.Release(press)
                                 } else {
                                     PressInteraction.Cancel(press)
-                                }
+                                },
                             )
                         }
                     },
@@ -117,11 +117,11 @@ internal fun PlayerMobileActionsSheet(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                         Icon(Icons.Filled.Cast, contentDescription = null)
                     }
                     Text(
@@ -157,13 +157,12 @@ private fun ActionRow(
             .fillMaxWidth()
             .clip(shape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // 48dp-бокс, чтобы левый край иконки совпадал с MediaRouteButton в строке Cast
-        // (он сам оборачивает свою иконку в 48dp IconButton).
-        Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+        // Одинаковый бокс у всех строк (включая Cast), чтобы иконки стояли в одну колонку.
+        Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
             Icon(icon, contentDescription = null)
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
