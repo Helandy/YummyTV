@@ -25,9 +25,9 @@ CI — [release-and-ci.md](release-and-ci.md).
 
 ### commit-msg
 
-Заголовок обязан соответствовать `^\[(BUGFIX|CORE|MOBILE|TV|DOCS|CI|RELEASE|FEATURE|UI)\] .+`.
+Заголовок обязан соответствовать `^\[(BUGFIX|CORE|MOBILE|TV|DOCS|CI|RELEASE|FEATURE|UI|TEST)\] .+`.
 
-Допустимые теги: `BUGFIX`, `CORE`, `MOBILE`, `TV`, `DOCS`, `CI`, `RELEASE`, `FEATURE`, `UI`.
+Допустимые теги: `BUGFIX`, `CORE`, `MOBILE`, `TV`, `DOCS`, `CI`, `RELEASE`, `FEATURE`, `UI`, `TEST`.
 Примеры из сообщения хука: `[CORE] refactor catalog loading`, `[TV] fix focus on details screen`,
 `[BUGFIX] handle empty schedule`. Версионный коммит в истории: `[RELEASE] 1.25`.
 
