@@ -125,6 +125,7 @@ class MainViewModel @Inject internal constructor(
                 )
                 if (signedIn && session.userId > 0) {
                     launch { mainSideEffectsHandler.syncLibrary(session.userId) }
+                    launch { mainSideEffectsHandler.refreshUnreadNotifications() }
                 }
                 setState {
                     copy(

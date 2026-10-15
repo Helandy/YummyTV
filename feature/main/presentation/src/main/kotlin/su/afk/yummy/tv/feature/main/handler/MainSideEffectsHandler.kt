@@ -5,7 +5,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.featuretoggle.api.VersionSupportChecker
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.model.totalUnreadCount
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.RestoreAccountSessionUseCase
 import su.afk.yummy.tv.domain.library.usecase.SyncRemoteLibraryUseCase
@@ -26,6 +28,7 @@ internal class MainSideEffectsHandler @Inject constructor(
     private val restoreAccountSession: RestoreAccountSessionUseCase,
     private val settingsStore: SettingsStore,
     private val syncRemoteLibrary: SyncRemoteLibraryUseCase,
+    private val getNotificationCounts: GetNotificationCountsUseCase,
     @param:Named("appVersionName") private val versionName: String,
 ) {
     suspend fun checkForUpdates(): MainUpdateCheckResult =
@@ -67,6 +70,16 @@ internal class MainSideEffectsHandler @Inject constructor(
      */
     suspend fun syncLibrary(userId: Int) {
         runSuspendCatching { syncRemoteLibrary(userId) }
+    }
+
+    /**
+     * Обновляет сохранённый счётчик непрочитанных уведомлений при входе в приложение, чтобы бейдж
+     * в меню не ждал открытия профиля (на ТВ — обычное дело).
+     */
+    suspend fun refreshUnreadNotifications() {
+        runSuspendCatching {
+            settingsStore.setYaniUnreadNotificationsCount(getNotificationCounts().totalUnreadCount())
+        }
     }
 
     private companion object {

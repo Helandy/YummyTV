@@ -14,6 +14,8 @@ import su.afk.yummy.tv.core.featuretoggle.api.VersionSupportChecker
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.AccountSession
+import su.afk.yummy.tv.domain.account.model.NotificationCount
+import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.RestoreAccountSessionUseCase
@@ -29,6 +31,7 @@ class MainSideEffectsHandlerTest : BaseUnitTest() {
     private val refreshAccount: RefreshAccountUseCase = mockk(relaxed = true)
     private val restoreAccountSession: RestoreAccountSessionUseCase = mockk(relaxed = true)
     private val settingsStore: SettingsStore = mockk()
+    private val getNotificationCounts: GetNotificationCountsUseCase = mockk()
 
     @Before
     fun setUp() {
@@ -103,6 +106,25 @@ class MainSideEffectsHandlerTest : BaseUnitTest() {
         createHandler().restoreAccountIfMissing()
     }
 
+    @Test
+    fun `unread counter is stored without messages`() = runTest {
+        coEvery { getNotificationCounts() } returns listOf(NotificationCount("episode", 3), NotificationCount("message", 4))
+        coEvery { settingsStore.setYaniUnreadNotificationsCount(any()) } returns Unit
+
+        createHandler().refreshUnreadNotifications()
+
+        coVerify(exactly = 1) { settingsStore.setYaniUnreadNotificationsCount(3) }
+    }
+
+    @Test
+    fun `failed unread counter load keeps the stored value`() = runTest {
+        coEvery { getNotificationCounts() } throws IllegalStateException("network")
+
+        createHandler().refreshUnreadNotifications()
+
+        coVerify(exactly = 0) { settingsStore.setYaniUnreadNotificationsCount(any()) }
+    }
+
     private fun release(version: String) = AppRelease(version = version, changelog = "notes", apkUrl = "https://apk")
 
     private fun createHandler() = MainSideEffectsHandler(
@@ -113,6 +135,7 @@ class MainSideEffectsHandlerTest : BaseUnitTest() {
         restoreAccountSession = restoreAccountSession,
         settingsStore = settingsStore,
         syncRemoteLibrary = mockk(relaxed = true),
+        getNotificationCounts = getNotificationCounts,
         versionName = CURRENT,
     )
 

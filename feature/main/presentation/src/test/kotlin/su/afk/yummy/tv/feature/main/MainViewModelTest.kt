@@ -82,6 +82,7 @@ class MainViewModelTest : BaseUnitTest() {
         coEvery { mainSideEffectsHandler.restoreAccountIfMissing() } returns Unit
         coEvery { mainSideEffectsHandler.refreshAccountIfStale(any()) } returns Unit
         coEvery { mainSideEffectsHandler.syncLibrary(any()) } returns Unit
+        coEvery { mainSideEffectsHandler.refreshUnreadNotifications() } returns Unit
     }
 
     private fun createViewModel() = MainViewModel(
