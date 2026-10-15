@@ -49,6 +49,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoginCard
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLogoutConfirmDialog
+import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLogoutProgressDialog
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileNotificationsTab
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsGrid
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
@@ -343,6 +344,10 @@ fun AccountMobileScreen(
                 }
             }
         }
+    }
+
+    if (state.isLogoutInProgress) {
+        AccountMobileLogoutProgressDialog()
     }
 
     if (showLogoutConfirm) {

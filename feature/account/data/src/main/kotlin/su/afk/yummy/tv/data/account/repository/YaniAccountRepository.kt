@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
@@ -244,7 +245,8 @@ class YaniAccountRepository(
 
     override suspend fun logout() = withContext(Dispatchers.IO) {
         val userId = settingsStore.yaniUserId.first()
-        runSuspendCatching { api.logout() }
+        // Серверный выход — best-effort: медленная сеть не должна задерживать локальную очистку.
+        runSuspendCatching { withTimeoutOrNull(LOGOUT_REQUEST_TIMEOUT_MS) { api.logout() } }
         documentCache.deleteByPrefix(userDocumentCachePrefix(userId.coerceAtLeast(0)))
         if (userId > 0) {
             accountStorage.clearUserScoped(userId)
@@ -300,6 +302,7 @@ class YaniAccountRepository(
 
     private companion object {
         const val SIGN_IN_GROUP = "sign_in"
+        const val LOGOUT_REQUEST_TIMEOUT_MS = 5_000L
         const val SESSION_RESTORED_EVENT = "account_session_restored_from_backup"
         const val TAG = "YaniAccountRepository"
         val REJECTED_TOKEN_STATUSES = setOf(401, 403)

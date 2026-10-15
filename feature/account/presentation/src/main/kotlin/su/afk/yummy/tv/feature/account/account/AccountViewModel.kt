@@ -184,11 +184,12 @@ class AccountViewModel @Inject internal constructor(
 
             AccountState.Event.LogoutSelected -> viewModelScope.launch {
                 analytics.eventLogoutSelected()
-                setState { copy(isLoading = true, error = null, errorMessage = null) }
+                setState { copy(isLoading = true, isLogoutInProgress = true, error = null, errorMessage = null) }
                 if (sessionHandler.logout()) {
                     setState {
                         copy(
                             isLoading = false,
+                            isLogoutInProgress = false,
                             password = "",
                             selectedTab = AccountState.AccountTab.STATS,
                             profileSummary = null,
@@ -207,6 +208,7 @@ class AccountViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
+                            isLogoutInProgress = false,
                             error = AccountUiError.LOGOUT_FAILED,
                             errorMessage = null,
                         )

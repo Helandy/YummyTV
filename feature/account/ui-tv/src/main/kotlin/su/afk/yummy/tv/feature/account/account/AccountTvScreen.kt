@@ -152,7 +152,7 @@ fun AccountTvScreen(
             }
             .padding(horizontal = horizontalPadding, vertical = TvScreenPadding.Vertical),
     ) {
-        if (!state.isSessionResolved) {
+        if (!state.isSessionResolved || state.isLogoutInProgress) {
             // Пока не пришёл первый снапшот сессии, не мигаем панелью входа авторизованному пользователю.
             TvLoadingScreen()
         } else if (!state.isSignedIn) {

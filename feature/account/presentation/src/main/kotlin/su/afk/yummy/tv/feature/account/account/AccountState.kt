@@ -27,6 +27,7 @@ class AccountState {
         val login: String = "",
         val password: String = "",
         val isLoading: Boolean = false,
+        val isLogoutInProgress: Boolean = false,
         val selectedTab: AccountTab = AccountTab.STATS,
         val profileSummary: UserProfileSummary? = null,
         val stats: UserStats? = null,
