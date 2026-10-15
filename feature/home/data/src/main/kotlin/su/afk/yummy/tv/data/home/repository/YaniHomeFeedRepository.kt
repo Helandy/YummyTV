@@ -22,6 +22,7 @@ import su.afk.yummy.tv.data.home.mapper.LocalFeedContext
 import su.afk.yummy.tv.data.home.mapper.localContinueWatchingItems
 import su.afk.yummy.tv.data.home.mapper.withLocalOverrides
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
+import su.afk.yummy.tv.data.home.storage.mapper.toHomeContinueWatchingItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -108,6 +109,15 @@ class YaniHomeFeedRepository(
     override fun observeContinueWatching(): Flow<List<HomeContinueWatchingItem>> =
         watchProgressStore.observeContinueWatching()
             .map(::localContinueWatchingItems)
+            .distinctUntilChanged()
+
+    override fun observeWatchHistory(): Flow<List<HomeContinueWatchingItem>> =
+        watchProgressStore.observeAll()
+            .map { entries -> entries.map { it.toHomeContinueWatchingItem() } }
+            .distinctUntilChanged()
+
+    override fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>> =
+        watchProgressStore.observeContinueWatchingSuppressionTimestamps()
             .distinctUntilChanged()
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {

@@ -9,13 +9,16 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.core.tv.api.TvChannelContentProvider
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
+import su.afk.yummy.tv.data.home.repository.YaniRemoteContinueWatchingRepository
 import su.afk.yummy.tv.data.home.tv.HomeTvChannelContentProvider
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
+import su.afk.yummy.tv.domain.home.repository.RemoteContinueWatchingRepository
 import javax.inject.Singleton
 
 @Module
@@ -56,4 +59,14 @@ object HomeDataModule {
             watchProgressStore,
             analyticsTracker,
         )
+
+    @Provides
+    @Singleton
+    fun provideRemoteContinueWatchingRepository(
+        api: YaniHomeApi,
+        documentCache: DocumentCacheStorage,
+        settingsStore: YaniAccountSettingsStore,
+        analyticsTracker: AnalyticsTracker,
+    ): RemoteContinueWatchingRepository =
+        YaniRemoteContinueWatchingRepository(api, documentCache, settingsStore, analyticsTracker)
 }

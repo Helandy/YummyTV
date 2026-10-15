@@ -14,4 +14,5 @@ data class HomeContinueWatchingItem(
     val playerName: String,
     val dubbing: String,
     val screenshotUrl: String,
+    val source: ContinueWatchingSource = ContinueWatchingSource.LOCAL,
 )

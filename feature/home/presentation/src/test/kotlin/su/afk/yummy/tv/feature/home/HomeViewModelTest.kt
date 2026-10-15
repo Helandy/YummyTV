@@ -43,10 +43,11 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
-import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveHomeContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -74,7 +75,8 @@ class HomeViewModelTest : BaseUnitTest() {
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase = mockk()
     private val refreshHomeFeed: RefreshHomeFeedUseCase = mockk()
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase = mockk()
-    private val observeContinueWatching: ObserveContinueWatchingUseCase = mockk()
+    private val observeContinueWatching: ObserveHomeContinueWatchingUseCase = mockk()
+    private val refreshRemoteContinueWatching: RefreshRemoteContinueWatchingUseCase = mockk(relaxed = true)
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase = mockk()
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase = mockk()
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase = mockk()
@@ -145,6 +147,7 @@ class HomeViewModelTest : BaseUnitTest() {
         refreshHomeFeed = refreshHomeFeed,
         setAnimeRecommendationIgnored = setAnimeRecommendationIgnored,
         observeContinueWatching = observeContinueWatching,
+        refreshRemoteContinueWatching = refreshRemoteContinueWatching,
         observeLibraryNewEpisodeAnimeIds = observeLibraryNewEpisodeAnimeIds,
         getRecentlyAiredSchedule = getRecentlyAiredSchedule,
         observeWatchedEpisodes = observeWatchedEpisodes,

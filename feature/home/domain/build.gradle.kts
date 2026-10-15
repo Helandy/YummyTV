@@ -10,6 +10,7 @@ java {
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(project(":core:common"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:library:domain"))
     implementation(project(":feature:schedule:domain"))

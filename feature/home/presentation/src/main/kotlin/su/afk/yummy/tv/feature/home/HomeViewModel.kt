@@ -40,10 +40,11 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
-import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveHomeContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -81,7 +82,8 @@ class HomeViewModel @Inject internal constructor(
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase,
-    private val observeContinueWatching: ObserveContinueWatchingUseCase,
+    private val observeContinueWatching: ObserveHomeContinueWatchingUseCase,
+    private val refreshRemoteContinueWatching: RefreshRemoteContinueWatchingUseCase,
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase,
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase,
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase,
@@ -183,7 +185,10 @@ class HomeViewModel @Inject internal constructor(
                 load()
             }
 
-            HomeState.Event.ScreenResumed -> syncCachedContinueWatching()
+            HomeState.Event.ScreenResumed -> {
+                refreshRemoteContinueWatching()
+                syncCachedContinueWatching()
+            }
 
             HomeState.Event.RefreshRequested -> refresh()
 
@@ -541,6 +546,7 @@ class HomeViewModel @Inject internal constructor(
 
     /** Грузит ленту: сперва отдаёт кэш, чтобы не держать лоадер, затем обновляет из сети. */
     private fun load() {
+        refreshRemoteContinueWatching()
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             val cachedFeed = if (currentState.feed == null) {
@@ -602,6 +608,7 @@ class HomeViewModel @Inject internal constructor(
 
     /** Обновляет ленту по запросу пользователя, не стирая уже показанную при неудаче. */
     private fun refresh() {
+        refreshRemoteContinueWatching()
         viewModelScope.launch {
             if (currentState.isLoading && currentState.feed == null) return@launch
             val showInitialLoading = currentState.feed == null

@@ -14,6 +14,12 @@ interface HomeFeedRepository {
     suspend fun migrateContinueWatchingProgress(migration: ContinueWatchingProgressMigration)
     fun observeContinueWatching(): Flow<List<HomeContinueWatchingItem>>
 
+    /** Вся локальная история прогресса, по записи на серию, без фильтров «Продолжить просмотр». */
+    fun observeWatchHistory(): Flow<List<HomeContinueWatchingItem>>
+
+    /** Ручные удаления из «Продолжить просмотр»: id тайтла → момент удаления (мс). */
+    fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>>
+
     /**
      * Просмотренные серии по тайтлам: id тайтла → номера серий. Номера нормализованы, потому что
      * озвучки присылают их по-разному («01» и «1» — одна и та же серия).
