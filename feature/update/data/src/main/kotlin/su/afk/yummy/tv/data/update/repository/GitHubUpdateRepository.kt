@@ -18,6 +18,10 @@ import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
 import su.afk.yummy.tv.domain.update.repository.UpdateRepository
 import su.afk.yummy.tv.domain.update.utils.compareVersions
 import su.afk.yummy.tv.domain.update.utils.isVersionNewer
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withTimeoutOrNull
+import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
+import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import javax.inject.Inject
 
 /**
@@ -27,14 +31,18 @@ import javax.inject.Inject
  */
 internal class GitHubUpdateRepository @Inject constructor(
     @param:UnauthenticatedJsonClient private val httpClient: HttpClient,
+    private val featureToggleProvider: FeatureToggleProvider,
 ) : UpdateRepository {
 
     override suspend fun latestRelease(currentVersion: String, includePrerelease: Boolean): AppRelease? {
-        val releases = fetchReleases()
+        // GitHub недоступен (ошибка, таймаут, пустой ответ) — резервный релиз по прямой ссылке из флагов.
+        val releases = fetchReleasesOrNull()
             ?.mapNotNull { it.toDomain() }
             ?.filter { includePrerelease || !it.isPrerelease }
-            ?: return null
-        val latest = releases.maxWithOrNull { a, b -> compareVersions(a.version, b.version) } ?: return null
+            ?.takeIf { it.isNotEmpty() }
+            ?: return fallbackRelease(currentVersion)
+        val latest = releases.maxWithOrNull { a, b -> compareVersions(a.version, b.version) }
+            ?: return fallbackRelease(currentVersion)
         val updatesCount = releases.count { isVersionNewer(currentVersion, it.version) }
         return latest.copy(updatesCount = updatesCount)
     }
@@ -44,6 +52,28 @@ internal class GitHubUpdateRepository @Inject constructor(
             .mapNotNull { it.toReleaseNotes() }
             .filter { (includePrerelease || !it.isPrerelease) && !isVersionNewer(currentVersion, it.version) }
             .sortedWith { a, b -> compareVersions(b.version, a.version) }
+
+    /** Короче общего таймаута проверки в MainSideEffectsHandler, чтобы на резерв осталось время. */
+    private suspend fun fetchReleasesOrNull(): List<GitHubReleaseDto>? =
+        try {
+            withTimeoutOrNull(GITHUB_TIMEOUT_MS) { fetchReleases() }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+
+    private fun fallbackRelease(currentVersion: String): AppRelease? {
+        val url = featureToggleProvider.getString(FeatureFlags.updateFallbackApkUrl).trim()
+        val version = featureToggleProvider.getString(FeatureFlags.updateFallbackVersion).trim()
+        if (!url.startsWith("https://", ignoreCase = true) || version.isBlank()) return null
+        return AppRelease(
+            version = version,
+            changelog = featureToggleProvider.getString(FeatureFlags.updateFallbackChangelog).trim(),
+            apkUrl = url,
+            updatesCount = if (isVersionNewer(currentVersion, version)) 1 else 0,
+        )
+    }
 
     /** null, когда репозиторий обновлений не сконфигурирован или GitHub ответил ошибкой. */
     private suspend fun fetchReleases(): List<GitHubReleaseDto>? {
@@ -57,6 +87,7 @@ internal class GitHubUpdateRepository @Inject constructor(
     }
 
     private companion object {
+        const val GITHUB_TIMEOUT_MS = 3_500L
         const val GITHUB_ACCEPT = "application/vnd.github+json"
 
         /** Максимум GitHub на страницу: беты идут часто и не должны вытеснять последний стабильный релиз. */

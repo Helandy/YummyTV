@@ -174,6 +174,27 @@ class PlayerProgressHandlerTest : BaseUnitTest() {
     }
 
     @Test
+    fun `source video is synced under its remote counterpart and stored locally under its own id`() = runTest {
+        val handler = createHandler()
+        handler.recordWatchedSecond(videoId = VIDEO_ID, positionMs = 100_000L, durationMs = DURATION_MS)
+        handler.saveProgress(
+            context,
+            snapshot(positionMs = 100_000L, videoId = -5),
+            remoteVideoId = VIDEO_ID,
+            forceRemoteSync = true,
+        )
+
+        coVerify {
+            saveWatchProgress(
+                animeId = ANIME_ID, episode = "3", videoId = -5, episodeUrl = "url", positionMs = 100_000L,
+                durationMs = DURATION_MS, animeTitle = any(), posterUrl = any(), playerName = any(),
+                dubbing = any(), screenshotUrl = any(),
+            )
+        }
+        coVerify(exactly = 1) { saveVideoWatchProgress(VIDEO_ID, any(), any(), any()) }
+    }
+
+    @Test
     fun `continue target and suppression use the screen context`() = runTest {
         val handler = createHandler()
         val snapshot = snapshot(positionMs = 0L)
@@ -186,6 +207,12 @@ class PlayerProgressHandlerTest : BaseUnitTest() {
         }
         coVerify { suppressContinueWatching(ANIME_ID) }
     }
+
+    private suspend fun PlayerProgressHandler.saveProgress(
+        context: PlayerProgressContext,
+        snapshot: PlayerProgressSnapshot,
+        forceRemoteSync: Boolean = false,
+    ) = saveProgress(context, snapshot, remoteVideoId = snapshot.videoId, forceRemoteSync = forceRemoteSync)
 
     private fun snapshot(positionMs: Long, durationMs: Long = DURATION_MS, videoId: Int = VIDEO_ID) =
         PlayerProgressSnapshot(

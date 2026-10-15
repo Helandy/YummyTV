@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:featuretoggle"))
     implementation(project(":core:network"))
     implementation(project(":feature:update:domain"))
 

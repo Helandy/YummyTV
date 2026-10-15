@@ -630,16 +630,19 @@ class EpisodesViewModel @AssistedInject internal constructor(
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {
-        nav.navigate(
-            playerNavigationHandler.getPlayerDestination(
-                video = video,
-                animeTitle = animeTitle,
-                animeId = animeId,
-                posterUrl = posterUrl,
-                screenshotByEpisode = screenshotsByEpisode,
-                resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
+        viewModelScope.launch {
+            if (!playerNavigationHandler.confirmOpen(video)) return@launch
+            nav.navigate(
+                playerNavigationHandler.getPlayerDestination(
+                    video = video,
+                    animeTitle = animeTitle,
+                    animeId = animeId,
+                    posterUrl = posterUrl,
+                    screenshotByEpisode = screenshotsByEpisode,
+                    resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
+                )
             )
-        )
+        }
     }
 
 }

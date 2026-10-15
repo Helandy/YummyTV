@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime4k_ad_dialog_title">Видео в 4K</string>
+    <string name="anime4k_ad_dialog_message">Реклама помогает нам поддерживать приложение. Посмотрите короткий ролик, чтобы открыть 4K.</string>
+    <string name="anime4k_ad_dialog_confirm">Открыть 4K</string>
+    <string name="anime4k_ad_dialog_cancel">Отмена</string>
+    <string name="anime4k_declined_message">Чтобы смотреть в 4K, нужно посмотреть короткий ролик</string>
+    <string name="anime4k_ad_not_shown_message">Не удалось показать ролик. Попробуйте ещё раз</string>
+    <string name="anime4k_rate_limited_message">Слишком много запросов. Попробуйте позже</string>
+    <string name="anime4k_not_found_message">4K-версия этой серии недоступна</string>
+</resources>

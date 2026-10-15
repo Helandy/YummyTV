@@ -53,6 +53,9 @@ interface PlayerSettingsStore {
     val advancedPlayerVolumeEnabled: Flow<Boolean>
     val advancedPlayerVolumePercent: Flow<Int>
 
+    /** Яркость мобильного плеера в процентах; `null` — пользователь её не менял, действует системная. */
+    val mobilePlayerBrightnessPercent: Flow<Int?>
+
     /** Стабилизация громкости (сжатие динамического диапазона аудио). */
     val volumeStabilizationEnabled: Flow<Boolean>
 
@@ -101,6 +104,7 @@ interface PlayerSettingsStore {
     suspend fun setTvPlayerVolumeKeysEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
+    suspend fun setMobilePlayerBrightnessPercent(percent: Int)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
     suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)

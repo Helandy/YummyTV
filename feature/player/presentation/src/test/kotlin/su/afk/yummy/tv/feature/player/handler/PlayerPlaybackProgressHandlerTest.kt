@@ -110,7 +110,7 @@ class PlayerPlaybackProgressHandlerTest : BaseUnitTest() {
         handler.saveContinueTarget(target)
         handler.suppressContinueWatchingDisplay(state)
 
-        coVerify { progressHandler.saveProgress(save.context, save.snapshot, true) }
+        coVerify { progressHandler.saveProgress(save.context, save.snapshot, save.remoteVideoId, true) }
         coVerify { progressHandler.saveContinueTarget(target.context, target.snapshot) }
         coVerify { progressHandler.suppressContinueWatchingDisplay(save.context) }
     }

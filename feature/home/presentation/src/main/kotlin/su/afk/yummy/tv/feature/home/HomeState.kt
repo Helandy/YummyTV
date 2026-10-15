@@ -29,6 +29,8 @@ class HomeState {
         val launchingContinueWatchingAnimeId: Int? = null,
         val supportPromptVisible: Boolean = false,
         val announcement: HomeAnnouncement? = null,
+        /** Доп. строка-сообщение с сервера (не диалог). `null` — не показывается. */
+        val statusMessage: String? = null,
         /** Предложение добавить preview-канал «Новинки» на главный экран ТВ. */
         val previewChannelPromptVisible: Boolean = false,
         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),

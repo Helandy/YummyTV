@@ -6,6 +6,8 @@ import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import su.afk.yummy.tv.feature.player.common.PlayerBrightnessController
+import su.afk.yummy.tv.feature.player.common.rememberPlayerBrightnessController
 import su.afk.yummy.tv.feature.player.mobile.utils.MOBILE_PLAYER_MIN_BRIGHTNESS
 import su.afk.yummy.tv.feature.player.mobile.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.utils.readSystemBrightnessFraction
@@ -34,6 +38,7 @@ internal class MobilePlayerGestureController(
     initialTransform: MobileVideoTransform,
     private val volumeLevelProvider: () -> Float,
     private val onVolumeChanged: (Float) -> Unit,
+    private val brightnessController: PlayerBrightnessController,
     private val onGestureStart: () -> Unit,
     private val onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ) {
@@ -102,6 +107,7 @@ internal class MobilePlayerGestureController(
                     .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
                 if (stepped == brightnessLevel) return
                 brightnessLevel = stepped
+                brightnessController.setFraction(stepped)
                 activity?.window?.let { window ->
                     window.attributes = window.attributes.apply {
                         screenBrightness = brightnessLevel
@@ -160,6 +166,7 @@ internal fun rememberMobilePlayerGestureController(
     onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ): MobilePlayerGestureController {
     val context = LocalContext.current
+    val brightnessController = rememberPlayerBrightnessController()
     val currentVolumeLevelProvider = rememberUpdatedState(volumeLevelProvider)
     val currentOnVolumeChanged = rememberUpdatedState(onVolumeChanged)
     val currentOnGestureStart = rememberUpdatedState(onGestureStart)
@@ -169,6 +176,7 @@ internal fun rememberMobilePlayerGestureController(
             activity = activity,
             context = context,
             initialTransform = initialTransform,
+            brightnessController = brightnessController,
             volumeLevelProvider = { currentVolumeLevelProvider.value.invoke() },
             onVolumeChanged = { currentOnVolumeChanged.value.invoke(it) },
             onGestureStart = { currentOnGestureStart.value.invoke() },
@@ -184,6 +192,14 @@ internal fun rememberMobilePlayerGestureController(
                         ?: WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
                 }
             }
+        }
+    }
+    // Сохранённая яркость применяется поверх системной; пока её нет, окно остаётся на системной.
+    val savedBrightness by brightnessController.brightness.collectAsState()
+    LaunchedEffect(activity, savedBrightness) {
+        val level = savedBrightness ?: return@LaunchedEffect
+        activity?.window?.let { window ->
+            window.attributes = window.attributes.apply { screenBrightness = level }
         }
     }
     return controller

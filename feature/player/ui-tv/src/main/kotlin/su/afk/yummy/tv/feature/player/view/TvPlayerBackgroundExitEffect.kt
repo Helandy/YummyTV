@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import su.afk.yummy.tv.core.utils.system.ForegroundAdGate
 
 /** Убирает TV-плеер из навигационного стека, когда приложение полностью уходит в фон. */
 @Composable
@@ -25,7 +26,8 @@ internal fun TvPlayerBackgroundExitEffect(onBackgrounded: () -> Unit) {
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) currentOnBackgrounded()
+            // Реклама источника (4K) идёт в своей Activity: ON_STOP от неё — не уход в фон.
+            if (event == Lifecycle.Event.ON_STOP && !ForegroundAdGate.isShowing) currentOnBackgrounded()
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }

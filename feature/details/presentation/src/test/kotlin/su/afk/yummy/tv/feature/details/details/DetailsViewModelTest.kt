@@ -82,6 +82,7 @@ class DetailsViewModelTest : BaseUnitTest() {
 
     @Before
     fun setUp() {
+        coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { stringProvider.get(any<Int>()) } returns "load error"
         every { screenDataHandler.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
         every { screenDataHandler.yaniUserId } returns flowOf(0)

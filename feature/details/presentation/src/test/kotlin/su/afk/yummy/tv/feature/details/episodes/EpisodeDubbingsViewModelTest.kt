@@ -46,6 +46,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
 
     @Before
     fun setUp() {
+        coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.preferredPlayer } returns MutableStateFlow(PreferredPlayer.NONE)
         every {
             playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())

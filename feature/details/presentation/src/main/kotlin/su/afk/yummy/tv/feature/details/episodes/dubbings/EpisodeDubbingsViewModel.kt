@@ -118,6 +118,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
 
     private fun navigateToPlayer(video: AnimeVideo) {
         viewModelScope.launch {
+            if (!playerNavigationHandler.confirmOpen(video)) return@launch
             val destination = withContext(Dispatchers.Default) {
                 playerNavigationHandler.getPlayerDestination(
                     video = video,

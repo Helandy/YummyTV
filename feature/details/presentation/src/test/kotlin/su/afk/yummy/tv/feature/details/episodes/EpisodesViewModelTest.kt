@@ -85,6 +85,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
     @Before
     fun setUp() {
+        coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
         every { stringProvider.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { accountRepository.observeSession() } returns session

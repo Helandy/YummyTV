@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Запоминает текущую Activity для показа рекламы; не требует правок в Application приложения. -->
+        <provider
+            android:name="su.afk.yummy.tv.source.anime4k.data.ads.Anime4kInitProvider"
+            android:authorities="${applicationId}.anime4k-init"
+            android:exported="false" />
+    </application>
+
+</manifest>

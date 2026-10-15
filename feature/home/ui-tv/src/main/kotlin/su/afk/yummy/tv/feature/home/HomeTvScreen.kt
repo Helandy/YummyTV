@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.components.InfoBanner
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -151,6 +152,10 @@ fun HomeTvScreen(
     Column {
         OfflineBanner(
             isOffline = LocalIsOffline.current,
+            modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal - 16.dp),
+        )
+        InfoBanner(
+            message = state.statusMessage,
             modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal - 16.dp),
         )
         when {

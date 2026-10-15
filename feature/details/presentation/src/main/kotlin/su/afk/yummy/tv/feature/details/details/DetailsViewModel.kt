@@ -661,17 +661,20 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {
-        val details = currentState.details
-        nav.navigate(
-            playerNavigationHandler.getPlayerDestination(
-                video = video,
-                animeTitle = details?.title ?: "",
-                animeId = animeId,
-                posterUrl = details.playerPosterUrl(),
-                screenshotByEpisode = details.screenshotByEpisode(),
-                resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
-            ),
-        )
+        viewModelScope.launch {
+            if (!playerNavigationHandler.confirmOpen(video)) return@launch
+            val details = currentState.details
+            nav.navigate(
+                playerNavigationHandler.getPlayerDestination(
+                    video = video,
+                    animeTitle = details?.title ?: "",
+                    animeId = animeId,
+                    posterUrl = details.playerPosterUrl(),
+                    screenshotByEpisode = details.screenshotByEpisode(),
+                    resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
+                ),
+            )
+        }
     }
 
     private fun navigateToPlayer(video: PlayerVideoSource) {

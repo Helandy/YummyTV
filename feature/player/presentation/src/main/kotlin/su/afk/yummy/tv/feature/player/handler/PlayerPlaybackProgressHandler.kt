@@ -5,11 +5,11 @@ import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.PlayerCompletionAnalyticsKey
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
-import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.completionAnalyticsKey
 import su.afk.yummy.tv.feature.player.utils.isFirstEpisodeNumber
 import su.afk.yummy.tv.feature.player.utils.progressContext
 import su.afk.yummy.tv.feature.player.utils.progressSnapshot
+import su.afk.yummy.tv.feature.player.utils.remoteVideoId
 import javax.inject.Inject
 
 /**
@@ -33,6 +33,7 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
         PlayerProgressSaveRequest(
             context = state.progressContext(),
             snapshot = snapshot,
+            remoteVideoId = state.remoteVideoId(),
         )
 
     /**
@@ -51,6 +52,7 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
             PlayerProgressSaveRequest(
                 context = state.progressContext(),
                 snapshot = snapshot,
+                remoteVideoId = state.remoteVideoId(),
                 forceRemoteSync = true,
             )
         }
@@ -115,13 +117,14 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
         return PlayerProgressSaveRequest(
             context = state.progressContext(),
             snapshot = snapshot,
+            remoteVideoId = state.remoteVideoId(),
         )
     }
 
     /** Копит реально проигранную секунду активного видео (тик плеера ~1с). */
     fun recordWatchedTick(state: PlayerState.State, positionMs: Long, durationMs: Long) {
         progressHandler.recordWatchedSecond(
-            videoId = activeVideoId(state),
+            videoId = state.remoteVideoId(),
             positionMs = positionMs,
             durationMs = durationMs,
         )
@@ -132,6 +135,7 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
         progressHandler.saveProgress(
             context = request.context,
             snapshot = request.snapshot,
+            remoteVideoId = request.remoteVideoId,
             forceRemoteSync = request.forceRemoteSync,
         )
     }
@@ -151,13 +155,14 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
 
     suspend fun shouldSuggestNextEpisodeOnWatched(): Boolean =
         progressHandler.shouldSuggestNextEpisodeOnWatched()
-
 }
 
 /** Запрос на сохранение прогресса просмотра. */
 internal data class PlayerProgressSaveRequest(
     val context: PlayerProgressContext,
     val snapshot: PlayerProgressSnapshot,
+    /** Id видео на сервере Yani; `0` — аналога нет (источник 4K без пары), прогресс только локальный. */
+    val remoteVideoId: Int,
     val forceRemoteSync: Boolean = false,
 )
 

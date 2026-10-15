@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime4k_ad_dialog_title">4K video</string>
+    <string name="anime4k_ad_dialog_message">Ads help us keep the app running. Watch a short clip to unlock 4K.</string>
+    <string name="anime4k_ad_dialog_confirm">Unlock 4K</string>
+    <string name="anime4k_ad_dialog_cancel">Cancel</string>
+    <string name="anime4k_declined_message">To watch in 4K, please watch a short clip</string>
+    <string name="anime4k_ad_not_shown_message">Could not show the clip. Try again</string>
+    <string name="anime4k_rate_limited_message">Too many requests. Try again later</string>
+    <string name="anime4k_not_found_message">The 4K version of this episode is unavailable</string>
+</resources>

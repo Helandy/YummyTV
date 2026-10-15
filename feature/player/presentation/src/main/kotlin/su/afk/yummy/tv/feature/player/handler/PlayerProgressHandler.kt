@@ -73,6 +73,7 @@ internal class PlayerProgressHandler @Inject constructor(
     suspend fun saveProgress(
         context: PlayerProgressContext,
         snapshot: PlayerProgressSnapshot,
+        remoteVideoId: Int,
         forceRemoteSync: Boolean = false,
     ) {
         if (snapshot.durationMs <= 0) return
@@ -94,7 +95,7 @@ internal class PlayerProgressHandler @Inject constructor(
             )
         }
 
-        syncRemoteProgress(savedSnapshot, force = forceRemoteSync)
+        syncRemoteProgress(savedSnapshot, remoteVideoId, force = forceRemoteSync)
     }
 
     suspend fun saveContinueTarget(
@@ -123,9 +124,9 @@ internal class PlayerProgressHandler @Inject constructor(
 
     private suspend fun syncRemoteProgress(
         snapshot: PlayerProgressSnapshot,
+        videoId: Int,
         force: Boolean,
     ) {
-        val videoId = snapshot.videoId
         if (videoId <= 0) return
         if (!isMeaningfulProgress(snapshot.positionMs, snapshot.durationMs)) {
             return
@@ -140,7 +141,7 @@ internal class PlayerProgressHandler @Inject constructor(
             return
         }
         try {
-            syncRemoteProgressLocked(snapshot, force)
+            syncRemoteProgressLocked(snapshot, videoId, force)
         } finally {
             syncMutex.unlock()
         }
@@ -148,9 +149,9 @@ internal class PlayerProgressHandler @Inject constructor(
 
     private suspend fun syncRemoteProgressLocked(
         snapshot: PlayerProgressSnapshot,
+        videoId: Int,
         force: Boolean,
     ) {
-        val videoId = snapshot.videoId
         val watchedEnough = isWatchedProgress(
             positionMs = snapshot.positionMs,
             durationMs = snapshot.durationMs,

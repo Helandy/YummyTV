@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.details.handler
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.mapper.toPlayerVideoSource
@@ -13,7 +14,12 @@ import javax.inject.Inject
 
 internal class DetailsPlayerNavigationHandler @Inject constructor(
     private val playerNavigator: IPlayerNavigator,
+    private val extraVideoRepositories: Set<@JvmSuppressWildcards ExtraVideoRepository> = emptySet(),
 ) {
+    /** Источники-расширения могут запросить подтверждение до перехода в плеер; без них всегда `true`. */
+    suspend fun confirmOpen(video: AnimeVideo): Boolean =
+        extraVideoRepositories.all { it.confirmOpen(video) }
+
     fun selectPlayer(
         video: AnimeVideo,
         allVideos: List<AnimeVideo>,

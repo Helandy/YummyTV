@@ -205,3 +205,9 @@ include(":feature:update:domain")
 include(":feature:update:data")
 include(":feature:update:presentation")
 include(":feature:update:ui")
+
+// Необязательные модули-источники. Каталог удаляется целиком, остальное приложение собирается как раньше.
+if (file("source/anime4k").isDirectory) {
+    include(":source:anime4k:domain")
+    include(":source:anime4k:data")
+}

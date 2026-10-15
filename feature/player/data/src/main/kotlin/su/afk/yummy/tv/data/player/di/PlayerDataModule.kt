@@ -9,6 +9,7 @@ import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.aksor.AksorExtractor
 import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor
 import su.afk.yummy.tv.data.player.extractor.cvh.CvhExtractor
+import su.afk.yummy.tv.data.player.extractor.extra.ExtraSourceExtractor
 import su.afk.yummy.tv.data.player.extractor.kodik.KodikExtractor
 import su.afk.yummy.tv.data.player.extractor.rutube.RutubeExtractor
 import su.afk.yummy.tv.data.player.extractor.sibnet.SibnetExtractor
@@ -76,6 +77,11 @@ object PlayerDataModule {
     @Provides
     @IntoSet
     internal fun provideKodikExtractor(extractor: KodikExtractor): PlayerStreamExtractor = extractor
+
+    @Provides
+    @IntoSet
+    internal fun provideExtraSourceExtractor(extractor: ExtraSourceExtractor): PlayerStreamExtractor =
+        extractor
 
     @Provides
     @IntoSet

@@ -31,4 +31,40 @@ object FeatureFlags {
         key = "announcement_button",
         defaultValue = "",
     )
+
+    /** Адрес API сайта (https). Пустой или совпадающий со встроенным = остаётся встроенный. */
+    val siteApiBaseUrl = FeatureFlag.StringFlag(
+        key = "site_api_base_url",
+        defaultValue = "",
+    )
+
+    /** Токен подписи запросов к сайту. Пустой или совпадающий со встроенным = остаётся встроенный. */
+    val siteApiToken = FeatureFlag.StringFlag(
+        key = "site_api_token",
+        defaultValue = "",
+    )
+
+    /** Доп. строка-сообщение на главном экране (не диалог). Пустой = не показывается. */
+    val statusMessage = FeatureFlag.StringFlag(
+        key = "status_message_text",
+        defaultValue = "",
+    )
+
+    /** Резервная прямая ссылка на APK (https), если GitHub Releases недоступен. */
+    val updateFallbackApkUrl = FeatureFlag.StringFlag(
+        key = "update_fallback_apk_url",
+        defaultValue = "",
+    )
+
+    /** Версия резервного APK (сравнивается с текущей как обычный релиз). */
+    val updateFallbackVersion = FeatureFlag.StringFlag(
+        key = "update_fallback_version",
+        defaultValue = "",
+    )
+
+    /** Описание изменений резервного APK. */
+    val updateFallbackChangelog = FeatureFlag.StringFlag(
+        key = "update_fallback_changelog",
+        defaultValue = "",
+    )
 }

@@ -47,6 +47,8 @@ import su.afk.yummy.tv.domain.anime.model.AnimeRelationKind
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationReference
 import su.afk.yummy.tv.domain.anime.model.StudioUrlUnavailableException
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
+import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
+import su.afk.yummy.tv.domain.anime.utils.mergeExtraDubbings
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAnimeDetails
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailers as toStoredAnimeTrailers
@@ -69,6 +71,7 @@ class YaniAnimeRepository(
     private val settingsStore: YaniAccountSettingsStore,
     private val watchProgressStore: WatchProgressStorage,
     private val documentCache: DocumentCacheStorage,
+    private val extraVideoRepositories: Set<@JvmSuppressWildcards ExtraVideoRepository> = emptySet(),
 ) : AnimeRepository {
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
@@ -100,7 +103,7 @@ class YaniAnimeRepository(
                 isFresh = { it.isFresh(ANIME_VIDEOS_TTL_MS) },
                 toDomain = { it.toStoredAnimeVideos() },
                 fetchAndSave = { fetchVideosFromNetwork(animeId, languageCode) },
-            )
+            ).withExtraVideos(animeId, allowNetwork = true)
         }
 
     override suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo> =
@@ -112,19 +115,37 @@ class YaniAnimeRepository(
                 isFresh = { it.isFresh(ANIME_VIDEOS_TTL_MS) },
                 toDomain = { it.toStoredAnimeVideos() },
                 fetchAndSave = { fetchVideosFromNetwork(animeId, languageCode) },
-            )
+            ).withExtraVideos(animeId, allowNetwork = true)
         }
 
     override suspend fun fetchAnimeVideos(animeId: Int): List<AnimeVideo> =
         withContext(Dispatchers.IO) {
-            fetchVideosFromNetwork(animeId, settingsStore.currentLanguageCode()).toStoredAnimeVideos()
+            fetchVideosFromNetwork(animeId, settingsStore.currentLanguageCode())
+                .toStoredAnimeVideos()
+                .withExtraVideos(animeId, allowNetwork = true)
         }
 
     override suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>? =
         withContext(Dispatchers.IO) {
             animeStorage.getVideos(animeId, settingsStore.currentLanguageCode())
                 ?.toStoredAnimeVideos()
+                ?.withExtraVideos(animeId, allowNetwork = false)
         }
+
+    /**
+     * Видео подключаемых модулей-источников. В кэш Yani не попадают: набор живёт только в памяти.
+     * Сбой модуля не ломает основную выдачу.
+     */
+    private suspend fun List<AnimeVideo>.withExtraVideos(animeId: Int, allowNetwork: Boolean): List<AnimeVideo> {
+        if (extraVideoRepositories.isEmpty()) return this
+        val details = runSuspendCatching {
+            if (allowNetwork) getAnimeDetails(animeId) else getCachedAnimeDetails(animeId)
+        }.getOrNull() ?: return this
+        val extras = extraVideoRepositories.flatMap { repository ->
+            runSuspendCatching { repository.videos(details) }.getOrDefault(emptyList())
+        }
+        return if (extras.isEmpty()) this else this + mergeExtraDubbings(this, extras)
+    }
 
     override suspend fun getAnimeRecommendations(
         animeId: Int,

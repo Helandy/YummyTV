@@ -7,7 +7,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
-import su.afk.yummy.tv.core.network.yummy.YUMMY_TV_API_BASE_URL
+import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
+import su.afk.yummy.tv.core.network.yummy.signSiteRequest
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 
 /**
@@ -16,10 +18,14 @@ import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
  */
 class YummyEpisodesApi(
     private val clientProvider: YaniHttpClientProvider,
+    private val siteApiConfig: SiteApiConfig,
+    private val signers: Set<SiteRequestSigner> = emptySet(),
 ) {
     /** 404 (нет маппинга MAL→TMDB) — валидный ответ «серий нет», а не ошибка. */
     suspend fun getEpisodes(malId: Int): YummyEpisodesDto {
-        val response = clientProvider.get().get("$YUMMY_TV_API_BASE_URL/anime/mal/$malId") {
+        val url = "${siteApiConfig.baseUrl}/anime/mal/$malId"
+        val response = clientProvider.get().get(url) {
+            signSiteRequest(signers, "GET", url)
             // Статус разбирается ниже: 404 — «серий нет», а не ошибка.
             expectSuccess = false
         }

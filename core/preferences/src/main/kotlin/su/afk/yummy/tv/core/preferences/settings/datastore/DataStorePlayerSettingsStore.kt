@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumePercentKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
@@ -125,6 +126,10 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override val advancedPlayerVolumePercent: Flow<Int> = store.data.map { prefs ->
         (prefs[advancedPlayerVolumePercentKey] ?: DEFAULT_VOLUME_PERCENT)
             .coerceIn(0, MAX_VOLUME_PERCENT)
+    }
+
+    override val mobilePlayerBrightnessPercent: Flow<Int?> = store.data.map { prefs ->
+        prefs[mobilePlayerBrightnessPercentKey]?.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
     }
 
     override val volumeStabilizationEnabled: Flow<Boolean> =
@@ -265,6 +270,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun setMobilePlayerBrightnessPercent(percent: Int) {
+        store.edit { prefs ->
+            prefs[mobilePlayerBrightnessPercentKey] =
+                percent.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
+        }
+    }
+
     override suspend fun setVolumeStabilizationEnabled(enabled: Boolean) =
         store.setBoolean(volumeStabilizationEnabledKey, enabled)
 
@@ -314,6 +326,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     private companion object {
         const val DEFAULT_VOLUME_PERCENT = 100
         const val MAX_VOLUME_PERCENT = 100
+        const val MIN_BRIGHTNESS_PERCENT = 1
         const val DEFAULT_AUTO_SKIP_DELAY_SECONDS = 5
         const val MIN_AUTO_SKIP_DELAY_SECONDS = 1
         const val MAX_AUTO_SKIP_DELAY_SECONDS = 15

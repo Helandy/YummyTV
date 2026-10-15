@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime4k_ad_dialog_title">Відео в 4K</string>
+    <string name="anime4k_ad_dialog_message">Реклама допомагає нам підтримувати застосунок. Перегляньте короткий ролик, щоб відкрити 4K.</string>
+    <string name="anime4k_ad_dialog_confirm">Відкрити 4K</string>
+    <string name="anime4k_ad_dialog_cancel">Скасувати</string>
+    <string name="anime4k_declined_message">Щоб дивитися в 4K, потрібно переглянути короткий ролик</string>
+    <string name="anime4k_ad_not_shown_message">Не вдалося показати ролик. Спробуйте ще раз</string>
+    <string name="anime4k_rate_limited_message">Забагато запитів. Спробуйте пізніше</string>
+    <string name="anime4k_not_found_message">4K-версія цього епізоду недоступна</string>
+</resources>

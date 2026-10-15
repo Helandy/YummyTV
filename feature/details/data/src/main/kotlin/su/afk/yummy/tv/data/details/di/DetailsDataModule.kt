@@ -11,9 +11,12 @@ import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
+import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
+import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import javax.inject.Singleton
 
 @Module
@@ -27,8 +30,12 @@ object DetailsDataModule {
 
     @Provides
     @Singleton
-    fun provideYummyEpisodesApi(clientProvider: YaniHttpClientProvider): YummyEpisodesApi =
-        YummyEpisodesApi(clientProvider)
+    fun provideYummyEpisodesApi(
+        clientProvider: YaniHttpClientProvider,
+        siteApiConfig: SiteApiConfig,
+        signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
+    ): YummyEpisodesApi =
+        YummyEpisodesApi(clientProvider, siteApiConfig, signers)
 
     @Provides
     @Singleton
@@ -40,6 +47,7 @@ object DetailsDataModule {
         settingsStore: YaniAccountSettingsStore,
         watchProgressStore: WatchProgressStorage,
         documentCache: DocumentCacheStorage,
+        extraVideoRepositories: Set<@JvmSuppressWildcards ExtraVideoRepository>,
     ): AnimeRepository =
         YaniAnimeRepository(
             api,
@@ -49,5 +57,6 @@ object DetailsDataModule {
             settingsStore,
             watchProgressStore,
             documentCache,
+            extraVideoRepositories,
         )
 }

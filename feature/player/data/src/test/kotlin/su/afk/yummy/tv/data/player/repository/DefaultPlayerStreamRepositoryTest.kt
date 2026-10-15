@@ -66,6 +66,18 @@ class DefaultPlayerStreamRepositoryTest : BaseUnitTest() {
     }
 
     @Test
+    fun `extra module sources are never cached by the shared repository`() = runTest {
+        val extra = FakeExtractor(prefix = "source://")
+        extra.result = stream("a")
+        val repository = repository(plain, extra)
+
+        repository.resolve(request("source://anime4k/1/1/1/X"))
+        repository.resolve(request("source://anime4k/1/1/1/X"))
+
+        assertEquals(2, extra.extractCalls)
+    }
+
+    @Test
     fun `cache key includes the auto quality label`() = runTest {
         plain.result = stream("a")
         val repository = repository()

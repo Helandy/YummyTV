@@ -24,7 +24,10 @@ import su.afk.yummy.tv.android.startup.StartupMetricsTracker
 import su.afk.yummy.tv.android.startup.WatchedEpisodeRuleSync
 import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
+import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
+import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
+import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
@@ -53,6 +56,12 @@ class YummyTvApplication :
 
     @Inject
     lateinit var featureToggleInitializer: FeatureToggleInitializer
+
+    @Inject
+    lateinit var featureToggleProvider: FeatureToggleProvider
+
+    @Inject
+    lateinit var siteApiConfig: SiteApiConfig
 
     @Inject
     lateinit var onlineStatusCoordinator: OnlineStatusCoordinator
@@ -137,6 +146,11 @@ class YummyTvApplication :
 
     private fun setupFeatureToggles() {
         featureToggleInitializer.initialize(this, BuildConfig.VARIOQUB_CLIENT_ID)
+        // Один раз за запуск: initialize уже применил закэшированный конфиг прошлой сессии.
+        siteApiConfig.apply(
+            remoteBaseUrl = featureToggleProvider.getString(FeatureFlags.siteApiBaseUrl),
+            remoteToken = featureToggleProvider.getString(FeatureFlags.siteApiToken),
+        )
     }
 
     /**

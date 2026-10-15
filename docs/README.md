@@ -59,6 +59,7 @@
 
 - [release-and-ci.md](release-and-ci.md) — типы сборки, CI, выпуск на GitHub, самообновление.
 - [beta-updates.md](beta-updates.md) — бета-канал: нумерация версий, публикация, выбор релиза.
+- [varioqub-config.md](varioqub-config.md) — все ключи удалённого конфига Varioqub и когда они применяются.
 - [baseline-profile.md](baseline-profile.md) — генерация и проверка baseline profile, бенчмарки.
 - [startup-metrics.md](startup-metrics.md) — замер холодного старта у пользователей.
 - [analytics-and-logging.md](analytics-and-logging.md) — события, ошибки, файл логов, что нельзя

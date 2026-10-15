@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.player.repository
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
@@ -41,6 +42,9 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
             request,
             context
         )
+
+        // Источники модулей (`source://`) сами решают, когда нужен новый доступ: ссылку в общий кэш не кладём.
+        if (url.isExtraSourceUrl()) return extractor.extract(request, context)
 
         val cacheKey = "$url|${request.autoQualityLabel}"
         if (!request.forceRefresh) {

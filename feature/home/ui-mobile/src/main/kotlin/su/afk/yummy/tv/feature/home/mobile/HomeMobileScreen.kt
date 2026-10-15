@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.InfoBanner
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
@@ -212,6 +213,7 @@ fun HomeMobileScreen(
                                 .testTag("home_search"),
                         )
                         OfflineBanner(isOffline = LocalIsOffline.current)
+                        InfoBanner(message = state.statusMessage)
                     }
                 }
 

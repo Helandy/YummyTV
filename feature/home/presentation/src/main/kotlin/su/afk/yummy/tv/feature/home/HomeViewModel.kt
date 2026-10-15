@@ -470,6 +470,8 @@ class HomeViewModel @Inject internal constructor(
 
     /** Берёт объявление из фичефлагов и показывает, если оно включено и ещё не было прочитано. */
     private fun checkAnnouncement() {
+        val statusMessage = featureToggleProvider.getString(FeatureFlags.statusMessage).trim().ifBlank { null }
+        setState { copy(statusMessage = statusMessage) }
         viewModelScope.launch {
             val id = featureToggleProvider.getString(FeatureFlags.announcementId).trim()
             val message = featureToggleProvider.getString(FeatureFlags.announcementMessage).trim()

@@ -29,8 +29,13 @@ fun String.isZedfilmPlayerUrl(): Boolean =
     contains("zedfilm.ru", ignoreCase = true) ||
         contains("hlamer.ru", ignoreCase = true)
 
+/** Схема источников, подключаемых отдельными модулями (`source://<id>/…`): ссылка на файл появляется только при разрешении. */
+fun String.isExtraSourceUrl(): Boolean =
+    startsWith("source://", ignoreCase = true)
+
 fun String.isSupportedPlayerUrl(): Boolean =
-    isKodikPlayerUrl() ||
+    isExtraSourceUrl() ||
+        isKodikPlayerUrl() ||
         isAksorPlayerUrl() ||
         isCvhPlayerUrl() ||
         isAllohaPlayerUrl() ||
@@ -41,6 +46,7 @@ fun String.isSupportedPlayerUrl(): Boolean =
 
 fun String.playerDisplayOrderPriority(): Int =
     when {
+        isExtraSourceUrl() -> -1
         isCvhPlayerUrl() -> 0
         isKodikPlayerUrl() -> 1
         else -> 2

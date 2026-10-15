@@ -9,9 +9,16 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.network.BuildConfig
+import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
 import javax.inject.Singleton
 
@@ -62,6 +69,18 @@ object NetworkModule {
             install(ContentEncoding) {
                 gzip()
                 deflate()
+            }
+            if (BuildConfig.DEBUG) {
+                install(Logging) {
+                    logger = SensitiveDataMaskingLogger(Logger.ANDROID)
+                    level = LogLevel.BODY
+                    // Клиент ещё качает APK с GitHub: тело файла в лог не нужно.
+                    filter { request -> !request.url.host.endsWith("github.com") && !request.url.host.endsWith("githubusercontent.com") }
+                    sanitizeHeader { header ->
+                        header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
+                            header.startsWith("X-Sig", ignoreCase = true)
+                    }
+                }
             }
         }
 
