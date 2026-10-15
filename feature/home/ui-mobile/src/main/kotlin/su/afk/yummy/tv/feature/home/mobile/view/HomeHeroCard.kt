@@ -55,7 +55,7 @@ internal fun HomeHeroCard(
         Box(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
+                .fillMaxHeight(),
         ) {
             // blur на API < 31 не работает — фон тогда просто прикрыт скримом
             AsyncImage(
@@ -87,17 +87,29 @@ internal fun HomeHeroCard(
                     .padding(14.dp),
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                AsyncImage(
-                    model = posterUrl,
-                    contentDescription = item.title,
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
                         .fillMaxHeight()
                         .aspectRatio(2f / 3f)
                         .shadow(8.dp, HERO_POSTER_SHAPE)
                         .clip(HERO_POSTER_SHAPE)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
-                )
+                ) {
+                    AsyncImage(
+                        model = posterUrl,
+                        contentDescription = item.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    item.rating?.let { rating ->
+                        MobileRatingBadge(
+                            rating = rating,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp),
+                        )
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -131,19 +143,12 @@ internal fun HomeHeroCard(
 
 @Composable
 private fun HomeHeroMeta(item: HomeFeedItem) {
-    if (item.year == null && item.rating == null) return
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        item.year?.let { year ->
-            Text(
-                text = year.toString(),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        item.rating?.let { rating -> MobileRatingBadge(rating = rating) }
+    item.year?.let { year ->
+        Text(
+            text = year.toString(),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
