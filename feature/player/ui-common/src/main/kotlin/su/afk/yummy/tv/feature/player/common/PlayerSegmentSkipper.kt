@@ -53,9 +53,11 @@ fun rememberPlayerSegmentSkipper(
     val context = LocalContext.current
     // Позиция тикает постоянно; через derivedStateOf экран перекомпоновывается только когда
     // активная заставка реально меняется, а не на каждом тике.
+    // Пока длительность неизвестна (duration == 0), позиция в состоянии - стартовая заглушка 0:00,
+    // а не реальная: при возобновлении с середины серии она ложно попадала бы в опенинг с 0-й секунды.
     val activeSkip = remember(isMediaReady, skips, skipUi.dismissedSkipKeys) {
         derivedStateOf {
-            if (isMediaReady) {
+            if (isMediaReady && progress.duration > 0L) {
                 currentSkip(skips, progress.currentPosition, skipUi.dismissedSkipKeys)
             } else {
                 null
