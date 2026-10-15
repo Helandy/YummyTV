@@ -398,22 +398,26 @@ internal fun TvExoPlayerView(
                 true
             },
     ) {
-        ContentFrame(
-            player = player,
-            surfaceType = SURFACE_TYPE_SURFACE_VIEW,
-            contentScale = tvPlayerContentScale(state.resizeMode, state.zoomLevel),
-            keepContentOnReset = state.isPlaybackRecovering,
-            shutter = {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(Color.Black),
-                )
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .focusProperties { canFocus = false },
-        )
+        // При выходе убираем SurfaceView из иерархии сразу: пока экран плеера доживает переход
+        // назад, его слой с последним кадром иначе висит поверх возвращаемого экрана.
+        if (!exitState.requested) {
+            ContentFrame(
+                player = player,
+                surfaceType = SURFACE_TYPE_SURFACE_VIEW,
+                contentScale = tvPlayerContentScale(state.resizeMode, state.zoomLevel),
+                keepContentOnReset = state.isPlaybackRecovering,
+                shutter = {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black),
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .focusProperties { canFocus = false },
+            )
+        }
 
         PlayerSubtitleOverlay(
             player = player,
