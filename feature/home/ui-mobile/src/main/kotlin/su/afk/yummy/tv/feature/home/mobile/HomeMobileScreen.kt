@@ -250,18 +250,25 @@ fun HomeMobileScreen(
                             val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
                             val isRecommendations =
                                 section.type == HomeFeedSectionType.RECOMMENDATIONS
+                            val hasCatalog = isCollections || isRecommendations
                             HomeFeedSectionRow(
                                 section = section,
                                 onItemSelected = onItemSelected,
-                                actionLabel = if (isCollections) {
+                                actionLabel = if (hasCatalog) {
                                     stringResource(R.string.home_mobile_all)
                                 } else {
                                     null
                                 },
-                                onActionClick = if (isCollections) {
-                                    { onEvent(HomeState.Event.CollectionsCatalogSelected) }
-                                } else {
-                                    null
+                                onActionClick = when {
+                                    isCollections -> {
+                                        { onEvent(HomeState.Event.CollectionsCatalogSelected) }
+                                    }
+
+                                    isRecommendations -> {
+                                        { onEvent(HomeState.Event.RecommendationsCatalogSelected) }
+                                    }
+
+                                    else -> null
                                 },
                                 // Управлять видимостью можно только рекомендациями.
                                 onItemLongClick = if (isRecommendations) {

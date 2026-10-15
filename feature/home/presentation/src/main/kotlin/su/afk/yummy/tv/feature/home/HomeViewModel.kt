@@ -55,6 +55,7 @@ import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
+import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.home.utils.withoutScheduleSection
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -194,6 +195,10 @@ class HomeViewModel @Inject internal constructor(
 
             HomeState.Event.CollectionsCatalogSelected -> {
                 nav.navigate(collectionNavigator.getCollectionsCatalogDest())
+            }
+
+            HomeState.Event.RecommendationsCatalogSelected -> {
+                nav.navigate(HomeRecommendationsDestination)
             }
 
             HomeState.Event.ScheduleSelected -> {

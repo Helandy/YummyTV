@@ -12,6 +12,9 @@ import su.afk.yummy.tv.feature.home.HomeViewModel
 import su.afk.yummy.tv.feature.home.IMobileHomeEntry
 import su.afk.yummy.tv.feature.home.mobile.HomeMobileScreen
 import su.afk.yummy.tv.feature.home.navigator.HomeDestination
+import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
+import su.afk.yummy.tv.feature.home.mobile.recommendations.HomeRecommendationsMobileScreen
+import su.afk.yummy.tv.feature.home.recommendations.HomeRecommendationsViewModel
 import javax.inject.Inject
 
 class HomeNavRegistrar @Inject constructor() : IMobileHomeEntry {
@@ -21,6 +24,12 @@ class HomeNavRegistrar @Inject constructor() : IMobileHomeEntry {
                 val viewModel = hiltViewModel<HomeViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     HomeMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<HomeRecommendationsDestination> {
+                val viewModel = hiltViewModel<HomeRecommendationsViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    HomeRecommendationsMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
             entry<ContinueWatchingLaunchDestination> { dest ->

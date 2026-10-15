@@ -63,6 +63,9 @@ class HomeState {
         /** Пользователь открыл каталог коллекций с главного экрана. */
         data object CollectionsCatalogSelected : Event
 
+        /** Пользователь открыл полный список рекомендаций. */
+        data object RecommendationsCatalogSelected : Event
+
         /** Пользователь открыл расписание с главного экрана. */
         data object ScheduleSelected : Event
 
