@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.home.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.lazy.KeepLazyListAtStartOnNewHead
+import su.afk.yummy.tv.core.designsystem.dimensions.MobilePosterGridHorizontalPadding
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterCellWidth
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterSpacing
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -35,29 +38,33 @@ internal fun HomeFeedSectionRow(
     val listState = rememberLazyListState()
     KeepLazyListAtStartOnNewHead(state = listState, headKey = section.items.firstOrNull()?.id)
 
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        MobileSectionHeader(
-            title = section.title,
-            modifier = Modifier.padding(horizontal = 16.dp),
-            trailingActionLabel = actionLabel,
-            onTrailingActionClick = onActionClick,
-        )
-        LazyRow(
-            state = listState,
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(currentMobilePosterSpacing()),
-        ) {
-            items(section.items, key = { lazyKey("homeitem", it.id) }) { item ->
-                Box(modifier = Modifier.testTag("anime_card")) {
-                    HomeItemCard(
-                        item = item,
-                        showMetadata = showCardMetadata,
-                        subtitle = item.newEpisodeSubtitle(),
-                        badge = item.newEpisodeBadge(),
-                        showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
-                        onClick = { onItemSelected(item) },
-                        onLongClick = onItemLongClick?.let { { it(item) } },
-                    )
+    BoxWithConstraints {
+        val cardWidth = currentMobilePosterCellWidth(maxWidth)
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            MobileSectionHeader(
+                title = section.title,
+                modifier = Modifier.padding(horizontal = MobilePosterGridHorizontalPadding),
+                trailingActionLabel = actionLabel,
+                onTrailingActionClick = onActionClick,
+            )
+            LazyRow(
+                state = listState,
+                contentPadding = PaddingValues(horizontal = MobilePosterGridHorizontalPadding),
+                horizontalArrangement = Arrangement.spacedBy(currentMobilePosterSpacing()),
+            ) {
+                items(section.items, key = { lazyKey("homeitem", it.id) }) { item ->
+                    Box(modifier = Modifier.testTag("anime_card")) {
+                        HomeItemCard(
+                            item = item,
+                            showMetadata = showCardMetadata,
+                            subtitle = item.newEpisodeSubtitle(),
+                            badge = item.newEpisodeBadge(),
+                            showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
+                            cardWidth = cardWidth,
+                            onClick = { onItemSelected(item) },
+                            onLongClick = onItemLongClick?.let { { it(item) } },
+                        )
+                    }
                 }
             }
         }

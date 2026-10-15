@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.dimensions.MobilePosterGridHorizontalPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
 
@@ -29,9 +30,9 @@ fun MobilePosterGrid(
         state = state,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
-            start = 16.dp,
+            start = MobilePosterGridHorizontalPadding,
             top = contentPadding.calculateTopPadding() + 12.dp,
-            end = 16.dp,
+            end = MobilePosterGridHorizontalPadding,
             bottom = contentPadding.calculateBottomPadding() + 16.dp,
         ),
         horizontalArrangement = Arrangement.spacedBy(spacing),
