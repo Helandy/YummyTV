@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -96,6 +97,11 @@ internal fun VideoDownloadMobileCard(
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center,
             ) {
+                Text(
+                    text = item.episode,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.White.copy(alpha = 0.15f),
+                )
                 AsyncImage(
                     model = imageUrl.takeIf { it.isNotBlank() },
                     contentDescription = null,

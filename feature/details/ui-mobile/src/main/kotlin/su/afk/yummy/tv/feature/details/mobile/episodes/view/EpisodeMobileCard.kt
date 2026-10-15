@@ -92,6 +92,7 @@ internal fun EpisodeMobileCard(
         secondaryFooterTextColor = downloadStatusColor,
         imageModel = kodikIframeUrl?.let(::KodikThumbnail),
         badge = episodeNumber,
+        placeholderText = episodeNumber,
         mediaProgress = (watchStatus as? EpisodeWatchStatus.InProgress)?.progress,
         mediaProgressColor = InProgressColor,
         mediaTopEndContent = when (watchStatus) {

@@ -39,6 +39,8 @@ fun MobileProgressMediaCard(
     modifier: Modifier = Modifier.width(220.dp),
     imageOverlay: @Composable BoxScope.() -> Unit = {},
     isLoading: Boolean = false,
+    /** Крупный блеклый текст под картинкой: виден, пока превью грузится или его нет. */
+    placeholderText: String? = null,
     onClick: () -> Unit,
 ) {
     Card(
@@ -54,6 +56,14 @@ fun MobileProgressMediaCard(
                 .aspectRatio(16f / 9f)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest),
         ) {
+            if (!placeholderText.isNullOrBlank()) {
+                Text(
+                    text = placeholderText,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.White.copy(alpha = 0.15f),
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
             AsyncImage(
                 model = imageModel,
                 contentDescription = null,

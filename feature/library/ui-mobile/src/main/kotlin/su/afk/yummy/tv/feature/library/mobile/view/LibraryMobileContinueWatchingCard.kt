@@ -54,6 +54,7 @@ internal fun LibraryMobileContinueWatchingCard(
         progress = entry.watchProgress(),
         modifier = modifier,
         isLoading = isLoading,
+        placeholderText = entry.episode,
         imageOverlay = {
             ContinueWatchingOverlayButton(
                 contentDescription = stringResource(

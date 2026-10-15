@@ -46,6 +46,8 @@ internal fun DetailsMediaCard(
     secondaryFooterText: String? = null,
     secondaryFooterTextColor: Color = Color.Unspecified,
     badge: String? = null,
+    /** Крупный блеклый текст под картинкой: виден, пока превью грузится или его нет. */
+    placeholderText: String? = null,
     leadingIcon: ImageVector? = null,
     trailingAction: (@Composable () -> Unit)? = null,
     mediaWeight: Float = 0.42f,
@@ -98,6 +100,13 @@ internal fun DetailsMediaCard(
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center,
             ) {
+                if (!placeholderText.isNullOrBlank()) {
+                    Text(
+                        text = placeholderText,
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = Color.White.copy(alpha = 0.15f),
+                    )
+                }
                 AsyncImage(
                     model = imageModel,
                     contentDescription = null,

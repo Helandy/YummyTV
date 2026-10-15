@@ -62,6 +62,7 @@ internal fun ContinueWatchingSection(
                     trailingSubtitle = entry.timingSubtitle(),
                     progress = entry.watchProgress(),
                     isLoading = entry.animeId == launchingAnimeId,
+                    placeholderText = entry.episode,
                     onClick = { onEntrySelected(entry) },
                 )
             }
