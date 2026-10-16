@@ -175,7 +175,7 @@
     <string name="settings_picture_in_picture_label">Плавающий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматически включать при выходе из приложения во время воспроизведения</string>
     <string name="settings_advanced_volume_label">Продвинутая громкость в плеере</string>
-    <string name="settings_advanced_volume_enabled">У плеера своя громкость (0–100%, шаг 1%), независимо от системы</string>
+    <string name="settings_advanced_volume_enabled" formatted="false">У плеера своя громкость (0–100%, шаг 1%), независимо от системы</string>
     <string name="settings_advanced_volume_disabled">Громкость меняет системный звук как обычно</string>
     <string name="settings_volume_stabilization_label">Стабилизация громкости</string>
     <string name="settings_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>

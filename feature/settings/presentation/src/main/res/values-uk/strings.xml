@@ -175,7 +175,7 @@
     <string name="settings_picture_in_picture_label">Плаваючий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматично вмикати під час виходу із застосунку під час відтворення</string>
     <string name="settings_advanced_volume_label">Розширена гучність у плеєрі</string>
-    <string name="settings_advanced_volume_enabled">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
+    <string name="settings_advanced_volume_enabled" formatted="false">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
     <string name="settings_advanced_volume_disabled">Гучність змінює системний звук як зазвичай</string>
     <string name="settings_volume_stabilization_label">Стабілізація гучності</string>
     <string name="settings_volume_stabilization_enabled">Вирівнює гучні й тихі сцени: тихі діалоги стають гучнішими, гучні моменти — тихішими</string>
