@@ -113,12 +113,6 @@ fun PlayerSetupMobileScreen(
                     enabled = state.askDubbingOnWatch,
                     onClick = { onEvent(PlayerSetupState.Event.AskDubbingOnWatchToggled) },
                 )
-                PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_refresh_progress_label),
-                    hint = stringResource(R.string.player_setup_refresh_progress_hint),
-                    enabled = state.refreshContinueWatchingProgressOnLaunch,
-                    onClick = { onEvent(PlayerSetupState.Event.RefreshContinueWatchingProgressToggled) },
-                )
             }
 
             PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_playback)) {

@@ -93,8 +93,6 @@ class SettingsViewModel @Inject internal constructor(
                         playerOrientationMode = snapshot.playerOrientationMode,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
                         watchedThresholds = snapshot.watchedThresholds,
-                        refreshContinueWatchingProgressOnLaunch =
-                            snapshot.refreshContinueWatchingProgressOnLaunch,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
@@ -369,13 +367,6 @@ class SettingsViewModel @Inject internal constructor(
                 analytics.eventSuggestNextEpisodeOnWatchedToggled(enabled)
                 settingsStore.setSuggestNextEpisodeOnWatched(enabled)
             }
-
-            SettingsState.Event.RefreshContinueWatchingProgressOnLaunchToggled ->
-                viewModelScope.launch {
-                    val enabled = !currentState.refreshContinueWatchingProgressOnLaunch
-                    analytics.eventRefreshContinueWatchingProgressOnLaunchToggled(enabled)
-                    settingsStore.setRefreshContinueWatchingProgressOnLaunch(enabled)
-                }
 
             is SettingsState.Event.YaniApplicationTokenChanged -> {
                 setState { copy(yaniApplicationToken = event.token) }

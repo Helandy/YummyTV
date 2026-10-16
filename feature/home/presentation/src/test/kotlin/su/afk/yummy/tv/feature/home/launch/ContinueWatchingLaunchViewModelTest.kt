@@ -43,7 +43,7 @@ class ContinueWatchingLaunchViewModelTest : BaseUnitTest() {
         every { nav.backStack } returns listOf(ContinueWatchingLaunchDestination(ANIME_ID))
         every { detailsNavigator.getDetailsDest(ANIME_ID) } returns detailsKey
         every { playerNavigator.getPlayerDest(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns playerKey
-        every { settingsStore.refreshContinueWatchingProgressOnLaunch } returns flowOf(true)
+        every { settingsStore.yaniUserId } returns flowOf(1)
         coEvery { resolveLaunch(any(), any()) } returns launch()
     }
 

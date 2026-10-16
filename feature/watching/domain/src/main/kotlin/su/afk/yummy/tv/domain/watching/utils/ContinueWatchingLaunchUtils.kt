@@ -13,7 +13,7 @@ import su.afk.yummy.tv.domain.watching.model.ContinueWatchingLaunchResolution
 import su.afk.yummy.tv.domain.watching.model.ServerContinueProgress
 import kotlin.math.abs
 
-private const val REMOTE_PROGRESS_TOAST_POSITION_EPSILON_MS = 5_000L
+private const val REMOTE_PROGRESS_TOAST_POSITION_EPSILON_MS = 10_000L
 
 /** Выбирает источник и позицию запуска: локальный прогресс или более свежий серверный. */
 internal fun resolveContinueWatchingLaunch(
@@ -186,6 +186,6 @@ private fun ContinueWatchingPlaybackVideo.isDifferentLaunchThan(
     otherPositionMs: Long,
 ): Boolean =
     id.takeIf { it > 0 } != other.id.takeIf { it > 0 } ||
-            iframeUrl != other.iframeUrl ||
-            episode != other.episode ||
-            abs(positionMs - otherPositionMs) > REMOTE_PROGRESS_TOAST_POSITION_EPSILON_MS
+        iframeUrl != other.iframeUrl ||
+        episode != other.episode ||
+        abs(positionMs - otherPositionMs) > REMOTE_PROGRESS_TOAST_POSITION_EPSILON_MS

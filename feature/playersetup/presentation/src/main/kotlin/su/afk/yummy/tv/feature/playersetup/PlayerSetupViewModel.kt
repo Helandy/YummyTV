@@ -53,12 +53,6 @@ class PlayerSetupViewModel @Inject internal constructor(
                 settingsHandler.setPictureInPictureEnabled(!currentState.pictureInPictureEnabled)
             }
 
-            PlayerSetupState.Event.RefreshContinueWatchingProgressToggled -> launchWrite {
-                settingsHandler.setRefreshContinueWatchingProgressOnLaunch(
-                    !currentState.refreshContinueWatchingProgressOnLaunch,
-                )
-            }
-
             is PlayerSetupState.Event.ContentLanguageSelected -> launchWrite {
                 settingsHandler.setContentLanguage(event.language)
             }

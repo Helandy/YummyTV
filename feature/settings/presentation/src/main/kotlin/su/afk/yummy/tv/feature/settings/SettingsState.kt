@@ -66,7 +66,6 @@ class SettingsState {
         val tvPlayerControlsTutorialDismissed: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
-        val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
@@ -210,9 +209,6 @@ class SettingsState {
 
         /** Пользователь изменил пороги "просмотрено" (минуты до конца по длине серии). */
         data class WatchedThresholdsChanged(val thresholds: WatchedThresholds) : Event
-
-        /** Пользователь переключил запрос последнего прогресса при запуске продолжения просмотра. */
-        data object RefreshContinueWatchingProgressOnLaunchToggled : Event
 
         /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event

@@ -75,20 +75,6 @@ internal fun SettingsMobileWatchProgressContent(
                     )
                 },
             )
-            SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_refresh_continue_watching_progress_label),
-                hint = if (state.refreshContinueWatchingProgressOnLaunch) {
-                    stringResource(R.string.settings_refresh_continue_watching_progress_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
-                enabled = state.refreshContinueWatchingProgressOnLaunch,
-                onClick = {
-                    onEvent(
-                        SettingsState.Event.RefreshContinueWatchingProgressOnLaunchToggled,
-                    )
-                },
-            )
         }
     }
 }

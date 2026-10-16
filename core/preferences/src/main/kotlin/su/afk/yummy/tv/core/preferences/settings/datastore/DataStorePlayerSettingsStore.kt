@@ -37,7 +37,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerRe
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerZoomLevelKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.refreshContinueWatchingProgressOnLaunchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.screenOffAfterEndKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleBackgroundKey
@@ -106,9 +105,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val watchedThresholds: Flow<WatchedThresholds> =
         store.data.map { prefs -> prefs.watchedThresholds() }.distinctUntilChanged()
-
-    override val refreshContinueWatchingProgressOnLaunch: Flow<Boolean> =
-        store.boolean(refreshContinueWatchingProgressOnLaunchKey, false)
 
     override val mobilePlayerGestureTutorialDismissed: Flow<Boolean> =
         store.boolean(mobilePlayerGestureTutorialDismissedKey, false)
@@ -247,9 +243,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             prefs[watchedLongRemainingMinutesKey] = coerced.longMinutes
         }
     }
-
-    override suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean) =
-        store.setBoolean(refreshContinueWatchingProgressOnLaunchKey, enabled)
 
     override suspend fun dismissMobilePlayerGestureTutorial() =
         store.setBoolean(mobilePlayerGestureTutorialDismissedKey, true)

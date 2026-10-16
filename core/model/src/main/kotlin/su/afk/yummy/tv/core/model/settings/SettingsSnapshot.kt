@@ -27,7 +27,6 @@ data class SettingsSnapshot(
     val playerOrientationMode: PlayerOrientationMode,
     val suggestNextEpisodeOnWatched: Boolean,
     val watchedThresholds: WatchedThresholds,
-    val refreshContinueWatchingProgressOnLaunch: Boolean,
     val tvPlayerVolumeKeysEnabled: Boolean,
     val advancedPlayerVolumeEnabled: Boolean,
     val volumeStabilizationEnabled: Boolean,

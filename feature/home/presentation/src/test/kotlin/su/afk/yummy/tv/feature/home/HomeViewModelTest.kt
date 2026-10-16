@@ -395,7 +395,7 @@ class HomeViewModelTest : BaseUnitTest() {
 
     @Test
     fun `missing suggested next episode shows a toast and opens the details`() = runTest {
-        every { settingsStore.refreshContinueWatchingProgressOnLaunch } returns flowOf(false)
+        every { settingsStore.yaniUserId } returns flowOf(0)
         every { stringProvider.get(any<Int>(), *anyVararg()) } answers { "res${firstArg<Int>()}:${secondArg<Array<Any>>().joinToString()}" }
         coEvery { resolveContinueWatchingLaunch(any(), any()) } returns null
         val vm = createViewModel()

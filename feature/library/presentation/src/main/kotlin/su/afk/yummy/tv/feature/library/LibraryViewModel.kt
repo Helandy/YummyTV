@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
+import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -350,9 +351,7 @@ class LibraryViewModel @Inject internal constructor(
             try {
                 val result = resolveContinueWatchingLaunch(
                     entry = entry,
-                    refreshProgressOnLaunch = settingsStore
-                        .refreshContinueWatchingProgressOnLaunch
-                        .first(),
+                    refreshProgressOnLaunch = settingsStore.currentUserId() > 0,
                 )
                 if (result == null) {
                     nav.navigate(detailsNavigator.getDetailsDest(entry.animeId))

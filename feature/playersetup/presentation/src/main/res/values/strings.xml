@@ -24,8 +24,6 @@
     <string name="player_setup_quality_label">Video quality</string>
     <string name="player_setup_quality_hint">Falls back to the closest lower quality when unavailable</string>
     <string name="player_setup_quality_best">Best</string>
-    <string name="player_setup_refresh_progress_label">Latest progress from other devices</string>
-    <string name="player_setup_refresh_progress_hint">Check account progress when opening Continue Watching, to resume from the latest device</string>
     <string name="player_setup_language_label">API language</string>
     <string name="player_setup_language_hint">Language of titles and descriptions from the server</string>
     <string name="player_setup_language_russian">Русский</string>

@@ -183,8 +183,6 @@
     <string name="settings_player_gesture_tutorial_reset">Replay gesture tutorial</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Show the tutorial the next time a video is opened</string>
     <string name="settings_player_gesture_tutorial_reset_done">The tutorial will be shown the next time a video is opened</string>
-    <string name="settings_refresh_continue_watching_progress_label">Latest progress from other devices</string>
-    <string name="settings_refresh_continue_watching_progress_enabled">Check account progress when opening Continue Watching from Home or Library to resume from the latest device</string>
     <string name="settings_cache_size_min">Minimum</string>
     <string name="settings_cache_size_50">50 MB</string>
         <string name="settings_cache_size_100">100 MB</string>

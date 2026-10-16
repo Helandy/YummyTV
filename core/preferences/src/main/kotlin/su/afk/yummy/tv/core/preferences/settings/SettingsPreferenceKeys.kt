@@ -43,8 +43,6 @@ internal object SettingsPreferenceKeys {
     val watchedShortRemainingMinutesKey = intPreferencesKey("watched_remaining_short_minutes")
     val watchedMediumRemainingMinutesKey = intPreferencesKey("watched_remaining_medium_minutes")
     val watchedLongRemainingMinutesKey = intPreferencesKey("watched_remaining_long_minutes")
-    val refreshContinueWatchingProgressOnLaunchKey =
-        booleanPreferencesKey("refresh_continue_watching_progress_on_launch")
     val mobilePlayerGestureTutorialDismissedKey =
         booleanPreferencesKey("player_mobile_gesture_tutorial_dismissed")
     val tvPlayerControlsTutorialDismissedKey =

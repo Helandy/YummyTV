@@ -183,8 +183,6 @@
     <string name="settings_player_gesture_tutorial_reset">Повторить обучение жестам</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Показать обучалку при следующем открытии видео</string>
     <string name="settings_player_gesture_tutorial_reset_done">Обучалка будет показана при следующем открытии видео</string>
-    <string name="settings_refresh_continue_watching_progress_label">Свежий прогресс с других устройств</string>
-    <string name="settings_refresh_continue_watching_progress_enabled">Проверять прогресс аккаунта при запуске из «Продолжить просмотр» на главной или в библиотеке, чтобы продолжать с более свежего устройства</string>
     <string name="settings_cache_size_min">Минимальный</string>
     <string name="settings_cache_size_50">50 МБ</string>
         <string name="settings_cache_size_100">100 МБ</string>

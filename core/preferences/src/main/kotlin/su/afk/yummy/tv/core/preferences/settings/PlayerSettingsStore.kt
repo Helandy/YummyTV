@@ -46,7 +46,6 @@ interface PlayerSettingsStore {
 
     /** Сколько минут до конца серии может остаться, чтобы она считалась просмотренной. */
     val watchedThresholds: Flow<WatchedThresholds>
-    val refreshContinueWatchingProgressOnLaunch: Flow<Boolean>
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean>
     val tvPlayerControlsTutorialDismissed: Flow<Boolean>
     val tvPlayerVolumeKeysEnabled: Flow<Boolean>
@@ -99,7 +98,6 @@ interface PlayerSettingsStore {
     suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
     suspend fun setWatchedThresholds(thresholds: WatchedThresholds)
-    suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean)
     suspend fun dismissMobilePlayerGestureTutorial()
     suspend fun resetMobilePlayerGestureTutorial()
     suspend fun dismissTvPlayerControlsTutorial()

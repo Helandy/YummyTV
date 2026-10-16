@@ -106,15 +106,6 @@ class PlayerSetupMobileScreenTest {
     }
 
     @Test
-    fun refreshProgressToggleSendsEvent() {
-        setScreen()
-
-        clickRow(R.string.player_setup_refresh_progress_label)
-
-        assertTrue(PlayerSetupState.Event.RefreshContinueWatchingProgressToggled in events)
-    }
-
-    @Test
     fun qualityPickerSendsPreferredVideoQualitySelected() {
         setScreen()
 

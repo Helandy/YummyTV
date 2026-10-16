@@ -152,7 +152,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         playerOrientationMode = PlayerOrientationMode.entries.first(),
         suggestNextEpisodeOnWatched = false,
         watchedThresholds = WatchedThresholds(),
-        refreshContinueWatchingProgressOnLaunch = false,
         tvPlayerVolumeKeysEnabled = false,
         advancedPlayerVolumeEnabled = false,
         volumeStabilizationEnabled = false,

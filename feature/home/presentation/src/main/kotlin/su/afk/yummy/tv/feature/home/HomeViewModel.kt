@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
+import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
@@ -532,9 +533,7 @@ class HomeViewModel @Inject internal constructor(
             try {
                 val result = resolveContinueWatchingLaunch(
                     entry = entry,
-                    refreshProgressOnLaunch = settingsStore
-                        .refreshContinueWatchingProgressOnLaunch
-                        .first(),
+                    refreshProgressOnLaunch = settingsStore.currentUserId() > 0,
                 )
                 if (result == null) {
                     setEffect(

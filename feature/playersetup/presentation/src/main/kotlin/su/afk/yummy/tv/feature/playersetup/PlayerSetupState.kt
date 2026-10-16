@@ -20,7 +20,6 @@ class PlayerSetupState {
         val preferredVideoQuality: PreferredVideoQuality = PreferredVideoQuality.BEST,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val pictureInPictureEnabled: Boolean = true,
-        val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
     ) : UiState
 
@@ -31,7 +30,6 @@ class PlayerSetupState {
         data object SuggestNextEpisodeOnWatchedToggled : Event
         data object AskDubbingOnWatchToggled : Event
         data object PictureInPictureToggled : Event
-        data object RefreshContinueWatchingProgressToggled : Event
         data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event

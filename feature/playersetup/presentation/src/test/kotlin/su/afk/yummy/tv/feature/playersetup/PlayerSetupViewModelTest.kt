@@ -55,7 +55,6 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
             suggestNextEpisodeOnWatched = true,
             askDubbingOnWatch = true,
             pictureInPictureEnabled = false,
-            refreshContinueWatchingProgressOnLaunch = true,
         )
         val viewModel = createViewModel()
 
@@ -65,7 +64,6 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
         viewModel.setEvent(Event.SuggestNextEpisodeOnWatchedToggled)
         viewModel.setEvent(Event.AskDubbingOnWatchToggled)
         viewModel.setEvent(Event.PictureInPictureToggled)
-        viewModel.setEvent(Event.RefreshContinueWatchingProgressToggled)
 
         coVerify {
             settingsHandler.setShowOpeningOnTimeline(true)
@@ -74,7 +72,6 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
             settingsHandler.setSuggestNextEpisodeOnWatched(false)
             settingsHandler.setAskDubbingOnWatch(false)
             settingsHandler.setPictureInPictureEnabled(true)
-            settingsHandler.setRefreshContinueWatchingProgressOnLaunch(false)
         }
     }
 

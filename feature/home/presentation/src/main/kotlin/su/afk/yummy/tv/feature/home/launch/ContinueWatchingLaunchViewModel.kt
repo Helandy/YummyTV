@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -54,7 +55,7 @@ class ContinueWatchingLaunchViewModel @AssistedInject internal constructor(
                 ?: return@runSuspendCatching null
             val launch = resolveContinueWatchingLaunch(
                 entry = entry,
-                refreshProgressOnLaunch = settingsStore.refreshContinueWatchingProgressOnLaunch.first(),
+                refreshProgressOnLaunch = settingsStore.currentUserId() > 0,
             ) ?: return@runSuspendCatching null
             playerNavigator.getPlayerDest(launch)
         }.getOrNull()

@@ -44,7 +44,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQu
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewCacheSizeKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.refreshContinueWatchingProgressOnLaunchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.screenOffAfterEndKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
@@ -131,8 +130,6 @@ internal class DataStoreSettingsStore @Inject constructor(
             ),
             suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
             watchedThresholds = prefs.watchedThresholds(),
-            refreshContinueWatchingProgressOnLaunch =
-                prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,

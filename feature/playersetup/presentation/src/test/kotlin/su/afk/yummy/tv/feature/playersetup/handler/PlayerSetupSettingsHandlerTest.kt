@@ -30,7 +30,6 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
     private val quality = MutableStateFlow(PreferredVideoQuality.P720)
     private val orientation = MutableStateFlow(PlayerOrientationMode.RIGHT)
     private val pip = MutableStateFlow(false)
-    private val refreshProgress = MutableStateFlow(true)
     private val language = MutableStateFlow(YaniContentLanguage.ENGLISH)
 
     @Before
@@ -43,7 +42,6 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
         every { store.preferredVideoQuality } returns quality
         every { store.playerOrientationMode } returns orientation
         every { store.pictureInPictureEnabled } returns pip
-        every { store.refreshContinueWatchingProgressOnLaunch } returns refreshProgress
         every { accountStore.yaniContentLanguage } returns language
     }
 
@@ -61,7 +59,6 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
                 preferredVideoQuality = PreferredVideoQuality.P720,
                 playerOrientationMode = PlayerOrientationMode.RIGHT,
                 pictureInPictureEnabled = false,
-                refreshContinueWatchingProgressOnLaunch = true,
                 contentLanguage = YaniContentLanguage.ENGLISH,
             ),
             state,

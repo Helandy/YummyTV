@@ -36,14 +36,12 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
             store.preferredVideoQuality,
             store.playerOrientationMode,
             store.pictureInPictureEnabled,
-            store.refreshContinueWatchingProgressOnLaunch,
             accountStore.yaniContentLanguage,
-        ) { quality, orientation, pip, refreshProgress, language ->
+        ) { quality, orientation, pip, language ->
             PlayerSetupState.State(
                 preferredVideoQuality = quality,
                 playerOrientationMode = orientation,
                 pictureInPictureEnabled = pip,
-                refreshContinueWatchingProgressOnLaunch = refreshProgress,
                 contentLanguage = language,
             )
         },
@@ -52,7 +50,6 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
             preferredVideoQuality = playback.preferredVideoQuality,
             playerOrientationMode = playback.playerOrientationMode,
             pictureInPictureEnabled = playback.pictureInPictureEnabled,
-            refreshContinueWatchingProgressOnLaunch = playback.refreshContinueWatchingProgressOnLaunch,
             contentLanguage = playback.contentLanguage,
         )
     }
@@ -69,9 +66,6 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
     suspend fun setAskDubbingOnWatch(enabled: Boolean) = store.setAskDubbingOnWatch(enabled)
 
     suspend fun setPictureInPictureEnabled(enabled: Boolean) = store.setPictureInPictureEnabled(enabled)
-
-    suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean) =
-        store.setRefreshContinueWatchingProgressOnLaunch(enabled)
 
     suspend fun setContentLanguage(language: YaniContentLanguage) =
         accountStore.setYaniContentLanguage(language)
