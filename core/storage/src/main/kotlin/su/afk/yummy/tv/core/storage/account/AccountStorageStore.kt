@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.account
 
+import kotlinx.coroutines.flow.Flow
 import androidx.room.withTransaction
 import su.afk.yummy.tv.core.storage.db.AppDatabase
 
@@ -67,6 +68,9 @@ internal class AccountStorageStore(
 
     override suspend fun getUserRating(userId: Int, animeId: Int): AccountUserRatingEntry? =
         animeRatingsDao.getUserRating(userId, animeId)
+
+    override fun observeUserRating(userId: Int, animeId: Int): Flow<AccountUserRatingEntry?> =
+        animeRatingsDao.observeUserRating(userId, animeId)
 
     override suspend fun saveUserRating(entry: AccountUserRatingEntry) {
         animeRatingsDao.insertUserRating(entry)

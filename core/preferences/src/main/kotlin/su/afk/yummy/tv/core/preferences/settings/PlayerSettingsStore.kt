@@ -70,6 +70,9 @@ interface PlayerSettingsStore {
     /** Оформление субтитров: размер, цвет, фон, смещение по вертикали. */
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings>
 
+    /** Озвучка, в которой тайтл смотрели в источнике 4K; `null`, если не запоминали. */
+    fun anime4kDubbing(animeId: Int): Flow<String?>
+
     fun playerResizeSettings(
         animeId: Int,
         animeTitle: String,
@@ -111,6 +114,8 @@ interface PlayerSettingsStore {
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)
     suspend fun setPlayerZoomLevel(level: PlayerZoomLevel)
     suspend fun setPlayerSubtitleStyle(settings: PlayerSubtitleStyleSettings)
+
+    suspend fun setAnime4kDubbing(animeId: Int, dubbing: String)
 
     suspend fun setPlayerResizeSettings(
         animeId: Int,

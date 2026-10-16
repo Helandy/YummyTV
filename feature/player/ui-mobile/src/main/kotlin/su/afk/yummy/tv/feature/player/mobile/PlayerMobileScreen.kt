@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
@@ -48,6 +50,7 @@ import su.afk.yummy.tv.feature.player.mobile.view.MobileNativePlayer
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerBalancerSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerDubbingSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerMessage
+import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerSkipToast
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -79,6 +82,20 @@ fun PlayerMobileScreen(
 ) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
+    var sourceToastText by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(effect) {
+        effect.collect { eff ->
+            when (eff) {
+                is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+            }
+        }
+    }
+    LaunchedEffect(sourceToastText) {
+        if (sourceToastText != null) {
+            delay(SOURCE_TOAST_DURATION_MS)
+            sourceToastText = null
+        }
+    }
     LaunchedEffect(dest) {
         onEvent(PlayerState.Event.NavigateToDestination(dest))
     }
@@ -190,6 +207,12 @@ fun PlayerMobileScreen(
                 }
             }
         }
+        MobilePlayerSkipToast(
+            text = sourceToastText,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 48.dp),
+        )
         if (showErrorBalancerSheet && uiState.canChangePlayer) {
             MobilePlayerBalancerSheet(
                 balancerNames = uiState.balancerNames,
@@ -215,6 +238,8 @@ fun PlayerMobileScreen(
         }
     }
 }
+
+private const val SOURCE_TOAST_DURATION_MS = 2_000L
 
 @Composable
 private fun ApplyPlayerOrientation(mode: PlayerOrientationMode) {

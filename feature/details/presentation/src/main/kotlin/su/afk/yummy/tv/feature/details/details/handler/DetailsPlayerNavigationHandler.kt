@@ -24,11 +24,13 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
         video: AnimeVideo,
         allVideos: List<AnimeVideo>,
         preferredPlayer: PreferredPlayer,
+        rememberedAnime4kDubbing: String? = null,
     ): DetailsPlayerSelection =
         resolveDetailsPlayerSelection(
             video = video,
             allVideos = allVideos,
             preferredPlayer = preferredPlayer,
+            rememberedAnime4kDubbing = rememberedAnime4kDubbing,
         )
 
     fun getPlayerDestination(

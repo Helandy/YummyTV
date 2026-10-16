@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.model.anime.bestUrl
@@ -67,7 +69,7 @@ internal fun ViewingOrderMobileCard(
                     .padding(8.dp)
                     .background(
                         MaterialTheme.colorScheme.surface.copy(alpha = 0.82f),
-                        RoundedCornerShape(4.dp)
+                        RoundedCornerShape(4.dp),
                     )
                     .padding(horizontal = 6.dp, vertical = 3.dp),
             )
@@ -77,6 +79,12 @@ internal fun ViewingOrderMobileCard(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(4.dp),
+                )
+            }
+            LocalLibraryListStatuses.current[item.animeId]?.let { status ->
+                ListStatusBadge(
+                    status = status,
+                    modifier = Modifier.align(Alignment.BottomStart),
                 )
             }
             item.year?.let { year ->

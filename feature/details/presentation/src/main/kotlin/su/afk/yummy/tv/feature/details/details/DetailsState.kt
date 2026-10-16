@@ -29,6 +29,8 @@ class DetailsState {
         val isInLibrary: Boolean = false,
         val isFavorite: Boolean = false,
         val libraryList: UserAnimeList? = null,
+        /** Оценка пользователя (1..10); `null`, если тайтл не оценён. */
+        val userRating: Int? = null,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
         val pendingBalancerSelection: BalancerPickerState? = null,
         val pendingDubbingSelection: DubbingPickerState? = null,

@@ -25,7 +25,7 @@ import kotlin.coroutines.resume
 /**
  * Rewarded-реклама Яндекса. Серверной верификации у SDK нет: награда это клиентский `onRewarded`.
  * Любой сбой (нет Activity, не загрузилась, показ упал) означает `false`: ссылок без рекламы не будет.
- * В debug-сборке реклама отключена: согласие и награда выдаются сразу.
+ * В debug-сборке или при выключенном [ADS_ENABLED] реклама пропускается: согласие и награда выдаются сразу.
  */
 @Singleton
 internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepository {
@@ -36,14 +36,16 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
     @Volatile
     private var preOpenConsentAtMs = 0L
 
+    private val adsBypassed: Boolean
+        get() = BuildConfig.DEBUG || !ADS_ENABLED
+
     override val isAvailable: Boolean
-        get() = BuildConfig.DEBUG || BuildConfig.YANDEX_REWARDED_AD_UNIT_ID.isNotBlank()
+        get() = adsBypassed || BuildConfig.YANDEX_REWARDED_AD_UNIT_ID.isNotBlank()
 
     override suspend fun askConsent(): Boolean {
         val grantedAt = preOpenConsentAtMs
         preOpenConsentAtMs = 0L
-        if (grantedAt != 0L && System.currentTimeMillis() - grantedAt < PRE_OPEN_CONSENT_TTL_MS) return true
-        return ask()
+        return (grantedAt != 0L && System.currentTimeMillis() - grantedAt < PRE_OPEN_CONSENT_TTL_MS) || ask()
     }
 
     override suspend fun confirmBeforeOpen(): Boolean {
@@ -53,15 +55,14 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
     }
 
     private suspend fun ask(): Boolean = withContext(Dispatchers.Main) {
-        // В debug рекламу не показываем: ни вопрос о согласии, ни сам ролик.
-        if (BuildConfig.DEBUG) return@withContext true
+        if (adsBypassed) return@withContext true
         if (!isAvailable) return@withContext false
         val activity = CurrentActivityTracker.current() ?: return@withContext false
         AdConsentDialog.ask(activity)
     }
 
     override suspend fun showRewardedAd(): Boolean = withContext(Dispatchers.Main) {
-        if (BuildConfig.DEBUG) return@withContext true
+        if (adsBypassed) return@withContext true
         if (!isAvailable) return@withContext false
         val activity = CurrentActivityTracker.current() ?: return@withContext false
         ensureInitialized(activity)
@@ -119,6 +120,8 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
     }
 
     private companion object {
+        const val ADS_ENABLED = false
+
         const val LOAD_TIMEOUT_MS = 15_000L
         const val PRE_OPEN_CONSENT_TTL_MS = 30_000L
     }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.mobile.BuildConfig
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
@@ -83,12 +84,14 @@ internal fun SettingsMobilePlaybackContent(
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_controls_auto_hide_label),
-                valueLabel = { stringResource(R.string.settings_next_episode_switch_delay_seconds, it) },
-                value = state.playerControlsAutoHideSeconds,
-                valueRange = 1..10,
+                valueLabel = {
+                    stringResource(R.string.settings_next_episode_switch_delay_seconds, it.fromControlsAutoHideSlider())
+                },
+                value = state.playerControlsAutoHideSeconds.toControlsAutoHideSlider(),
+                valueRange = 1..if (BuildConfig.DEBUG) CONTROLS_AUTO_HIDE_DEBUG_STEP else CONTROLS_AUTO_HIDE_MAX_STEP,
                 enabled = true,
                 onValueCommitted = {
-                    onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it))
+                    onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it.fromControlsAutoHideSlider()))
                 },
             )
             SettingsMobileToggleRow(
@@ -104,3 +107,14 @@ internal fun SettingsMobilePlaybackContent(
         }
     }
 }
+
+// В debug у слайдера есть лишний последний пункт, который означает 30000 с.
+private const val DEBUG_CONTROLS_AUTO_HIDE_SECONDS = 30000
+private const val CONTROLS_AUTO_HIDE_MAX_STEP = 10
+private const val CONTROLS_AUTO_HIDE_DEBUG_STEP = CONTROLS_AUTO_HIDE_MAX_STEP + 1
+
+private fun Int.toControlsAutoHideSlider(): Int =
+    if (this >= DEBUG_CONTROLS_AUTO_HIDE_SECONDS) CONTROLS_AUTO_HIDE_DEBUG_STEP else coerceAtMost(CONTROLS_AUTO_HIDE_MAX_STEP)
+
+private fun Int.fromControlsAutoHideSlider(): Int =
+    if (this >= CONTROLS_AUTO_HIDE_DEBUG_STEP) DEBUG_CONTROLS_AUTO_HIDE_SECONDS else this

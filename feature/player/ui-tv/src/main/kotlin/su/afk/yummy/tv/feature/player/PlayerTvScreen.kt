@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -94,6 +95,20 @@ fun PlayerTvScreen(
     var backPressedOnce by remember { mutableStateOf(false) }
     var backToastText by remember { mutableStateOf<String?>(null) }
     var backToastJob by remember { mutableStateOf<Job?>(null) }
+    var sourceToastText by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(effect) {
+        effect.collect { eff ->
+            when (eff) {
+                is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+            }
+        }
+    }
+    LaunchedEffect(sourceToastText) {
+        if (sourceToastText != null) {
+            delay(TV_PLAYER_INLINE_TOAST_DURATION)
+            sourceToastText = null
+        }
+    }
     var pendingControlFocusTarget by rememberSaveable {
         mutableStateOf<PlayerControlFocusTarget?>(
             null
@@ -255,6 +270,13 @@ fun PlayerTvScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 36.dp),
+        )
+        TvPlayerInlineToast(
+            text = sourceToastText,
+            icon = Icons.Filled.Info,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 96.dp),
         )
         if (state.tvControlsTutorialReady && state.showTvControlsTutorial) {
             TvPlayerControlsTutorial(

@@ -127,6 +127,7 @@ fun DetailsTvScreen(
                     isInLibrary = state.isInLibrary,
                     isFavorite = state.isFavorite,
                     libraryList = state.libraryList,
+                    userRating = state.userRating,
                     canSubscribe = state.isSignedIn,
                     detailsButtonOrder = state.detailsButtonOrder,
                     restoreButtonFocusRequest = restoreButtonFocusRequest,

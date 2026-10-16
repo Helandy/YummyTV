@@ -130,4 +130,6 @@
     <string name="player_mobile_orientation_left_hint">Всегда альбомная ориентация (влево), даже если поворот экрана заблокирован в системе</string>
     <string name="player_mobile_orientation_right">Вправо</string>
     <string name="player_mobile_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
+    <string name="player_toast_dubbing_changed">Озвучка: %1$s</string>
+    <string name="player_toast_balancer_changed">Балансер: %1$s</string>
 </resources>

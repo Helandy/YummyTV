@@ -86,10 +86,12 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { stringProvider.get(any<Int>()) } returns "load error"
         every { screenDataHandler.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
         every { screenDataHandler.yaniUserId } returns flowOf(0)
+        every { screenDataHandler.anime4kDubbing(any()) } returns flowOf(null)
         every { screenDataHandler.askDubbingOnWatch } returns flowOf(false)
         every { screenDataHandler.detailsButtonOrder } returns flowOf(DetailsButtonAction.entries)
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())
+        every { screenDataHandler.observeUserRating(any()) } returns flowOf(null)
         every { screenDataHandler.observeAccountSession() } returns session
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.success(animeDetails(id = ANIME_ID, title = "Anime"))
         coEvery { screenDataHandler.refreshLibraryMetadata(any(), any(), any(), any()) } returns Unit
@@ -269,7 +271,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     @Test
     fun `watch without a saved target picks the player for the first video`() {
         every { videoHandler.resolveWatchTarget(any(), any(), any()) } returns DetailsWatchTarget.Initial(video)
-        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } returns DetailsPlayerSelection.Navigate(video)
+        every { playerNavigationHandler.selectPlayer(any(), any(), any(), any()) } returns DetailsPlayerSelection.Navigate(video)
         every {
             playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
         } returns navKey

@@ -85,6 +85,11 @@ class DetailsViewModel @AssistedInject internal constructor(
         started = SharingStarted.Eagerly,
         initialValue = PreferredPlayer.NONE,
     )
+    private val anime4kDubbingState = screenDataHandler.anime4kDubbing(animeId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null,
+    )
     private val yaniUserIdState = screenDataHandler.yaniUserId.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
@@ -125,6 +130,9 @@ class DetailsViewModel @AssistedInject internal constructor(
                     )
                 }
             }
+            .launchIn(viewModelScope)
+        screenDataHandler.observeUserRating(animeId)
+            .onEach { rating -> setState { copy(userRating = rating) } }
             .launchIn(viewModelScope)
         screenDataHandler.observeWatchProgress(animeId)
             .flowOn(Dispatchers.Default)
@@ -638,6 +646,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 video = video,
                 allVideos = allVideos,
                 preferredPlayer = preferredPlayerState.value,
+                rememberedAnime4kDubbing = anime4kDubbingState.value,
             )
         ) {
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)

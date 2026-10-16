@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
+import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -53,6 +54,7 @@ internal fun DetailsHero(
     isInLibrary: Boolean,
     isFavorite: Boolean,
     libraryList: UserAnimeList?,
+    userRating: Int?,
     videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: DetailsWatchProgressIndex,
@@ -138,24 +140,33 @@ internal fun DetailsHero(
                     },
                 verticalArrangement = Arrangement.spacedBy(columnSpacing),
             ) {
-                MarqueeTitleText(
-                    text = details.title,
-                    style = MaterialTheme.typography.displaySmall.copy(
-                        fontSize = 30.sp,
-                        color = if (titleFocused) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
-                    ),
-                    fontWeight = FontWeight.ExtraBold,
-                    minLines = 1,
-                    maxLines = titleMaxLines,
-                    isFocused = titleFocused,
-                    marqueeWhenOverflow = true,
-                    modifier = Modifier
-                        .focusRequester(titleFocusRequester)
-                        .focusProperties { down = downFocusRequester }
-                        .focusable()
-                        .onFocusChanged { fs -> titleFocused = fs.isFocused },
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    MarqueeTitleText(
+                        text = details.title,
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontSize = 30.sp,
+                            color = if (titleFocused) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface,
+                        ),
+                        fontWeight = FontWeight.ExtraBold,
+                        minLines = 1,
+                        maxLines = titleMaxLines,
+                        isFocused = titleFocused,
+                        marqueeWhenOverflow = true,
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(titleFocusRequester)
+                            .focusProperties { down = downFocusRequester }
+                            .focusable()
+                            .onFocusChanged { fs -> titleFocused = fs.isFocused },
+                    )
+                    userRating?.let { userRating ->
+                        UserRatingChip(rating = userRating, textStyle = MaterialTheme.typography.titleMedium)
+                    }
+                }
 
                 HeroMetaRow(details)
                 HeroGenresRow(details)

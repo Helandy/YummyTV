@@ -122,7 +122,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             nextEpisodeSwitchDelaySeconds =
                 (prefs[nextEpisodeSwitchDelaySecondsKey] ?: 10).coerceIn(0, 30),
             playerControlsAutoHideSeconds =
-                (prefs[playerControlsAutoHideSecondsKey] ?: 4).coerceIn(1, 10),
+                (prefs[playerControlsAutoHideSecondsKey] ?: 4).coerceIn(1, 30000),
             askDubbingOnWatch = prefs[askDubbingOnWatchKey] ?: true,
             pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
             playerOrientationMode = prefs.enum(

@@ -31,9 +31,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 
 @Composable
 internal fun RelatedTitleCard(
@@ -41,6 +43,8 @@ internal fun RelatedTitleCard(
     posterUrl: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Если задан — карточка подписывается списком пользователя, в котором лежит тайтл. */
+    animeId: Int? = null,
     index: Int? = null,
     rating: Double? = null,
     year: Int? = null,
@@ -112,6 +116,12 @@ internal fun RelatedTitleCard(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(10.dp),
+                    )
+                }
+                animeId?.let { LocalLibraryListStatuses.current[it] }?.let { status ->
+                    ListStatusBadge(
+                        status = status,
+                        modifier = Modifier.align(Alignment.BottomStart),
                     )
                 }
                 year?.let { value ->

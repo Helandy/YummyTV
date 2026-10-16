@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.details.model
 
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.player.isServerMirrorOfExtraSource
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
@@ -75,9 +76,7 @@ data class DetailsWatchProgressIndex(
                 .forEach { entry ->
                     val key = entry.mergeKey()
                     val current = result[key]
-                    if (current == null || entry.updatedAt > current.updatedAt) {
-                        result[key] = entry
-                    }
+                    result[key] = if (current == null) entry else newerOf(current, entry)
                 }
             return DetailsWatchProgressIndex(result.values.toList())
         }
@@ -97,6 +96,21 @@ data class DetailsWatchProgressIndex(
                 playerName = player,
                 dubbing = dubbing,
             )
+        }
+
+        /** Свежая запись побеждает, кроме серверного «зеркала» локального прогресса 4K. */
+        private fun newerOf(a: AnimeWatchProgress, b: AnimeWatchProgress): AnimeWatchProgress {
+            val newer = if (b.updatedAt > a.updatedAt) b else a
+            val older = if (newer === b) a else b
+            val isMirror = isServerMirrorOfExtraSource(
+                localEpisodeUrl = older.episodeUrl,
+                localDubbing = older.dubbing,
+                localPositionMs = older.positionMs,
+                serverEpisodeUrl = newer.episodeUrl,
+                serverDubbing = newer.dubbing,
+                serverPositionMs = newer.positionMs,
+            )
+            return if (isMirror) older.copy(updatedAt = newer.updatedAt) else newer
         }
 
         private fun AnimeWatchProgress.mergeKey(): String =

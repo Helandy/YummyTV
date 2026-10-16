@@ -1,6 +1,12 @@
 package su.afk.yummy.tv.data.account.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -52,6 +58,13 @@ class YaniAnimeExtrasRepository(
                 fetchAndSave = { fetchUserRating(userId, animeId) },
             )
         }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeUserRating(animeId: Int): Flow<Int?> =
+        flow { emit(settingsStore.currentUserId()) }
+            .flatMapLatest { userId -> accountStorage.observeUserRating(userId, animeId) }
+            .map { entry -> entry?.toUserRating() }
+            .distinctUntilChanged()
 
     override suspend fun setRating(animeId: Int, rating: Int) = withContext(Dispatchers.IO) {
         val userId = settingsStore.currentUserId()

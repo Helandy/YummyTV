@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.domain.watching.utils
 
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.player.isServerMirrorOfExtraSource
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingLaunch
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
@@ -32,7 +33,9 @@ internal fun resolveContinueWatchingLaunch(
         return resolveRemoteEntryLaunch(entry, serverProgress, availableVideos, posterUrl)
     }
 
-    if (serverProgress != null && serverProgress.updatedAt > entry.updatedAt) {
+    if (serverProgress != null && serverProgress.updatedAt > entry.updatedAt &&
+        !serverProgress.isMirrorOf(entry)
+    ) {
         return resolveServerProgressLaunch(
             entry = entry,
             serverProgress = serverProgress,
@@ -120,6 +123,18 @@ internal fun resolveNextEpisodeLaunch(
         resumeFromMs = 0L,
     )
 }
+
+/** Серверный прогресс — зеркало локального прогресса 4K той же серии (см. [isServerMirrorOfExtraSource]). */
+private fun ServerContinueProgress.isMirrorOf(entry: HomeContinueWatchingItem): Boolean =
+    video.episode.episodeGroupKey() == entry.episode.episodeGroupKey() &&
+        isServerMirrorOfExtraSource(
+            localEpisodeUrl = entry.episodeUrl,
+            localDubbing = entry.dubbing,
+            localPositionMs = entry.positionMs,
+            serverEpisodeUrl = video.iframeUrl,
+            serverDubbing = video.dubbing,
+            serverPositionMs = positionMs,
+        )
 
 private fun resolveServerProgressLaunch(
     entry: HomeContinueWatchingItem,

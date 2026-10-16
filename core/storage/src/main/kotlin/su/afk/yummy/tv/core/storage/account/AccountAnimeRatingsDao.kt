@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class AccountAnimeRatingsDao {
@@ -29,6 +30,9 @@ abstract class AccountAnimeRatingsDao {
 
     @Query("SELECT * FROM account_user_ratings WHERE userId = :userId AND animeId = :animeId LIMIT 1")
     abstract suspend fun getUserRating(userId: Int, animeId: Int): AccountUserRatingEntry?
+
+    @Query("SELECT * FROM account_user_ratings WHERE userId = :userId AND animeId = :animeId LIMIT 1")
+    abstract fun observeUserRating(userId: Int, animeId: Int): Flow<AccountUserRatingEntry?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertUserRating(entry: AccountUserRatingEntry)

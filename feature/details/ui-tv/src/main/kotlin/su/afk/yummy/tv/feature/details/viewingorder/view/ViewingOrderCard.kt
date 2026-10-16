@@ -26,6 +26,7 @@ internal fun ViewingOrderCard(
         posterUrl = item.poster?.bestUrl,
         onClick = onClick,
         modifier = modifier,
+        animeId = item.animeId,
         index = index,
         rating = item.rating,
         year = item.year,

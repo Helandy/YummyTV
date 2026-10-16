@@ -363,6 +363,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                     index = event.index,
                     positionMs = event.currentPosMs,
                 )
+                setEffect(
+                    PlayerState.Effect.ShowToast(
+                        strings.get(R.string.player_toast_dubbing_changed, activeDubbingName(nextState)),
+                    ),
+                )
                 applySourceSelection(nextState, sourceScopeChanged = true)
             }
 
@@ -379,6 +384,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                     state = currentState,
                     index = balancerIndex,
                     positionMs = event.currentPosMs,
+                )
+                setEffect(
+                    PlayerState.Effect.ShowToast(
+                        strings.get(R.string.player_toast_balancer_changed, activeBalancerName(nextState)),
+                    ),
                 )
                 applySourceSelection(nextState, sourceScopeChanged = true)
             }

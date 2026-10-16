@@ -48,6 +48,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
     fun setUp() {
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.preferredPlayer } returns MutableStateFlow(PreferredPlayer.NONE)
+        every { settingsStore.anime4kDubbing(any()) } returns MutableStateFlow(null)
         every {
             playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
         } returns playerKey
@@ -111,7 +112,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
 
     @Test
     fun `dubbing with a single balancer opens the player`() {
-        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } answers {
+        every { playerNavigationHandler.selectPlayer(any(), any(), any(), any()) } answers {
             DetailsPlayerSelection.Navigate(firstArg())
         }
         val vm = createViewModel()
@@ -134,7 +135,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
     @Test
     fun `several balancers show the picker that can be dismissed`() {
         val picker = BalancerPickerState(episodeNumber = "1", options = persistentListOf())
-        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } returns
+        every { playerNavigationHandler.selectPlayer(any(), any(), any(), any()) } returns
             DetailsPlayerSelection.ShowPicker(picker)
         val vm = createViewModel()
 

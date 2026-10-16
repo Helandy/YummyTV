@@ -10,13 +10,16 @@ import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
+import su.afk.yummy.tv.feature.details.utils.isExtraSourceVideo
 import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
+import su.afk.yummy.tv.feature.details.utils.pickBalancerVideo
 
 /** Resolves whether the selected episode can open directly or needs a balancer picker. */
 internal fun resolveDetailsPlayerSelection(
     video: AnimeVideo,
     allVideos: List<AnimeVideo>,
     preferredPlayer: PreferredPlayer,
+    rememberedAnime4kDubbing: String? = null,
 ): DetailsPlayerSelection {
     val episodeVideos = allVideos.filter {
         it.episode.episodeGroupKey() == video.episode.episodeGroupKey()
@@ -41,9 +44,15 @@ internal fun resolveDetailsPlayerSelection(
         .groupBy { it.player }
         .entries
         .map { (playerName, playerVideos) ->
-            val representative = playerVideos.firstOrNull { it.dubbing == targetVideo.dubbing }
-                ?: playerVideos.maxByOrNull { it.views ?: 0 }
-                ?: playerVideos.first()
+            // Запомненная озвучка применяется только к источнику 4K: у остальных балансеров
+            // озвучка по-прежнему следует за целевым видео.
+            val remembered = rememberedAnime4kDubbing
+                .takeIf { playerVideos.first().isExtraSourceVideo() }
+            val representative = pickBalancerVideo(
+                playerVideos = playerVideos,
+                rememberedDubbing = remembered,
+                targetDubbing = targetVideo.dubbing,
+            ) ?: playerVideos.first()
             BalancerOption(
                 playerName = playerName,
                 video = representative,

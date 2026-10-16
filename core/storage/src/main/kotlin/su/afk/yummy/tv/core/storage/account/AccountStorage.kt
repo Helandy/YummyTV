@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.account
 
+import kotlinx.coroutines.flow.Flow
+
 /** Абстракция над локальным кэшем аккаунта (профиль, списки, рейтинги, уведомления и т.д.) — позволяет подменять реализацию в тестах. */
 interface AccountStorage {
 
@@ -34,6 +36,8 @@ interface AccountStorage {
     suspend fun deleteRatingBuckets(animeId: Int)
 
     suspend fun getUserRating(userId: Int, animeId: Int): AccountUserRatingEntry?
+
+    fun observeUserRating(userId: Int, animeId: Int): Flow<AccountUserRatingEntry?>
 
     suspend fun saveUserRating(entry: AccountUserRatingEntry)
 

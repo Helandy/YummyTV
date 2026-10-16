@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
+import su.afk.yummy.tv.domain.account.usecase.ObserveAnimeUserRatingUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
@@ -21,6 +22,7 @@ class DetailsScreenDataHandler @Inject constructor(
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val observeAnimeLibraryState: ObserveAnimeLibraryStateUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
+    private val observeAnimeUserRating: ObserveAnimeUserRatingUseCase,
     private val refreshLibraryMetadata: RefreshLibraryMetadataUseCase,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val settingsStore: SettingsStore,
@@ -28,6 +30,9 @@ class DetailsScreenDataHandler @Inject constructor(
 
     val preferredPlayer: Flow<PreferredPlayer> = settingsStore.preferredPlayer
     val yaniUserId: Flow<Int> = settingsStore.yaniUserId
+
+    /** Озвучка 4K, в которой тайтл смотрели раньше. */
+    fun anime4kDubbing(animeId: Int): Flow<String?> = settingsStore.anime4kDubbing(animeId)
     val detailsButtonOrder: Flow<List<DetailsButtonAction>> = settingsStore.detailsButtonOrder
 
     /** Спрашивать озвучку при нажатии "Смотреть", вместо автовыбора самой популярной. */
@@ -38,6 +43,9 @@ class DetailsScreenDataHandler @Inject constructor(
 
     fun observeWatchProgress(animeId: Int): Flow<List<AnimeWatchProgress>> =
         observeAnimeWatchProgress(animeId)
+
+    fun observeUserRating(animeId: Int): Flow<Int?> =
+        observeAnimeUserRating(animeId)
 
     fun observeAccountSession(): Flow<AccountSession> = observeAccountSession.invoke()
 

@@ -18,6 +18,7 @@ import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.qualityHeight
@@ -77,6 +78,7 @@ internal class PlayerStreamHandler @Inject constructor(
                         ?.takeIf { quality -> result.qualities?.containsKey(quality) == true }
                         ?: selectedQuality(result.qualities, preferredHeightAsync.await())
                     if (selectedQuality != null) session?.selectQuality(selectedQuality)
+                    rememberAnime4kDubbing(state, request.iframeUrl)
                     PlayerStreamResult.Stream(
                         url = result.url,
                         headers = result.headers,
@@ -129,6 +131,13 @@ internal class PlayerStreamHandler @Inject constructor(
         }
     }
 
+    /** Запоминает озвучку 4K у тайтла: следующий заход через этот источник начнётся с неё. */
+    private suspend fun rememberAnime4kDubbing(state: PlayerState.State, iframeUrl: String) {
+        if (state.animeId <= 0 || !iframeUrl.startsWith(ANIME4K_URL_PREFIX, ignoreCase = true)) return
+        val dubbing = activeDubbingName(state).trim().takeIf { it.isNotEmpty() } ?: return
+        settingsStore.setAnime4kDubbing(state.animeId, dubbing)
+    }
+
     fun playbackErrorMessage(message: String, errorCode: String? = null): String {
         val detail = message.trim().takeIf { it.isNotBlank() }
         val code = errorCode?.trim()?.takeIf { it.isNotBlank() && it != detail }
@@ -170,6 +179,7 @@ internal class PlayerStreamHandler @Inject constructor(
 
     private companion object {
         const val ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS = 120
+        const val ANIME4K_URL_PREFIX = "source://anime4k/"
     }
 }
 

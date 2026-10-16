@@ -130,4 +130,6 @@
     <string name="player_mobile_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
     <string name="player_mobile_orientation_right">Right</string>
     <string name="player_mobile_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
+    <string name="player_toast_dubbing_changed">Dubbing: %1$s</string>
+    <string name="player_toast_balancer_changed">Player: %1$s</string>
 </resources>

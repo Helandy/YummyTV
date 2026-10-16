@@ -21,12 +21,12 @@ import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumePercentKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -158,6 +158,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             offset = (prefs[subtitleOffsetKey] ?: DEFAULT_SUBTITLE_OFFSET_PERCENT)
                 .coerceIn(MIN_SUBTITLE_OFFSET_PERCENT, MAX_SUBTITLE_OFFSET_PERCENT),
         )
+    }
+
+    override fun anime4kDubbing(animeId: Int): Flow<String?> {
+        val key = anime4kDubbingKey(animeId)
+        return store.data.map { prefs -> prefs[key] }
     }
 
     override fun playerResizeSettings(
@@ -303,6 +308,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun setAnime4kDubbing(animeId: Int, dubbing: String) {
+        val key = anime4kDubbingKey(animeId)
+        store.edit { prefs -> prefs[key] = dubbing }
+    }
+
     override suspend fun setPlayerResizeSettings(
         animeId: Int,
         animeTitle: String,
@@ -334,13 +344,16 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30
         const val DEFAULT_CONTROLS_AUTO_HIDE_SECONDS = 4
         const val MIN_CONTROLS_AUTO_HIDE_SECONDS = 1
-        const val MAX_CONTROLS_AUTO_HIDE_SECONDS = 10
+        const val MAX_CONTROLS_AUTO_HIDE_SECONDS = 30000
         const val DEFAULT_SUBTITLE_TEXT_SIZE_PERCENT = 100
         const val MIN_SUBTITLE_TEXT_SIZE_PERCENT = 50
         const val MAX_SUBTITLE_TEXT_SIZE_PERCENT = 200
         const val DEFAULT_SUBTITLE_OFFSET_PERCENT = 6
         const val MIN_SUBTITLE_OFFSET_PERCENT = 0
         const val MAX_SUBTITLE_OFFSET_PERCENT = 20
+
+        fun anime4kDubbingKey(animeId: Int): Preferences.Key<String> =
+            stringPreferencesKey("anime4k_dubbing|anime_id:$animeId")
 
         /** Настройки кадра привязаны к паре «тайтл + плеер», отсюда составной ключ. */
         fun playerScopedResizeSettingsKey(
@@ -349,7 +362,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             playerName: String,
         ): Preferences.Key<String> = stringPreferencesKey(
             "player_resize_settings|${titleKeyPart(animeId, animeTitle)}" +
-                "|player:${playerName.normalizedPlayerResizeKeyPart()}"
+                "|player:${playerName.normalizedPlayerResizeKeyPart()}",
         )
 
         fun playerScopedMobileVideoTransformSettingsKey(
@@ -358,7 +371,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             playerName: String,
         ): Preferences.Key<String> = stringPreferencesKey(
             "player_mobile_video_transform|${titleKeyPart(animeId, animeTitle)}" +
-                "|player:${playerName.normalizedPlayerResizeKeyPart()}"
+                "|player:${playerName.normalizedPlayerResizeKeyPart()}",
         )
 
         fun titleKeyPart(animeId: Int, animeTitle: String): String =

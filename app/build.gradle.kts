@@ -20,6 +20,11 @@ android {
         versionName = appVersionName
         versionCode = appVersionCode
 
+        // Только языки приложения: строки библиотек (play-services, media3, appcompat) на остальных не нужны
+        androidResources {
+            localeFilters += listOf("en", "ru", "uk")
+        }
+
         buildConfigField("String", "APPMETRICA_API_KEY", buildConfigSecret("yummytv.appmetricaApiKey"))
         buildConfigField("String", "VARIOQUB_CLIENT_ID", buildConfigSecret("yummytv.varioqubClientId"))
     }

@@ -107,6 +107,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
                     video = candidate,
                     allVideos = dubbingVideos,
                     preferredPlayer = settingsStore.preferredPlayer.first(),
+                    rememberedAnime4kDubbing = settingsStore.anime4kDubbing(animeId).first(),
                 )
             ) {
                 is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)

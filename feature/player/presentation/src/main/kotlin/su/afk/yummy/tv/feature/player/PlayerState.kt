@@ -214,6 +214,8 @@ class PlayerState {
         data object ManageSubscriptions : Event
     }
 
-    /** Одноразовых эффектов у плеера сейчас нет; тип нужен контракту экрана. */
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        /** Короткое сообщение поверх плеера, например о смене озвучки или балансера. */
+        data class ShowToast(val message: String) : Effect
+    }
 }

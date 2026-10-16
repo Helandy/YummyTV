@@ -37,6 +37,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
 
 @Composable
@@ -83,6 +84,18 @@ internal fun DetailsMobileHero(
                     ),
                 ),
         )
+        state.userRating?.let { userRating ->
+            UserRatingChip(
+                rating = userRating,
+                textStyle = MaterialTheme.typography.titleLarge,
+                iconSize = 26.dp,
+                fontWeight = FontWeight.Black,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(top = 10.dp, end = 16.dp),
+            )
+        }
         IconButton(
             onClick = onBack,
             modifier = Modifier

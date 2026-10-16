@@ -78,6 +78,46 @@ class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
         assertEquals(300_000L, launch.resumeFromMs)
     }
 
+    private val fourK = video(id = -5, episode = "2").copy(
+        player = "4K",
+        iframeUrl = "source://anime4k/1/1/2/AniLibria",
+    )
+
+    private fun fourKEntry(positionMs: Long) = entry(videoId = 0, episode = "2", positionMs = positionMs)
+        .copy(episodeUrl = fourK.iframeUrl, playerName = "4K")
+
+    @Test
+    fun `server mirror of a 4K entry keeps 4K`() = runTest {
+        val mirror = ep2.copy(watchedEndTimeSeconds = 298, watchedDateSeconds = LOCAL_UPDATED_AT / 1000 + 60)
+        coEvery { refreshAnimeVideos(ANIME_ID) } returns listOf(fourK, mirror)
+
+        val launch = resolve(fourKEntry(positionMs = 300_000L), refresh = true)
+
+        assertEquals(fourK.iframeUrl, launch.video.iframeUrl)
+        assertEquals(300_000L, launch.resumeFromMs)
+        assertNull(launch.remoteProgressSwitch)
+    }
+
+    @Test
+    fun `server that moved ahead of a 4K entry wins`() = runTest {
+        val ahead = ep2.copy(watchedEndTimeSeconds = 900, watchedDateSeconds = LOCAL_UPDATED_AT / 1000 + 60)
+        coEvery { refreshAnimeVideos(ANIME_ID) } returns listOf(fourK, ahead)
+
+        val launch = resolve(fourKEntry(positionMs = 300_000L), refresh = true)
+
+        assertEquals(2, launch.video.id)
+        assertEquals(900_000L, launch.resumeFromMs)
+    }
+
+    @Test
+    fun `unavailable 4K falls back to a supported video of the episode`() = runTest {
+        coEvery { refreshAnimeVideos(ANIME_ID) } returns listOf(ep2, ep3)
+
+        val launch = resolve(fourKEntry(positionMs = 300_000L), refresh = true)
+
+        assertEquals(2, launch.video.id)
+    }
+
     @Test
     fun `entry with a placeholder episode is migrated to the matched one`() = runTest {
         coEvery { getAnimeVideos(ANIME_ID) } returns listOf(ep2, ep3)

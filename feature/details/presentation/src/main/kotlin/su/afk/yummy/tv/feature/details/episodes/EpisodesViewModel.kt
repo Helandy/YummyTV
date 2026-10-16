@@ -103,6 +103,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
         initialValue = PreferredPlayer.NONE,
     )
 
+    private val anime4kDubbingState = settingsStore.anime4kDubbing(animeId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null,
+    )
+
     private var animeTitle = ""
     private var posterUrl = ""
     private var screenshotsByEpisode: Map<String, String> = emptyMap()
@@ -567,6 +573,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             video = video,
             allVideos = dubbingVideos,
             preferredPlayer = preferredPlayerState.value,
+            rememberedAnime4kDubbing = anime4kDubbingState.value,
         )) {
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
             is DetailsPlayerSelection.ShowPicker -> {

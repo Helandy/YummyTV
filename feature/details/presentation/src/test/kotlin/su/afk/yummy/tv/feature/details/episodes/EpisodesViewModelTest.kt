@@ -87,6 +87,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
     fun setUp() {
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
+        every { settingsStore.anime4kDubbing(any()) } returns flowOf(null)
         every { stringProvider.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { accountRepository.observeSession() } returns session
         every { observeWatchLaterEpisodes(any()) } returns watchLater
