@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.main.mobile.model
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.navigation.root.RootTab
@@ -20,9 +20,9 @@ internal fun mobileMenuItems(unreadNotificationsCount: Int): List<MobileMenuItem
         Icons.Default.Newspaper,
     ),
     MobileMenuItem(
-        stringResource(R.string.main_tab_top),
-        RootTab.TOP,
-        Icons.Default.Star,
+        stringResource(R.string.main_tab_catalog),
+        RootTab.CATALOG,
+        Icons.Default.GridView,
     ),
     MobileMenuItem(
         stringResource(R.string.main_tab_home),

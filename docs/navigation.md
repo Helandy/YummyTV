@@ -9,7 +9,7 @@
 | Понятие              | Что это                                                                                                     |
 |----------------------|-------------------------------------------------------------------------------------------------------------|
 | `NavKey`             | `@Serializable` destination экрана, лежит в `api`-модуле фичи                                               |
-| `RootTab`            | Корневой таб: `ACCOUNT`, `SEARCH`, `HOME`, `POSTS`, `COLLECTIONS`, `SCHEDULE`, `TOP`, `LIBRARY`, `SETTINGS` |
+| `RootTab`            | Корневой таб: `ACCOUNT`, `CATALOG`, `HOME`, `POSTS`, `COLLECTIONS`, `SCHEDULE`, `LIBRARY`, `SETTINGS`      |
 | `INavigationManager` | Узкий интерфейс навигации для фич и `core:*`                                                                |
 | `NavigationManager`  | Реализация (`internal`), синглтон на процесс                                                                |
 | `NavRegistrar`       | Точка регистрации экранов фичи в общем `entryProvider`                                                      |
@@ -26,7 +26,7 @@ appBackStack             (оверлей поверх табов: экраны �
   `navigate`) работают с ним, а не со стеком текущего таба.
 - Стеки табов сохраняются при переключении: вернувшись на таб, пользователь видит его историю.
 - Корень каждого таба задаёт `RootTabsModule` (`feature/main/presentation/.../di/`): например,
-  `RootTab.HOME → HomeDestination`, `RootTab.SEARCH → SearchDestination()`. Набор табов общий,
+  `RootTab.HOME → HomeDestination`, `RootTab.CATALOG → CatalogDestination()`. Набор табов общий,
   определяет его main-фича.
 - Стек — один на оба интерфейса: в него может попасть ключ, зарегистрированный только в наборе
   регистраторов другой платформы. Для этого в `AppNavHost` есть fallback: неизвестный ключ тут же
@@ -71,23 +71,23 @@ data class DetailsDestination(val animeId: Int) : NavKey
 2. Если экран открывают из других фич, в том же `api` объявляется навигатор
    (`IDetailsNavigator.getDetailsDest(animeId)`), реализация живёт в `presentation`.
 3. Точка входа платформы в `api`: `ITvXxxEntry` / `IMobileXxxEntry`, оба наследуют `NavRegistrar`.
-4. Регистратор в `ui-tv` / `ui-mobile` (сокращённо, `TopNavRegistrar` из `feature/top/ui-tv`):
+4. Регистратор в `ui-tv` / `ui-mobile` (сокращённо, `CatalogNavRegistrar` из `feature/catalog/ui-tv`):
 
 ```kotlin
-class TopNavRegistrar @Inject constructor() : ITvTopEntry {
+class CatalogNavRegistrar @Inject constructor() : ITvCatalogEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
-            entry<TopDestination> {
-                val viewModel = hiltViewModel<TopViewModel>()
+            entry<CatalogDestination> { destination ->
+                val viewModel = hiltViewModel<CatalogViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
-                    TopTvScreen(state, effect, onEvent)
+                    CatalogTvScreen(destination, state, effect, onEvent)
                 }
             }
         }
 }
 ```
 
-5. Hilt: `@Binds fun bind(impl: TopNavRegistrar): ITvTopEntry` в модуле
+5. Hilt: `@Binds fun bind(impl: CatalogNavRegistrar): ITvCatalogEntry` в модуле
    `@InstallIn(SingletonComponent)`.
 6. Регистратор добавляется в `TvNavigationHolder` / `MobileNavigationHolder`
    (`feature/main/ui-tv`, `feature/main/ui-mobile`).

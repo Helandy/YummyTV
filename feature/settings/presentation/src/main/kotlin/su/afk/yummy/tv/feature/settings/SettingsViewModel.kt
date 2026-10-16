@@ -71,7 +71,7 @@ class SettingsViewModel @Inject internal constructor(
                         backgroundStyle = snapshot.backgroundStyle,
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
-                        showTopTitleYear = snapshot.showTopTitleYear,
+                        showCatalogTitleYear = snapshot.showCatalogTitleYear,
                         newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
                         newEpisodesSources = snapshot.newEpisodesSources,
                         newEpisodesHideWatched = snapshot.newEpisodesHideWatched,
@@ -219,10 +219,10 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setNewEpisodesHideWatched(!currentState.newEpisodesHideWatched)
             }
 
-            SettingsState.Event.ShowTopTitleYearToggled -> viewModelScope.launch {
-                val enabled = !currentState.showTopTitleYear
-                analytics.eventShowTopTitleYearToggled(enabled)
-                settingsStore.setShowTopTitleYear(enabled)
+            SettingsState.Event.ShowCatalogTitleYearToggled -> viewModelScope.launch {
+                val enabled = !currentState.showCatalogTitleYear
+                analytics.eventShowCatalogTitleYearToggled(enabled)
+                settingsStore.setShowCatalogTitleYear(enabled)
             }
 
             SettingsState.Event.ShowLibraryTitleYearToggled -> viewModelScope.launch {

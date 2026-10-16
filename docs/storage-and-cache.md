@@ -88,10 +88,9 @@ stored = forceRefresh ? null : read()
 | Список видео (серии, озвучки)                       | 5 мин                | `YaniAnimeRepository`            |
 | Связанные, эпизоды (`episodeInfo`)                  | 24 ч / 7 суток       | `YaniAnimeRepository`            |
 | Дополнительное публичное, персональные рекомендации | 6 ч / 5 мин          | `YaniAnimeRepository`            |
-| Топ                                                 | 6 ч                  | `YaniAnimeTopRepository`         |
 | Лента главной                                       | 1 мин                | `YaniHomeFeedRepository`         |
 | Расписание                                          | 1 ч                  | `YaniScheduleRepository`         |
-| Поиск: результаты / фильтры                         | 10 мин / 24 ч        | `YaniSearchRepository`           |
+| Каталог: результаты / фильтры                       | 1 ч / 24 ч           | `YaniSearchRepository`           |
 | Коллекции (детали, каталог)                         | 1 мин                | `YaniCollectionDetailRepository` |
 | Комментарии                                         | 5 мин                | `YaniCommentsRepository`         |
 | Посты (лента / деталь / категории)                  | 2 / 5 мин / 6 ч      | `YaniPostsRepository`            |

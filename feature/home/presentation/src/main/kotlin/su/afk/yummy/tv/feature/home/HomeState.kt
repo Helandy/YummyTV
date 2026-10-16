@@ -74,9 +74,6 @@ class HomeState {
         /** Пользователь открыл общую ленту рецензий с главного экрана. */
         data object ReviewsSelected : Event
 
-        /** Пользователь открыл поиск с плашки на главном экране. */
-        data object SearchSelected : Event
-
         data object BloggerVideosSelected : Event
 
         data object BloggerVideosRetrySelected : Event

@@ -10,7 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.main.TvMainGraph
-import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
+import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import javax.inject.Inject
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier

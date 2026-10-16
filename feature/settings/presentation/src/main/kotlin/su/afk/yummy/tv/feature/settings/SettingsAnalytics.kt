@@ -307,10 +307,10 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(EVENT_TV_PLAYER_CONTROLS_TUTORIAL_RESET)
     }
 
-    /** Пользователь включил или выключил отображение года у тайтлов в топе. */
-    fun eventShowTopTitleYearToggled(enabled: Boolean) {
+    /** Пользователь включил или выключил отображение года у тайтлов в каталоге. */
+    fun eventShowCatalogTitleYearToggled(enabled: Boolean) {
         tracker.track(
-            EVENT_SHOW_TOP_TITLE_YEAR_TOGGLED,
+            EVENT_SHOW_CATALOG_TITLE_YEAR_TOGGLED,
             analyticsParamsOf(PARAM_TARGET_STATE to enabled),
         )
     }
@@ -458,7 +458,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"
         const val EVENT_INTERFACE_MODE_SELECTED = "settings_interface_mode_selected"
         const val EVENT_SCREEN_OPENED = "settings_screen"
-        const val EVENT_SHOW_TOP_TITLE_YEAR_TOGGLED =
+        const val EVENT_SHOW_CATALOG_TITLE_YEAR_TOGGLED =
             "settings_show_top_title_year_toggled"
         const val EVENT_SHOW_LIBRARY_TITLE_YEAR_TOGGLED =
             "settings_show_library_title_year_toggled"

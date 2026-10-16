@@ -269,3 +269,14 @@ internal val MIGRATION_54_55 = object : Migration(54, 55) {
         db.execSQL("ALTER TABLE account_notifications ADD COLUMN linksJson TEXT NOT NULL DEFAULT '[]'")
     }
 }
+
+/**
+ * Кэш вкладки «Топ» больше не нужен: топ теперь часть каталога и идёт через общий кэш поиска.
+ * Индексы таблиц удаляются вместе с ними.
+ */
+internal val MIGRATION_55_56 = object : Migration(55, 56) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS anime_top_items")
+        db.execSQL("DROP TABLE IF EXISTS anime_top_pages")
+    }
+}

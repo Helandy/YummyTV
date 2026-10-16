@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.main.mobile.navigation
 
 import android.view.KeyEvent
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.feature.search.ISearchNavigator
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,7 +14,6 @@ import javax.inject.Singleton
 @Singleton
 class MobileKeyboardShortcuts @Inject internal constructor(
     private val navManager: INavigationManager,
-    private val searchNavigator: ISearchNavigator,
 ) {
 
     /**
@@ -33,7 +32,7 @@ class MobileKeyboardShortcuts @Inject internal constructor(
             }
 
             event.keyCode == KeyEvent.KEYCODE_F && event.isCtrlPressed -> {
-                navManager.navigate(searchNavigator.getSearchDest())
+                navManager.switchRoot(RootTab.CATALOG)
                 true
             }
 

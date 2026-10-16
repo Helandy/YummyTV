@@ -39,7 +39,7 @@ internal class DataStoreSearchSettingsStore @Inject constructor(
                 .mapNotNull(String::toIntOrNull).toSet(),
             fromYear = prefs[lastSearchFromYearKey],
             toYear = prefs[lastSearchToYearKey],
-            sortName = prefs[lastSearchSortKey] ?: "RELEVANCE",
+            sortName = prefs[lastSearchSortKey] ?: "TOP",
             sortForward = prefs[lastSearchSortForwardKey] ?: true,
         )
     }

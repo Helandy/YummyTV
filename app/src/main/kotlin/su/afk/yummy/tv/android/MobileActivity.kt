@@ -20,7 +20,7 @@ import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
-import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
+import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import javax.inject.Inject
 
 @AndroidEntryPoint

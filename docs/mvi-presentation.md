@@ -92,7 +92,7 @@ class TopViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
-        settingsStore.showTopTitleYear
+        settingsStore.showCatalogTitleYear
             .onEach { showTitleYear -> setState { copy(showTitleYear = showTitleYear) } }
             .launchIn(viewModelScope)
     }

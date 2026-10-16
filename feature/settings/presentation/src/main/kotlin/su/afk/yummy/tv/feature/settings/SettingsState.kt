@@ -39,7 +39,7 @@ class SettingsState {
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
-        val showTopTitleYear: Boolean = false,
+        val showCatalogTitleYear: Boolean = false,
         val newEpisodesSectionEnabled: Boolean = true,
         val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
         val newEpisodesHideWatched: Boolean = false,
@@ -117,7 +117,7 @@ class SettingsState {
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event
 
         /** Пользователь переключил отображение года у тайтлов в топе. */
-        data object ShowTopTitleYearToggled : Event
+        data object ShowCatalogTitleYearToggled : Event
 
         /** Пользователь включил или выключил блок новых серий на главной. */
         data object NewEpisodesSectionToggled : Event

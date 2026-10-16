@@ -35,9 +35,6 @@ abstract class StorageCleanupDao {
         deleteStaleHomeFeedCaches(minCachedAt)
         deleteOrphanHomeFeedItems()
 
-        deleteStaleAnimeTopPages(minCachedAt)
-        deleteOrphanAnimeTopItems()
-
         deleteStaleAnimeScheduleCaches(minCachedAt)
         deleteOrphanAnimeScheduleItems()
 
@@ -226,23 +223,6 @@ abstract class StorageCleanupDao {
         """
     )
     abstract suspend fun deleteOrphanHomeFeedItems()
-
-    @Query("DELETE FROM anime_top_pages WHERE cachedAt < :minCachedAt")
-    abstract suspend fun deleteStaleAnimeTopPages(minCachedAt: Long)
-
-    @Query(
-        """
-        DELETE FROM anime_top_items
-        WHERE NOT EXISTS (
-            SELECT 1 FROM anime_top_pages AS parent
-            WHERE parent.type = anime_top_items.type
-                AND parent.language = anime_top_items.language
-                AND parent.`limit` = anime_top_items.`limit`
-                AND parent.`offset` = anime_top_items.`offset`
-        )
-        """
-    )
-    abstract suspend fun deleteOrphanAnimeTopItems()
 
     @Query("DELETE FROM anime_schedule_caches WHERE cachedAt < :minCachedAt")
     abstract suspend fun deleteStaleAnimeScheduleCaches(minCachedAt: Long)

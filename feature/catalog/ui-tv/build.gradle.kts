@@ -1,0 +1,24 @@
+plugins {
+    id("yummytv.android.library.compose")
+    id("yummytv.android.hilt")
+}
+
+android {
+    namespace = "su.afk.yummy.tv.feature.catalog"
+}
+
+dependencies {
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:navigation"))
+    implementation(project(":feature:details:api"))
+    implementation(project(":feature:catalog:api"))
+    implementation(project(":feature:catalog:presentation"))
+    implementation(project(":feature:settings:api"))
+
+    implementation(libs.bundles.compose.screen)
+    implementation(libs.bundles.navigation.serialization)
+    implementation(libs.bundles.coil.full)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
+}

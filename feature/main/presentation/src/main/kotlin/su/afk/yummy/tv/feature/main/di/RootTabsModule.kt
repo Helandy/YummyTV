@@ -12,9 +12,8 @@ import su.afk.yummy.tv.feature.home.navigator.HomeDestination
 import su.afk.yummy.tv.feature.library.navigator.LibraryDestination
 import su.afk.yummy.tv.feature.posts.navigator.PostsDestination
 import su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination
-import su.afk.yummy.tv.feature.search.navigator.SearchDestination
+import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
-import su.afk.yummy.tv.feature.top.navigator.TopDestination
 
 /** Корневой экран каждого таба; общий для mobile и TV, набор табов определяет main-фича. */
 @Module
@@ -24,12 +23,11 @@ internal object RootTabsModule {
     @Provides
     fun provideRootTabs(): @JvmSuppressWildcards Map<RootTab, NavKey> = mapOf(
         RootTab.ACCOUNT to AccountDestination,
-        RootTab.SEARCH to SearchDestination(),
+        RootTab.CATALOG to CatalogDestination(),
         RootTab.HOME to HomeDestination,
         RootTab.POSTS to PostsDestination,
         RootTab.COLLECTIONS to CollectionsCatalogDestination,
         RootTab.SCHEDULE to ScheduleDestination,
-        RootTab.TOP to TopDestination,
         RootTab.LIBRARY to LibraryDestination,
         RootTab.SETTINGS to SettingsDestination,
     )

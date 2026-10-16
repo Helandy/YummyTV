@@ -27,7 +27,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpiso
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showTopTitleYearKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showCatalogTitleYearKey
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -42,7 +42,7 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     override val posterCardSize: Flow<PosterCardSize> =
         store.enumFlow(posterCardSizeKey, PosterCardSize.STANDARD)
 
-    override val showTopTitleYear: Flow<Boolean> = store.boolean(showTopTitleYearKey, false)
+    override val showCatalogTitleYear: Flow<Boolean> = store.boolean(showCatalogTitleYearKey, false)
 
     override val newEpisodesSectionEnabled: Flow<Boolean> =
         store.boolean(newEpisodesSectionEnabledKey, true)
@@ -92,8 +92,8 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     override suspend fun setNewEpisodesHideWatched(enabled: Boolean) =
         store.setBoolean(newEpisodesHideWatchedKey, enabled)
 
-    override suspend fun setShowTopTitleYear(enabled: Boolean) =
-        store.setBoolean(showTopTitleYearKey, enabled)
+    override suspend fun setShowCatalogTitleYear(enabled: Boolean) =
+        store.setBoolean(showCatalogTitleYearKey, enabled)
 
     override suspend fun setShowLibraryTitleYear(enabled: Boolean) =
         store.setBoolean(showLibraryTitleYearKey, enabled)

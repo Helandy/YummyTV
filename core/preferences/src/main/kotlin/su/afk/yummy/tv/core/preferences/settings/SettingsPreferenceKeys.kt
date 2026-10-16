@@ -9,7 +9,7 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 internal object SettingsPreferenceKeys {
     val posterQualityKey = stringPreferencesKey("poster_quality")
     val posterCardSizeKey = stringPreferencesKey("poster_card_size")
-    val showTopTitleYearKey = booleanPreferencesKey("show_top_title_year")
+    val showCatalogTitleYearKey = booleanPreferencesKey("show_top_title_year")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
     val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
     val newEpisodesHideWatchedKey = booleanPreferencesKey("new_episodes_hide_watched")

@@ -87,7 +87,7 @@ KDoc: штатный focus search Compose, упираясь в ещё не ск�
 
 Используют: `TopBrowser`, `CollectionsCatalogGrid`, `CollectionGridPane`, `RelationTvScreen`,
 `ScreenshotsTvScreen`, `TrailersTvScreen`, `EpisodesGrid`, `CollectionsGrid`, `LibraryGrid`,
-`ContinueWatchingGrid`, `SearchResultsGrid`, `MySubscriptionsTvScreen`, `ReviewsListTvScreen`.
+`ContinueWatchingGrid`, `CatalogResultsGrid`, `MySubscriptionsTvScreen`, `ReviewsListTvScreen`.
 
 ## Возврат фокуса после «Назад»
 

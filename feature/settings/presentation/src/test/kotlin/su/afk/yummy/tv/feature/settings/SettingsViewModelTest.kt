@@ -130,7 +130,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         backgroundStyle = BackgroundStyle.entries.first(),
         posterQuality = PosterQuality.entries.first(),
         posterCardSize = PosterCardSize.entries.first(),
-        showTopTitleYear = false,
+        showCatalogTitleYear = false,
         newEpisodesSectionEnabled = true,
         newEpisodesSources = NewEpisodesSource.DEFAULT,
         newEpisodesHideWatched = false,

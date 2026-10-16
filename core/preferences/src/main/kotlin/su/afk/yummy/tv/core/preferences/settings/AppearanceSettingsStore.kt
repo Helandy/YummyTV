@@ -17,7 +17,7 @@ interface AppearanceSettingsStore {
 
     val posterQuality: Flow<PosterQuality>
     val posterCardSize: Flow<PosterCardSize>
-    val showTopTitleYear: Flow<Boolean>
+    val showCatalogTitleYear: Flow<Boolean>
     val showLibraryTitleYear: Flow<Boolean>
     val libraryContinueWatchingCardSize: Flow<LibraryContinueWatchingCardSize>
     val librarySort: Flow<LibrarySort>
@@ -40,7 +40,7 @@ interface AppearanceSettingsStore {
 
     suspend fun setPosterQuality(quality: PosterQuality)
     suspend fun setPosterCardSize(size: PosterCardSize)
-    suspend fun setShowTopTitleYear(enabled: Boolean)
+    suspend fun setShowCatalogTitleYear(enabled: Boolean)
     suspend fun setShowLibraryTitleYear(enabled: Boolean)
     suspend fun setLibraryContinueWatchingCardSize(size: LibraryContinueWatchingCardSize)
     suspend fun setLibrarySort(sort: LibrarySort)

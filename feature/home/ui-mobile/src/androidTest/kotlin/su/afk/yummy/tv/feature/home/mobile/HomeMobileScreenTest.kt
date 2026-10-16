@@ -5,7 +5,6 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -61,16 +60,6 @@ class HomeMobileScreenTest {
         composeRule.waitForIdle()
 
         assertTrue(HomeState.Event.ScreenResumed in events)
-    }
-
-    @Test
-    fun searchEntryShowsHintAndSendsSearchSelected() {
-        setScreen(loaded())
-
-        composeRule.onNodeWithText(string(R.string.home_mobile_search_hint)).assertIsDisplayed()
-        composeRule.onNodeWithTag("home_search").performClick()
-
-        assertTrue(HomeState.Event.SearchSelected in events)
     }
 
     @Test

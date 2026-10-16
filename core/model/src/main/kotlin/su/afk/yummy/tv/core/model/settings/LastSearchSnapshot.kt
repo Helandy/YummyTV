@@ -11,7 +11,7 @@ data class LastSearchSnapshot(
     val ageRatings: Set<Int> = emptySet(),
     val fromYear: Int? = null,
     val toYear: Int? = null,
-    val sortName: String = "RELEVANCE",
+    val sortName: String = "TOP",
     val sortForward: Boolean = true,
 ) {
     val isEmpty: Boolean get() = this == LastSearchSnapshot()

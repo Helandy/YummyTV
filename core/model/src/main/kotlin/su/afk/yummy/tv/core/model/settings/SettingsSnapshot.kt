@@ -5,7 +5,7 @@ data class SettingsSnapshot(
     val backgroundStyle: BackgroundStyle,
     val posterQuality: PosterQuality,
     val posterCardSize: PosterCardSize,
-    val showTopTitleYear: Boolean,
+    val showCatalogTitleYear: Boolean,
     val newEpisodesSectionEnabled: Boolean,
     val newEpisodesSources: Set<NewEpisodesSource>,
     val newEpisodesHideWatched: Boolean,

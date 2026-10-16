@@ -40,14 +40,14 @@ internal fun SettingsTvAppearanceContent(
     pickerRow(SettingsTvPicker.POSTER_QUALITY, Modifier)
     SettingsDivider()
     ToggleRow(
-        label = stringResource(R.string.settings_show_top_title_year),
-        hint = if (state.showTopTitleYear) {
-            stringResource(R.string.settings_show_top_title_year_enabled)
+        label = stringResource(R.string.settings_show_catalog_title_year),
+        hint = if (state.showCatalogTitleYear) {
+            stringResource(R.string.settings_show_catalog_title_year_enabled)
         } else {
             stringResource(R.string.settings_disabled)
         },
-        enabled = state.showTopTitleYear,
-        onClick = { onEvent(SettingsState.Event.ShowTopTitleYearToggled) },
+        enabled = state.showCatalogTitleYear,
+        onClick = { onEvent(SettingsState.Event.ShowCatalogTitleYearToggled) },
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()

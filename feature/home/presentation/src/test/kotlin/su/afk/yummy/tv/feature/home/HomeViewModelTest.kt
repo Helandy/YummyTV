@@ -58,7 +58,6 @@ import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
-import su.afk.yummy.tv.feature.search.ISearchNavigator
 
 class HomeViewModelTest : BaseUnitTest() {
 
@@ -70,7 +69,6 @@ class HomeViewModelTest : BaseUnitTest() {
     private val reviewsNavigator: IReviewsNavigator = mockk()
     private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
     private val scheduleNavigator: IScheduleNavigator = mockk()
-    private val searchNavigator: ISearchNavigator = mockk()
     private val getHomeFeed: GetHomeFeedUseCase = mockk()
     private val getBloggerVideos: GetBloggerVideosUseCase = mockk()
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase = mockk()
@@ -123,7 +121,6 @@ class HomeViewModelTest : BaseUnitTest() {
         every { bloggerVideosNavigator.feed() } returns navKey
         every { bloggerVideosNavigator.video(any()) } returns navKey
         every { scheduleNavigator.getScheduleDest() } returns navKey
-        every { searchNavigator.getSearchDest(any()) } returns navKey
         coEvery { getCachedHomeFeed() } returns null
         coEvery { getHomeFeed() } returns feed()
         coEvery { refreshHomeFeed() } returns feed()
@@ -141,7 +138,6 @@ class HomeViewModelTest : BaseUnitTest() {
         reviewsNavigator = reviewsNavigator,
         bloggerVideosNavigator = bloggerVideosNavigator,
         scheduleNavigator = scheduleNavigator,
-        searchNavigator = searchNavigator,
         getHomeFeed = getHomeFeed,
         getBloggerVideos = getBloggerVideos,
         getCachedHomeFeed = getCachedHomeFeed,
@@ -420,12 +416,11 @@ class HomeViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.CollectionSelected(4))
         vm.setEvent(Event.CollectionsCatalogSelected)
         vm.setEvent(Event.ScheduleSelected)
-        vm.setEvent(Event.SearchSelected)
         vm.setEvent(Event.ReviewsSelected)
         vm.setEvent(Event.BloggerVideosSelected)
         vm.setEvent(Event.BloggerVideoSelected(mockk<BloggerVideo> { every { id } returns 8 }))
 
-        verify(exactly = 8) { nav.navigate(navKey) }
+        verify(exactly = 7) { nav.navigate(navKey) }
         verify(exactly = 1) { detailsNavigator.getDetailsDest(3) }
         verify(exactly = 1) { collectionNavigator.getCollectionDest(4) }
         verify(exactly = 1) { bloggerVideosNavigator.video(8) }

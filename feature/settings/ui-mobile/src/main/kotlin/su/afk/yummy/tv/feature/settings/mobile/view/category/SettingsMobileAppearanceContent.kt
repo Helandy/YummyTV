@@ -59,14 +59,14 @@ internal fun SettingsMobileAppearanceContent(
                 onClick = { onPickerRequested(SettingsMobilePicker.POSTER_QUALITY) },
             )
             SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_show_top_title_year),
-                hint = if (state.showTopTitleYear) {
-                    stringResource(R.string.settings_show_top_title_year_enabled)
+                label = stringResource(R.string.settings_show_catalog_title_year),
+                hint = if (state.showCatalogTitleYear) {
+                    stringResource(R.string.settings_show_catalog_title_year_enabled)
                 } else {
                     stringResource(R.string.settings_disabled)
                 },
-                enabled = state.showTopTitleYear,
-                onClick = { onEvent(SettingsState.Event.ShowTopTitleYearToggled) },
+                enabled = state.showCatalogTitleYear,
+                onClick = { onEvent(SettingsState.Event.ShowCatalogTitleYearToggled) },
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_library_title_year),

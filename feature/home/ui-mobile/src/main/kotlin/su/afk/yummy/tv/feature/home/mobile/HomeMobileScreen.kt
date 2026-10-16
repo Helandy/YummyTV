@@ -62,7 +62,6 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.mobile.view.HomeQuickActionsSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
-import su.afk.yummy.tv.feature.home.mobile.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
 import su.afk.yummy.tv.feature.home.presentation.R
@@ -187,9 +186,10 @@ fun HomeMobileScreen(
                 }
             },
         ) {
+            val isOffline = LocalIsOffline.current
             LazyColumn(
                 // Без общего предела ширины: лента почти целиком из горизонтальных рядов, им
-                // ширина окна только на пользу. Ограничены лишь поиск и кнопки внизу.
+                // ширина окна только на пользу. Ограничены лишь баннеры и кнопки внизу.
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag("home_feed"),
@@ -201,19 +201,13 @@ fun HomeMobileScreen(
             ) {
                 val feed = state.feed
 
-                item(key = "search") {
-                    // Плашка внутри item'а поиска: отдельный item дал бы лишний
-                    // зазор spacedBy даже со скрытой плашкой
-                    Column(modifier = Modifier.mobileContentMaxWidth()) {
-                        HomeSearchEntry(
-                            text = stringResource(R.string.home_mobile_search_hint),
-                            onClick = { onEvent(HomeState.Event.SearchSelected) },
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .testTag("home_search"),
-                        )
-                        OfflineBanner(isOffline = LocalIsOffline.current)
-                        InfoBanner(message = state.statusMessage)
+                // Item только пока есть что показать: пустой дал бы лишний зазор spacedBy сверху
+                if (isOffline || state.statusMessage != null) {
+                    item(key = "banners") {
+                        Column(modifier = Modifier.mobileContentMaxWidth()) {
+                            OfflineBanner(isOffline = isOffline)
+                            InfoBanner(message = state.statusMessage)
+                        }
                     }
                 }
 

@@ -98,7 +98,7 @@
         </provider>
 
         <provider
-            android:name="su.afk.yummy.tv.feature.search.android.SystemSearchProvider"
+            android:name="su.afk.yummy.tv.feature.catalog.android.SystemSearchProvider"
             android:authorities="${applicationId}.search"
             android:exported="true" />
 

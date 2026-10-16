@@ -57,7 +57,7 @@ interface AnalyticsTracker {
 Каждая фича держит свой `XxxAnalytics` (≈18 штук), который внедряется в ViewModel и содержит методы
 `eventXxx()`. Правила:
 
-- В `TopAnalytics` и `SearchAnalytics` имена событий и параметров — константы (`EVENT_…`,
+- В `TopAnalytics` и `CatalogAnalytics` имена событий и параметров — константы (`EVENT_…`,
   `PARAM_…`) внутри класса, у каждого метода KDoc: что произошло и какие параметры.
 - Параметры собираются `analyticsParamsOf("key" to value, ...)`: `null` и пустые строки
   отбрасываются, остальное приводится `toString()`.
