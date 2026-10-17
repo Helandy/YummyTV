@@ -3,6 +3,7 @@
     <string name="search_error">Search error</string>
     <string name="search_mobile_filters_short">F</string>
     <string name="search_filters">Filters</string>
+    <string name="search_clear">Clear</string>
     <string name="search_mobile_submit">Search</string>
     <string name="search_mobile_submit_with_filters">Search · filters: %1$d</string>
     <string name="search_random_anime">Random anime</string>
@@ -10,7 +11,7 @@
     <string name="search_filters_apply">Apply</string>
     <string name="search_mobile_filters_apply_with_count">Apply · %1$d</string>
     <string name="search_filters_reset">Reset</string>
-    <string name="search_filters_loading">Loading filters...</string>
+    <string name="search_filters_loading">Loading filters…</string>
     <string name="search_filter_selected">✓ %1$s</string>
     <string name="search_filter_selected_count">Selected: %1$d</string>
     <string name="search_filter_genre_screen_title">Genres</string>
@@ -44,8 +45,11 @@
     <string name="search_filter_sort_views">Views</string>
     <string name="search_filter_sort_top">Top</string>
     <string name="search_mobile_filter_sort_id">New</string>
-    <string name="search_placeholder">Search anime...</string>
+    <string name="search_placeholder">Search anime…</string>
     <string name="search_empty">Nothing found</string>
+    <string name="search_mobile_reset_filters">Reset filters</string>
+    <string name="search_mobile_history_title">Recent searches</string>
+    <string name="search_mobile_history_clear">Clear</string>
     <string name="search_filter_sort_rating_counters">Rating votes</string>
     <string name="search_filter_sort_id">New</string>
 </resources>

@@ -81,7 +81,7 @@ fun reviewAnnotatedText(block: ReviewContentBlock.Paragraph): AnnotatedString {
                 is Element -> when (node.tagName()) {
                     "br" -> append('\n')
                     "img" -> Unit
-                    "b", "strong" -> withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                    "b", "strong" -> withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
                         node.childNodes().forEach(::appendNode)
                     }
 
@@ -91,7 +91,7 @@ fun reviewAnnotatedText(block: ReviewContentBlock.Paragraph): AnnotatedString {
 
                     "h1", "h2", "h3" -> withStyle(
                         SpanStyle(
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             fontSize = 20.sp
                         )
                     ) { node.childNodes().forEach(::appendNode) }

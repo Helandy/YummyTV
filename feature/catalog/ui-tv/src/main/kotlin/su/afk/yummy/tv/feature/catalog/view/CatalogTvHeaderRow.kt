@@ -51,6 +51,9 @@ internal fun CatalogTvHeaderRow(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var searchEditing by remember { mutableStateOf(false) }
+    val clearButtonFocusRequester = remember { FocusRequester() }
+    val hasQuery = query.isNotEmpty()
+    val searchRightTarget = if (hasQuery) clearButtonFocusRequester else filterButtonFocusRequester
 
     Row(
         modifier = modifier
@@ -78,14 +81,14 @@ internal fun CatalogTvHeaderRow(
                 .focusRequester(searchFieldFocusRequester)
                 .focusProperties {
                     mainMenuFocusRequester?.let { left = it }
-                    right = filterButtonFocusRequester
+                    right = searchRightTarget
                 }
                 .onFocusChanged { if (!it.isFocused) searchEditing = false }
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
                         Key.DirectionRight -> {
-                            runCatching { filterButtonFocusRequester.requestFocus() }
+                            runCatching { searchRightTarget.requestFocus() }
                             true
                         }
 
@@ -116,13 +119,28 @@ internal fun CatalogTvHeaderRow(
                     }
                 },
         )
+        if (hasQuery) {
+            ClearSearchButton(
+                onClick = {
+                    // Фокус уходит в поле до исчезновения кнопки, иначе Android кинет его в меню
+                    runCatching { searchFieldFocusRequester.requestFocus() }
+                    onQueryChanged("")
+                },
+                modifier = Modifier
+                    .focusRequester(clearButtonFocusRequester)
+                    .focusProperties {
+                        left = searchFieldFocusRequester
+                        right = filterButtonFocusRequester
+                    },
+            )
+        }
         FilterButton(
             activeCount = filters.activeCount,
             onClick = onOpenFilters,
             modifier = Modifier
                 .focusRequester(filterButtonFocusRequester)
                 .focusProperties {
-                    left = searchFieldFocusRequester
+                    left = if (hasQuery) clearButtonFocusRequester else searchFieldFocusRequester
                     right = randomButtonFocusRequester
                 },
         )

@@ -34,6 +34,7 @@ import su.afk.yummy.tv.feature.details.navigator.DetailsRelationDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsScreenshotsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsSimilarDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsSubscriptionsDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsTrailerPlayerDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsTrailersDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsViewingOrderDestination
 import su.afk.yummy.tv.feature.details.rating.RatingViewModel
@@ -42,12 +43,25 @@ import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsViewModel
 import su.afk.yummy.tv.feature.details.similar.SimilarViewModel
 import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsViewModel
 import su.afk.yummy.tv.feature.details.trailers.TrailersViewModel
+import su.afk.yummy.tv.feature.details.mobile.trailers.TrailerPlayerMobileScreen
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderViewModel
+import su.afk.yummy.tv.feature.details.mobile.sitelink.DetailsSiteLinkMobileScreen
+import su.afk.yummy.tv.feature.details.navigator.DetailsSiteLinkDestination
+import su.afk.yummy.tv.feature.details.sitelink.DetailsSiteLinkViewModel
 import javax.inject.Inject
 
 class DetailsNavRegistrar @Inject constructor() : IMobileDetailsEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
+            entry<DetailsSiteLinkDestination> { dest ->
+                val viewModel = hiltViewModel<DetailsSiteLinkViewModel, DetailsSiteLinkViewModel.Factory>(
+                    key = "mobile-details-site-link-${dest.slug}",
+                    creationCallback = { factory -> factory.create(dest.slug) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    DetailsSiteLinkMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
             entry<DetailsDestination> { dest ->
                 val viewModel = hiltViewModel<DetailsViewModel, DetailsViewModel.Factory>(
                     key = "mobile-details-${dest.animeId}",
@@ -117,6 +131,14 @@ class DetailsNavRegistrar @Inject constructor() : IMobileDetailsEntry {
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     TrailersMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
+            }
+            entry<DetailsTrailerPlayerDestination> { dest ->
+                TrailerPlayerMobileScreen(
+                    videoId = dest.videoId,
+                    embedUrl = dest.embedUrl,
+                    externalUrl = dest.externalUrl,
+                    onBack = nav::back,
+                )
             }
             entry<DetailsSimilarDestination> { dest ->
                 val viewModel = hiltViewModel<SimilarViewModel, SimilarViewModel.Factory>(

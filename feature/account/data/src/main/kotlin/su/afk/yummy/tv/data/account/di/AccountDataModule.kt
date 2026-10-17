@@ -12,6 +12,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
@@ -63,8 +64,9 @@ object AccountDataModule {
     fun provideYaniAccountApi(
         clientProvider: YaniHttpClientProvider,
         analyticsTracker: AnalyticsTracker,
+        appClock: AppClock,
     ): YaniAccountApi =
-        YaniAccountApi(clientProvider, analyticsTracker)
+        YaniAccountApi(clientProvider, analyticsTracker, appClock)
 
     @Provides
     @Singleton

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 
 @Composable
 internal fun ReviewRemoteImage(url: String, alt: String) {
@@ -40,7 +40,7 @@ internal fun ReviewRemoteImage(url: String, alt: String) {
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 160.dp), contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            ) { YummyLoadingIndicator() }
 
             is AsyncImagePainter.State.Error -> Column(
                 Modifier

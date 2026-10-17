@@ -72,6 +72,7 @@ fun TrailersMobileScreen(
                     TrailerMobileCard(
                         number = index + 1,
                         trailer = trailer,
+                        onClick = { onEvent(TrailersState.Event.TrailerSelected(trailer)) },
                     )
                 }
             }

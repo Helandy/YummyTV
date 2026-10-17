@@ -102,7 +102,14 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (item.color != null) {
+                if (item.color != null && item.icon != null) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = null,
+                        tint = item.color,
+                        modifier = Modifier.size(20.dp),
+                    )
+                } else if (item.color != null) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)

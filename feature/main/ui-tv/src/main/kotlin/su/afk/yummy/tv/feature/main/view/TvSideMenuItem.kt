@@ -99,7 +99,7 @@ internal fun TvSideMenuItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = if (focused || selected) FontWeight.Bold else FontWeight.SemiBold,
+                fontWeight = if (focused || selected) FontWeight.SemiBold else FontWeight.SemiBold,
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

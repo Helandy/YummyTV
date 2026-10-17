@@ -19,7 +19,6 @@ internal fun StatSection(title: String, content: @Composable ColumnScope.() -> U
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(modifier = Modifier.height(12.dp))

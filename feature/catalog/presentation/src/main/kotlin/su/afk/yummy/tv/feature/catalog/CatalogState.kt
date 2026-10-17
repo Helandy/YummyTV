@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.catalog
 
 import androidx.paging.PagingData
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import su.afk.yummy.tv.core.model.text.UiText
@@ -27,6 +29,13 @@ class CatalogState {
         val isLoadingFilterOptions: Boolean = false,
         val isRandomAnimeLoading: Boolean = false,
         val showTitleYear: Boolean = false,
+        /**
+         * Другая фича попросила фокус в поле поиска. Это состояние, а не эффект: запрос приходит
+         * до того, как экран начнёт собирать эффекты, и снимается событием [Event.SearchFocusHandled].
+         */
+        val isSearchFocusRequested: Boolean = false,
+        /** Последние поисковые запросы, от новых к старым. */
+        val searchHistory: ImmutableList<String> = persistentListOf(),
     ) : UiState
 
     /** Пользовательские действия на экране поиска. */
@@ -93,6 +102,15 @@ class CatalogState {
 
         /** Пользователь переключил направление сортировки. */
         data object SortDirectionToggled : Event
+
+        /** Экран поставил фокус в поле поиска по запросу [State.isSearchFocusRequested]. */
+        data object SearchFocusHandled : Event
+
+        /** Пользователь выбрал запрос из истории поиска. */
+        data class SearchHistorySelected(val query: String) : Event
+
+        /** Пользователь очистил историю поиска. */
+        data object SearchHistoryCleared : Event
     }
 
     sealed interface Effect : UiEffect

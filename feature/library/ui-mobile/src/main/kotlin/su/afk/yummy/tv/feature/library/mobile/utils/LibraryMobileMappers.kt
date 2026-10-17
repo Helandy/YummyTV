@@ -8,6 +8,7 @@ import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.model.LibraryTab
+import su.afk.yummy.tv.feature.library.utils.isLocalLoading
 import su.afk.yummy.tv.feature.library.utils.semanticColorOrNull
 
 internal fun LibraryTab.toLibraryMobilePage(tabs: List<LibraryTab>): Int =
@@ -17,6 +18,7 @@ internal fun Int.toLibraryMobileTab(tabs: List<LibraryTab>): LibraryTab =
     tabs.getOrElse(this) { LibraryTab.CONTINUE_WATCHING }
 
 internal fun LibraryState.State.shouldShowRemoteLoader(tab: LibraryTab): Boolean {
+    if (isLocalLoading(tab)) return true
     return !(!isSignedIn || !isRemoteLoading || remoteError != null) && when (tab) {
         LibraryTab.CONTINUE_WATCHING -> false
         LibraryTab.HISTORY -> false

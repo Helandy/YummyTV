@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -120,12 +121,18 @@ fun ScheduleMobileScreen(
                 modifier = Modifier.weight(1f),
                 key = { page -> dayGroups[page].date.toEpochDay() },
             ) { page ->
-                ScheduleDayReleases(
-                    group = dayGroups[page],
-                    now = schedule.now,
-                    zone = schedule.zone,
-                    onAnimeSelected = { onEvent(ScheduleState.Event.AnimeSelected(it)) },
-                )
+                PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(ScheduleState.Event.RefreshRequested) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    ScheduleDayReleases(
+                        group = dayGroups[page],
+                        now = schedule.now,
+                        zone = schedule.zone,
+                        onAnimeSelected = { onEvent(ScheduleState.Event.AnimeSelected(it)) },
+                    )
+                }
             }
         }
     }

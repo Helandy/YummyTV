@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.main.view
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
@@ -17,14 +18,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
@@ -60,9 +67,9 @@ fun TvMainScaffold(
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
     var menuExpanded by remember { mutableStateOf(false) }
     val menuCanFocus = focusController.menuCanFocus &&
-            focusController.previousShowMainMenu &&
-            !focusController.restoreContentFocusAfterMenuShown &&
-            focusController.pendingContentFocusRequest == null
+        focusController.previousShowMainMenu &&
+        !focusController.restoreContentFocusAfterMenuShown &&
+        focusController.pendingContentFocusRequest == null
     val topSafeDrawingModifier = if (applyTopSafeDrawingInset) {
         Modifier.windowInsetsPadding(
             WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
@@ -77,19 +84,36 @@ fun TvMainScaffold(
         }
     }
 
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    // DOWN этого BACK не обработал ни один экран — значит, UP тоже наш (см. onKeyEvent ниже).
+    var unhandledBackDown by remember { mutableStateOf(false) }
     val pendingContentFocus = focusController.pendingContentFocusRequest != null
+    val backScope = rememberCoroutineScope()
     // pendingContentFocus покрывает окно nav-перехода: пока фокус контента не установлен,
     // BACK возвращает в меню вместо сворачивания приложения
     BackHandler(
         enabled = showMainMenu &&
-                focusController.previousShowMainMenu &&
-                !menuExpanded &&
-                (pendingContentFocus || (menuCanFocus && focusController.contentHasFocus)),
+            focusController.previousShowMainMenu &&
+            !menuExpanded &&
+            (pendingContentFocus || (menuCanFocus && focusController.contentHasFocus)),
     ) {
+        // С predictive back (targetSdk 36+) BACK приходит в обход onPreviewKeyEvent: без отметки
+        // о нажатии меню сочтёт фокус системным возвратом и сразу отдаст его контенту.
+        focusController.onUserKey()
         focusController.cancelPendingContentFocusRequest()
         val focused = runCatching { selectedRootFocusRequester.requestFocus() }.getOrDefault(false)
         if (focused) {
             menuExpanded = true
+        } else {
+            // Меню становится фокусируемым только после рекомпозиции с отменённым запросом
+            // фокуса контента — повторяем через кадр, иначе BACK молча проглатывается.
+            backScope.launch {
+                withFrameNanos { }
+                focusController.onUserKey()
+                if (runCatching { selectedRootFocusRequester.requestFocus() }.getOrDefault(false)) {
+                    menuExpanded = true
+                }
+            }
         }
     }
 
@@ -124,6 +148,28 @@ fun TvMainScaffold(
                 .onPreviewKeyEvent { event ->
                     if (event.type == KeyEventType.KeyDown) focusController.onUserKey()
                     false
+                }
+                // Необработанный экранами BACK Compose превращает в FocusDirection.Exit: внутри
+                // групп фокуса (кнопки карточек, сетки с восстановлением фокуса) «выход» съедает
+                // нажатие, и activity не доходит до BackHandler — «Назад» молча не работает.
+                // Забираем такой BACK здесь и отдаём диспетчеру на отпускание, как система.
+                .onKeyEvent { event ->
+                    if (event.key != Key.Back) return@onKeyEvent false
+                    when (event.type) {
+                        KeyEventType.KeyDown -> {
+                            if (event.nativeKeyEvent.repeatCount == 0) unhandledBackDown = true
+                            true
+                        }
+
+                        KeyEventType.KeyUp -> {
+                            if (!unhandledBackDown) return@onKeyEvent false
+                            unhandledBackDown = false
+                            if (!event.nativeKeyEvent.isCanceled) backDispatcher?.onBackPressed()
+                            true
+                        }
+
+                        else -> false
+                    }
                 }
                 .focusGroup(),
         ) {
@@ -170,7 +216,7 @@ fun TvMainScaffold(
                                 focusController.requestContentFocus(selectedRoot)
                             } else {
                                 menuExpanded = expanded &&
-                                        focusController.pendingContentFocusRequest == null
+                                    focusController.pendingContentFocusRequest == null
                             }
                         },
                         onEvent = onEvent,
@@ -179,7 +225,7 @@ fun TvMainScaffold(
                         rightFocusRequesterForRoot = focusController.rightFocusRequesterForRoot,
                         canFocus = menuCanFocus,
                         onMenuNavigationFocusLocked =
-                            focusController::updateMenuNavigationFocusLocked,
+                        focusController::updateMenuNavigationFocusLocked,
                         onMoveToContent = { root ->
                             menuExpanded = false
                             focusController.requestContentFocus(root)

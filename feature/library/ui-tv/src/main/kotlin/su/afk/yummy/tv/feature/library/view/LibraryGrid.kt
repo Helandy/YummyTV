@@ -75,6 +75,8 @@ internal fun LibraryGrid(
     showTitleYear: Boolean,
     onAnimeSelected: (Int) -> Unit,
     onRemoveEntry: (Int) -> Unit,
+    /** Спрашивает подтверждение; переданное действие (фокус + удаление) выполняется только после «Удалить». */
+    confirmRemoval: (title: String, proceed: () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -230,6 +232,7 @@ internal fun LibraryGrid(
                     val yearSeasonText = item.tvYearSeasonText()
                     val stableOnDelete = remember(item.animeId, index) {
                         {
+                          confirmRemoval(item.title) {
                             pendingFocusAfterDeleteIndex = index
                             pendingDeletedItemId = item.animeId
                             val immediateTarget =
@@ -242,6 +245,7 @@ internal fun LibraryGrid(
                                 runCatching { selectedTabFocusRequester.requestFocus() }
                             }
                             onRemoveEntry(item.animeId)
+                          }
                         }
                     }
                     LibraryAnimeCard(
@@ -324,7 +328,6 @@ private fun LibraryYearBadge(
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = modifier
             .background(

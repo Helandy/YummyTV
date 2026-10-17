@@ -3,6 +3,7 @@
     <string name="search_error">Ошибка поиска</string>
     <string name="search_mobile_filters_short">Ф</string>
     <string name="search_filters">Фильтры</string>
+    <string name="search_clear">Очистить</string>
     <string name="search_mobile_submit">Найти</string>
     <string name="search_mobile_submit_with_filters">Найти · фильтров: %1$d</string>
     <string name="search_random_anime">Случайное аниме</string>
@@ -10,7 +11,7 @@
     <string name="search_filters_apply">Применить</string>
     <string name="search_mobile_filters_apply_with_count">Применить · %1$d</string>
     <string name="search_filters_reset">Сбросить</string>
-    <string name="search_filters_loading">Загрузка фильтров...</string>
+    <string name="search_filters_loading">Загрузка фильтров…</string>
     <string name="search_filter_selected">✓ %1$s</string>
     <string name="search_filter_selected_count">Выбрано: %1$d</string>
     <string name="search_filter_genre_screen_title">Жанры</string>
@@ -44,8 +45,11 @@
     <string name="search_filter_sort_views">Просмотры</string>
     <string name="search_filter_sort_top">Топ</string>
     <string name="search_mobile_filter_sort_id">Новое</string>
-    <string name="search_placeholder">Поиск аниме...</string>
+    <string name="search_placeholder">Поиск аниме…</string>
     <string name="search_empty">Ничего не найдено</string>
+    <string name="search_mobile_reset_filters">Сбросить фильтры</string>
+    <string name="search_mobile_history_title">Недавние запросы</string>
+    <string name="search_mobile_history_clear">Очистить</string>
     <string name="search_filter_sort_rating_counters">Оценки</string>
     <string name="search_filter_sort_id">Новое</string>
 </resources>

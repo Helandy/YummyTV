@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -37,8 +37,11 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
@@ -49,6 +52,7 @@ import su.afk.yummy.tv.feature.library.model.HistoryEpisodeThumbnail
 import su.afk.yummy.tv.feature.library.utils.historyProgressKey
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 import su.afk.yummy.tv.feature.library.utils.watchedAtLabel
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun LibraryMobileHistoryPage(
@@ -57,9 +61,15 @@ internal fun LibraryMobileHistoryPage(
     isSignedIn: Boolean,
     onEntrySelected: (WatchHistoryEntry) -> Unit,
     onDetailsSelected: (WatchHistoryEntry) -> Unit,
+    onSignInSelected: () -> Unit,
 ) {
     if (!isSignedIn) {
-        HistoryMessage(stringResource(R.string.library_history_sign_in))
+        MobileMessage(
+            title = stringResource(R.string.library_history_sign_in),
+            icon = Icons.Filled.AccountCircle,
+            actionLabel = stringResource(CoreR.string.common_sign_in),
+            onAction = onSignInSelected,
+        )
         return
     }
     val items = history.collectAsLazyPagingItems()
@@ -146,7 +156,7 @@ internal fun LibraryMobileHistoryPage(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(
-                                        entry.watchedAtLabel().orEmpty(),
+                                        entry.watchedAtLabel(LocalNowMillis.current()).orEmpty(),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -185,7 +195,7 @@ internal fun LibraryMobileHistoryPage(
 private fun HistoryMessage(text: String?, loading: Boolean = false) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (loading) {
-            CircularProgressIndicator()
+            YummyLoadingIndicator()
         } else {
             Text(
                 text.orEmpty(),

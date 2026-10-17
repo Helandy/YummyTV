@@ -44,6 +44,12 @@ object YummySemanticColors {
     /** Дизлайк / отрицательная реакция. */
     val Dislike = YummyPalette.Red
 
+    /**
+     * Текст необратимого действия («Удалить») в диалогах: `colorScheme.error` в тёмных темах
+     * бледно-розовый и не читается как предупреждение.
+     */
+    val Destructive = YummyPalette.Red
+
     /** Низкий рейтинг (бейдж оценки). */
     val RatingBadgeLow = YummyPalette.RatingRed
 

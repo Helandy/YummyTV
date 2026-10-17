@@ -30,10 +30,24 @@ internal class PlayerSettingsHandler @Inject constructor(
         settingsStore.tvPlayerControlsTutorialDismissed
     val tvPlayerVolumeKeysEnabled: Flow<Boolean> = settingsStore.tvPlayerVolumeKeysEnabled
     val advancedPlayerVolumeEnabled: Flow<Boolean> = settingsStore.advancedPlayerVolumeEnabled
+    val volumeStabilizationEnabled: Flow<Boolean> = settingsStore.volumeStabilizationEnabled
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings> = settingsStore.playerSubtitleStyle
+    val playerPlaybackSpeed: Flow<Float> = settingsStore.playerPlaybackSpeed
 
     suspend fun saveOrientationMode(mode: PlayerOrientationMode) {
         settingsStore.setPlayerOrientationMode(mode)
+    }
+
+    suspend fun savePlaybackSpeed(speed: Float) {
+        settingsStore.setPlayerPlaybackSpeed(speed)
+    }
+
+    suspend fun saveSubtitleStyle(settings: PlayerSubtitleStyleSettings) {
+        settingsStore.setPlayerSubtitleStyle(settings)
+    }
+
+    suspend fun saveVolumeStabilizationEnabled(enabled: Boolean) {
+        settingsStore.setVolumeStabilizationEnabled(enabled)
     }
 
     suspend fun dismissMobilePlayerGestureTutorial() {

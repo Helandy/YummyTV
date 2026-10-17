@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
@@ -15,9 +16,8 @@ import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.speedLabel
 
-/** Пять панелей выбора: качество, озвучка, скорость, resize/zoom и балансер. */
+/** Панели выбора (качество, озвучка, балансер, Alloha) и боковое меню настроек плеера справа. */
 @Composable
 internal fun BoxScope.TvPlayerPanelsHost(
     panels: TvPlayerPanelsState,
@@ -30,6 +30,10 @@ internal fun BoxScope.TvPlayerPanelsHost(
     resizeMode: PlayerResizeMode,
     zoomLevel: PlayerZoomLevel,
     volumePercent: Int,
+    showVolume: Boolean,
+    subtitleStyle: PlayerSubtitleStyleSettings,
+    showStabilization: Boolean,
+    stabilizationEnabled: Boolean,
     audioTrackNames: List<String>,
     selectedAudioTrackIndex: Int,
     subtitleTrackNames: List<String>,
@@ -41,13 +45,12 @@ internal fun BoxScope.TvPlayerPanelsHost(
     onResizeModeSelected: (PlayerResizeMode) -> Unit,
     onZoomLevelSelected: (PlayerZoomLevel) -> Unit,
     onVolumeChange: (Int) -> Unit,
+    onSubtitleStyleChange: (PlayerSubtitleStyleSettings) -> Unit,
+    onStabilizationChange: (Boolean) -> Unit,
     onAudioTrackSelected: (index: Int) -> Unit,
     onSubtitleTrackSelected: (index: Int) -> Unit,
     onExitPanelDown: (PanelReturnFocusTarget) -> Unit,
 ) {
-    val resizeModes = PlayerResizeMode.entries.toList()
-    val zoomLevels = PlayerZoomLevel.entries.toList()
-
     TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Quality),
         title = stringResource(R.string.player_quality_title),
@@ -74,35 +77,6 @@ internal fun BoxScope.TvPlayerPanelsHost(
     )
 
     TvPlayerSelectionPanel(
-        visible = panels.isOpen(TvPlayerPanel.Speed),
-        title = stringResource(R.string.player_speed_title),
-        items = speeds.map { it.speedLabel() },
-        selectedIndex = speeds.indexOf(activeSpeed).coerceAtLeast(0),
-        selectedFocusRequester = focus.selectedSpeed,
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(end = 48.dp, bottom = 72.dp),
-        itemMeta = { stringResource(R.string.player_speed_meta) },
-        onItemSelected = onSpeedSelected,
-        onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Speed) },
-    )
-
-    TvPlayerResizeSettingsPanel(
-        visible = panels.isOpen(TvPlayerPanel.Resize),
-        resizeModes = resizeModes,
-        selectedResizeMode = resizeMode,
-        zoomLevels = zoomLevels,
-        selectedZoomLevel = zoomLevel,
-        selectedResizeFocusRequester = focus.selectedResize,
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(end = 48.dp, bottom = 72.dp),
-        onResizeModeSelected = onResizeModeSelected,
-        onZoomLevelSelected = onZoomLevelSelected,
-        onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Resize) },
-    )
-
-    TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Balancer),
         title = stringResource(R.string.player_name_prefix),
         items = playback.balancerNames,
@@ -119,15 +93,29 @@ internal fun BoxScope.TvPlayerPanelsHost(
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Balancer) },
     )
 
-    TvPlayerVolumePanel(
-        visible = panels.isOpen(TvPlayerPanel.Volume),
-        percent = volumePercent,
-        focusRequester = focus.selectedVolume,
-        onPercentChange = onVolumeChange,
-        onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Volume) },
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(end = 48.dp, bottom = 72.dp),
+    TvPlayerSettingsPanel(
+        visible = panels.isOpen(TvPlayerPanel.PlayerSettings),
+        entryFocusRequester = focus.selectedPlayerSettings,
+        speeds = speeds,
+        activeSpeed = activeSpeed,
+        onSpeedSelected = onSpeedSelected,
+        resizeMode = resizeMode,
+        zoomLevel = zoomLevel,
+        onResizeModeSelected = onResizeModeSelected,
+        onZoomLevelSelected = onZoomLevelSelected,
+        subtitleTrackNames = subtitleTrackNames,
+        selectedSubtitleTrackIndex = selectedSubtitleTrackIndex,
+        onSubtitleTrackSelected = onSubtitleTrackSelected,
+        subtitleStyle = subtitleStyle,
+        onSubtitleStyleChange = onSubtitleStyleChange,
+        showVolume = showVolume,
+        volumePercent = volumePercent,
+        onVolumeChange = onVolumeChange,
+        showStabilization = showStabilization,
+        stabilizationEnabled = stabilizationEnabled,
+        onStabilizationChange = onStabilizationChange,
+        onClose = { onExitPanelDown(PanelReturnFocusTarget.PlayerSettings) },
+        modifier = Modifier.align(Alignment.CenterEnd),
     )
 
     TvPlayerAllohaPanel(
@@ -135,9 +123,6 @@ internal fun BoxScope.TvPlayerPanelsHost(
         audioTrackNames = audioTrackNames,
         selectedAudioTrackIndex = selectedAudioTrackIndex,
         onAudioTrackSelected = onAudioTrackSelected,
-        subtitleTrackNames = subtitleTrackNames,
-        selectedSubtitleTrackIndex = selectedSubtitleTrackIndex,
-        onSubtitleTrackSelected = onSubtitleTrackSelected,
         selectedFocusRequester = focus.selectedAlloha,
         modifier = Modifier
             .align(Alignment.BottomEnd)

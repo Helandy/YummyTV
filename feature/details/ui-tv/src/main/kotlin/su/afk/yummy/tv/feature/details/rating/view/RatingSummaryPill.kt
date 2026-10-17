@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 internal fun RatingSummaryPill(
     label: String,
     accentColor: Color? = null,
+    accentIcon: ImageVector? = null,
     compact: Boolean = false,
     highlight: String? = null,
 ) {
@@ -37,7 +40,15 @@ internal fun RatingSummaryPill(
             .padding(horizontal = if (compact) 10.dp else 14.dp, vertical = if (compact) 6.dp else 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (accentColor != null) {
+        if (accentColor != null && accentIcon != null) {
+            Icon(
+                imageVector = accentIcon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+        } else if (accentColor != null) {
             Spacer(
                 Modifier
                     .size(8.dp)
@@ -55,7 +66,7 @@ internal fun RatingSummaryPill(
                     addStyle(
                         SpanStyle(
                             color = highlightColor,
-                            fontWeight = FontWeight.ExtraBold,
+                            fontWeight = FontWeight.SemiBold,
                             fontSize = 22.sp,
                         ),
                         start,

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 
 /**
  * Текущее время в epoch-секундах, обновляется раз в [tickMillis]. Нужен экранам, где живёт
@@ -12,12 +13,13 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun rememberNowEpochSeconds(tickMillis: Long = DEFAULT_TICK_MILLIS): Long {
+    val nowMillis = LocalNowMillis.current
     val nowEpochSeconds by produceState(
-        initialValue = System.currentTimeMillis() / 1_000L,
+        initialValue = nowMillis() / 1_000L,
         key1 = tickMillis,
     ) {
         while (true) {
-            value = System.currentTimeMillis() / 1_000L
+            value = nowMillis() / 1_000L
             delay(tickMillis)
         }
     }

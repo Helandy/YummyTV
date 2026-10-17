@@ -49,7 +49,6 @@ internal fun AccountMobileProfileStatsPage(
             Text(
                 text = page.title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

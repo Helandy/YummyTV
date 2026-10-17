@@ -32,6 +32,7 @@ import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
 import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
@@ -74,7 +75,6 @@ import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerVolumeKeysState
-import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
 import su.afk.yummy.tv.feature.player.view.TvPlayerRecoveryHint
 import kotlin.math.roundToInt
@@ -95,7 +95,7 @@ internal fun TvExoPlayerView(
     onPlayerEvent: (PlayerState.Event) -> Unit,
 ) {
     val episodeKey = playback.activeIframeUrl
-    val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
+    val speeds = PlayerSpeedOptions.values
     val activeQuality = playback.activeQuality
     val activeSpeed = state.selectedSpeed.coerceAtLeast(0.1f)
     var wantsPlay by remember { mutableStateOf(true) }
@@ -356,9 +356,7 @@ internal fun TvExoPlayerView(
                     TvPlayerPanel.Quality -> PanelReturnFocusTarget.Quality
                     TvPlayerPanel.Dubbing -> PanelReturnFocusTarget.Dubbing
                     TvPlayerPanel.Balancer -> PanelReturnFocusTarget.Balancer
-                    TvPlayerPanel.Speed -> PanelReturnFocusTarget.Speed
-                    TvPlayerPanel.Resize -> PanelReturnFocusTarget.Resize
-                    TvPlayerPanel.Volume -> PanelReturnFocusTarget.Volume
+                    TvPlayerPanel.PlayerSettings -> PanelReturnFocusTarget.PlayerSettings
                     TvPlayerPanel.Alloha -> PanelReturnFocusTarget.Alloha
                     null -> null
                 },
@@ -497,9 +495,7 @@ internal fun TvExoPlayerView(
             highlightedSkipKey = skipUi.highlightedSkipKey,
             qualityCount = playback.qualityLabels.size,
             currentQualityLabel = activeQuality.orEmpty(),
-            currentSpeedLabel = activeSpeed.speedLabel(),
-            showVolumeButton = advancedVolumeEnabled,
-            showAllohaButton = trackMenu.showAudioChoice || trackMenu.showSubtitleChoice,
+            showAllohaButton = trackMenu.showAudioChoice,
             onPlayPause = { if (wantsPlay) player.pause() else player.play() },
             onSeekTo = seekController::seekTo,
             onInteraction = ::onInteraction,
@@ -523,14 +519,8 @@ internal fun TvExoPlayerView(
             onToggleBalancer = {
                 togglePanel(TvPlayerPanel.Balancer, PanelReturnFocusTarget.Balancer)
             },
-            onToggleResize = {
-                togglePanel(TvPlayerPanel.Resize, PanelReturnFocusTarget.Resize)
-            },
-            onToggleSpeed = {
-                togglePanel(TvPlayerPanel.Speed, PanelReturnFocusTarget.Speed)
-            },
-            onToggleVolume = {
-                togglePanel(TvPlayerPanel.Volume, PanelReturnFocusTarget.Volume)
+            onTogglePlayerSettings = {
+                togglePanel(TvPlayerPanel.PlayerSettings, PanelReturnFocusTarget.PlayerSettings)
             },
             onToggleAlloha = {
                 togglePanel(TvPlayerPanel.Alloha, PanelReturnFocusTarget.Alloha)
@@ -548,9 +538,18 @@ internal fun TvExoPlayerView(
             resizeMode = state.resizeMode,
             zoomLevel = state.zoomLevel,
             volumePercent = playerVolumePercent,
+            showVolume = advancedVolumeEnabled,
+            subtitleStyle = state.subtitleStyle,
+            showStabilization = state.volumeStabilizationSupported,
+            stabilizationEnabled = state.volumeStabilizationEnabled,
             audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
             selectedAudioTrackIndex = trackMenu.selectedAudioIndex,
-            subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
+            // Пустой список прячет секцию дорожек: «Выкл» в опциях есть всегда, даже без субтитров.
+            subtitleTrackNames = if (trackMenu.showSubtitleChoice) {
+                trackMenu.subtitleOptions.map(PlayerTrackOption::label)
+            } else {
+                emptyList()
+            },
             selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
             onQualitySelected = { idx ->
                 val position = player.currentPosition.coerceAtLeast(0L)
@@ -571,7 +570,6 @@ internal fun TvExoPlayerView(
             },
             onSpeedSelected = { idx ->
                 onPlayerEvent(PlayerState.Event.SpeedSelected(speeds[idx]))
-                panels.close(PanelReturnFocusTarget.Speed)
                 onInteraction()
             },
             onResizeModeSelected = { mode ->
@@ -585,14 +583,16 @@ internal fun TvExoPlayerView(
                 onInteraction()
             },
             onVolumeChange = { volumeController.setPercent(it) },
+            onSubtitleStyleChange = { onPlayerEvent(PlayerState.Event.SubtitleStyleChanged(it)) },
+            onStabilizationChange = { onPlayerEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
             onAudioTrackSelected = { idx ->
                 trackMenu.selectAudio(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)
                 panels.close(PanelReturnFocusTarget.Alloha)
                 onInteraction()
             },
             onSubtitleTrackSelected = { idx ->
+                // Панель не закрываем: рядом настройки оформления, их удобно крутить на живых сабах.
                 trackMenu.selectSubtitle(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)
-                panels.close(PanelReturnFocusTarget.Alloha)
                 onInteraction()
             },
             onExitPanelDown = ::exitPanelDown,

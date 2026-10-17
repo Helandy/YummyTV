@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(project(":core:analytics"))
     implementation(project(":core:deeplink:api"))
+    implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))

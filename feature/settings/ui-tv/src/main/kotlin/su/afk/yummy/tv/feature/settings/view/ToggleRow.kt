@@ -59,12 +59,12 @@ internal fun ToggleRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = if (enabled) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
             )
             Text(
                 text = hint,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

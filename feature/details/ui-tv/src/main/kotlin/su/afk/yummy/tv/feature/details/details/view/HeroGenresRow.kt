@@ -14,7 +14,7 @@ internal fun HeroGenresRow(details: AnimeDetails) {
     if (genres.isBlank()) return
     Text(
         text = genres,
-        fontSize = 13.sp,
+        style = MaterialTheme.typography.bodySmall,
         fontWeight = FontWeight.Medium,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f),
         maxLines = 1,

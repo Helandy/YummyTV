@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.home
 
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import androidx.navigation3.runtime.NavKey
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -48,8 +49,10 @@ import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCa
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
+import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.HomeState.Effect
@@ -69,6 +72,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val reviewsNavigator: IReviewsNavigator = mockk()
     private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
     private val scheduleNavigator: IScheduleNavigator = mockk()
+    private val catalogSearchOpener: ICatalogSearchOpener = mockk(relaxed = true)
     private val getHomeFeed: GetHomeFeedUseCase = mockk()
     private val getBloggerVideos: GetBloggerVideosUseCase = mockk()
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase = mockk()
@@ -76,6 +80,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase = mockk()
     private val observeContinueWatching: ObserveHomeContinueWatchingUseCase = mockk()
     private val refreshRemoteContinueWatching: RefreshRemoteContinueWatchingUseCase = mockk(relaxed = true)
+    private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase = mockk(relaxed = true)
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase = mockk()
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase = mockk()
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase = mockk()
@@ -97,8 +102,11 @@ class HomeViewModelTest : BaseUnitTest() {
     private val supportPrompt = MutableStateFlow(SupportPromptSnapshot(dismissed = true, firstEligibleTimeMs = 0L))
     private val navKey: NavKey = mockk()
 
+    private val appClock: AppClock = mockk()
+
     @Before
     fun setUp() {
+        every { appClock.nowMillis() } returns 1_700_000_000_000L
         every { observeContinueWatching() } returns continueWatching
         every { settingsStore.newEpisodesSectionEnabled } returns flowOf(true)
         every { settingsStore.newEpisodesSources } returns flowOf(NewEpisodesSource.DEFAULT)
@@ -138,6 +146,7 @@ class HomeViewModelTest : BaseUnitTest() {
         reviewsNavigator = reviewsNavigator,
         bloggerVideosNavigator = bloggerVideosNavigator,
         scheduleNavigator = scheduleNavigator,
+        catalogSearchOpener = catalogSearchOpener,
         getHomeFeed = getHomeFeed,
         getBloggerVideos = getBloggerVideos,
         getCachedHomeFeed = getCachedHomeFeed,
@@ -145,8 +154,10 @@ class HomeViewModelTest : BaseUnitTest() {
         setAnimeRecommendationIgnored = setAnimeRecommendationIgnored,
         observeContinueWatching = observeContinueWatching,
         refreshRemoteContinueWatching = refreshRemoteContinueWatching,
+        removeCachedContinueWatching = removeCachedContinueWatching,
         observeLibraryNewEpisodeAnimeIds = observeLibraryNewEpisodeAnimeIds,
         getRecentlyAiredSchedule = getRecentlyAiredSchedule,
+        appClock = appClock,
         observeWatchedEpisodes = observeWatchedEpisodes,
         stringProvider = stringProvider,
         resolveContinueWatchingLaunch = resolveContinueWatchingLaunch,
@@ -235,6 +246,18 @@ class HomeViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `failed refresh stops the indicator and shows a toast`() = runTest {
+        val vm = createViewModel()
+        coEvery { refreshHomeFeed() } throws IllegalStateException("boom")
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.RefreshRequested)
+
+        assertFalse(vm.currentState.isRefreshing)
+        assertEquals(Effect.ShowToast("res${R.string.home_refresh_error}"), effects.single())
+    }
+
+    @Test
     fun `refresh replaces the feed`() {
         val vm = createViewModel()
         coEvery { refreshHomeFeed() } returns feed(recommendations = listOf(7))
@@ -242,6 +265,39 @@ class HomeViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.RefreshRequested)
 
         assertEquals(listOf(7), vm.currentState.feed?.recommendationIds())
+    }
+
+    @Test
+    fun `removing continue watching hides it at once and commits after the undo window`() = runTest {
+        val vm = createViewModel()
+        continueWatching.value = listOf(watching(videoId = 1))
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.ContinueWatchingRemoveRequested(watching(videoId = 1)))
+
+        assertTrue(vm.currentState.continueWatching.isEmpty())
+        assertTrue(effects.single() is Effect.ShowContinueWatchingUndo)
+        coVerify(exactly = 0) { removeCachedContinueWatching(any()) }
+
+        testScheduler.advanceTimeBy(6_000)
+        testScheduler.runCurrent()
+
+        coVerify(exactly = 1) { removeCachedContinueWatching(5) }
+        assertTrue(vm.currentState.pendingContinueWatchingRemovalIds.isEmpty())
+    }
+
+    @Test
+    fun `undoing continue watching removal restores the entry without removing`() {
+        val vm = createViewModel()
+        continueWatching.value = listOf(watching(videoId = 1))
+
+        vm.setEvent(Event.ContinueWatchingRemoveRequested(watching(videoId = 1)))
+        vm.setEvent(Event.ContinueWatchingRemoveUndone(5))
+        testScheduler.advanceTimeBy(6_000)
+        testScheduler.runCurrent()
+
+        assertEquals(1, vm.currentState.continueWatching.size)
+        coVerify(exactly = 0) { removeCachedContinueWatching(any()) }
     }
 
     @Test
@@ -469,6 +525,15 @@ class HomeViewModelTest : BaseUnitTest() {
         val types = createViewModel().currentState.feed?.sections?.map { it.type }
 
         assertEquals(listOf(HomeFeedSectionType.RECOMMENDATIONS), types)
+    }
+
+    @Test
+    fun `search in the top bar opens the catalog search`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SearchSelected)
+
+        verify(exactly = 1) { catalogSearchOpener.openSearch() }
     }
 
     private companion object {

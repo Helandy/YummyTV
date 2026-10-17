@@ -8,5 +8,8 @@ enum class RootTab {
     COLLECTIONS,
     SCHEDULE,
     LIBRARY,
+
+    /** История просмотров отдельным пунктом меню; есть только на ТВ. */
+    HISTORY,
     SETTINGS,
 }

@@ -10,6 +10,7 @@ import su.afk.yummy.tv.feature.account.navigator.AccountDestination
 import su.afk.yummy.tv.feature.collection.navigator.CollectionsCatalogDestination
 import su.afk.yummy.tv.feature.home.navigator.HomeDestination
 import su.afk.yummy.tv.feature.library.navigator.LibraryDestination
+import su.afk.yummy.tv.feature.library.navigator.LibraryHistoryDestination
 import su.afk.yummy.tv.feature.posts.navigator.PostsDestination
 import su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
@@ -29,6 +30,7 @@ internal object RootTabsModule {
         RootTab.COLLECTIONS to CollectionsCatalogDestination,
         RootTab.SCHEDULE to ScheduleDestination,
         RootTab.LIBRARY to LibraryDestination,
+        RootTab.HISTORY to LibraryHistoryDestination,
         RootTab.SETTINGS to SettingsDestination,
     )
 }

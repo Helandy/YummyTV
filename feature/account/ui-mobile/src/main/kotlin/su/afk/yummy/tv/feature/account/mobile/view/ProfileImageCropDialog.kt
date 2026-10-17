@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.loadOrientedPreview
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -156,7 +156,7 @@ fun ProfileImageCropDialog(
                 contentAlignment = Alignment.Center,
             ) {
                 if (bmp == null) {
-                    CircularProgressIndicator()
+                    YummyLoadingIndicator()
                 } else {
                     val image = remember(bmp) { bmp.asImageBitmap() }
                     Canvas(modifier = Modifier.fillMaxSize()) {

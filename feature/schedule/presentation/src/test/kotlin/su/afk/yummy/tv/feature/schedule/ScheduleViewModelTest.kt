@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.schedule
 
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import androidx.navigation3.runtime.NavKey
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -34,6 +35,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private lateinit var repository: AnimeScheduleRepository
     private val detailsNavigator: IDetailsNavigator = mockk()
+    private val appClock: AppClock = mockk()
 
     @Before
     fun setUp() {
@@ -41,6 +43,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
             every { parse(any(), any(), any(), any()) } returns ErrorItem(title = "title", message = "parsed message")
         }
         repository = mockk<AnimeScheduleRepository>()
+        every { appClock.nowMillis() } returns 1_700_000_000_000L
         with(detailsNavigator) {
             every { getDetailsDest(any()) } answers { DetailsKey(firstArg()) }
         }
@@ -54,6 +57,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
         detailsNavigator = detailsNavigator,
         analytics = ScheduleAnalytics(tracker),
         accountSettingsStore = mockk<YaniAccountSettingsStore> { every { yaniContentLanguage } returns emptyFlow() },
+        appClock = appClock,
     )
 
     private fun givenSchedule(vararg days: AnimeScheduleDay) {
@@ -92,6 +96,29 @@ class ScheduleViewModelTest : BaseUnitTest() {
         coVerify(exactly = 2) { repository.getSchedule() }
         assertNull(vm.currentState.error)
         assertEquals(1, vm.currentState.days.size)
+    }
+
+    @Test
+    fun `failed refresh keeps the shown days without an error`() {
+        coEvery { repository.getSchedule() } returns listOf(day()) andThenThrows IllegalStateException("boom")
+        val vm = createViewModel()
+
+        vm.setEvent(ScheduleState.Event.RefreshRequested)
+
+        assertFalse(vm.currentState.isRefreshing)
+        assertNull(vm.currentState.error)
+        assertEquals(1, vm.currentState.days.size)
+    }
+
+    @Test
+    fun `refresh replaces the days`() {
+        coEvery { repository.getSchedule() } returns listOf(day()) andThen listOf(day(), day(epochSeconds = DAY_2))
+        val vm = createViewModel()
+
+        vm.setEvent(ScheduleState.Event.RefreshRequested)
+
+        assertFalse(vm.currentState.isRefreshing)
+        assertEquals(2, vm.currentState.days.size)
     }
 
     @Test

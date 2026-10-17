@@ -28,10 +28,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
-import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
@@ -177,7 +177,8 @@ fun BloggerVideosListTvScreen(
                         is LoadState.Loading -> item { TvLoadingFooter() }
 
                         is LoadState.Error -> item {
-                            TvAppendErrorFooter(
+                            ErrorBanner(
+                                tv = true,
                                 message = stringResource(R.string.blogger_videos_error),
                                 onRetry = videos::retry,
                             )

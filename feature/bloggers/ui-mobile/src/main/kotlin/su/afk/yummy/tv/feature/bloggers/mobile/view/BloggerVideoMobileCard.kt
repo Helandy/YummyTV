@@ -105,7 +105,6 @@ fun BloggerVideoMobileCard(
             Text(
                 text = video.title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )

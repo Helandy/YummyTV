@@ -111,7 +111,6 @@ fun RelationMobileScreen(
                                 relation.anime.size,
                             ),
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(top = 20.dp),
                         )
                         if (relation.anime.isEmpty()) {
@@ -135,7 +134,6 @@ fun RelationMobileScreen(
                                     Text(
                                         text = year.toString(),
                                         style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.inverseSurface,
                                         modifier = Modifier
                                             .align(Alignment.BottomEnd)

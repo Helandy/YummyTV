@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 
 @Composable
@@ -41,12 +41,13 @@ fun MobileProgressMediaCard(
     isLoading: Boolean = false,
     /** Крупный блеклый текст под картинкой: виден, пока превью грузится или его нет. */
     placeholderText: String? = null,
+    onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     Card(
         modifier = modifier
             .clickablePointer()
-            .clickable(enabled = !isLoading, onClick = onClick),
+            .combinedClickable(enabled = !isLoading, onLongClick = onLongClick, onClick = onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
@@ -87,11 +88,7 @@ fun MobileProgressMediaCard(
                         .background(Color.Black.copy(alpha = 0.45f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(28.dp),
-                        color = Color.White,
-                        strokeWidth = 3.dp,
-                    )
+                    YummyLoadingIndicator(modifier = Modifier.size(28.dp), color = Color.White, strokeWidth = 3.dp)
                 }
             }
         }

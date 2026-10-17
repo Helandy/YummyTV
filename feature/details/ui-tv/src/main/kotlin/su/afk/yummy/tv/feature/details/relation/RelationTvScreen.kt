@@ -232,7 +232,6 @@ fun RelationTvScreen(
                                             relation.anime.size,
                                         ),
                                         style = MaterialTheme.typography.headlineSmall,
-                                        fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onBackground,
                                     )
                                     if (relation.anime.isEmpty()) {

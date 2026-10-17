@@ -61,13 +61,11 @@ internal fun RelationTvHeaderCard(
                 Text(
                     text = stringResource(relationType.labelRes()),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
                     text = relation.title,
                     style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.ExtraBold,
                 )
                 relation.secondaryTitle?.let { secondaryTitle ->
                     Text(

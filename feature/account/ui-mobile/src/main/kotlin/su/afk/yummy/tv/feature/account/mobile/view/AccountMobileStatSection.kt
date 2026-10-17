@@ -38,7 +38,6 @@ internal fun AccountMobileStatSection(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onBackground,
             )
         }

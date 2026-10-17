@@ -8,4 +8,6 @@ data class BalancerOption(
     val isSupported: Boolean = true,
     /** Число серий этой озвучки у этого балансера по всему тайтлу. */
     val episodeCount: Int = 0,
+    /** Просмотры балансера по всему тайтлу — по ним сортируется пикер. */
+    val views: Int = 0,
 )

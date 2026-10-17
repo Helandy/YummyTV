@@ -9,6 +9,8 @@
     <string name="interface_mode_mobile">Мобільний інтерфейс</string>
     <string name="interface_mode_mobile_hint">Компактне компонування для сенсорного керування</string>
     <string name="episode_push_notification_channel">Нові серії</string>
+    <string name="episode_push_action_watch">Дивитися</string>
+    <string name="episode_push_action_details">Детальніше</string>
     <string name="shortcut_search">Пошук</string>
     <string name="shortcut_downloads">Завантаження</string>
     <string name="shortcut_continue_long">Продовжити: %1$s</string>

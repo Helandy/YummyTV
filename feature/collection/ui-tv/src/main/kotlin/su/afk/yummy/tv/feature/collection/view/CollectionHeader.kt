@@ -94,7 +94,6 @@ internal fun CollectionHeader(
             Text(
                 text = collection.title,
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
                 color = if (isTitleFocused) {
                     MaterialTheme.colorScheme.primary
                 } else {

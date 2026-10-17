@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
+import su.afk.yummy.tv.feature.details.navigator.DetailsTrailerPlayerDestination
 
 @HiltViewModel(assistedFactory = TrailersViewModel.Factory::class)
 class TrailersViewModel @AssistedInject internal constructor(
@@ -41,6 +42,13 @@ class TrailersViewModel @AssistedInject internal constructor(
         when (event) {
             TrailersState.Event.BackSelected -> nav.back()
             TrailersState.Event.RetrySelected -> viewModelScope.launch { load() }
+            is TrailersState.Event.TrailerSelected -> nav.navigate(
+                DetailsTrailerPlayerDestination(
+                    videoId = event.trailer.youtubeVideoId,
+                    embedUrl = event.trailer.iframeUrl,
+                    externalUrl = event.trailer.externalWatchUrl,
+                ),
+            )
         }
     }
 

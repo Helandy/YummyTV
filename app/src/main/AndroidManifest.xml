@@ -182,6 +182,22 @@
 
                 <data android:mimeType="video/*" />
             </intent-filter>
+            <!-- Ссылки на тайтл с сайта yani. Без autoVerify: assetlinks.json на доменах нет, поэтому
+                 система предложит выбор «браузер / YummyTV», а не откроет приложение сразу. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
+                <data android:host="yummyani.me" />
+                <data android:host="ru.yummyani.me" />
+                <data android:host="www.yummyani.me" />
+                <data android:host="yani.tv" />
+                <data android:host="www.yani.tv" />
+                <data android:pathPrefix="/catalog/item/" />
+            </intent-filter>
         </activity>
     </application>
 

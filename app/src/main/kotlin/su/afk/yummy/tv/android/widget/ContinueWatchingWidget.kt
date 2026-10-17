@@ -60,7 +60,8 @@ import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
  * что на главной. Тап по тайтлу — `yummytv://continue/{id}`, то есть сразу плеер.
  *
  * Пока сессия виджета жива, список приходит из потока; новую сессию запускает
- * [ContinueWatchingWidgetUpdater], пока приложение открыто: список локальный и вне его не меняется.
+ * [ContinueWatchingWidgetUpdater], пока приложение открыто, а в фоне — [GlanceHomeScreenWidgetRefresher]
+ * из воркеров пушей и обновления ленты.
  */
 class ContinueWatchingWidget : GlanceAppWidget() {
 

@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.Flow
 /** Абстракция над локальным хранилищем отложенных серий — позволяет подменять реализацию в тестах. */
 interface WatchLaterStorage {
 
-    /** Отложенные серии без уже досмотренных, свежие сверху. */
+    /** Отложенные серии, свежие сверху. */
     fun observeAll(): Flow<List<WatchLaterEntry>>
 
-    /** Отложенные серии одного тайтла без уже досмотренных. */
+    /** Отложенные серии одного тайтла. */
     fun observeByAnimeId(animeId: Int): Flow<List<WatchLaterEntry>>
 
     suspend fun save(
@@ -23,7 +23,4 @@ interface WatchLaterStorage {
     suspend fun delete(animeId: Int, episode: String)
 
     suspend fun deleteByAnimeId(animeId: Int)
-
-    /** Физически удаляет записи о досмотренных сериях, чтобы таблица не росла. */
-    suspend fun pruneWatched()
 }

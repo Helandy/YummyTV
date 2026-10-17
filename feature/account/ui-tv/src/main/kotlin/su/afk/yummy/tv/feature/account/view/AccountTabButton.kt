@@ -134,7 +134,7 @@ private fun AccountTabBadge(count: Int) {
         Text(
             text = if (count > MAX_BADGE_COUNT) "$MAX_BADGE_COUNT+" else count.toString(),
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onError,
             maxLines = 1,
         )

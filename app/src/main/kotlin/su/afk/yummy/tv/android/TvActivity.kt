@@ -3,19 +3,19 @@ package su.afk.yummy.tv.android
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
-import androidx.lifecycle.lifecycleScope
-import dagger.hilt.android.AndroidEntryPoint
-import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
-import su.afk.yummy.tv.core.tv.api.ITvIntegration
-import su.afk.yummy.tv.feature.main.TvMainGraph
-import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
-import javax.inject.Inject
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
+import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
+import su.afk.yummy.tv.core.tv.api.ITvIntegration
+import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
+import su.afk.yummy.tv.feature.main.TvMainGraph
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class TvActivity : ComponentActivity() {
@@ -60,5 +60,4 @@ class TvActivity : ComponentActivity() {
             deepLinkHandler.handle(intent)
         }
     }
-
 }

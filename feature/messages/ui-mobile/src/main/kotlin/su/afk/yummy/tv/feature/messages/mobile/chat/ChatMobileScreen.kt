@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,6 +46,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -168,7 +168,7 @@ fun ChatMobileScreen(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator()
+                YummyLoadingIndicator()
             }
 
             !state.isAuthorized -> StateMessage(
@@ -194,7 +194,7 @@ fun ChatMobileScreen(
                             Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center,
                         ) {
-                            CircularProgressIndicator()
+                            YummyLoadingIndicator()
                         }
 
                         state.hasLoadError && state.messages.isEmpty() -> StateMessage(
@@ -228,7 +228,7 @@ fun ChatMobileScreen(
                                         Modifier.fillParentMaxWidth(),
                                         contentAlignment = Alignment.Center,
                                     ) {
-                                        CircularProgressIndicator()
+                                        YummyLoadingIndicator()
                                     }
                                 }
                             }

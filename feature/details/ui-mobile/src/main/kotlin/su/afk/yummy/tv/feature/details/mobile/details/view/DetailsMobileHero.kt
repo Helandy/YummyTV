@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,14 +39,17 @@ import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.feature.details.presentation.R as DetailsR
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
+import su.afk.yummy.tv.feature.details.mobile.details.utils.formatNextEpisodeRelease
 
 @Composable
 internal fun DetailsMobileHero(
     state: DetailsState.State,
     details: AnimeDetails,
     onBack: () -> Unit,
+    onShare: () -> Unit,
     onPosterClick: () -> Unit,
     onTitleClick: () -> Unit,
     onWatchSelected: () -> Unit,
@@ -84,17 +89,33 @@ internal fun DetailsMobileHero(
                     ),
                 ),
         )
-        state.userRating?.let { userRating ->
-            UserRatingChip(
-                rating = userRating,
-                textStyle = MaterialTheme.typography.titleLarge,
-                iconSize = 26.dp,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(top = 10.dp, end = 16.dp),
-            )
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val canShare = details.animeUrl.isNotBlank()
+            state.userRating?.let { userRating ->
+                UserRatingChip(
+                    rating = userRating,
+                    textStyle = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(end = if (canShare) 0.dp else 12.dp),
+                )
+            }
+            if (canShare) {
+                IconButton(
+                    onClick = onShare,
+                    modifier = Modifier.size(52.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Share,
+                        contentDescription = stringResource(DetailsR.string.details_share),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.92f),
+                    )
+                }
+            }
         }
         IconButton(
             onClick = onBack,
@@ -141,7 +162,6 @@ internal fun DetailsMobileHero(
                     .fillMaxWidth()
                     .clickable(onClick = onTitleClick),
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 3,
@@ -164,8 +184,17 @@ internal fun DetailsMobileHero(
                 Text(
                     text = progress,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f),
+                    textAlign = TextAlign.Center,
+                )
+            }
+            details.episodes?.formatNextEpisodeRelease()?.let { nextEpisode ->
+                Text(
+                    text = nextEpisode,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                 )
             }

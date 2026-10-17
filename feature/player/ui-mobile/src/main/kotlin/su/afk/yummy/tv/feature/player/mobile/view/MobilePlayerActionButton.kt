@@ -16,11 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun MobilePlayerActionButton(
     icon: ImageVector,
+    /** Подпись для TalkBack: у кнопки нет текста, иначе она объявляется просто «кнопкой». */
+    contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -51,9 +54,11 @@ internal fun MobilePlayerActionButton(
                 enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
+                role = Role.Button,
+                onClickLabel = contentDescription,
                 onClick = onClick,
             ),
     ) {
-        Icon(imageVector = icon, contentDescription = null, tint = contentColor)
+        Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor)
     }
 }

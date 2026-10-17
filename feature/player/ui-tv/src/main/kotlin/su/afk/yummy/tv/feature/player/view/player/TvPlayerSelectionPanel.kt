@@ -17,11 +17,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +38,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -157,6 +161,14 @@ internal fun PlayerSelectionItem(
     enabled: Boolean,
     modifier: Modifier = Modifier,
     accentLabel: Boolean = false,
+    /**
+     * Цвет самого варианта (например, цвет субтитров): им красится название, пока строка не в
+     * фокусе и не выбрана, а кружок-образец слева виден всегда — на светлом и оранжевом фоне
+     * цветной текст бы не читался.
+     */
+    swatchColor: Color? = null,
+    /** Иконка варианта слева (скорость, масштаб); красится в цвет содержимого строки. */
+    icon: ImageVector? = null,
     onExitDown: (() -> Unit)?,
     onClick: () -> Unit,
 ) {
@@ -192,6 +204,7 @@ internal fun PlayerSelectionItem(
                 focused -> colors.onPrimary
                 selected -> Color.Black
                 accentLabel -> colors.primary
+                swatchColor != null -> swatchColor
                 else -> Color.White
             }
             ).let { if (enabled) it else it.copy(alpha = 0.42f) },
@@ -233,6 +246,23 @@ internal fun PlayerSelectionItem(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (swatchColor != null) {
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clip(CircleShape)
+                        .background(swatchColor)
+                        .border(1.dp, Color.Black.copy(alpha = 0.4f), CircleShape),
+                )
+            }
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp),

@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.playersetup.handler.PlayerSetupSettingsHandler
+import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,6 +18,7 @@ class PlayerSetupViewModel @Inject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val settingsHandler: PlayerSetupSettingsHandler,
+    private val settingsNavigator: ISettingsNavigator,
 ) : BaseViewModel<PlayerSetupState.State, PlayerSetupState.Event, PlayerSetupState.Effect>() {
 
     override fun createInitialState() = PlayerSetupState.State()
@@ -66,6 +68,10 @@ class PlayerSetupViewModel @Inject internal constructor(
             }
 
             PlayerSetupState.Event.DoneSelected -> nav.back()
+            PlayerSetupState.Event.MoreSettingsSelected -> {
+                nav.back()
+                nav.navigate(settingsNavigator.getSettingsDest())
+            }
         }
     }
 

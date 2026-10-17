@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 
 @Composable
@@ -133,11 +133,7 @@ fun TvProgressMediaCard(
                             .background(Color.Black.copy(alpha = 0.45f)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(28.dp),
-                            color = Color.White,
-                            strokeWidth = 3.dp,
-                        )
+                        YummyLoadingIndicator(modifier = Modifier.size(28.dp), color = Color.White, strokeWidth = 3.dp)
                     }
                 }
             }

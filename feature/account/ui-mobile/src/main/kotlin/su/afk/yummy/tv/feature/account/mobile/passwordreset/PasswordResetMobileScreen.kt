@@ -13,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -26,6 +25,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.InlineError
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
@@ -87,10 +88,7 @@ fun PasswordResetMobileScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     if (state.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                        )
+                        YummyLoadingIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     } else {
                         Text(stringResource(R.string.password_reset_send))
                     }
@@ -109,16 +107,14 @@ fun PasswordResetMobileScreen(
                     }
                 }
                 if (state.requestError) {
-                    Text(
-                        stringResource(R.string.password_reset_error),
-                        color = MaterialTheme.colorScheme.error,
+                    InlineError(
+                        message = stringResource(R.string.password_reset_error),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
                 if (state.captchaError) {
-                    Text(
-                        stringResource(R.string.password_reset_captcha_error),
-                        color = MaterialTheme.colorScheme.error,
+                    InlineError(
+                        message = stringResource(R.string.password_reset_captcha_error),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
@@ -31,8 +32,8 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
+import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.representativeVideo
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeActionsSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadBalancerSheet
@@ -117,6 +118,7 @@ fun EpisodesMobileScreen(
                         video = video,
                         episodeNumber = group.episode,
                         watchStatus = group.videos.watchStatus(state.watchProgress),
+                        isInWatchLater = group.episode.episodeGroupKey() in state.watchLaterEpisodes,
                         kodikIframeUrl = kodikIframeUrl,
                         episodeTitle = episodeInfo?.title,
                         episodeDescription = episodeInfo?.description,
@@ -133,7 +135,7 @@ fun EpisodesMobileScreen(
                                     EpisodesState.Event.DownloadedEpisodeSelected(
                                         videos = group.videos,
                                         download = downloadStatus,
-                                    )
+                                    ),
                                 )
                             } else {
                                 onEvent(EpisodesState.Event.EpisodeDownloadSelected(group.videos))

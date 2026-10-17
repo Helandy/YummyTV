@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +20,10 @@ import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
+import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -62,6 +64,7 @@ fun SubscriptionsMobileScreen(
     effect: Flow<SubscriptionsState.Effect>,
     onEvent: (SubscriptionsState.Event) -> Unit,
 ) {
+    val notificationPermissionGate = rememberNotificationPermissionGate()
     BaseBottomSheet(
         onDismissRequest = { onEvent(SubscriptionsState.Event.BackSelected) },
         title = stringResource(R.string.details_subscriptions),
@@ -73,7 +76,7 @@ fun SubscriptionsMobileScreen(
                     .height(120.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator()
+                YummyLoadingIndicator()
             }
 
             state.error != null && state.subscriptions.isEmpty() -> MobileMessage(
@@ -100,11 +103,24 @@ fun SubscriptionsMobileScreen(
                     SubscriptionMobileRow(
                         option = option,
                         onClick = {
-                            onEvent(SubscriptionsState.Event.SubscriptionToggled(option.key))
+                            val toggle = SubscriptionsState.Event.SubscriptionToggled(option.key)
+                            // Разрешение спрашиваем в момент ценности — при подписке, не при отписке.
+                            if (option.isSubscribed) {
+                                onEvent(toggle)
+                            } else {
+                                notificationPermissionGate { onEvent(toggle) }
+                            }
                         },
                     )
                 }
             }
         }
     }
+
+    NotificationPermissionGateHost(
+        state = notificationPermissionGate,
+        permissionWasRequested = state.notificationPermissionRequested,
+        onPermissionRequested = { onEvent(SubscriptionsState.Event.NotificationPermissionRequested) },
+        explanationRes = CoreR.string.notification_permission_explanation_episode_push,
+    )
 }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,11 +21,12 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
-import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
@@ -139,11 +139,11 @@ private fun BloggerVideosListContent(
                             .fillMaxWidth()
                             .padding(16.dp),
                         contentAlignment = Alignment.Center,
-                    ) { CircularProgressIndicator() }
+                    ) { YummyLoadingIndicator() }
                 }
 
                 is LoadState.Error -> item {
-                    MobileAppendError(
+                    ErrorBanner(
                         message = stringResource(R.string.blogger_videos_error),
                         onRetry = { videos.retry() },
                     )

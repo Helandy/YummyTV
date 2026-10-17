@@ -15,7 +15,8 @@
     <string name="library_tab_dropped">Dropped</string>
     <string name="library_episode_number">Episode %1$s</string>
     <string name="library_mobile_added_date">Added %1$s</string>
-    <string name="library_empty_list">The list is empty for now - time to add something</string>
+    <string name="library_empty_list">The list is empty for now — time to add something</string>
+    <string name="library_mobile_open_catalog">Open catalog</string>
     <string name="library_mobile_remove_title">Remove title?</string>
     <string name="library_mobile_remove_message">“%1$s” will be removed from “%2$s”.</string>
     <string name="library_remove_success">Removed</string>

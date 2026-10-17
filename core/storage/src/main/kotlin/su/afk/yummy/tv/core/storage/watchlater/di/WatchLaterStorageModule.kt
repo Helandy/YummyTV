@@ -16,7 +16,7 @@ object WatchLaterStorageModule {
     @Provides
     @Singleton
     internal fun provideWatchLaterStore(db: AppDatabase): WatchLaterStore =
-        WatchLaterStore(db.watchLaterDao(), db.watchProgressDao())
+        WatchLaterStore(db.watchLaterDao())
 
     @Provides
     @Singleton

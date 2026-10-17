@@ -66,7 +66,6 @@ internal fun RatingBody(
                 Text(
                     text = stringResource(R.string.details_rating_button),
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

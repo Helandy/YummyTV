@@ -13,7 +13,9 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
     HomeFeedSectionType.SCHEDULE,
     HomeFeedSectionType.MY_NEW_EPISODES,
     HomeFeedSectionType.NEW_RELEASES,
+    HomeFeedSectionType.NEW_TITLES,
     HomeFeedSectionType.RECOMMENDATIONS,
+    HomeFeedSectionType.ANNOUNCEMENTS,
     HomeFeedSectionType.COLLECTIONS -> false
 }
 

@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
@@ -246,9 +247,22 @@ class PlayerViewModelTest : BaseUnitTest() {
         vm.setEvent(PlayerState.Event.SpeedSelected(1.5f))
         assertEquals(1.5f, vm.currentState.selectedSpeed)
         verify(exactly = 1) { analytics.eventSpeedSelected(ANIME_ID, 1.5f) }
+        verify(exactly = 1) { preferences.savePlaybackSpeed(any(), 1.5f) }
 
         vm.setEvent(PlayerState.Event.SpeedSelected(0f))
         assertEquals(0.1f, vm.currentState.selectedSpeed)
+    }
+
+    @Test
+    fun `side panel subtitle style and stabilization are saved through preferences`() {
+        val vm = createViewModel()
+        val style = PlayerSubtitleStyleSettings(textSize = 140, offset = 10)
+
+        vm.setEvent(PlayerState.Event.SubtitleStyleChanged(style))
+        vm.setEvent(PlayerState.Event.VolumeStabilizationToggled(true))
+
+        verify(exactly = 1) { preferences.saveSubtitleStyle(any(), style) }
+        verify(exactly = 1) { preferences.setVolumeStabilization(any(), true) }
     }
 
     @Test

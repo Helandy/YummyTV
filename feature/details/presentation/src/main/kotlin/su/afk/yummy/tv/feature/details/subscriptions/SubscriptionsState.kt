@@ -15,6 +15,8 @@ class SubscriptionsState {
         val isLoading: Boolean = true,
         val error: UiText? = null,
         val subscriptions: ImmutableList<SubscriptionOption> = persistentListOf(),
+        /** Системный запрос разрешения на уведомления уже показывали. */
+        val notificationPermissionRequested: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия на экране подписок тайтла. */
@@ -27,6 +29,9 @@ class SubscriptionsState {
 
         /** Пользователь переключил подписку с указанным ключом. */
         data class SubscriptionToggled(val key: String) : Event
+
+        /** Экран показал системный запрос разрешения на уведомления. */
+        data object NotificationPermissionRequested : Event
     }
 
     sealed interface Effect : UiEffect

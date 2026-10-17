@@ -12,8 +12,8 @@ import javax.inject.Inject
 
 /**
  * Перерисовывает виджеты «Продолжить просмотр», когда меняется список (досмотрели серию,
- * сменили позицию). Список локальный и меняется только в приложении, поэтому периодического
- * обновления у виджета нет — достаточно следить, пока приложение открыто.
+ * сменили позицию), пока приложение открыто. В фоне виджет перерисовывают воркеры через
+ * [GlanceHomeScreenWidgetRefresher].
  */
 class ContinueWatchingWidgetUpdater @Inject constructor(
     @param:ApplicationContext private val context: Context,

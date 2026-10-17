@@ -157,7 +157,7 @@ private fun BloggerVideosFiltersSheet(
             ) {
                 Text(
                     text = stringResource(R.string.blogger_filters_title),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                 )
                 TextButton(
                     onClick = onReset,

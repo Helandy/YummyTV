@@ -8,11 +8,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AspectRatio
-import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Subtitles
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,14 +40,10 @@ internal fun TvPlayerEpisodeRow(
     playerName: String,
     dubbing: String,
     currentQualityLabel: String,
-    currentSpeedLabel: String,
     qualityFocusRequester: FocusRequester? = null,
     dubbingFocusRequester: FocusRequester? = null,
     balancerFocusRequester: FocusRequester? = null,
-    resizeFocusRequester: FocusRequester? = null,
-    speedFocusRequester: FocusRequester? = null,
-    volumeFocusRequester: FocusRequester? = null,
-    showVolumeButton: Boolean = false,
+    playerSettingsFocusRequester: FocusRequester? = null,
     allohaFocusRequester: FocusRequester? = null,
     showAllohaButton: Boolean = false,
     upFocusRequester: FocusRequester,
@@ -60,9 +55,7 @@ internal fun TvPlayerEpisodeRow(
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
-    onToggleResize: () -> Unit,
-    onToggleSpeed: () -> Unit,
-    onToggleVolume: () -> Unit = {},
+    onTogglePlayerSettings: () -> Unit = {},
     onToggleAlloha: () -> Unit = {},
 ) {
     Row(
@@ -161,7 +154,7 @@ internal fun TvPlayerEpisodeRow(
                 contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
             ) { color ->
                 Icon(
-                    imageVector = Icons.Filled.Subtitles,
+                    imageVector = Icons.Filled.RecordVoiceOver,
                     contentDescription = stringResource(R.string.player_audio_track_title),
                     tint = color,
                     modifier = Modifier.size(20.dp),
@@ -170,55 +163,19 @@ internal fun TvPlayerEpisodeRow(
             Spacer(Modifier.width(8.dp))
         }
         TvControlButton(
-            onClick = onToggleResize,
+            onClick = onTogglePlayerSettings,
             onFocused = onInteraction,
-            focusRequester = resizeFocusRequester,
+            focusRequester = playerSettingsFocusRequester,
             modifier = Modifier
                 .focusProperties { up = upFocusRequester }
                 .width(48.dp),
             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
         ) { color ->
             Icon(
-                imageVector = Icons.Filled.AspectRatio,
-                contentDescription = stringResource(R.string.player_resize_title),
+                imageVector = Icons.Filled.Settings,
+                contentDescription = stringResource(R.string.player_side_panel_open),
                 tint = color,
                 modifier = Modifier.size(20.dp),
-            )
-        }
-        if (showVolumeButton) {
-            Spacer(Modifier.width(8.dp))
-            TvControlButton(
-                onClick = onToggleVolume,
-                onFocused = onInteraction,
-                focusRequester = volumeFocusRequester,
-                modifier = Modifier
-                    .focusProperties { up = upFocusRequester }
-                    .width(48.dp),
-                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
-            ) { color ->
-                Icon(
-                    imageVector = Icons.Filled.GraphicEq,
-                    contentDescription = stringResource(R.string.player_volume_title),
-                    tint = color,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        }
-        Spacer(Modifier.width(8.dp))
-        TvControlButton(
-            onClick = onToggleSpeed,
-            onFocused = onInteraction,
-            focusRequester = speedFocusRequester,
-            modifier = Modifier
-                .focusProperties { up = upFocusRequester }
-                .widthIn(min = 76.dp),
-        ) { color ->
-            Text(
-                text = currentSpeedLabel,
-                style = MaterialTheme.typography.labelLarge,
-                color = color,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
             )
         }
         val hasFinalEpisodeAction = finalEpisodeAction == PlayerFinalEpisodeAction.RateTitle ||

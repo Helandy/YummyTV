@@ -31,9 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
+import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvHomeFeedCardDimensions
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -124,7 +127,6 @@ internal fun HomeFeedCard(
                     Text(
                         text = text,
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -146,15 +148,24 @@ internal fun HomeFeedCard(
                     )
                 }
 
+                val listStatus = animeId?.let { LocalLibraryListStatuses.current[it] }
+                listStatus?.let { status ->
+                    ListStatusBadge(
+                        status = status,
+                        modifier = Modifier.align(Alignment.BottomStart),
+                    )
+                }
+
                 if (showYear) {
                     item.year?.let { year ->
                         Text(
                             text = year.toString(),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
+                                // Плашка списка занимает нижнюю кромку постера — год поднимаем над ней.
+                                .padding(bottom = if (listStatus != null) ListStatusBadgeHeight else 0.dp)
                                 .padding(4.dp)
                                 .background(
                                     MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
@@ -170,7 +181,7 @@ internal fun HomeFeedCard(
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     minLines = if (subtitle == null) 2 else 1,
                     maxLines = if (subtitle == null) 2 else 1,
                     overflow = TextOverflow.Ellipsis,

@@ -93,7 +93,6 @@ fun FullDetailsMobileScreen(
                         Text(
                             text = title,
                             style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }

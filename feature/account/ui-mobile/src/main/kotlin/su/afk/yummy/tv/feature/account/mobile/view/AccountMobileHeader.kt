@@ -56,7 +56,6 @@ internal fun AccountMobileHeader(
                     Text(
                         text = nickname.ifBlank { stringResource(R.string.account_unknown_user) },
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onBackground,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

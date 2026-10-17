@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.feature.account.mobile.account.utils.actionIcon
 import su.afk.yummy.tv.feature.account.common.utils.label
@@ -108,10 +108,7 @@ private fun ProfileAction(
             verticalArrangement = Arrangement.Center,
         ) {
             if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                )
+                YummyLoadingIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             } else {
                 Icon(
                     imageVector = icon,

@@ -36,7 +36,6 @@ internal fun AccountMobileListStatCard(
             Text(
                 text = stat.seconds.toDurationLabel(),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
             )
         }

@@ -10,11 +10,10 @@ internal enum class TvPlayerPanel {
     Quality,
     Dubbing,
     Balancer,
-    Speed,
-    Resize,
-    Volume,
+    /** Боковое меню справа: скорость, масштаб, субтитры и звук. */
+    PlayerSettings,
 
-    /** Alloha's own dubbings and subtitles, shown as two sections in one panel. */
+    /** Alloha's own dubbings; its subtitles live in [PlayerSettings]. */
     Alloha,
 }
 

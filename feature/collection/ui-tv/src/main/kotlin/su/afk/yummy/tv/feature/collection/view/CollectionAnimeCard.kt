@@ -41,7 +41,6 @@ internal fun CollectionAnimeCard(
                 Text(
                     text = year.toString(),
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

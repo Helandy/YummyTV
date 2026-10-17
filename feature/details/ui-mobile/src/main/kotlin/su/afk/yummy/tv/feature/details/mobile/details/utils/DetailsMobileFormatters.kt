@@ -1,11 +1,9 @@
 package su.afk.yummy.tv.feature.details.mobile.details.utils
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.common.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.core.common.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.common.episode.releaseCountdown
@@ -15,6 +13,8 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.utils.formatReleaseWeekdayTime
+import su.afk.yummy.tv.feature.details.utils.nextEpisodeNumber
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import java.util.Locale
 
@@ -41,16 +41,19 @@ internal fun AnimeEpisodes.formatAiredProgress(status: String?): String? {
 @Composable
 internal fun AnimeEpisodes.rememberReleaseCountdown(): EpisodeReleaseCountdown? {
     if (nextDateEpochSeconds == null) return null
-    val nowEpochSeconds by produceState(
-        initialValue = System.currentTimeMillis() / 1_000L,
-        key1 = nextDateEpochSeconds,
-    ) {
-        while (true) {
-            value = System.currentTimeMillis() / 1_000L
-            delay(60_000L)
-        }
-    }
+    val nowEpochSeconds = rememberNowEpochSeconds()
     return releaseCountdown(nextDateEpochSeconds, nowEpochSeconds)
+}
+
+/** «Серия 8 — пт, 18:00»; `null`, если даты нет или серия уже вышла. */
+@Composable
+internal fun AnimeEpisodes.formatNextEpisodeRelease(): String? {
+    val nextDate = nextDateEpochSeconds ?: return null
+    rememberReleaseCountdown() ?: return null
+    val dateTime = nextDate.formatReleaseWeekdayTime(rememberNowEpochSeconds())
+    return nextEpisodeNumber()
+        ?.let { stringResource(R.string.details_next_episode_release, it, dateTime) }
+        ?: stringResource(R.string.details_next_episode_release_unnumbered, dateTime)
 }
 
 @Composable

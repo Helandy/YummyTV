@@ -27,7 +27,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,7 +43,6 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.trailers.view.TrailerCard
 
@@ -88,7 +86,6 @@ fun TrailersTvScreen(
             )
 
             else -> BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val context = LocalContext.current
                 val gridState = rememberLazyGridState()
                 val scope = rememberCoroutineScope()
                 val trailerCount = state.trailers.size
@@ -138,7 +135,7 @@ fun TrailersTvScreen(
                             TrailerCard(
                                 number = index + 1,
                                 thumbnailUrl = trailer.youtubeThumbnailUrl,
-                                onClick = { context.openExternalUri(trailer.externalWatchUrl) },
+                                onClick = { onEvent(TrailersState.Event.TrailerSelected(trailer)) },
                                 modifier = Modifier
                                     .focusRequester(focusRequesters[index])
                                     .tvWholeItemBringIntoView(gridStartExtent.takeIf { index < gridColumnCount })

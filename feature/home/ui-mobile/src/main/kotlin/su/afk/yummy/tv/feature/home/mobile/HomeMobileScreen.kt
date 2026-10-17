@@ -16,6 +16,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +39,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.InfoBanner
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
@@ -52,14 +52,18 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.HomeState
 import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.mobile.view.ContinueWatchingSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeAnnouncementDialog
+import su.afk.yummy.tv.feature.home.mobile.view.HomeContinueWatchingActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
+import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSearchBar
+import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSkeleton
 import su.afk.yummy.tv.feature.home.mobile.view.HomeQuickActionsSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
@@ -67,6 +71,7 @@ import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
 import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -110,6 +115,7 @@ fun HomeMobileScreen(
     val snackbarScope = rememberCoroutineScope()
     val undoLabel = stringResource(R.string.home_mobile_recommendation_undo)
     var recommendationActionItem by remember { mutableStateOf<HomeFeedItem?>(null) }
+    var continueWatchingActionEntry by remember { mutableStateOf<HomeContinueWatchingItem?>(null) }
 
     LaunchedEffect(Unit) {
         onEvent(HomeState.Event.ScreenResumed)
@@ -132,6 +138,18 @@ fun HomeMobileScreen(
                         )
                         if (result == SnackbarResult.ActionPerformed) {
                             onEvent(HomeState.Event.RecommendationRestoreRequested(event.animeId))
+                        }
+                    }
+                }
+
+                is HomeState.Effect.ShowContinueWatchingUndo -> {
+                    snackbarScope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = event.message,
+                            actionLabel = undoLabel,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            onEvent(HomeState.Event.ContinueWatchingRemoveUndone(event.animeId))
                         }
                     }
                 }
@@ -161,6 +179,7 @@ fun HomeMobileScreen(
         BaseScreen(
             isScroll = false,
             isLoading = !state.hasInitialContent(),
+            loadingContent = { HomeMobileSkeleton() },
             error = state.error?.asString()?.let { ErrorItem(title = it, message = it) },
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
             errorContent = state.error?.asString()?.let { message ->
@@ -187,127 +206,143 @@ fun HomeMobileScreen(
             },
         ) {
             val isOffline = LocalIsOffline.current
-            LazyColumn(
-                // Без общего предела ширины: лента почти целиком из горизонтальных рядов, им
-                // ширина окна только на пользу. Ограничены лишь баннеры и кнопки внизу.
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag("home_feed"),
-                contentPadding = PaddingValues(
-                    top = 12.dp,
-                    bottom = MobileBottomBarDefaults.contentBottomPadding,
-                ),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onEvent(HomeState.Event.RefreshRequested) },
+                modifier = Modifier.fillMaxSize(),
             ) {
-                val feed = state.feed
+                LazyColumn(
+                    // Без общего предела ширины: лента почти целиком из горизонтальных рядов, им
+                    // ширина окна только на пользу. Ограничены лишь баннеры и кнопки внизу.
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("home_feed"),
+                    contentPadding = PaddingValues(
+                        top = 12.dp,
+                        bottom = MobileBottomBarDefaults.contentBottomPadding,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
+                    val feed = state.feed
 
-                // Item только пока есть что показать: пустой дал бы лишний зазор spacedBy сверху
-                if (isOffline || state.statusMessage != null) {
-                    item(key = "banners") {
-                        Column(modifier = Modifier.mobileContentMaxWidth()) {
-                            OfflineBanner(isOffline = isOffline)
-                            InfoBanner(message = state.statusMessage)
-                        }
-                    }
-                }
-
-                if (feed != null && feed.heroItems.isNotEmpty()) {
-                    item(key = "hero") {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            MobileSectionHeader(
-                                title = stringResource(R.string.home_season_title),
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                            )
-                            HomeHeroCarousel(
-                                items = feed.heroItems,
-                                onItemSelected = onItemSelected,
-                            )
-                        }
-                    }
-                }
-
-                if (state.continueWatching.isNotEmpty()) {
-                    item(key = "continue_watching") {
-                        ContinueWatchingSection(
-                            entries = state.continueWatching,
-                            launchingAnimeId = state.launchingContinueWatchingAnimeId,
-                            onEntrySelected = {
-                                onEvent(HomeState.Event.ContinueWatchingSelected(it))
-                            },
+                    // Item только пока есть что показать: пустой дал бы лишний зазор spacedBy сверху
+                    item(key = "search") {
+                        HomeMobileSearchBar(
+                            onClick = { onEvent(HomeState.Event.SearchSelected) },
+                            modifier = Modifier
+                                .mobileContentMaxWidth()
+                                .padding(horizontal = 16.dp),
                         )
                     }
-                }
 
-                feed?.sections
-                    .orEmpty()
-                    .filter { it.items.isNotEmpty() }
-                    .forEach { section ->
-                        item(key = "section_${section.type.name}") {
-                            val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
-                            val isRecommendations =
-                                section.type == HomeFeedSectionType.RECOMMENDATIONS
-                            val hasCatalog = isCollections || isRecommendations
-                            HomeFeedSectionRow(
-                                section = section,
-                                onItemSelected = onItemSelected,
-                                actionLabel = if (hasCatalog) {
-                                    stringResource(R.string.home_mobile_all)
-                                } else {
-                                    null
-                                },
-                                onActionClick = when {
-                                    isCollections -> {
-                                        { onEvent(HomeState.Event.CollectionsCatalogSelected) }
-                                    }
+                    if (isOffline || state.statusMessage != null) {
+                        item(key = "banners") {
+                            Column(modifier = Modifier.mobileContentMaxWidth()) {
+                                OfflineBanner(isOffline = isOffline)
+                                InfoBanner(message = state.statusMessage)
+                            }
+                        }
+                    }
 
-                                    isRecommendations -> {
-                                        { onEvent(HomeState.Event.RecommendationsCatalogSelected) }
-                                    }
+                    if (feed != null && feed.heroItems.isNotEmpty()) {
+                        item(key = "hero") {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                MobileSectionHeader(
+                                    title = stringResource(R.string.home_season_title),
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
+                                HomeHeroCarousel(
+                                    items = feed.heroItems,
+                                    onItemSelected = onItemSelected,
+                                )
+                            }
+                        }
+                    }
 
-                                    else -> null
+                    if (state.continueWatching.isNotEmpty()) {
+                        item(key = "continue_watching") {
+                            ContinueWatchingSection(
+                                entries = state.continueWatching,
+                                launchingAnimeId = state.launchingContinueWatchingAnimeId,
+                                onEntrySelected = {
+                                    onEvent(HomeState.Event.ContinueWatchingSelected(it))
                                 },
-                                // Управлять видимостью можно только рекомендациями.
-                                onItemLongClick = if (isRecommendations) {
-                                    { item -> recommendationActionItem = item }
-                                } else {
-                                    null
-                                },
+                                onEntryLongClick = { continueWatchingActionEntry = it },
                             )
                         }
                     }
 
-                if (state.bloggerVideos.isNotEmpty()) {
-                    item(key = "blogger_videos") {
-                        MobileHomeBloggerVideosSection(
-                            title = stringResource(R.string.home_mobile_blogger_videos),
-                            allLabel = stringResource(R.string.home_mobile_all),
-                            videos = state.bloggerVideos,
-                            onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
-                            onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
+                    feed?.sections
+                        .orEmpty()
+                        .filter { it.items.isNotEmpty() }
+                        .forEach { section ->
+                            item(key = "section_${section.type.name}") {
+                                val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
+                                val isRecommendations =
+                                    section.type == HomeFeedSectionType.RECOMMENDATIONS
+                                val hasCatalog = isCollections || isRecommendations
+                                HomeFeedSectionRow(
+                                    section = section,
+                                    onItemSelected = onItemSelected,
+                                    actionLabel = if (hasCatalog) {
+                                        stringResource(R.string.home_mobile_all)
+                                    } else {
+                                        null
+                                    },
+                                    onActionClick = when {
+                                        isCollections -> {
+                                            { onEvent(HomeState.Event.CollectionsCatalogSelected) }
+                                        }
+
+                                        isRecommendations -> {
+                                            { onEvent(HomeState.Event.RecommendationsCatalogSelected) }
+                                        }
+
+                                        else -> null
+                                    },
+                                    // Управлять видимостью можно только рекомендациями.
+                                    onItemLongClick = if (isRecommendations) {
+                                        { item -> recommendationActionItem = item }
+                                    } else {
+                                        null
+                                    },
+                                )
+                            }
+                        }
+
+                    if (state.bloggerVideos.isNotEmpty()) {
+                        item(key = "blogger_videos") {
+                            MobileHomeBloggerVideosSection(
+                                title = stringResource(R.string.home_mobile_blogger_videos),
+                                allLabel = stringResource(R.string.home_mobile_all),
+                                videos = state.bloggerVideos,
+                                onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
+                                onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
+                            )
+                        }
+                    }
+
+                    state.bloggerVideosError?.let { message ->
+                        item(key = "blogger_videos_error") {
+                            MobileMessage(
+                                title = message.asString(),
+                                actionLabel = stringResource(CoreR.string.common_retry),
+                                onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
+                            )
+                        }
+                    }
+
+                    item(key = "quick_actions") {
+                        HomeQuickActionsSection(
+                            title = stringResource(R.string.home_mobile_more),
+                            scheduleTitle = stringResource(R.string.home_mobile_schedule),
+                            reviewsTitle = stringResource(R.string.home_mobile_reviews),
+                            showSchedule = state.hasSchedule,
+                            onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
+                            onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
+                            modifier = Modifier.mobileContentMaxWidth(),
                         )
                     }
-                }
-
-                state.bloggerVideosError?.let { message ->
-                    item(key = "blogger_videos_error") {
-                        MobileMessage(
-                            title = message.asString(),
-                            actionLabel = stringResource(CoreR.string.common_retry),
-                            onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
-                        )
-                    }
-                }
-
-                item(key = "quick_actions") {
-                    HomeQuickActionsSection(
-                        title = stringResource(R.string.home_mobile_more),
-                        scheduleTitle = stringResource(R.string.home_mobile_schedule),
-                        reviewsTitle = stringResource(R.string.home_mobile_reviews),
-                        showSchedule = state.hasSchedule,
-                        onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
-                        onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
-                        modifier = Modifier.mobileContentMaxWidth(),
-                    )
                 }
             }
         }
@@ -328,6 +363,21 @@ fun HomeMobileScreen(
                 onEvent(HomeState.Event.RecommendationHideRequested(item.id))
             },
             onDismiss = { recommendationActionItem = null },
+        )
+    }
+
+    continueWatchingActionEntry?.let { entry ->
+        HomeContinueWatchingActionsSheet(
+            title = entry.animeTitle,
+            onDetails = {
+                continueWatchingActionEntry = null
+                onEvent(HomeState.Event.AnimeSelected(entry.animeId))
+            },
+            onRemove = {
+                continueWatchingActionEntry = null
+                onEvent(HomeState.Event.ContinueWatchingRemoveRequested(entry))
+            },
+            onDismiss = { continueWatchingActionEntry = null },
         )
     }
 

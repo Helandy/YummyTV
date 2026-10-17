@@ -19,11 +19,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
+import su.afk.yummy.tv.feature.details.details.view.DetailsTvSkeleton
 import su.afk.yummy.tv.feature.details.details.view.LibraryListPickerOverlay
 import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
@@ -113,7 +113,7 @@ fun DetailsTvScreen(
             label = "detailsScreenState",
         ) { target ->
             when (target) {
-                DetailsScreenState.Loading -> TvLoadingScreen()
+                DetailsScreenState.Loading -> DetailsTvSkeleton()
                 DetailsScreenState.Error -> DetailsError(
                     message = error.orEmpty(),
                     onRetry = { onEvent(DetailsState.Event.RetrySelected) },

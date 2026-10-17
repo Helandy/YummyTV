@@ -19,7 +19,6 @@ internal fun ListStatCard(stat: UserListWatchStat) {
         Text(
             text = stat.title,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -27,7 +26,6 @@ internal fun ListStatCard(stat: UserListWatchStat) {
         Text(
             text = stat.seconds.toDurationLabel(),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
         )
     }

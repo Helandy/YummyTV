@@ -1,12 +1,10 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -29,31 +27,12 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
-import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
-import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.presentation.R
-import kotlin.math.roundToInt
-
-private fun PlayerResizeMode.mobileResizeLabelRes(): Int = when (this) {
-    PlayerResizeMode.FIT -> R.string.player_resize_fit
-    PlayerResizeMode.ZOOM -> R.string.player_resize_zoom
-    PlayerResizeMode.STRETCH -> R.string.player_resize_stretch
-    PlayerResizeMode.CROP -> R.string.player_resize_crop
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MobilePlayerSettingsSheet(
-    mode: MobilePlayerSettingsMode,
-    qualities: List<String>,
-    selectedQuality: String?,
-    onQualitySelected: (String) -> Unit,
-    selectedSpeed: Float,
-    onSpeedSelected: (Float) -> Unit,
-    resizeModes: List<PlayerResizeMode>,
-    selectedResizeMode: PlayerResizeMode,
-    onResizeModeSelected: (PlayerResizeMode) -> Unit,
     dubbingNames: List<String>,
     dubbingEpisodeCounts: List<Int>,
     dubbingViews: List<Int>,
@@ -65,26 +44,12 @@ internal fun MobilePlayerSettingsSheet(
     balancerAvailability: List<Boolean>,
     selectedBalancerIndex: Int,
     onBalancerSelected: (Int) -> Unit,
-    audioTrackNames: List<String>,
-    selectedAudioTrackIndex: Int,
-    onAudioTrackSelected: (Int) -> Unit,
-    showAudioSection: Boolean,
-    subtitleTrackNames: List<String>,
-    selectedSubtitleTrackIndex: Int,
-    onSubtitleTrackSelected: (Int) -> Unit,
-    showSubtitleSection: Boolean,
     onDismiss: () -> Unit,
     initialTrackTab: MobilePlayerTrackSettingsTab = MobilePlayerTrackSettingsTab.Dubbing,
     onTrackTabChanged: (MobilePlayerTrackSettingsTab) -> Unit = {},
 ) {
-    val trackTabs = buildList {
-        add(MobilePlayerTrackSettingsTab.Dubbing)
-        add(MobilePlayerTrackSettingsTab.Player)
-        if (showAudioSection || showSubtitleSection) add(MobilePlayerTrackSettingsTab.Alloha)
-    }
-    // Запомненный таб может быть недоступен (Alloha - только на Alloha-источнике), тогда
-    // открываемся на первом, то есть на озвучке.
-    val startTab = initialTrackTab.takeIf { it in trackTabs } ?: trackTabs.first()
+    val trackTabs = MobilePlayerTrackSettingsTab.entries
+    val startTab = initialTrackTab
     val trackPagerState = rememberPagerState(
         initialPage = trackTabs.indexOf(startTab),
         pageCount = { trackTabs.size },
@@ -105,181 +70,100 @@ internal fun MobilePlayerSettingsSheet(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .let {
-                    if (mode == MobilePlayerSettingsMode.Track) it.height(maxHeight) else it.heightIn(
-                        max = maxHeight
-                    )
-                }
+                .height(maxHeight)
                 .windowInsetsPadding(WindowInsets.navigationBars),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
                 Text(
-                    text = when (mode) {
-                        MobilePlayerSettingsMode.Track -> stringResource(R.string.player_mobile_track_settings_title)
-                        MobilePlayerSettingsMode.Playback -> stringResource(R.string.player_mobile_playback_settings_title)
-                    },
+                    text = stringResource(R.string.player_mobile_track_settings_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 2.dp),
                 )
             }
-            if (mode == MobilePlayerSettingsMode.Playback) {
-                if (qualities.isNotEmpty()) {
-                    item {
-                        val qualityIndex = qualities.indexOf(selectedQuality).coerceAtLeast(0)
-                        MobilePlayerSettingsSection(title = stringResource(R.string.player_quality_title)) {
-                            MobilePlayerSliderRow(
-                                value = qualityIndex,
-                                valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
-                                valueLabel = { index -> qualities[index] },
-                                onValueCommitted = { index -> onQualitySelected(qualities[index]) },
-                                tickLabels = qualities,
-                            )
+            item {
+                val dubbingLabel = stringResource(R.string.player_dubbing_title)
+                val playerLabel = stringResource(R.string.player_name_prefix)
+                MobilePlayerTrackSettingsTabs(
+                    tabs = trackTabs,
+                    selectedTab = trackTabs[trackPagerState.currentPage],
+                    labelFor = { tab ->
+                        when (tab) {
+                            MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
+                            MobilePlayerTrackSettingsTab.Player -> playerLabel
                         }
-                    }
-                }
-                item {
-                    val speedTenths = (selectedSpeed * 10).roundToInt().coerceIn(5, 30)
-                    MobilePlayerSettingsSection(title = stringResource(R.string.player_speed_title)) {
-                        MobilePlayerSliderRow(
-                            value = speedTenths,
-                            valueRange = 5..30,
-                            valueLabel = { tenths -> "%.1fx".format(tenths / 10f) },
-                            onValueCommitted = { tenths -> onSpeedSelected(tenths / 10f) },
-                        )
-                    }
-                }
-                item {
-                    MobilePlayerSettingsSection(title = stringResource(R.string.player_resize_title)) {
-                        resizeModes.forEach { resizeMode ->
-                            MobilePlayerSelectionRow(
-                                label = stringResource(resizeMode.mobileResizeLabelRes()),
-                                selected = resizeMode == selectedResizeMode,
-                                onClick = { onResizeModeSelected(resizeMode) },
-                            )
-                        }
-                    }
-                }
+                    },
+                    onTabSelected = { tab ->
+                        scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
+                    },
+                )
             }
-            if (mode == MobilePlayerSettingsMode.Track) {
-                item {
-                    val dubbingLabel = stringResource(R.string.player_dubbing_title)
-                    val playerLabel = stringResource(R.string.player_name_prefix)
-                    val allohaLabel = stringResource(R.string.player_audio_track_title)
-                    MobilePlayerTrackSettingsTabs(
-                        tabs = trackTabs,
-                        selectedTab = trackTabs[trackPagerState.currentPage],
-                        labelFor = { tab ->
-                            when (tab) {
-                                MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
-                                MobilePlayerTrackSettingsTab.Player -> playerLabel
-                                MobilePlayerTrackSettingsTab.Alloha -> allohaLabel
+            item {
+                HorizontalPager(
+                    state = trackPagerState,
+                    verticalAlignment = Alignment.Top,
+                    pageSpacing = 16.dp,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { page ->
+                    when (trackTabs[page]) {
+                        MobilePlayerTrackSettingsTab.Dubbing ->
+                            MobilePlayerSettingsSection(title = stringResource(R.string.player_dubbing_title)) {
+                                dubbingNames.forEachIndexed { index, name ->
+                                    val enabled = dubbingAvailability.getOrElse(index) { true }
+                                    MobilePlayerSelectionRow(
+                                        label = name,
+                                        selected = index == selectedDubbingIndex,
+                                        enabled = enabled,
+                                        accentLabel = true,
+                                        metaContent = { contentColor ->
+                                            if (enabled) {
+                                                MobilePlayerDubbingMeta(
+                                                    views = dubbingViews.getOrElse(index) { 0 },
+                                                    episodeCount = dubbingEpisodeCounts.getOrElse(
+                                                        index
+                                                    ) { 0 },
+                                                    sourceNames = dubbingSourceNames.getOrElse(
+                                                        index
+                                                    ) { "" },
+                                                    contentColor = contentColor,
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = stringResource(R.string.player_episode_unavailable),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = contentColor.copy(alpha = 0.68f),
+                                                )
+                                            }
+                                        },
+                                        onClick = { onDubbingSelected(index) },
+                                    )
+                                }
                             }
-                        },
-                        onTabSelected = { tab ->
-                            scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
-                        },
-                    )
-                }
-                item {
-                    HorizontalPager(
-                        state = trackPagerState,
-                        verticalAlignment = Alignment.Top,
-                        pageSpacing = 16.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { page ->
-                        when (trackTabs[page]) {
-                            MobilePlayerTrackSettingsTab.Dubbing ->
-                                MobilePlayerSettingsSection(title = stringResource(R.string.player_dubbing_title)) {
-                                    dubbingNames.forEachIndexed { index, name ->
-                                        val enabled = dubbingAvailability.getOrElse(index) { true }
-                                        MobilePlayerSelectionRow(
-                                            label = name,
-                                            selected = index == selectedDubbingIndex,
-                                            enabled = enabled,
-                                            accentLabel = true,
-                                            metaContent = { contentColor ->
-                                                if (enabled) {
-                                                    MobilePlayerDubbingMeta(
-                                                        views = dubbingViews.getOrElse(index) { 0 },
-                                                        episodeCount = dubbingEpisodeCounts.getOrElse(
-                                                            index
-                                                        ) { 0 },
-                                                        sourceNames = dubbingSourceNames.getOrElse(
-                                                            index
-                                                        ) { "" },
-                                                        contentColor = contentColor,
-                                                    )
-                                                } else {
-                                                    Text(
-                                                        text = stringResource(R.string.player_episode_unavailable),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = contentColor.copy(alpha = 0.68f),
-                                                    )
-                                                }
-                                            },
-                                            onClick = { onDubbingSelected(index) },
-                                        )
-                                    }
-                                }
 
-                            MobilePlayerTrackSettingsTab.Player ->
-                                MobilePlayerSettingsSection(title = stringResource(R.string.player_name_prefix)) {
-                                    balancerNames.forEachIndexed { index, name ->
-                                        val enabled = balancerAvailability.getOrElse(index) { true }
-                                        MobilePlayerSelectionRow(
-                                            label = name,
-                                            selected = index == selectedBalancerIndex,
-                                            enabled = enabled,
-                                            accentLabel = true,
-                                            metaContent = { contentColor ->
-                                                if (!enabled) {
-                                                    Text(
-                                                        text = stringResource(R.string.player_episode_unavailable),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = contentColor.copy(alpha = 0.68f),
-                                                    )
-                                                }
-                                            },
-                                            onClick = { onBalancerSelected(index) },
-                                        )
-                                    }
-                                }
-
-                            // Alloha reports dubbings and subtitles together, so they share one
-                            // tab as two sections rather than splitting into sibling tabs.
-                            MobilePlayerTrackSettingsTab.Alloha ->
-                                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                    if (showAudioSection) {
-                                        MobilePlayerSettingsSection(
-                                            title = stringResource(R.string.player_dubbing_title),
-                                        ) {
-                                            audioTrackNames.forEachIndexed { index, name ->
-                                                MobilePlayerSelectionRow(
-                                                    label = name,
-                                                    selected = index == selectedAudioTrackIndex,
-                                                    onClick = { onAudioTrackSelected(index) },
+                        MobilePlayerTrackSettingsTab.Player ->
+                            MobilePlayerSettingsSection(title = stringResource(R.string.player_name_prefix)) {
+                                balancerNames.forEachIndexed { index, name ->
+                                    val enabled = balancerAvailability.getOrElse(index) { true }
+                                    MobilePlayerSelectionRow(
+                                        label = name,
+                                        selected = index == selectedBalancerIndex,
+                                        enabled = enabled,
+                                        accentLabel = true,
+                                        metaContent = { contentColor ->
+                                            if (!enabled) {
+                                                Text(
+                                                    text = stringResource(R.string.player_episode_unavailable),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = contentColor.copy(alpha = 0.68f),
                                                 )
                                             }
-                                        }
-                                    }
-                                    if (showSubtitleSection) {
-                                        MobilePlayerSettingsSection(
-                                            title = stringResource(R.string.player_subtitles_title),
-                                        ) {
-                                            subtitleTrackNames.forEachIndexed { index, name ->
-                                                MobilePlayerSelectionRow(
-                                                    label = name,
-                                                    selected = index == selectedSubtitleTrackIndex,
-                                                    onClick = { onSubtitleTrackSelected(index) },
-                                                )
-                                            }
-                                        }
-                                    }
+                                        },
+                                        onClick = { onBalancerSelected(index) },
+                                    )
                                 }
-                        }
+                            }
                     }
                 }
             }

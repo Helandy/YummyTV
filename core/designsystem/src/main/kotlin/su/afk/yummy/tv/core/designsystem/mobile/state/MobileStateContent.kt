@@ -4,13 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 
 @Composable
 fun MobileStateContent(
@@ -25,7 +25,7 @@ fun MobileStateContent(
 ) {
     when {
         isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            YummyLoadingIndicator()
         }
 
         error != null -> MobileMessage(

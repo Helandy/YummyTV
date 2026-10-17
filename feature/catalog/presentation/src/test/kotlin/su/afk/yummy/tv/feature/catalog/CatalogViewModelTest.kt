@@ -25,12 +25,17 @@ import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
+import su.afk.yummy.tv.domain.catalog.repository.SearchHistoryRepository
 import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
+import su.afk.yummy.tv.domain.catalog.usecase.AddSearchHistoryQueryUseCase
+import su.afk.yummy.tv.domain.catalog.usecase.ClearSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetSearchFilterOptionsUseCase
+import su.afk.yummy.tv.domain.catalog.usecase.ObserveSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.catalog.CatalogState.Event
+import su.afk.yummy.tv.feature.catalog.navigator.CatalogSearchOpener
 
 class CatalogViewModelTest : BaseUnitTest() {
 
@@ -45,6 +50,9 @@ class CatalogViewModelTest : BaseUnitTest() {
     private val lastSnapshot = MutableStateFlow(LastSearchSnapshot())
     private val showTitleYear = MutableStateFlow(false)
     private val detailsKey: NavKey = mockk()
+    private val searchOpener = CatalogSearchOpener(nav)
+    private val historyRepository: SearchHistoryRepository = mockk()
+    private val history = MutableStateFlow<List<String>>(emptyList())
 
     @Before
     fun setUp() {
@@ -53,6 +61,11 @@ class CatalogViewModelTest : BaseUnitTest() {
         coEvery { searchSettings.setLastSearchSnapshot(any()) } returns Unit
         every { detailsNavigator.getDetailsDest(any()) } returns detailsKey
         coEvery { repository.getFilterOptions() } returns SearchFilterOptions()
+        every { historyRepository.observe() } returns history
+        coEvery { historyRepository.update(any()) } answers {
+            history.value = firstArg<(List<String>) -> List<String>>().invoke(history.value)
+        }
+        coEvery { historyRepository.clear() } answers { history.value = emptyList() }
     }
 
     private fun createViewModel() = CatalogViewModel(
@@ -67,6 +80,10 @@ class CatalogViewModelTest : BaseUnitTest() {
         searchSettings = searchSettings,
         accountSettingsStore = mockk<YaniAccountSettingsStore> { every { yaniContentLanguage } returns emptyFlow() },
         appearanceSettingsStore = mockk<AppearanceSettingsStore> { every { showCatalogTitleYear } returns showTitleYear },
+        searchOpener = searchOpener,
+        observeSearchHistory = ObserveSearchHistoryUseCase(historyRepository),
+        addSearchHistoryQuery = AddSearchHistoryQueryUseCase(historyRepository),
+        clearSearchHistory = ClearSearchHistoryUseCase(historyRepository),
     )
 
     @Test
@@ -380,5 +397,58 @@ class CatalogViewModelTest : BaseUnitTest() {
 
         assertFalse(vm.currentState.isFilterPanelOpen)
         assertEquals(SearchFilters.EMPTY, vm.currentState.filters)
+    }
+    @Test
+    fun `search focus request from another feature is shown until the screen handles it`() {
+        val vm = createViewModel()
+        assertFalse(vm.currentState.isSearchFocusRequested)
+
+        searchOpener.openSearch()
+        assertTrue(vm.currentState.isSearchFocusRequested)
+
+        vm.setEvent(Event.SearchFocusHandled)
+        assertFalse(vm.currentState.isSearchFocusRequested)
+    }
+
+    @Test
+    fun `submitted and opened queries are remembered newest first`() {
+        val vm = createViewModel()
+        vm.setEvent(Event.QueryChanged(" naruto "))
+        vm.setEvent(Event.SearchSubmitted)
+        vm.setEvent(Event.QueryChanged("bleach"))
+        vm.setEvent(Event.ItemSelected(1))
+
+        assertEquals(listOf("bleach", "naruto"), vm.currentState.searchHistory)
+    }
+
+    @Test
+    fun `blank submit is not remembered`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SearchSubmitted)
+
+        assertTrue(vm.currentState.searchHistory.isEmpty())
+    }
+
+    @Test
+    fun `history query is searched right away and moves to the top`() {
+        history.value = listOf("naruto", "bleach")
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SearchHistorySelected("bleach"))
+
+        assertEquals("bleach", vm.currentState.query)
+        assertTrue(vm.currentState.isSearchActive)
+        assertEquals(listOf("bleach", "naruto"), vm.currentState.searchHistory)
+    }
+
+    @Test
+    fun `clear empties the history`() {
+        history.value = listOf("naruto")
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SearchHistoryCleared)
+
+        assertTrue(vm.currentState.searchHistory.isEmpty())
     }
 }

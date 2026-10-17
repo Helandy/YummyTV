@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -46,8 +47,10 @@ import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCa
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
+import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
@@ -77,6 +80,7 @@ class HomeViewModel @Inject internal constructor(
     private val reviewsNavigator: IReviewsNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
     private val scheduleNavigator: IScheduleNavigator,
+    private val catalogSearchOpener: ICatalogSearchOpener,
     private val getHomeFeed: GetHomeFeedUseCase,
     private val getBloggerVideos: GetBloggerVideosUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
@@ -84,9 +88,11 @@ class HomeViewModel @Inject internal constructor(
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase,
     private val observeContinueWatching: ObserveHomeContinueWatchingUseCase,
     private val refreshRemoteContinueWatching: RefreshRemoteContinueWatchingUseCase,
+    private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase,
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase,
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase,
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase,
+    private val appClock: AppClock,
     private val stringProvider: StringProvider,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
     private val playerNavigator: IPlayerNavigator,
@@ -128,13 +134,20 @@ class HomeViewModel @Inject internal constructor(
 
     private var loadJob: Job? = null
 
+    /** «Продолжить просмотр» как пришло из источника, до скрытия ожидающих удаления. */
+    private var rawContinueWatching: List<HomeContinueWatchingItem> = emptyList()
+
+    /** Отложенные удаления из «Продолжить просмотр»: id тайтла → таймер окна отмены. */
+    private val continueWatchingRemovalJobs = mutableMapOf<Int, Job>()
+
     init {
         analytics.eventScreenOpened()
         observeContinueWatching()
             .onEach { items ->
+                rawContinueWatching = items
                 setState {
                     copy(
-                        continueWatching = items.toImmutableList(),
+                        continueWatching = visibleContinueWatching(pendingContinueWatchingRemovalIds),
                         isContinueWatchingLoaded = true,
                     )
                 }
@@ -208,6 +221,8 @@ class HomeViewModel @Inject internal constructor(
                 nav.navigate(reviewsNavigator.feed())
             }
 
+            HomeState.Event.SearchSelected -> catalogSearchOpener.openSearch()
+
             HomeState.Event.BloggerVideosSelected -> nav.navigate(bloggerVideosNavigator.feed())
 
             HomeState.Event.BloggerVideosRetrySelected -> loadBloggerVideos()
@@ -226,6 +241,56 @@ class HomeViewModel @Inject internal constructor(
 
             is HomeState.Event.RecommendationRestoreRequested ->
                 setRecommendationHidden(event.animeId, hidden = false)
+
+            is HomeState.Event.ContinueWatchingRemoveRequested ->
+                requestContinueWatchingRemoval(event.entry)
+
+            is HomeState.Event.ContinueWatchingRemoveUndone ->
+                undoContinueWatchingRemoval(event.animeId)
+        }
+    }
+
+    private fun visibleContinueWatching(hiddenIds: Set<Int>) =
+        rawContinueWatching.filterNot { it.animeId in hiddenIds }.toImmutableList()
+
+    /**
+     * Сразу прячет тайтл из «Продолжить просмотр», а насовсем убирает только по истечении окна
+     * отмены: восстановить уже подавленную запись нечем.
+     */
+    private fun requestContinueWatchingRemoval(entry: HomeContinueWatchingItem) {
+        val animeId = entry.animeId
+        if (animeId in continueWatchingRemovalJobs) return
+        setContinueWatchingRemovalPending(animeId, pending = true)
+        continueWatchingRemovalJobs[animeId] = viewModelScope.launch {
+            delay(CONTINUE_WATCHING_UNDO_WINDOW)
+            runSuspendCatching { removeCachedContinueWatching(animeId) }
+            continueWatchingRemovalJobs.remove(animeId)
+            setContinueWatchingRemovalPending(animeId, pending = false)
+        }
+        setEffect(
+            HomeState.Effect.ShowContinueWatchingUndo(
+                message = stringProvider.get(R.string.home_continue_watching_removed),
+                animeId = animeId,
+            ),
+        )
+    }
+
+    private fun undoContinueWatchingRemoval(animeId: Int) {
+        continueWatchingRemovalJobs.remove(animeId)?.cancel() ?: return
+        setContinueWatchingRemovalPending(animeId, pending = false)
+    }
+
+    private fun setContinueWatchingRemovalPending(animeId: Int, pending: Boolean) {
+        setState {
+            val ids = if (pending) {
+                pendingContinueWatchingRemovalIds.add(animeId)
+            } else {
+                pendingContinueWatchingRemovalIds.remove(animeId)
+            }
+            copy(
+                pendingContinueWatchingRemovalIds = ids,
+                continueWatching = visibleContinueWatching(ids),
+            )
         }
     }
 
@@ -264,7 +329,7 @@ class HomeViewModel @Inject internal constructor(
     /** Расписание кэшируется на час, поэтому лишней нагрузки на API это не даёт; ошибка не мешает главной. */
     private fun loadRecentlyAired() {
         viewModelScope.launch {
-            runSuspendCatching { getRecentlyAiredSchedule(System.currentTimeMillis() / 1_000L) }
+            runSuspendCatching { getRecentlyAiredSchedule(appClock.nowMillis() / 1_000L) }
                 .onSuccess { items ->
                     recentlyAired = items
                     applyHiddenRecommendations()
@@ -625,15 +690,25 @@ class HomeViewModel @Inject internal constructor(
         refreshRemoteContinueWatching()
         viewModelScope.launch {
             if (currentState.isLoading && currentState.feed == null) return@launch
+            if (currentState.isRefreshing) return@launch
             val showInitialLoading = currentState.feed == null
             if (showInitialLoading) {
                 setState { copy(isLoading = true, error = null) }
+            } else {
+                setState { copy(isRefreshing = true) }
             }
             loadRecentlyAired()
-            runSuspendCatching { refreshHomeFeed() }.fold(
+            val result = runSuspendCatching { refreshHomeFeed() }
+            setState { copy(isRefreshing = false) }
+            result.fold(
                 onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
                     analytics.eventLoadError(e)
+                    if (!showInitialLoading) {
+                        setEffect(
+                            HomeState.Effect.ShowToast(stringProvider.get(R.string.home_refresh_error)),
+                        )
+                    }
                     if (currentState.feed == null) {
                         setState {
                             copy(
@@ -695,5 +770,8 @@ class HomeViewModel @Inject internal constructor(
 
     private companion object {
         const val TAG_ANNOUNCEMENT = "HomeAnnouncement"
+
+        /** Окно отмены удаления — чуть дольше короткого снекбара, чтобы кнопка успела сработать. */
+        val CONTINUE_WATCHING_UNDO_WINDOW = 5_000.milliseconds
     }
 }

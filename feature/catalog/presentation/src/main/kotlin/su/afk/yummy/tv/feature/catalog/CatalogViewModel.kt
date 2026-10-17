@@ -5,6 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -28,8 +29,11 @@ import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
+import su.afk.yummy.tv.domain.catalog.usecase.AddSearchHistoryQueryUseCase
+import su.afk.yummy.tv.domain.catalog.usecase.ClearSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetSearchFilterOptionsUseCase
+import su.afk.yummy.tv.domain.catalog.usecase.ObserveSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.catalog.mapper.toLastSearchSnapshot
@@ -52,6 +56,10 @@ class CatalogViewModel @Inject internal constructor(
     private val analytics: CatalogAnalytics,
     private val searchSettings: SearchSettingsStore,
     private val accountSettingsStore: YaniAccountSettingsStore,
+    private val searchOpener: ICatalogSearchOpener,
+    private val observeSearchHistory: ObserveSearchHistoryUseCase,
+    private val addSearchHistoryQuery: AddSearchHistoryQueryUseCase,
+    private val clearSearchHistory: ClearSearchHistoryUseCase,
     appearanceSettingsStore: AppearanceSettingsStore,
 ) : BaseViewModel<CatalogState.State, CatalogState.Event, CatalogState.Effect>() {
 
@@ -71,6 +79,12 @@ class CatalogViewModel @Inject internal constructor(
         // Названия фильтров и результаты приходят на языке контента: при его смене грузим заново.
         appearanceSettingsStore.showCatalogTitleYear
             .onEach { showTitleYear -> setState { copy(showTitleYear = showTitleYear) } }
+            .launchIn(viewModelScope)
+        observeSearchHistory()
+            .onEach { history -> setState { copy(searchHistory = history.toImmutableList()) } }
+            .launchIn(viewModelScope)
+        searchOpener.isSearchFocusPending
+            .onEach { pending -> setState { copy(isSearchFocusRequested = pending) } }
             .launchIn(viewModelScope)
         accountSettingsStore.contentLanguageChanges()
             .onEach {
@@ -114,6 +128,8 @@ class CatalogViewModel @Inject internal constructor(
             is CatalogState.Event.ExternalSearchSubmitted -> onExternalSearchSubmitted(event.query)
             is CatalogState.Event.ItemSelected -> {
                 analytics.eventAnimeSelected(event.animeId)
+                // Открытый результат — признак полезного запроса: запоминаем набранный текст.
+                rememberQuery(currentState.query)
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
 
@@ -165,6 +181,13 @@ class CatalogViewModel @Inject internal constructor(
             }
 
             CatalogState.Event.SortDirectionToggled -> updateDraft { copy(sortForward = !sortForward) }
+            CatalogState.Event.SearchFocusHandled -> searchOpener.consumeSearchFocus()
+            is CatalogState.Event.SearchHistorySelected -> {
+                setState { copy(query = event.query) }
+                onSearchSubmitted()
+            }
+
+            CatalogState.Event.SearchHistoryCleared -> viewModelScope.launch { clearSearchHistory() }
         }
     }
 
@@ -204,6 +227,7 @@ class CatalogViewModel @Inject internal constructor(
             )
         }
         if (normalizedQuery.isNotBlank()) analytics.eventExternalSearchSubmitted()
+        rememberQuery(normalizedQuery)
         setSearchResults(normalizedQuery, SearchFilters.EMPTY)
     }
 
@@ -238,7 +262,13 @@ class CatalogViewModel @Inject internal constructor(
         )
         searchJob?.cancel()
         setState { copy(query = query) }
+        rememberQuery(query)
         setSearchResults(query, filters)
+    }
+
+    private fun rememberQuery(query: String) {
+        if (query.isBlank()) return
+        viewModelScope.launch { addSearchHistoryQuery(query) }
     }
 
     private fun applyFilters() {

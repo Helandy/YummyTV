@@ -45,7 +45,6 @@ internal fun GestureTutorialDetails(
             text = title,
             color = Color.White,
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
         Text(

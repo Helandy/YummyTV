@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,17 +40,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.InlineError
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.permissions.missingLocalNetworkPermissionNames
 import su.afk.yummy.tv.core.designsystem.permissions.rememberLocalNetworkPermissionGate
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.localauth.utils.rememberLocalAuthQrScanner
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.common.utils.isEmpty
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,7 +122,7 @@ fun LocalAuthMobileScreen(
                     IconButton(onClick = { onEvent(LocalAuthState.Event.BackSelected) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(CoreR.string.common_back),
                         )
                     }
                 },
@@ -210,11 +211,7 @@ fun LocalAuthMobileScreen(
             }
 
             state.error.accountErrorMessage()?.let { message ->
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                InlineError(message = message)
             }
 
             Button(
@@ -223,7 +220,7 @@ fun LocalAuthMobileScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (state.isTransferring) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
                     Text(stringResource(R.string.account_local_auth_transfer_button))
                 }
@@ -246,7 +243,7 @@ private fun LocalAuthSearchStatus(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                YummyLoadingIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 Text(
                     text = stringResource(R.string.account_local_auth_mobile_searching),
                     style = MaterialTheme.typography.bodyMedium,
@@ -349,7 +346,6 @@ private fun LocalAuthTransferredContent(onDone: () -> Unit) {
         Text(
             text = stringResource(R.string.account_local_auth_mobile_transferred_title),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )

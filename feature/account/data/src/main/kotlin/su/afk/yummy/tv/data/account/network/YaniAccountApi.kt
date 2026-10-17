@@ -22,6 +22,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.network.yani.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
@@ -85,6 +86,7 @@ class YaniAccountException(message: String, val code: Int? = null) : RuntimeExce
 class YaniAccountApi(
     private val clientProvider: YaniHttpClientProvider,
     private val analyticsTracker: AnalyticsTracker,
+    private val appClock: AppClock,
 ) {
 
     suspend fun unlinkAccount(provider: LinkedAccountProvider): Boolean {
@@ -348,7 +350,7 @@ class YaniAccountApi(
     suspend fun setAnimeList(animeId: Int, listId: Int) {
         clientProvider.get().put("$YANI_BASE_URL/anime/$animeId/list") {
             contentType(ContentType.Application.Json)
-            setBody(YaniSetListBodyDto(listId))
+            setBody(YaniSetListBodyDto(listId, appClock.nowMillis() / 1_000L))
         }
     }
 
@@ -359,7 +361,7 @@ class YaniAccountApi(
     suspend fun setFavorite(animeId: Int) {
         clientProvider.get().put("$YANI_BASE_URL/anime/$animeId/list/fav") {
             contentType(ContentType.Application.Json)
-            setBody(YaniSetFavoriteBodyDto())
+            setBody(YaniSetFavoriteBodyDto(appClock.nowMillis() / 1_000L))
         }
     }
 

@@ -95,7 +95,6 @@ internal fun ReviewTvCard(
                     Text(
                         text = review.animeTitle,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -147,7 +146,6 @@ internal fun ReviewTvCard(
                     Text(
                         text = review.author.nickname,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -204,7 +202,7 @@ private fun ReviewMetric(
             value.toCompactCount(),
             style = MaterialTheme.typography.labelLarge,
             color = color,
-            fontWeight = if (emphasized) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (emphasized) FontWeight.SemiBold else FontWeight.Normal,
         )
     }
 }
@@ -230,7 +228,6 @@ private fun ReviewScoreBadge(score: Int) {
             Text(
                 "$score / 10",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
             )
         }
     }

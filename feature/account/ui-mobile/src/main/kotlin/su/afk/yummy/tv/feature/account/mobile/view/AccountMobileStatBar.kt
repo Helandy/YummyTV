@@ -45,7 +45,7 @@ internal fun AccountMobileStatBar(
             Text(
                 text = valueLabel,
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

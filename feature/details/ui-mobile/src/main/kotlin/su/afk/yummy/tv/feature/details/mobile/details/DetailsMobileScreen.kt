@@ -17,8 +17,10 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,17 +31,23 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.text.UiText
+import su.afk.yummy.tv.core.utils.system.shareText
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileSkeleton
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
+import su.afk.yummy.tv.feature.details.mobile.details.view.SubscriptionsSignInSheet
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -78,6 +86,16 @@ fun DetailsMobileScreen(
     val error = state.error?.asString().takeIf { details == null }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val notificationPermissionGate = rememberNotificationPermissionGate()
+    val context = LocalContext.current
+    LaunchedEffect(effect) {
+        effect.collect { detailsEffect ->
+            when (detailsEffect) {
+                is DetailsState.Effect.ShareAnime ->
+                    context.shareText(text = detailsEffect.url, subject = detailsEffect.title)
+            }
+        }
+    }
     BaseScreen(
         isScroll = false,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
@@ -90,6 +108,7 @@ fun DetailsMobileScreen(
             }
         },
         isLoading = state.isLoading && details == null,
+        loadingContent = { DetailsMobileSkeleton() },
         error = error?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(DetailsState.Event.RetrySelected) },
         isEmpty = details == null,
@@ -120,6 +139,7 @@ fun DetailsMobileScreen(
                     state = state,
                     details = details,
                     onBack = { onEvent(DetailsState.Event.BackSelected) },
+                    onShare = { onEvent(DetailsState.Event.ShareSelected) },
                     onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
                     onTitleClick = {
                         coroutineScope.launch {
@@ -136,6 +156,9 @@ fun DetailsMobileScreen(
                     state = state,
                     details = details,
                     onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsRouteSelected) },
+                    onSubscriptionsLockedSelected = {
+                        onEvent(DetailsState.Event.SubscriptionsSignInPromptSelected)
+                    },
                     onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                     onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
                     onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
@@ -177,7 +200,15 @@ fun DetailsMobileScreen(
         }
         DetailsPickerSheets(
             state = state,
-            onLibraryListSelected = { onEvent(DetailsState.Event.LibraryListSelected(it)) },
+            onLibraryListSelected = { list ->
+                val select = DetailsState.Event.LibraryListSelected(list)
+                // О новых сериях «Смотрю» сообщают пуши — разрешение спрашиваем при добавлении.
+                if (state.isSignedIn && list == UserAnimeList.WATCHING) {
+                    notificationPermissionGate { onEvent(select) }
+                } else {
+                    onEvent(select)
+                }
+            },
             onLibraryDismiss = { onEvent(DetailsState.Event.LibraryListPickerDismissed) },
             onSubscriptionToggle = { onEvent(DetailsState.Event.SubscriptionToggled(it)) },
             onSubscriptionsDismiss = { onEvent(DetailsState.Event.SubscriptionsDismissed) },
@@ -186,6 +217,18 @@ fun DetailsMobileScreen(
             onDubbingSelected = { onEvent(DetailsState.Event.DubbingSelected(it.video)) },
             onDubbingDismiss = { onEvent(DetailsState.Event.DubbingPickerDismissed) },
         )
+        NotificationPermissionGateHost(
+            state = notificationPermissionGate,
+            permissionWasRequested = state.notificationPermissionRequested,
+            onPermissionRequested = { onEvent(DetailsState.Event.NotificationPermissionRequested) },
+            explanationRes = CoreR.string.notification_permission_explanation_episode_push,
+        )
+        if (state.showSubscriptionsSignInPrompt) {
+            SubscriptionsSignInSheet(
+                onSignIn = { onEvent(DetailsState.Event.SignInSelected) },
+                onDismiss = { onEvent(DetailsState.Event.SubscriptionsSignInPromptDismissed) },
+            )
+        }
 
     }
 }

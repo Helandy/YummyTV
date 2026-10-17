@@ -9,6 +9,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.widget.HomeScreenWidgetRefresher
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
@@ -34,6 +35,7 @@ class NewEpisodePushWorker @AssistedInject constructor(
     private val getProfileNotifications: GetProfileNotificationsUseCase,
     private val resolveNotificationAnimeId: ResolveNotificationAnimeIdUseCase,
     private val notificationService: NewEpisodePushNotificationService,
+    private val widgetRefresher: HomeScreenWidgetRefresher,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -67,6 +69,8 @@ class NewEpisodePushWorker @AssistedInject constructor(
             episodePushSettingsStore.addKnownNotificationIds(
                 newOnes.map(ProfileNotification::id).toSet(),
             )
+            // Вышла серия — подписи карточек виджета («Серия N») могли устареть.
+            if (newOnes.isNotEmpty()) widgetRefresher.refresh()
         }.fold(
             onSuccess = { Result.success() },
             onFailure = { Result.retry() },

@@ -202,6 +202,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 tvPlayerVolumeKeysEnabled = tvPlayerVolumeKeysEnabled,
                 advancedPlayerVolumeEnabled = advancedPlayerVolumeEnabled,
                 showOpeningOnTimeline = showOpeningOnTimeline,
+                selectedSpeed = selectedSpeed,
                 // Та же серия/постер — обложку не сбрасываем (observeArtwork её не пересчитает).
                 artworkUrl = artworkUrl,
             )
@@ -413,11 +414,18 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.AllohaSubtitleSelected ->
                 allohaSource.onSubtitleSelected(event.index, event.currentPosMs)
 
+            is PlayerState.Event.SubtitleStyleChanged ->
+                preferences.saveSubtitleStyle(host, event.settings)
+
+            is PlayerState.Event.VolumeStabilizationToggled ->
+                preferences.setVolumeStabilization(host, event.enabled)
+
             is PlayerState.Event.SpeedSelected -> {
                 val speed = event.speed.coerceAtLeast(0.1f)
                 if (speed == currentState.selectedSpeed) return
                 analytics.eventSpeedSelected(currentState.animeId, speed)
                 setState { copy(selectedSpeed = speed) }
+                preferences.savePlaybackSpeed(host, speed)
             }
 
             is PlayerState.Event.ResizeModeSelected -> {

@@ -35,7 +35,6 @@ internal fun FullDetailsChip(
     Text(
         text = label,
         style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Bold,
         color = if (clickable) primary else MaterialTheme.colorScheme.onSurface,
         modifier = modifier
             .onGloballyPositioned { coordinates = it }

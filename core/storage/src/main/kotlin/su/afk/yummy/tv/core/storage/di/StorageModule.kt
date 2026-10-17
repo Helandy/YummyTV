@@ -29,5 +29,6 @@ object StorageModule {
                 5,
                 6,
             )
+            .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
             .build()
 }

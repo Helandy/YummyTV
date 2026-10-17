@@ -8,53 +8,68 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.R
 
-val OutfitFontFamily = FontFamily(
-    Font(R.font.outfit_regular, FontWeight.Normal),
-    Font(R.font.outfit_bold, FontWeight.Bold),
-    Font(R.font.outfit_extrabold, FontWeight.ExtraBold),
+/** Onest: geometric grotesque with full Cyrillic (incl. Ukrainian) coverage. */
+val YummyFontFamily = FontFamily(
+    Font(R.font.onest_regular, FontWeight.Normal),
+    Font(R.font.onest_medium, FontWeight.Medium),
+    Font(R.font.onest_semibold, FontWeight.SemiBold),
 )
 
-private fun outfit(size: Int, lineHeight: Int, weight: FontWeight = FontWeight.Normal) = TextStyle(
-    fontFamily = OutfitFontFamily,
+private const val TABULAR_NUMERALS = "tnum"
+
+/** Equal-width digits so clocks, ratings and counters do not jitter as values change. */
+fun TextStyle.tabularNumerals(): TextStyle = copy(fontFeatureSettings = TABULAR_NUMERALS)
+
+/** For short ALL-CAPS labels: capitals need extra tracking to stay readable. */
+fun TextStyle.overline(): TextStyle = copy(letterSpacing = 0.8.sp)
+
+private fun yummy(
+    size: Int,
+    lineHeight: Int,
+    weight: FontWeight = FontWeight.Normal,
+    tabular: Boolean = false,
+) = TextStyle(
+    fontFamily = YummyFontFamily,
     fontWeight = weight,
     fontSize = size.sp,
     lineHeight = lineHeight.sp,
+    fontFeatureSettings = if (tabular) TABULAR_NUMERALS else null,
 )
 
 /** Compact cinematic scale for touch devices. */
 val YummyMobileTypography = Typography(
-    displayLarge = outfit(57, 64, FontWeight.ExtraBold),
-    displayMedium = outfit(45, 52, FontWeight.ExtraBold),
-    displaySmall = outfit(36, 44, FontWeight.Bold),
-    headlineLarge = outfit(32, 40, FontWeight.Bold),
-    headlineMedium = outfit(28, 36, FontWeight.Bold),
-    headlineSmall = outfit(24, 32, FontWeight.Bold),
-    titleLarge = outfit(22, 28, FontWeight.Bold),
-    titleMedium = outfit(16, 24, FontWeight.Bold),
-    titleSmall = outfit(14, 20, FontWeight.Bold),
-    bodyLarge = outfit(16, 24),
-    bodyMedium = outfit(14, 20),
-    bodySmall = outfit(12, 16),
-    labelLarge = outfit(14, 20, FontWeight.Bold),
-    labelMedium = outfit(12, 16, FontWeight.Bold),
-    labelSmall = outfit(11, 16),
+    displayLarge = yummy(57, 64, FontWeight.SemiBold),
+    displayMedium = yummy(45, 52, FontWeight.SemiBold),
+    displaySmall = yummy(36, 44, FontWeight.SemiBold),
+    headlineLarge = yummy(32, 40, FontWeight.SemiBold),
+    headlineMedium = yummy(28, 36, FontWeight.SemiBold),
+    headlineSmall = yummy(24, 32, FontWeight.SemiBold),
+    titleLarge = yummy(22, 28, FontWeight.SemiBold),
+    titleMedium = yummy(16, 24, FontWeight.SemiBold),
+    titleSmall = yummy(14, 20, FontWeight.SemiBold),
+    bodyLarge = yummy(16, 24),
+    bodyMedium = yummy(14, 20),
+    bodySmall = yummy(12, 16),
+    labelLarge = yummy(14, 20, FontWeight.SemiBold),
+    labelMedium = yummy(12, 16, FontWeight.SemiBold, tabular = true),
+    labelSmall = yummy(11, 16, FontWeight.Medium, tabular = true),
 )
 
 /** Larger scale intended for ten-foot TV interfaces. */
 val YummyTvTypography = Typography(
-    displayLarge = outfit(64, 72, FontWeight.ExtraBold),
-    displayMedium = outfit(52, 60, FontWeight.ExtraBold),
-    displaySmall = outfit(40, 48, FontWeight.Bold),
-    headlineLarge = outfit(36, 44, FontWeight.Bold),
-    headlineMedium = outfit(32, 40, FontWeight.Bold),
-    headlineSmall = outfit(28, 36, FontWeight.Bold),
-    titleLarge = outfit(24, 32, FontWeight.Bold),
-    titleMedium = outfit(20, 28, FontWeight.Bold),
-    titleSmall = outfit(16, 24, FontWeight.Bold),
-    bodyLarge = outfit(18, 28),
-    bodyMedium = outfit(16, 24),
-    bodySmall = outfit(14, 20),
-    labelLarge = outfit(16, 24, FontWeight.Bold),
-    labelMedium = outfit(14, 20, FontWeight.Bold),
-    labelSmall = outfit(12, 16),
+    displayLarge = yummy(64, 72, FontWeight.SemiBold),
+    displayMedium = yummy(52, 60, FontWeight.SemiBold),
+    displaySmall = yummy(40, 48, FontWeight.SemiBold),
+    headlineLarge = yummy(36, 44, FontWeight.SemiBold),
+    headlineMedium = yummy(32, 40, FontWeight.SemiBold),
+    headlineSmall = yummy(28, 36, FontWeight.SemiBold),
+    titleLarge = yummy(24, 32, FontWeight.SemiBold),
+    titleMedium = yummy(20, 28, FontWeight.SemiBold),
+    titleSmall = yummy(16, 24, FontWeight.SemiBold),
+    bodyLarge = yummy(18, 28),
+    bodyMedium = yummy(16, 24),
+    bodySmall = yummy(14, 20),
+    labelLarge = yummy(16, 24, FontWeight.SemiBold),
+    labelMedium = yummy(14, 20, FontWeight.SemiBold, tabular = true),
+    labelSmall = yummy(12, 16, FontWeight.Medium, tabular = true),
 )

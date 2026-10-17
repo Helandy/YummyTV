@@ -96,7 +96,6 @@ internal fun ProfileSectionHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
             letterSpacing = 0.6.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,

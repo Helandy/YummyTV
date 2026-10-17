@@ -103,7 +103,7 @@ private fun VoteButton(
         Text(
             text = count.toString(),
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = if (selected) color else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

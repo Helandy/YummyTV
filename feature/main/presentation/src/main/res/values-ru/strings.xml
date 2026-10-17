@@ -5,6 +5,7 @@
     <string name="main_tab_home">Главная</string>
     <string name="main_tab_news">Новости</string>
     <string name="main_tab_library">Библиотека</string>
+    <string name="main_tab_history">История</string>
     <string name="main_tab_catalog">Каталог</string>
     <string name="main_tab_schedule">Расписание</string>
     <string name="main_tab_collections">Коллекции</string>

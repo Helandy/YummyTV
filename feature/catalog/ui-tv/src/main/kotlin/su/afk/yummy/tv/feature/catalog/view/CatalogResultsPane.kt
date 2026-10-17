@@ -35,7 +35,7 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
+import su.afk.yummy.tv.core.designsystem.skeleton.TvPosterGridSkeleton
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
@@ -218,7 +218,7 @@ internal fun CatalogResultsPane(
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
 
-                itemCount == 0 && (isLoading || isSearchPending) -> TvLoadingScreen()
+                itemCount == 0 && (isLoading || isSearchPending) -> TvPosterGridSkeleton()
                 initialError != null -> SearchErrorMessage(
                     message = initialError,
                     retryFocusRequester = retryFocusRequester,

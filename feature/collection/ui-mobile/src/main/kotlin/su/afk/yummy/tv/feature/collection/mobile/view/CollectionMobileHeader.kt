@@ -34,7 +34,6 @@ internal fun CollectionMobileHeader(
         Text(
             text = collection.title,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         if (collection.description.isNotBlank()) {

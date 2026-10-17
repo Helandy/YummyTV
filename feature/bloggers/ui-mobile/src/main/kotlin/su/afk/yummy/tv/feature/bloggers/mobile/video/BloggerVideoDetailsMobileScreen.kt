@@ -103,7 +103,6 @@ fun BloggerVideoDetailsMobileScreen(
                 Text(
                     text = video.title,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),

@@ -4,6 +4,8 @@
     <string name="home_error_status_hint">If the problem persists, check service status: %1$s</string>
     <string name="home_error_status_url">https://yummystatus.me/</string>
     <string name="home_load_error">Could not load the home page</string>
+    <string name="home_refresh_error">Could not refresh the feed</string>
+    <string name="home_continue_watching_removed">Removed from Continue watching</string>
     <string name="home_recommendation_auth_required">Sign in to manage recommendations</string>
     <string name="home_recommendation_error">Could not update recommendations</string>
     <string name="home_recommendation_hidden">We will not recommend this anime anymore</string>
@@ -14,9 +16,11 @@
     <string name="home_mobile_reviews">Reviews</string>
     <string name="home_mobile_more">More</string>
     <string name="home_mobile_blogger_videos">From bloggers</string>
-    <string name="home_mobile_title">Home</string>
+    <string name="home_mobile_search_placeholder">Search anime…</string>
     <string name="home_mobile_all">All</string>
     <string name="home_mobile_recommendation_hide">Do not recommend this anime</string>
+    <string name="home_mobile_continue_watching_remove">Remove from Continue watching</string>
+    <string name="home_mobile_continue_watching_details">Title page</string>
     <string name="home_mobile_recommendation_undo">Undo</string>
     <string name="home_season_title">Season anime</string>
     <string name="continue_watching">Continue watching</string>

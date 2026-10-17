@@ -12,6 +12,4 @@ interface WatchLaterRepository {
     suspend fun add(item: WatchLaterItem)
 
     suspend fun remove(animeId: Int, episode: String)
-
-    suspend fun pruneWatched()
 }

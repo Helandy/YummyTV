@@ -150,7 +150,6 @@ fun CollectionMobileScreen(
                                 Text(
                                     text = year.toString(),
                                     style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.inverseSurface,
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)

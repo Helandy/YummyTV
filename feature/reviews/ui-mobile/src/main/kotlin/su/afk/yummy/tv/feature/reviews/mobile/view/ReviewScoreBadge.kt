@@ -39,7 +39,6 @@ internal fun ReviewScoreBadge(score: Int) {
             Text(
                 text = "$score / 10",
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
             )
         }
     }

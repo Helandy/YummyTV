@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.theme.overline
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
@@ -89,7 +90,7 @@ internal fun TvPlayerNameBadge(
     ) {
         Text(
             text = playerName.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelSmall.overline(),
             color = Color.Black,
             modifier = Modifier
                 .clip(RoundedCornerShape(4.dp))

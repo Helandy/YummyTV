@@ -87,7 +87,6 @@ internal fun FilterNavigationRow(
             Text(
                 text = selectedCount.toString(),
                 style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .padding(end = 8.dp)

@@ -50,7 +50,6 @@ internal fun MobileRatingPicker(
         Text(
             text = stringResource(R.string.details_mobile_rating_pick),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -107,7 +106,6 @@ private fun MobileRatingButton(
             Text(
                 text = rating.toString(),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = foreground,
             )
         }

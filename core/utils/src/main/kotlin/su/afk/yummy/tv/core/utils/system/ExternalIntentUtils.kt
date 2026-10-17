@@ -13,10 +13,21 @@ fun Context.openExternalUri(uri: String): Boolean {
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     return startActivitySafely(viewIntent) ||
-            startActivitySafely(
-                Intent.createChooser(viewIntent, null)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-            )
+        startActivitySafely(
+            Intent.createChooser(viewIntent, null)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+}
+
+/** Системный шаринг текста ([text], например ссылки) через chooser; false — некому отправить. */
+fun Context.shareText(text: String, subject: String? = null): Boolean {
+    val sendIntent = Intent(Intent.ACTION_SEND)
+        .setType("text/plain")
+        .putExtra(Intent.EXTRA_TEXT, text)
+        .apply { subject?.let { putExtra(Intent.EXTRA_SUBJECT, it) } }
+    return startActivitySafely(
+        Intent.createChooser(sendIntent, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+    )
 }
 
 private fun Context.startActivitySafely(intent: Intent): Boolean =

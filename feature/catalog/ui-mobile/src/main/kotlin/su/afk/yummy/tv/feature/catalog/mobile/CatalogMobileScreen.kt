@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.catalog.mobile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -12,21 +13,25 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -35,21 +40,28 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
+import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
-import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.catalog.CatalogState
+import su.afk.yummy.tv.feature.catalog.mobile.view.CATALOG_SKELETON_ITEMS
+import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileClearButton
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileFilterButton
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileFilterPanel
+import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileSearchHistory
 import su.afk.yummy.tv.feature.catalog.mobile.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.catalog.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -83,6 +95,17 @@ fun CatalogMobileScreen(
         ?.uiMessage()
     val gridState = rememberLazyGridState()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val queryFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(state.isSearchFocusRequested) {
+        if (!state.isSearchFocusRequested) return@LaunchedEffect
+        gridState.scrollToItem(0)
+        // Поле — первый элемент ленивой сетки: ждём кадр, пока оно встанет в композицию.
+        withFrameNanos { }
+        runCatching { queryFocusRequester.requestFocus() }
+        keyboardController?.show()
+        onEvent(CatalogState.Event.SearchFocusHandled)
+    }
 
     BaseScreen(
         isScroll = false,
@@ -95,7 +118,7 @@ fun CatalogMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(R.string.search_mobile_submit),
+                    actionLabel = stringResource(CoreR.string.common_retry),
                     onAction = retry,
                 )
             }
@@ -118,7 +141,9 @@ fun CatalogMobileScreen(
                     shape = MaterialTheme.shapes.large,
                     value = state.query,
                     onValueChange = { onEvent(CatalogState.Event.QueryChanged(it)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(queryFocusRequester),
                     placeholder = { Text(stringResource(R.string.search_placeholder)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -127,14 +152,21 @@ fun CatalogMobileScreen(
                         onEvent(CatalogState.Event.SearchSubmitted)
                     }),
                     trailingIcon = {
-                        CatalogMobileFilterButton(
-                            activeCount = state.filters.activeCount,
-                            modifier = Modifier.padding(end = 6.dp),
-                            onClick = {
-                                keyboardController?.hide()
-                                onEvent(CatalogState.Event.OpenFilters)
-                            },
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (state.query.isNotEmpty()) {
+                                CatalogMobileClearButton(
+                                    onClick = { onEvent(CatalogState.Event.QueryChanged("")) },
+                                )
+                            }
+                            CatalogMobileFilterButton(
+                                activeCount = state.filters.activeCount,
+                                modifier = Modifier.padding(end = 6.dp),
+                                onClick = {
+                                    keyboardController?.hide()
+                                    onEvent(CatalogState.Event.OpenFilters)
+                                },
+                            )
+                        }
                     },
                 )
             }
@@ -158,29 +190,50 @@ fun CatalogMobileScreen(
                     )
                 }
             }
-            if (state.isSearchPending || (hasActiveSearch && refreshState is LoadState.Loading && results.itemCount == 0)) {
-                // Лоадер внутри сетки: полноэкранный увёл бы поле поиска из-под пальца при наборе
+            if (state.query.isEmpty() && state.searchHistory.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "search_history") {
+                    CatalogMobileSearchHistory(
+                        queries = state.searchHistory,
+                        onQuerySelected = {
+                            keyboardController?.hide()
+                            onEvent(CatalogState.Event.SearchHistorySelected(it))
+                        },
+                        onClear = { onEvent(CatalogState.Event.SearchHistoryCleared) },
+                    )
+                }
+            }
+            val isFirstPageLoading = state.isSearchPending ||
+                (hasActiveSearch && refreshState is LoadState.Loading && results.itemCount == 0)
+            // Лоадер внутри сетки: полноэкранный увёл бы поле поиска из-под пальца при наборе
+            if (isFirstPageLoading && results.itemCount == 0) {
+                items(count = CATALOG_SKELETON_ITEMS, contentType = { "poster_skeleton" }) {
+                    MobilePosterCardSkeleton(
+                        shimmer = rememberSkeletonShimmer(),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            } else if (isFirstPageLoading) {
                 item(span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
                     MobileSectionLoading()
                 }
             }
             if (hasActiveSearch && refreshState is LoadState.NotLoading && results.itemCount == 0) {
                 item(span = { GridItemSpan(maxLineSpan) }, contentType = "empty_state") {
-                    Text(
-                        text = stringResource(R.string.search_empty),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 32.dp),
+                    val hasFilters = state.filters.activeCount > 0
+                    MobileMessage(
+                        title = stringResource(R.string.search_empty),
+                        icon = Icons.Filled.SearchOff,
+                        actionLabel = stringResource(R.string.search_mobile_reset_filters)
+                            .takeIf { hasFilters },
+                        onAction = { onEvent(CatalogState.Event.ResetFilters) }.takeIf { hasFilters },
+                        fillMaxSize = false,
                     )
                 }
             }
             val error = (appendState as? LoadState.Error)?.error
             if (error != null && results.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_error") {
-                    MobileAppendError(
+                    ErrorBanner(
                         message = error.uiMessage(),
                         onRetry = { results.retry() },
                     )
@@ -202,7 +255,6 @@ fun CatalogMobileScreen(
                                 Text(
                                     text = year.toString(),
                                     style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.inverseSurface,
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
@@ -225,10 +277,7 @@ fun CatalogMobileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                        )
+                        YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     }
                 }
             }

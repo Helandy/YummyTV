@@ -14,6 +14,8 @@ class ScheduleState {
     @Immutable
     data class State(
         val isLoading: Boolean = true,
+        /** Идёт обновление по жесту pull-to-refresh поверх уже показанного расписания. */
+        val isRefreshing: Boolean = false,
         val days: ImmutableList<AnimeScheduleDay> = persistentListOf(),
         val tvSchedule: ScheduleTimelineUi = ScheduleTimelineUi(),
         val error: UiText? = null,
@@ -26,6 +28,9 @@ class ScheduleState {
 
         /** Пользователь запросил повторную загрузку расписания. */
         data object RetrySelected : Event
+
+        /** Пользователь потянул список вниз, чтобы обновить расписание. */
+        data object RefreshRequested : Event
 
         /** Пользователь выбрал дату по значению epoch day. */
         data class DateSelected(val epochDay: Long) : Event

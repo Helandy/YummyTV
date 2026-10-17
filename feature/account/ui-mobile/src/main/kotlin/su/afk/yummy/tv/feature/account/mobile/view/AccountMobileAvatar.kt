@@ -21,6 +21,8 @@ internal fun AccountMobileAvatar(
     avatarUrl: String,
     nickname: String,
     modifier: Modifier = Modifier,
+    /** Профиль ещё грузится: рисуем пустой круг, без буквы и без «?». */
+    isLoading: Boolean = false,
 ) {
     Box(
         modifier = modifier
@@ -36,11 +38,10 @@ internal fun AccountMobileAvatar(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-        } else {
+        } else if (!isLoading) {
             Text(
                 text = nickname.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
             )
         }

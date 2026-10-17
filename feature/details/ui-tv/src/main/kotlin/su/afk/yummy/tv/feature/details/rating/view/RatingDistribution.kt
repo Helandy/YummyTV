@@ -59,7 +59,6 @@ internal fun RatingDistribution(
             Text(
                 text = average?.formatRating() ?: "-",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onBackground,
             )
             Text(
@@ -107,7 +106,7 @@ private fun RatingDistributionRow(
         Text(
             text = bucket.rating.toString(),
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.width(24.dp),
         )

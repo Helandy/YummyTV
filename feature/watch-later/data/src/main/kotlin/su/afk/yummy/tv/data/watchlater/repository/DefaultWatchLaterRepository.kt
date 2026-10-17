@@ -39,6 +39,4 @@ internal class DefaultWatchLaterRepository @Inject constructor(
     override suspend fun remove(animeId: Int, episode: String) {
         storage.delete(animeId, episode.episodeGroupKey())
     }
-
-    override suspend fun pruneWatched() = storage.pruneWatched()
 }

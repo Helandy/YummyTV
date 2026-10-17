@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -32,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.theme.overline
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -70,7 +72,7 @@ internal fun MobilePlayerTopBar(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(DesignSystemR.string.common_back),
-                        tint = Color.White
+                        tint = Color.White,
                     )
                 }
                 Column(
@@ -117,25 +119,30 @@ internal fun MobilePlayerTopBar(
                             color = Color.Black,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelSmall.overline(),
+                            fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.88f))
                                 .padding(horizontal = 12.dp, vertical = 5.dp),
                         )
                     }
+                    // Круглая подложка с обводкой, как у кнопок управления внизу: голые точки
+                    // терялись на светлом кадре.
                     IconButton(
                         onClick = { showActionsSheet = true },
                         modifier = Modifier
-                            .size(40.dp)
-                            .padding(top = 2.dp),
+                            .padding(top = 6.dp)
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.36f))
+                            .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
                     ) {
                         Icon(
                             Icons.Filled.MoreVert,
                             contentDescription = stringResource(R.string.player_mobile_actions),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(28.dp),
+                            tint = Color.White,
+                            modifier = Modifier.size(26.dp),
                         )
                     }
                 }

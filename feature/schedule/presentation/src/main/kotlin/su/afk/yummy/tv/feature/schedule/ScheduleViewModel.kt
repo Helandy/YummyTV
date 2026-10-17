@@ -6,6 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -18,6 +19,8 @@ import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.schedule.mapper.toTimelineUi
 import su.afk.yummy.tv.feature.schedule.mapper.withSelectedDay
+import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,6 +32,7 @@ class ScheduleViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val analytics: ScheduleAnalytics,
     private val accountSettingsStore: YaniAccountSettingsStore,
+    private val appClock: AppClock,
 ) : BaseViewModel<ScheduleState.State, ScheduleState.Event, ScheduleState.Effect>() {
 
     override fun createInitialState() = ScheduleState.State()
@@ -61,10 +65,40 @@ class ScheduleViewModel @Inject internal constructor(
                 analytics.eventRetry()
                 load()
             }
+
+            ScheduleState.Event.RefreshRequested -> refresh()
         }
     }
 
     private var loadJob: Job? = null
+
+    /** Перезагружает расписание, не пряча уже показанные дни; ошибку при них не показывает. */
+    private fun refresh() {
+        if (currentState.days.isEmpty()) return load()
+        if (currentState.isRefreshing) return
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            setState { copy(isRefreshing = true) }
+            runSuspendCatching { getSchedule() }.fold(
+                onSuccess = { days ->
+                    setState {
+                        copy(
+                            isRefreshing = false,
+                            days = days.toImmutableList(),
+                            tvSchedule = days.toTimelineUi(
+                                now = Instant.ofEpochMilli(appClock.nowMillis()).atZone(ZoneId.systemDefault()),
+                                selectedEpochDay = tvSchedule.selectedEpochDay,
+                            ),
+                        )
+                    }
+                },
+                onFailure = {
+                    analytics.eventLoadError(it)
+                    setState { copy(isRefreshing = false) }
+                },
+            )
+        }
+    }
 
     private fun load() {
         loadJob?.cancel()
@@ -77,6 +111,7 @@ class ScheduleViewModel @Inject internal constructor(
                             isLoading = false,
                             days = days.toImmutableList(),
                             tvSchedule = days.toTimelineUi(
+                                now = Instant.ofEpochMilli(appClock.nowMillis()).atZone(ZoneId.systemDefault()),
                                 selectedEpochDay = tvSchedule.selectedEpochDay,
                             ),
                         )

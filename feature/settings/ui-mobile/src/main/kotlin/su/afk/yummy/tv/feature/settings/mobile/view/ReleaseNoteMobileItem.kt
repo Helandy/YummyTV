@@ -43,7 +43,6 @@ internal fun ReleaseNoteMobileItem(
             Text(
                 text = item.version,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f, fill = false),
             )

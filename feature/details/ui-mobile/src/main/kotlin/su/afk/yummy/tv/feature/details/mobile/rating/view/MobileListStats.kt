@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.mobile.rating.utils.count
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
+import su.afk.yummy.tv.feature.details.utils.statusIcon
 import java.text.NumberFormat
 
 @Composable
@@ -65,7 +67,6 @@ internal fun MobileListStats(
         Text(
             text = stringResource(R.string.details_mobile_list_stats),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         FlowRow(
@@ -82,11 +83,11 @@ internal fun MobileListStats(
                     ),
                     border = BorderStroke(1.dp, color.copy(alpha = 0.4f)),
                     leadingIcon = {
-                        Box(
-                            Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(color)
+                        Icon(
+                            imageVector = status.statusIcon(),
+                            contentDescription = null,
+                            tint = color,
+                            modifier = Modifier.size(AssistChipDefaults.IconSize),
                         )
                     },
                     label = {

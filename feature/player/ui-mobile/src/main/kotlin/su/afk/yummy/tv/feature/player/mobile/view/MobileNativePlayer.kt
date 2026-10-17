@@ -38,7 +38,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
-import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
@@ -83,7 +82,6 @@ import su.afk.yummy.tv.feature.player.mobile.cast.MobileCastingIndicator
 import su.afk.yummy.tv.feature.player.mobile.cast.rememberMobileCastConnectionState
 import su.afk.yummy.tv.feature.player.mobile.cast.stopCasting
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerKeyAction
-import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVerticalGestureZone
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
@@ -132,12 +130,12 @@ internal fun MobileNativePlayer(
         initialPositionMs = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs,
         initialDurationMs = state.playbackDurationMs,
     )
-    var settingsMode by remember { mutableStateOf<MobilePlayerSettingsMode?>(null) }
+    var trackSheetOpen by remember { mutableStateOf(false) }
     // Шторка настроек дорожек открывается на том табе, который юзер выбрал в прошлый раз,
     // пока открыт этот экран плеера (и переживает поворот). Недоступный таб шторка сама
     // откатит на первый.
     var settingsTrackTab by rememberSaveable { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
-    var volumePanelOpen by remember { mutableStateOf(false) }
+    var sidePanelOpen by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
     val endFlow = rememberPlayerEndFlowState(ui.activeIframeUrl, streamUrl)
     val skipUi = rememberPlayerSkipUiState(ui.activeIframeUrl)
@@ -159,11 +157,6 @@ internal fun MobileNativePlayer(
     val playerVolumeLevel by volumeController.volume.collectAsStateWithLifecycle()
     val playerVolumePercent = (playerVolumeLevel * 100f).roundToInt()
 
-    // При выключении режима прячем регулятор; звук вернётся к системному через эффект
-    // применения player.volume (100%). Сохранённый уровень при этом не сбрасываем.
-    LaunchedEffect(advancedVolumeEnabled) {
-        if (!advancedVolumeEnabled) volumePanelOpen = false
-    }
     val stepSeekToast = rememberPlayerStepSeekToastState(
         streamUrl = streamUrl,
         toastDuration = MOBILE_PLAYER_SEEK_TOAST_DURATION,
@@ -175,7 +168,8 @@ internal fun MobileNativePlayer(
         hideDelay = state.controlsAutoHideSeconds.seconds,
         canHide = {
             wantsPlay &&
-                settingsMode == null &&
+                !trackSheetOpen &&
+                !sidePanelOpen &&
                 !progress.isSeeking &&
                 !recoveryHintVisible &&
                 !tutorialBlocksPlayback &&
@@ -263,7 +257,7 @@ internal fun MobileNativePlayer(
             player.pause()
             overlay.visible = false
             overlay.cancelHide()
-            settingsMode = null
+            trackSheetOpen = false
             endFlow.hideAll()
             gestures.resetForPictureInPicture()
         }
@@ -296,7 +290,7 @@ internal fun MobileNativePlayer(
         isPromptSuppressed = { isInPictureInPictureMode },
         onPromptShown = {
             overlay.visible = false
-            settingsMode = null
+            trackSheetOpen = false
             overlay.cancelHide()
         },
     )
@@ -362,7 +356,7 @@ internal fun MobileNativePlayer(
             overlay.visible = false
             endFlow.hideAll()
             gestures.resetForPictureInPicture()
-            settingsMode = null
+            trackSheetOpen = false
             overlay.cancelHide()
             stepSeekToast.clear()
         }
@@ -374,7 +368,7 @@ internal fun MobileNativePlayer(
     }
 
     LaunchedEffect(ui.activeIframeUrl) {
-        settingsMode = null
+        trackSheetOpen = false
     }
 
     PlayerEndPromptCountdownEffect(
@@ -383,6 +377,11 @@ internal fun MobileNativePlayer(
         onPromptStateChange = { endFlow.nextEpisodePrompt = it },
         onFinished = episodeEnd::playNextEpisode,
     )
+
+    BackHandler(enabled = sidePanelOpen && !isInPictureInPictureMode) {
+        sidePanelOpen = false
+        overlay.show()
+    }
 
     BackHandler(enabled = endFlow.anyVisible && !isInPictureInPictureMode) {
         endFlow.dismissNextEpisode()
@@ -583,19 +582,13 @@ internal fun MobileNativePlayer(
             },
             onTrackSettings = {
                 endFlow.hideAll()
-                settingsMode = MobilePlayerSettingsMode.Track
+                trackSheetOpen = true
                 overlay.visible = true
                 overlay.cancelHide()
             },
-            onPlaybackSettings = {
+            onPlayerSettings = {
                 endFlow.hideAll()
-                settingsMode = MobilePlayerSettingsMode.Playback
-                overlay.visible = true
-                overlay.cancelHide()
-            },
-            showVolumeButton = advancedVolumeEnabled,
-            onVolumeSettings = {
-                volumePanelOpen = !volumePanelOpen
+                sidePanelOpen = true
                 overlay.visible = true
                 overlay.cancelHide()
             },
@@ -626,22 +619,6 @@ internal fun MobileNativePlayer(
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(end = 18.dp, bottom = skipButtonBottomPadding),
         )
-
-        if (volumePanelOpen &&
-            advancedVolumeEnabled &&
-            overlay.visible &&
-            !isInPictureInPictureMode &&
-            !tutorialBlocksPlayback
-        ) {
-            MobilePlayerVolumePanel(
-                percent = playerVolumePercent,
-                onPercentChange = { volumeController.setPercent(it) },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 132.dp)
-                    .padding(horizontal = 18.dp),
-            )
-        }
 
         MobilePlayerSeekToast(
             text = stepSeekToast.text.takeUnless {
@@ -709,7 +686,7 @@ internal fun MobileNativePlayer(
                 onChangePlayer = if (ui.canChangePlayer) {
                     {
                         settingsTrackTab = MobilePlayerTrackSettingsTab.Player
-                        settingsMode = MobilePlayerSettingsMode.Track
+                        trackSheetOpen = true
                         overlay.cancelHide()
                     }
                 } else {
@@ -718,7 +695,7 @@ internal fun MobileNativePlayer(
                 onChangeDubbing = if (ui.canChangeDubbing) {
                     {
                         settingsTrackTab = MobilePlayerTrackSettingsTab.Dubbing
-                        settingsMode = MobilePlayerSettingsMode.Track
+                        trackSheetOpen = true
                         overlay.cancelHide()
                     }
                 } else {
@@ -768,26 +745,51 @@ internal fun MobileNativePlayer(
             )
         }
 
-        val activeSettingsMode = settingsMode
+        MobilePlayerSidePanel(
+            visible = sidePanelOpen && !isInPictureInPictureMode && !tutorialBlocksPlayback,
+            qualities = ui.qualityLabels,
+            selectedQuality = selectedQuality,
+            onQualitySelected = { quality ->
+                val position = player.currentPosition.coerceAtLeast(0)
+                reporter.saveProgress(position, progress.duration)
+                onEvent(PlayerState.Event.QualitySelected(quality, position))
+            },
+            selectedSpeed = selectedSpeed,
+            onSpeedSelected = { onEvent(PlayerState.Event.SpeedSelected(it)) },
+            selectedResizeMode = state.resizeMode,
+            onResizeModeSelected = { onEvent(PlayerState.Event.ResizeModeSelected(it)) },
+            audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
+            selectedAudioTrackIndex = trackMenu.selectedAudioIndex,
+            showAudioTracks = trackMenu.showAudioChoice,
+            onAudioTrackSelected = { index ->
+                trackMenu.selectAudio(index, player.currentPosition.coerceAtLeast(0L), onEvent)
+            },
+            subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
+            selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
+            showSubtitleTracks = trackMenu.showSubtitleChoice,
+            onSubtitleTrackSelected = { index ->
+                trackMenu.selectSubtitle(index, player.currentPosition.coerceAtLeast(0L), onEvent)
+            },
+            subtitleStyle = state.subtitleStyle,
+            onSubtitleStyleChange = { onEvent(PlayerState.Event.SubtitleStyleChanged(it)) },
+            showVolume = advancedVolumeEnabled,
+            volumePercent = playerVolumePercent,
+            onVolumeChange = { volumeController.setPercent(it) },
+            showStabilization = state.volumeStabilizationSupported,
+            stabilizationEnabled = state.volumeStabilizationEnabled,
+            onStabilizationChange = { onEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
+            onDismiss = {
+                sidePanelOpen = false
+                overlay.show()
+            },
+        )
+
         if (
-            activeSettingsMode != null &&
+            trackSheetOpen &&
             !isInPictureInPictureMode &&
             !tutorialBlocksPlayback
         ) {
             MobilePlayerSettingsSheet(
-                mode = activeSettingsMode,
-                qualities = ui.qualityLabels,
-                selectedQuality = selectedQuality,
-                onQualitySelected = { quality ->
-                    val position = player.currentPosition.coerceAtLeast(0)
-                    reporter.saveProgress(position, progress.duration)
-                    onEvent(PlayerState.Event.QualitySelected(quality, position))
-                },
-                selectedSpeed = selectedSpeed,
-                onSpeedSelected = { onEvent(PlayerState.Event.SpeedSelected(it)) },
-                resizeModes = PlayerResizeMode.entries,
-                selectedResizeMode = state.resizeMode,
-                onResizeModeSelected = { onEvent(PlayerState.Event.ResizeModeSelected(it)) },
                 dubbingNames = ui.dubbingNames,
                 dubbingEpisodeCounts = ui.dubbingEpisodeCounts,
                 dubbingViews = ui.dubbingViews,
@@ -808,19 +810,7 @@ internal fun MobileNativePlayer(
                 onBalancerSelected = { index ->
                     onEvent(PlayerState.Event.BalancerSelected(index, player.currentPosition))
                 },
-                audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
-                selectedAudioTrackIndex = trackMenu.selectedAudioIndex,
-                onAudioTrackSelected = { index ->
-                    trackMenu.selectAudio(index, player.currentPosition.coerceAtLeast(0L), onEvent)
-                },
-                showAudioSection = trackMenu.showAudioChoice,
-                subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
-                selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
-                onSubtitleTrackSelected = { index ->
-                    trackMenu.selectSubtitle(index, player.currentPosition.coerceAtLeast(0L), onEvent)
-                },
-                showSubtitleSection = trackMenu.showSubtitleChoice,
-                onDismiss = { settingsMode = null },
+                onDismiss = { trackSheetOpen = false },
                 initialTrackTab = settingsTrackTab,
                 onTrackTabChanged = { settingsTrackTab = it },
             )

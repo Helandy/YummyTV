@@ -15,7 +15,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,7 +47,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.InlineError
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -95,7 +97,7 @@ fun RegistrationMobileScreen(
                     IconButton(onClick = { onEvent(RegistrationState.Event.BackSelected) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(CoreR.string.common_back),
                         )
                     }
                 },
@@ -189,10 +191,7 @@ private fun RegistrationForm(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
+                    YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
                     Text(stringResource(R.string.account_mobile_register))
                 }
@@ -225,10 +224,8 @@ private fun RegistrationForm(
 
         val errorMessage = state.errorMessage ?: state.error.accountErrorMessage()
         if (errorMessage != null) {
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
+            InlineError(
+                message = errorMessage,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )

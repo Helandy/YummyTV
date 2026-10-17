@@ -24,7 +24,7 @@
     <string name="error_msg_http">Server error (%1$d). Please try again later.</string>
     <string name="common_back">Back</string>
     <string name="common_retry">Retry</string>
-    <string name="common_loading">Loading...</string>
+    <string name="common_loading">Loading…</string>
     <string name="common_close">Close</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_sign_in">Sign in</string>

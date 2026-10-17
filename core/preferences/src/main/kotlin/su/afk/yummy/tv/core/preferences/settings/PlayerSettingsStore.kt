@@ -55,6 +55,9 @@ interface PlayerSettingsStore {
     /** Яркость мобильного плеера в процентах; `null` — пользователь её не менял, действует системная. */
     val mobilePlayerBrightnessPercent: Flow<Int?>
 
+    /** Скорость воспроизведения, выбранная в плеере последней; общая для всех тайтлов. */
+    val playerPlaybackSpeed: Flow<Float>
+
     /** Стабилизация громкости (сжатие динамического диапазона аудио). */
     val volumeStabilizationEnabled: Flow<Boolean>
 
@@ -106,6 +109,7 @@ interface PlayerSettingsStore {
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
+    suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
     suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)

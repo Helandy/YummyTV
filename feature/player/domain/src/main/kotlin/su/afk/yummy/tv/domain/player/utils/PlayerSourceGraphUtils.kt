@@ -2,7 +2,7 @@ package su.afk.yummy.tv.domain.player.utils
 
 import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.core.common.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
 import su.afk.yummy.tv.domain.player.model.PlayerSourceBalancer
 import su.afk.yummy.tv.domain.player.model.PlayerSourceDubbing
 import su.afk.yummy.tv.domain.player.model.PlayerSourceEpisode
@@ -11,7 +11,6 @@ import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
 import su.afk.yummy.tv.domain.player.model.PlayerSourceSelection
 import su.afk.yummy.tv.domain.player.model.PlayerSourceVideo
 
-private const val OTHER_PLAYER_PRIORITY = 2
 
 internal fun PlayerSourceRequest.toFallbackVideo(): PlayerSourceVideo =
     PlayerSourceVideo(
@@ -50,15 +49,17 @@ internal fun List<PlayerSourceVideo>.toPlayerSourceGraph(
         }
     val balancerNames = (listOf(selectedVideo.player) + supportedBalancers)
         .distinct()
-        .sortedBy { balancerName ->
-            minOf(
-                balancerName.playerDisplayOrderPriority(),
-                videos.firstOrNull { it.player == balancerName }
-                    ?.iframeUrl
-                    ?.playerDisplayOrderPriority()
-                    ?: OTHER_PLAYER_PRIORITY,
-            )
-        }
+        .sortedWith(
+            balancerDisplayComparator(
+                playerName = { it },
+                iframeUrl = { balancerName ->
+                    videos.firstOrNull { it.player == balancerName }?.iframeUrl.orEmpty()
+                },
+                views = { balancerName ->
+                    videos.filter { it.player == balancerName }.sumOf { it.views ?: 0 }
+                },
+            ),
+        )
     val kodikIframeByEpisode = videos
         .filter { it.iframeUrl.isKodikPlayerUrl() }
         .groupBy { it.episode }

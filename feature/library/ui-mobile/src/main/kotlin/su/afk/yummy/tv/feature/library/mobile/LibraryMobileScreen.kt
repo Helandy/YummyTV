@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +37,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.feature.library.LibraryState
+import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTabItemCount
 import su.afk.yummy.tv.feature.library.mobile.utils.toLibraryMobilePage
@@ -82,6 +84,11 @@ fun LibraryMobileScreen(
         }
     }
     var pendingRemoval by remember { mutableStateOf<PendingLibraryMobileRemoval?>(null) }
+    // Индикатор жеста — только для обновления, начатого пользователем, а не при возврате на экран.
+    var isPullRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(state.isRemoteLoading) {
+        if (!state.isRemoteLoading) isPullRefreshing = false
+    }
     var pendingSortScroll by remember {
         mutableStateOf<Pair<LibrarySort, LibrarySortDirection>?>(null)
     }
@@ -206,13 +213,25 @@ fun LibraryMobileScreen(
                     .fillMaxSize(),
             ) { page ->
                 val tab = page.toLibraryMobileTab(tabs)
-                LibraryMobilePage(
-                    tab = tab,
-                    state = state,
-                    listState = listStates.getValue(tab),
-                    onEvent = onEvent,
-                    onRemovalRequested = { pendingRemoval = it },
-                )
+                // История — пагинация со своим источником, гостю обновлять с сервера нечего.
+                val canPullRefresh = state.isSignedIn && tab != LibraryTab.HISTORY
+                PullToRefreshBox(
+                    isRefreshing = isPullRefreshing,
+                    onRefresh = {
+                        isPullRefreshing = true
+                        onEvent(LibraryState.Event.RefreshRequested)
+                    },
+                    enabled = canPullRefresh,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    LibraryMobilePage(
+                        tab = tab,
+                        state = state,
+                        listState = listStates.getValue(tab),
+                        onEvent = onEvent,
+                        onRemovalRequested = { pendingRemoval = it },
+                    )
+                }
             }
         }
     }

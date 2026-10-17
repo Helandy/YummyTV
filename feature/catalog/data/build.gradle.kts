@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":feature:catalog:domain"))
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.datastore.preferences)
 
     testImplementation(libs.kotlin.test)
 }

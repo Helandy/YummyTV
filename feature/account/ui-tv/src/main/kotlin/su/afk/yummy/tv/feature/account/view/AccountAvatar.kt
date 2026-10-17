@@ -44,7 +44,6 @@ internal fun AccountAvatar(avatarUrl: String, nickname: String) {
             Text(
                 text = nickname.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
             )
         }

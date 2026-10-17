@@ -39,7 +39,6 @@ internal fun MobilePlayerZoomIndicator(
                 text = scale.zoomIndicatorLabel(),
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
             )
         }
     }

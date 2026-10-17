@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,8 +36,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
+import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.CommentsState
@@ -96,7 +97,7 @@ internal fun CommentCard(
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    text = comment.createdAtEpochSeconds.formatRelativeDateTime(),
+                    text = comment.createdAtEpochSeconds.formatRelativeDateTime(LocalNowMillis.current()),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -197,7 +198,7 @@ internal fun CommentCard(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                            YummyLoadingIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                             Text(
                                 text = stringResource(CoreR.string.common_loading),
                                 style = MaterialTheme.typography.bodyMedium,

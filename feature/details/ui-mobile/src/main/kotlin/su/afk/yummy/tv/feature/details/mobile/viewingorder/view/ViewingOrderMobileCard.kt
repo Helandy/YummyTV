@@ -62,7 +62,6 @@ internal fun ViewingOrderMobileCard(
             Text(
                 text = index.toString().padStart(2, '0'),
                 style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -91,7 +90,6 @@ internal fun ViewingOrderMobileCard(
                 Text(
                     text = year.toString(),
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.inverseSurface,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

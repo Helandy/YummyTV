@@ -119,7 +119,7 @@ internal fun TvSideMenuAccountItem(
                     Text(
                         text = if (unreadNotificationsCount > 9) "9+" else unreadNotificationsCount.toString(),
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onError,
                     )
                 }
@@ -129,7 +129,7 @@ internal fun TvSideMenuAccountItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = if (focused || selected) FontWeight.Bold else FontWeight.SemiBold,
+                fontWeight = if (focused || selected) FontWeight.SemiBold else FontWeight.SemiBold,
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -56,7 +56,6 @@ internal fun UserProfileMediaRow(
                 Text(
                     text = title.ifBlank { stringResource(R.string.user_profile_untitled) },
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,

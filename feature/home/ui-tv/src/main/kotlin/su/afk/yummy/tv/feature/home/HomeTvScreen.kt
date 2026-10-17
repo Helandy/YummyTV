@@ -33,7 +33,6 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -43,6 +42,7 @@ import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
 import su.afk.yummy.tv.feature.home.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
+import su.afk.yummy.tv.feature.home.view.HomeTvSkeleton
 import su.afk.yummy.tv.feature.home.view.HomePreviewChannelPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.view.TvRecommendationActionsDialog
@@ -116,6 +116,10 @@ fun HomeTvScreen(
                 is HomeState.Effect.ShowRecommendationUndo -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
+
+                is HomeState.Effect.ShowContinueWatchingUndo -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -166,7 +170,7 @@ fun HomeTvScreen(
                 modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
             )
 
-            feed == null || !state.hasInitialContent() -> TvLoadingScreen(
+            feed == null || !state.hasInitialContent() -> HomeTvSkeleton(
                 modifier = Modifier.tvFocusablePlaceholder(focusHandoff),
             )
 

@@ -8,5 +8,5 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class YaniSetFavoriteBodyDto(
-    val date: Long = System.currentTimeMillis() / 1000L,
+    val date: Long,
 )

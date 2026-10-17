@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,11 +25,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
-import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
@@ -125,7 +125,7 @@ fun CollectionsCatalogMobileScreen(
             val error = (appendState as? LoadState.Error)?.error
             if (error != null && pagingItems.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    MobileAppendError(
+                    ErrorBanner(
                         message = error.uiMessage(),
                         onRetry = { pagingItems.retry() },
                     )
@@ -159,10 +159,7 @@ fun CollectionsCatalogMobileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                        )
+                        YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     }
                 }
             }

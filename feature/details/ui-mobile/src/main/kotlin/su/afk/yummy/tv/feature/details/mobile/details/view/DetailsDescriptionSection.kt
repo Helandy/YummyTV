@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
@@ -24,12 +25,7 @@ internal fun DetailsDescriptionSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            text = stringResource(R.string.details_full_description),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        MobileSectionHeader(title = stringResource(R.string.details_full_description))
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,

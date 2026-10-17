@@ -7,10 +7,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
+import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.dialog.ConfirmDialogHost
@@ -31,6 +33,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TvMainGraph @Inject constructor(
+    private val appClock: AppClock,
     private val navManager: INavigationManager,
     private val backStackHost: BackStackHost,
     private val navigationHolder: TvNavigationHolder,
@@ -66,6 +69,7 @@ class TvMainGraph @Inject constructor(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,
                 ) {
                     TvMainScaffold(

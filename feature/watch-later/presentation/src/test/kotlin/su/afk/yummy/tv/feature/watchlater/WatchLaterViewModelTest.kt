@@ -1,11 +1,9 @@
 package su.afk.yummy.tv.feature.watchlater
 
 import androidx.navigation3.runtime.NavKey
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +19,6 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.watchlater.model.WatchLaterItem
 import su.afk.yummy.tv.domain.watchlater.repository.WatchLaterRepository
 import su.afk.yummy.tv.domain.watchlater.usecase.ObserveWatchLaterUseCase
-import su.afk.yummy.tv.domain.watchlater.usecase.PruneWatchedWatchLaterUseCase
 import su.afk.yummy.tv.domain.watchlater.usecase.RemoveWatchLaterEpisodeUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 
@@ -42,7 +39,6 @@ class WatchLaterViewModelTest : BaseUnitTest() {
         items = MutableStateFlow<List<WatchLaterItem>>(emptyList())
         with(repository) {
             every { observeAll() } returns items
-            coEvery { pruneWatched() } just Runs
             coEvery { remove(any(), any()) } coAnswers {
                 items.value = items.value.filterNot { it.animeId == firstArg<Int>() && it.episode == secondArg<String>() }
             }
@@ -58,16 +54,8 @@ class WatchLaterViewModelTest : BaseUnitTest() {
         nav = nav,
         observeWatchLater = ObserveWatchLaterUseCase(repository),
         removeWatchLaterEpisode = RemoveWatchLaterEpisodeUseCase(repository),
-        pruneWatchedWatchLater = PruneWatchedWatchLaterUseCase(repository),
         detailsNavigator = detailsNavigator,
     )
-
-    @Test
-    fun `prunes watched episodes on start`() {
-        createViewModel()
-
-        coVerify(exactly = 1) { repository.pruneWatched() }
-    }
 
     @Test
     fun `state follows the stored list`() {

@@ -224,7 +224,7 @@
     <string name="settings_subtitle_color_green">Зелёный</string>
     <string name="settings_subtitle_background_none">Нет</string>
     <string name="settings_subtitle_background_translucent">Полупрозрачный</string>
-    <string name="settings_subtitle_background_solid">Чёрный</string>
+    <string name="settings_subtitle_background_solid">Сплошной</string>
     <string name="settings_player_buffer_title">Размер буфера плеера</string>
     <string name="settings_player_buffer_minimal">Минимальный</string>
     <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 16 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка. У Alloha возможны остановки при обновлении сессии.</string>

@@ -89,7 +89,6 @@ internal fun RatingAction(
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
             color = color,
         )
     }

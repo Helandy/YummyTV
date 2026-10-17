@@ -34,6 +34,9 @@ class PlayerSetupState {
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event
         data object DoneSelected : Event
+
+        /** Пользователь выбрал «Остальное в настройках» — закрываем экран и открываем настройки. */
+        data object MoreSettingsSelected : Event
     }
 
     sealed interface Effect : UiEffect

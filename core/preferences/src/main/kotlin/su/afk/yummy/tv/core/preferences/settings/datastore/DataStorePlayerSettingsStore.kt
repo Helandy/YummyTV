@@ -33,6 +33,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureI
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerPlaybackSpeedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerResizeModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerZoomLevelKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
@@ -126,6 +127,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val mobilePlayerBrightnessPercent: Flow<Int?> = store.data.map { prefs ->
         prefs[mobilePlayerBrightnessPercentKey]?.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
+    }
+
+    override val playerPlaybackSpeed: Flow<Float> = store.data.map { prefs ->
+        (prefs[playerPlaybackSpeedKey] ?: DEFAULT_PLAYBACK_SPEED)
+            .coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)
     }
 
     override val volumeStabilizationEnabled: Flow<Boolean> =
@@ -275,6 +281,12 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun setPlayerPlaybackSpeed(speed: Float) {
+        store.edit { prefs ->
+            prefs[playerPlaybackSpeedKey] = speed.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)
+        }
+    }
+
     override suspend fun setVolumeStabilizationEnabled(enabled: Boolean) =
         store.setBoolean(volumeStabilizationEnabledKey, enabled)
 
@@ -328,6 +340,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     private companion object {
         const val DEFAULT_VOLUME_PERCENT = 100
+        const val DEFAULT_PLAYBACK_SPEED = 1f
+        const val MIN_PLAYBACK_SPEED = 0.25f
+        const val MAX_PLAYBACK_SPEED = 4f
         const val MAX_VOLUME_PERCENT = 100
         const val MIN_BRIGHTNESS_PERCENT = 1
         const val DEFAULT_AUTO_SKIP_DELAY_SECONDS = 5

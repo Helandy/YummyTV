@@ -63,7 +63,6 @@ internal fun ProfileStatsDonutChart(
             Text(
                 text = totalLabel,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
@@ -71,7 +70,7 @@ internal fun ProfileStatsDonutChart(
             Text(
                 text = percentLabel,
                 style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 maxLines = 1,

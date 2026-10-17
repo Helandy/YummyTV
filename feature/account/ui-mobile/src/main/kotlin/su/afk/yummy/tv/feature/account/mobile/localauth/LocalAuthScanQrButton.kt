@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.account.presentation.R
 
 /** Основной путь входа на ТВ: скан QR вместо выбора ТВ и ручного ввода кода. */
@@ -43,7 +43,7 @@ internal fun LocalAuthScanQrButton(
         ) {
             // Первый скан может ждать загрузки модуля сканера из Play Services.
             if (isPreparing) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                YummyLoadingIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             } else {
                 Icon(
                     imageVector = Icons.Filled.QrCodeScanner,

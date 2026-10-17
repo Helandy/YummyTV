@@ -125,7 +125,6 @@ internal fun SubscriptionsPickerOverlay(
                     Text(
                         text = stringResource(R.string.details_subscriptions),
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
                         color = Color.White.copy(alpha = 0.72f),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
@@ -236,7 +235,6 @@ private fun SubscriptionOptionItem(
                 else R.string.details_subscription_subscribe,
             ),
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
             color = textColor,
             maxLines = 1,
         )

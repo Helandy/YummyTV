@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,9 +21,10 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
-import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.resolve
@@ -46,7 +47,7 @@ internal fun CommentsList(
     ) {
         (appendState as? LoadState.Error)?.error?.let { error ->
             item(key = "soft_error") {
-                MobileAppendError(
+                ErrorBanner(
                     message = error.uiMessage(),
                     onRetry = { onEvent(CommentsState.Event.RetrySelected) },
                 )
@@ -119,10 +120,7 @@ internal fun CommentsList(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(end = 10.dp),
-                        strokeWidth = 2.dp,
-                    )
+                    YummyLoadingIndicator(modifier = Modifier.padding(end = 10.dp).size(18.dp), strokeWidth = 2.dp)
                     Text(
                         text = stringResource(CoreR.string.common_loading),
                         style = MaterialTheme.typography.bodySmall,

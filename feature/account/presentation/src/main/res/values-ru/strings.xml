@@ -11,6 +11,8 @@
         <string name="account_logout">Выйти</string>
     <string name="account_login_placeholder">Email или никнейм</string>
     <string name="account_password_placeholder">Пароль</string>
+    <string name="account_mobile_password_show">Показать пароль</string>
+    <string name="account_mobile_password_hide">Скрыть пароль</string>
     <string name="account_mobile_register">Регистрация</string>
     <string name="account_mobile_register_hint">Создайте новый аккаунт, чтобы синхронизировать ваш прогресс и многое другое.</string>
     <string name="account_registration_title">Регистрация</string>
@@ -235,8 +237,8 @@
     <string name="account_local_auth_login_from_mobile_hint">Поиск устройства и передача через локальную сеть по коду</string>
     <string name="account_local_auth_pairing_title">Вход через мобильное приложение</string>
     <string name="account_local_auth_pairing_subtitle">Убедитесь, что оба устройства в одной сети Wi-Fi. На телефоне перейдите в Аккаунт -> Войти на ТВ и отсканируйте QR-код или введите код:</string>
-    <string name="account_local_auth_transferring">Получение сессии...</string>
-    <string name="account_local_auth_success">Успешно! Входим...</string>
+    <string name="account_local_auth_transferring">Получение сессии…</string>
+    <string name="account_local_auth_success">Успешно! Входим…</string>
     <string name="account_local_auth_error_pin_expired">Срок действия кода истёк.</string>
     <string name="account_local_auth_error_too_many_attempts">Слишком много неудачных попыток.</string>
     <string name="account_local_auth_error_service_unavailable">Не удалось объявить ТВ в локальной сети.</string>

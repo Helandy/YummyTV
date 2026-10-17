@@ -4,10 +4,12 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_COLLECTION
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_SERIES
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_VIDEO
+import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_ANNOUNCEMENTS
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_COLLECTIONS
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_CONTINUE_WATCHING
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_HERO
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
+import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_TITLES
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_RECOMMENDATIONS
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_SCHEDULE
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
@@ -49,10 +51,18 @@ internal fun YaniFeedDto.toHomeFeedCache(
             watchSignature,
             HOME_FEED_CONTAINER_SCHEDULE,
         ) + response.newVideos.toNewVideoEntries(language, watchSignature) +
-                response.recommends.toSeriesEntries(
+                response.new.toSeriesEntries(
+                    language,
+                    watchSignature,
+                    HOME_FEED_CONTAINER_NEW_TITLES,
+                ) + response.recommends.toSeriesEntries(
                     language,
                     watchSignature,
                     HOME_FEED_CONTAINER_RECOMMENDATIONS,
+                ) + response.announcements.toSeriesEntries(
+                    language,
+                    watchSignature,
+                    HOME_FEED_CONTAINER_ANNOUNCEMENTS,
                 ) + response.collections.toCollectionEntries(language, watchSignature),
     )
 
@@ -78,9 +88,19 @@ internal fun HomeFeedCache.toHomeFeed(stringProvider: StringProvider): HomeFeed 
                 container = HOME_FEED_CONTAINER_NEW_RELEASES,
             ),
             section(
+                type = HomeFeedSectionType.NEW_TITLES,
+                title = stringProvider.get(R.string.home_section_new_titles),
+                container = HOME_FEED_CONTAINER_NEW_TITLES,
+            ),
+            section(
                 type = HomeFeedSectionType.RECOMMENDATIONS,
                 title = stringProvider.get(R.string.home_section_recommends),
                 container = HOME_FEED_CONTAINER_RECOMMENDATIONS,
+            ),
+            section(
+                type = HomeFeedSectionType.ANNOUNCEMENTS,
+                title = stringProvider.get(R.string.home_section_announcements),
+                container = HOME_FEED_CONTAINER_ANNOUNCEMENTS,
             ),
             section(
                 type = HomeFeedSectionType.COLLECTIONS,

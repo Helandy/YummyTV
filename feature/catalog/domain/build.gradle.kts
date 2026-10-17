@@ -9,7 +9,10 @@ java {
 }
 
 dependencies {
+    api(libs.kotlinx.coroutines.core)
     implementation(libs.javax.inject)
 
     testImplementation(libs.kotlin.test)
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

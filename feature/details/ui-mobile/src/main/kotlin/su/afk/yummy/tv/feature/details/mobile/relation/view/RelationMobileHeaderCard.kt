@@ -44,13 +44,11 @@ internal fun RelationMobileHeaderCard(
             Text(
                 text = stringResource(relationType.labelRes()),
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
                 text = relation.title,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
             )
             relation.secondaryTitle?.let { secondaryTitle ->
                 Text(

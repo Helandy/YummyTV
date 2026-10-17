@@ -8,12 +8,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
+import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.dialog.ConfirmDialogHost
@@ -39,6 +41,7 @@ import javax.inject.Singleton
 
 @Singleton
 class MobileMainGraph @Inject internal constructor(
+    private val appClock: AppClock,
     private val navManager: INavigationManager,
     private val backStackHost: BackStackHost,
     private val navigationHolder: MobileNavigationHolder,
@@ -80,6 +83,7 @@ class MobileMainGraph @Inject internal constructor(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,
                     LocalResolveKodikThumbnailUrl provides resolveKodikThumbnailUrl::invoke,
                     LocalMobileBottomBarUpFocusRequester provides accountSettingsFocusRequester.takeIf {

@@ -30,8 +30,8 @@ fun HomeContinueWatchingItem.timingLabel(): String? =
         positionMs.millisToClockTime()
     }
 
-fun WatchHistoryEntry.watchedAtLabel(): String? =
-    watchedAtSeconds.takeIf { it > 0 }?.formatRelativeDateTime()
+fun WatchHistoryEntry.watchedAtLabel(nowMillis: Long): String? =
+    watchedAtSeconds.takeIf { it > 0 }?.formatRelativeDateTime(nowMillis)
 
 fun WatchHistoryEntry.timingLabel(): String? =
     if (durationSeconds > 0) {

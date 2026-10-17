@@ -117,7 +117,7 @@ fun TvTitleCard(
                 MarqueeTitleText(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     minLines = 2,
                     maxLines = 2,
                     isFocused = isFocused,

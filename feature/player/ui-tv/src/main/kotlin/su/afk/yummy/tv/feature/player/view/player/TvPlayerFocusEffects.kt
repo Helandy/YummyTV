@@ -107,19 +107,9 @@ internal fun TvPlayerFocusEffects(
             requestFocusUntilTimeout(focus.selectedBalancer)
         }
     }
-    LaunchedEffect(panels.isOpen(TvPlayerPanel.Speed)) {
-        if (panels.isOpen(TvPlayerPanel.Speed)) {
-            requestFocusUntilTimeout(focus.selectedSpeed)
-        }
-    }
-    LaunchedEffect(panels.isOpen(TvPlayerPanel.Resize)) {
-        if (panels.isOpen(TvPlayerPanel.Resize)) {
-            requestFocusUntilTimeout(focus.selectedResize)
-        }
-    }
-    LaunchedEffect(panels.isOpen(TvPlayerPanel.Volume)) {
-        if (panels.isOpen(TvPlayerPanel.Volume)) {
-            requestFocusUntilTimeout(focus.selectedVolume)
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.PlayerSettings)) {
+        if (panels.isOpen(TvPlayerPanel.PlayerSettings)) {
+            requestFocusUntilTimeout(focus.selectedPlayerSettings)
         }
     }
     LaunchedEffect(panels.isOpen(TvPlayerPanel.Alloha)) {

@@ -175,7 +175,6 @@ private fun LibraryTopTabCountBadge(
         Text(
             text = count.toString(),
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             maxLines = 1,
             modifier = Modifier

@@ -26,7 +26,6 @@ internal fun FullDetailsRow(
         Text(
             text = label,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.56f),
             modifier = Modifier.width(220.dp),
         )

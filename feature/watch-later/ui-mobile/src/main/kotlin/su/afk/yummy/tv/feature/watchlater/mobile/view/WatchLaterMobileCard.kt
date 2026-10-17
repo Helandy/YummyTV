@@ -65,7 +65,6 @@ internal fun WatchLaterMobileCard(
                 Text(
                     text = item.episode,
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .align(Alignment.TopStart)

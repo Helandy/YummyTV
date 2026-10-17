@@ -37,7 +37,7 @@ class EpisodeDubbingSelectionTest : BaseUnitTest() {
     fun `balancer label counts only players that have this very episode`() {
         val items = videos.episodeDubbingItems("2").associateBy { it.name }
 
-        assertEquals("CVH • Kodik • Sibnet", items.getValue(MC).supportedBalancers)
+        assertEquals("Kodik • CVH • Sibnet", items.getValue(MC).supportedBalancers)
         assertEquals("Kodik", items.getValue(SHIZA).supportedBalancers)
     }
 

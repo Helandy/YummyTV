@@ -50,7 +50,6 @@ fun PlayerSetupTvScreen(
         Text(
             text = stringResource(R.string.player_setup_title),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(

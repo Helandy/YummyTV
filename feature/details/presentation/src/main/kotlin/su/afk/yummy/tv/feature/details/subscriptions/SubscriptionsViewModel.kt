@@ -6,12 +6,15 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.details.handler.ScreenSubscriptionBaseResult
@@ -24,6 +27,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
     private val nav: INavigationManager,
     private val subscriptionHandler: DetailsSubscriptionHandler,
     private val analytics: DetailsAnalytics,
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
 ) : BaseViewModel<SubscriptionsState.State, SubscriptionsState.Event, SubscriptionsState.Effect>() {
 
     @AssistedFactory
@@ -35,6 +39,9 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
 
     init {
         analytics.eventSubscriptionsScreenOpened(animeId)
+        appLifecycleSettingsStore.notificationPermissionRequested
+            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
         viewModelScope.launch { load() }
     }
 
@@ -47,6 +54,9 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
             }
 
             is SubscriptionsState.Event.SubscriptionToggled -> toggleSubscription(event.key)
+            SubscriptionsState.Event.NotificationPermissionRequested -> viewModelScope.launch {
+                appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
         }
     }
 

@@ -46,7 +46,6 @@ internal fun HoldTutorialIllustration(accent: Color) {
             text = "2×",
             color = Color.White,
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(top = 112.dp),

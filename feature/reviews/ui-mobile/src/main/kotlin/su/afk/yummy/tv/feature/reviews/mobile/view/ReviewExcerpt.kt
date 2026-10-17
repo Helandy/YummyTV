@@ -29,7 +29,6 @@ internal fun ReviewExcerpt(
             Text(
                 text = review.animeTitle,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

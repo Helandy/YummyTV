@@ -48,7 +48,6 @@ internal fun UserFriendRow(item: UserFriend, onClick: () -> Unit) {
                 Text(
                     text = item.nickname.ifBlank { stringResource(R.string.account_unknown_user) },
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

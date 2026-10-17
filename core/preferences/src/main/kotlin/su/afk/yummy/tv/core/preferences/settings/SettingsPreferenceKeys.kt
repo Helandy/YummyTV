@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.preferences.settings
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -55,6 +56,8 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("advanced_player_volume_percent")
     val mobilePlayerBrightnessPercentKey =
         intPreferencesKey("mobile_player_brightness_percent")
+    val playerPlaybackSpeedKey =
+        floatPreferencesKey("player_playback_speed")
     val volumeStabilizationEnabledKey =
         booleanPreferencesKey("volume_stabilization_enabled")
     val playerBufferProfileKey = stringPreferencesKey("player_buffer_profile")

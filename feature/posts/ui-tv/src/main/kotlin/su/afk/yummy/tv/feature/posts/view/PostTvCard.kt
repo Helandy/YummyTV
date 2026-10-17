@@ -65,7 +65,7 @@ fun PostTvCard(post: PostSummary, onClick: () -> Unit, modifier: Modifier = Modi
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    post.category.title.uppercase(),
+                    post.category.title,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,

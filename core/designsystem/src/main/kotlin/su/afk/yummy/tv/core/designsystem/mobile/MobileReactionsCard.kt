@@ -112,7 +112,6 @@ private fun MobileReactionButton(
             Text(
                 text = count.toCompactCount(),
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp),
             )
         }

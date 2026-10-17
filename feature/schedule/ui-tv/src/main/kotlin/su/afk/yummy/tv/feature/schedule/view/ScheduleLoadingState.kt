@@ -53,7 +53,7 @@ internal fun ScheduleLoadingState(modifier: Modifier = Modifier) {
             repeat(7) { index ->
                 ScheduleSkeletonBlock(
                     modifier = Modifier
-                        .width(78.dp)
+                        .width(84.dp)
                         .height(72.dp),
                     alpha = alpha,
                     color = if (index == 0) brightColor else baseColor,

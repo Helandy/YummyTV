@@ -48,7 +48,7 @@ internal fun LocalAuthPairingCode(
                     lineHeight = lineHeight,
                     letterSpacing = 8.sp,
                 ),
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = CodeLines,
             )

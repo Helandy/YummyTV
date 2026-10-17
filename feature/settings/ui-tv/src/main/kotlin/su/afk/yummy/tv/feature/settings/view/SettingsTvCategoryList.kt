@@ -13,6 +13,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
+import su.afk.yummy.tv.feature.settings.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /** Левый вертикальный список категорий настроек (master); контент выбранной категории — справа. */
@@ -37,6 +38,7 @@ internal fun SettingsTvCategoryList(
             val tabContentFocusRequester = contentFocusRequesters.getValue(tab)
             SettingsCategoryItem(
                 label = stringResource(tab.labelRes),
+                icon = tab.icon,
                 selected = tab == selectedTab,
                 contentFocusRequester = tabContentFocusRequester,
                 modifier = Modifier

@@ -89,7 +89,6 @@ internal fun ScheduleMobileReleaseCard(
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -117,7 +116,6 @@ internal fun ScheduleMobileReleaseCard(
             text = releaseAt.timeLabel(),
             modifier = Modifier.widthIn(min = 58.dp),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
             color = accentColor,
             maxLines = 1,
         )

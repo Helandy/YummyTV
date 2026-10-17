@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,13 +17,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.feature.account.common.utils.formatProfileDate
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.friendshipActionLabel
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileAvatar
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileSurfacePanel
 import su.afk.yummy.tv.feature.account.mobile.view.UserProfileActions
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
-import su.afk.yummy.tv.feature.account.common.utils.formatProfileDate
 
 @Composable
 internal fun UserProfileHeader(
@@ -42,21 +42,25 @@ internal fun UserProfileHeader(
             AccountMobileAvatar(
                 avatarUrl = profile?.avatarUrl.orEmpty(),
                 nickname = profile?.nickname.orEmpty(),
+                isLoading = profile == null && state.isOverviewLoading,
             )
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text(
-                    text = profile?.nickname?.ifBlank {
-                        stringResource(R.string.account_unknown_user)
-                    } ?: stringResource(R.string.account_unknown_user),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                // Пока профиль грузится, имени ещё нет: запасное «Неизвестный пользователь»
+                // показываем только по итогам запроса, иначе оно мелькает при каждом открытии.
+                if (profile != null || !state.isOverviewLoading) {
+                    Text(
+                        text = profile?.nickname?.ifBlank {
+                            stringResource(R.string.account_unknown_user)
+                        } ?: stringResource(R.string.account_unknown_user),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 if (profile != null) {
                     Text(
                         text = stringResource(
@@ -76,10 +80,7 @@ internal fun UserProfileHeader(
                         )
                     }
                 } else if (state.isOverviewLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
+                    YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 }
             }
         }
@@ -106,7 +107,7 @@ internal fun UserProfileHeader(
                             UserProfileState.Event.FriendshipActionSelected
                         } else {
                             UserProfileState.Event.LoginToFriendSelected
-                        }
+                        },
                     )
                 },
                 onCommentsClick = { onEvent(UserProfileState.Event.CommentsSelected) },

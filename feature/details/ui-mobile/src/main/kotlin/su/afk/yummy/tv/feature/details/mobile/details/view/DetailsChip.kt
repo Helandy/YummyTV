@@ -42,7 +42,7 @@ internal fun DetailsChip(
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f),
             maxLines = 1,
         )

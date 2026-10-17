@@ -2,8 +2,10 @@ package su.afk.yummy.tv.feature.details.subscriptions
 
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -14,6 +16,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
@@ -27,6 +30,10 @@ class SubscriptionsViewModelTest : BaseUnitTest() {
     private val errorHandler: ErrorHandler = mockk(relaxed = true)
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
+    private val permissionRequested = MutableStateFlow(false)
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true) {
+        every { notificationPermissionRequested } returns permissionRequested
+    }
     private val subscriptionHandler: DetailsSubscriptionHandler = mockk()
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
 
@@ -50,6 +57,7 @@ class SubscriptionsViewModelTest : BaseUnitTest() {
         nav = nav,
         subscriptionHandler = subscriptionHandler,
         analytics = DetailsAnalytics(tracker),
+        appLifecycleSettingsStore = appLifecycleSettingsStore,
     )
 
     @Test
@@ -130,6 +138,19 @@ class SubscriptionsViewModelTest : BaseUnitTest() {
         createViewModel().setEvent(Event.BackSelected)
 
         verify(exactly = 1) { nav.back() }
+    }
+
+    @Test
+    fun `permission request flag is mirrored and remembered`() {
+        coEvery { subscriptionHandler.loadScreenSubscriptionBase(ANIME_ID) } returns ScreenSubscriptionBaseResult.SignedOut
+        val vm = createViewModel()
+        assertFalse(vm.currentState.notificationPermissionRequested)
+
+        vm.setEvent(Event.NotificationPermissionRequested)
+        permissionRequested.value = true
+
+        assertTrue(vm.currentState.notificationPermissionRequested)
+        coVerify(exactly = 1) { appLifecycleSettingsStore.markNotificationPermissionRequested() }
     }
 
     private companion object {

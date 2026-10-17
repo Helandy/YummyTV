@@ -86,7 +86,7 @@ fun MobilePosterCard(
                     Text(
                         text = badge,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
                             .align(Alignment.TopStart)

@@ -31,8 +31,8 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.feature.player.presentation.R
 
 /**
- * Alloha reports dubbings and subtitles together, so one panel carries both as sections - the same
- * shape the mobile sheet uses - instead of two sibling panels behind two separate buttons.
+ * Alloha's own dubbing list. Its subtitles moved to the right-side sound & subtitles panel, next to
+ * the subtitle look settings.
  */
 @Composable
 internal fun TvPlayerAllohaPanel(
@@ -40,15 +40,12 @@ internal fun TvPlayerAllohaPanel(
     audioTrackNames: List<String>,
     selectedAudioTrackIndex: Int,
     onAudioTrackSelected: (index: Int) -> Unit,
-    subtitleTrackNames: List<String>,
-    selectedSubtitleTrackIndex: Int,
-    onSubtitleTrackSelected: (index: Int) -> Unit,
     selectedFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     onExitDown: (() -> Unit)? = null,
 ) {
     AnimatedVisibility(
-        visible = visible && (audioTrackNames.isNotEmpty() || subtitleTrackNames.isNotEmpty()),
+        visible = visible && audioTrackNames.isNotEmpty(),
         modifier = modifier,
         enter = fadeIn(),
         exit = fadeOut(),
@@ -96,28 +93,8 @@ internal fun TvPlayerAllohaPanel(
                             } else {
                                 Modifier
                             },
-                            onExitDown = null,
+                            onExitDown = if (index == audioTrackNames.lastIndex) onExitDown else null,
                             onClick = { onAudioTrackSelected(index) },
-                        )
-                    }
-                }
-                if (subtitleTrackNames.isNotEmpty()) {
-                    item(key = "subtitle-header") {
-                        PanelSectionHeader(stringResource(R.string.player_subtitles_title))
-                    }
-                    itemsIndexed(subtitleTrackNames, keyPrefix = "subtitle") { index, label ->
-                        PlayerSelectionItem(
-                            label = label,
-                            metaContent = {},
-                            selected = index == selectedSubtitleTrackIndex,
-                            enabled = true,
-                            modifier = Modifier,
-                            onExitDown = if (index == subtitleTrackNames.lastIndex) {
-                                onExitDown
-                            } else {
-                                null
-                            },
-                            onClick = { onSubtitleTrackSelected(index) },
                         )
                     }
                 }

@@ -61,7 +61,6 @@ internal fun ProfileStatsCard(
             Text(
                 text = page.title,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

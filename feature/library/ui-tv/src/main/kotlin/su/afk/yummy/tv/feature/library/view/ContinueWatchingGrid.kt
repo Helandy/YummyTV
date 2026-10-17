@@ -62,6 +62,8 @@ internal fun ContinueWatchingGrid(
     onEntrySelected: (HomeContinueWatchingItem) -> Unit,
     onDetailsSelected: (HomeContinueWatchingItem) -> Unit,
     onRemoveWatchProgress: (HomeContinueWatchingItem) -> Unit,
+    /** Спрашивает подтверждение; переданное действие (фокус + удаление) выполняется только после «Удалить». */
+    confirmRemoval: (title: String, proceed: () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -225,6 +227,7 @@ internal fun ContinueWatchingGrid(
                         remember(entry.animeId, index) { { rememberFocusedEntry(index) } }
                     val stableOnDelete = remember(entry.animeId, index) {
                         {
+                          confirmRemoval(entry.animeTitle.ifBlank { entry.episode }) {
                             pendingFocusAfterDeleteIndex = index
                             pendingDeletedEntryId = entry.animeId
                             val immediateTarget =
@@ -237,6 +240,7 @@ internal fun ContinueWatchingGrid(
                                 runCatching { selectedTabFocusRequester.requestFocus() }
                             }
                             onRemoveWatchProgress(entry)
+                          }
                         }
                     }
                     ContinueWatchingGridCard(

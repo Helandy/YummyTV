@@ -49,7 +49,6 @@ internal fun FullRatingRow(details: AnimeDetails) {
             Text(
                 text = rating,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.70f),
             )
         }

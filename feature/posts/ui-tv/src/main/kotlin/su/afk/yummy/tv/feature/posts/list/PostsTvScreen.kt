@@ -38,6 +38,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
@@ -46,7 +47,6 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
@@ -242,7 +242,8 @@ fun PostsTvScreen(
         when (posts.loadState.append) {
             is LoadState.Loading -> item { TvLoadingFooter() }
             is LoadState.Error -> item {
-                TvAppendErrorFooter(
+                ErrorBanner(
+                    tv = true,
                     message = stringResource(R.string.posts_error),
                     onRetry = posts::retry,
                 )

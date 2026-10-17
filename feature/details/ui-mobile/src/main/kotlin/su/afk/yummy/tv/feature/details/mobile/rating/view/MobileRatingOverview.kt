@@ -72,7 +72,6 @@ internal fun MobileRatingOverview(
                         Text(
                             text = average?.formatRating() ?: "-",
                             style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
@@ -96,7 +95,7 @@ internal fun MobileRatingOverview(
                                 addStyle(
                                     SpanStyle(
                                         color = ratingColor,
-                                        fontWeight = FontWeight.ExtraBold,
+                                        fontWeight = FontWeight.SemiBold,
                                         fontSize = 26.sp,
                                     ),
                                     start,

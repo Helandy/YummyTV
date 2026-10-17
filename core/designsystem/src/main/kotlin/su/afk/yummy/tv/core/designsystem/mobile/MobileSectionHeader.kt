@@ -46,7 +46,7 @@ fun MobileSectionHeader(
                 fontSize = 18.sp,
                 lineHeight = 26.sp,
             ),
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f),
             maxLines = 1,
@@ -64,7 +64,6 @@ fun MobileSectionHeader(
                 Text(
                     text = trailingActionLabel,
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
                 )
             }
         }

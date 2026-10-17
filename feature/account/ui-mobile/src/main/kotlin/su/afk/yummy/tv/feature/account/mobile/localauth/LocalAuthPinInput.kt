@@ -140,7 +140,6 @@ private fun PinCell(
             Text(
                 text = digit.toString(),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface,
             )
         } else {

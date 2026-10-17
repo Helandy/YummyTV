@@ -151,7 +151,6 @@ private fun TvControlsTutorialDetails(
             text = title,
             color = Color.White,
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 8.dp),
         )
         Text(

@@ -8,7 +8,9 @@ import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -158,6 +160,7 @@ private val LightOnBackground = Color(0xFF1A1A1A)
 private val LightOnSurfaceVariant = Color(0xFF444444)
 private val LightOutline = Color(0xFF757575)
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun YummyTvTheme(
     appTheme: AppTheme = AppTheme.WARM_AMBER,
@@ -218,6 +221,7 @@ fun YummyTvTheme(
             colorScheme = colorScheme,
             typography = YummyMobileTypography,
             shapes = YummyShapes,
+            motionScheme = MotionScheme.expressive(),
             content = content,
         )
     }

@@ -13,6 +13,7 @@ dependencies {
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
+    implementation(project(":feature:settings:api"))
 
     implementation(libs.kotlinx.coroutines.android)
 

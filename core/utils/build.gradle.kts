@@ -23,6 +23,8 @@ dependencies {
     // Только ради GoogleApiAvailability в CastSupport: у basement уже объявлены <queries>
     // для com.google.android.gms, поэтому проверка версии GMS работает и на API 30+.
     implementation(libs.play.services.base)
+    // Доверенное время Google: системные часы приставок без NTP уезжают на дни.
+    implementation(libs.play.services.time)
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)

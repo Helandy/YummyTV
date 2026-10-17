@@ -111,7 +111,6 @@ internal fun VideoDownloadMobileCard(
                 Text(
                     text = item.episode,
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -155,7 +154,6 @@ internal fun VideoDownloadMobileCard(
                     Text(
                         text = item.animeTitle,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,

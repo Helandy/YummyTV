@@ -54,7 +54,7 @@ internal fun StatBar(label: String, valueLabel: String, fraction: Float) {
         Text(
             text = valueLabel,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(52.dp),
         )

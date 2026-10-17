@@ -57,7 +57,7 @@ internal fun UserProfileTabs(
                                 Text(
                                     text = count.tabCountLabel(),
                                     style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.ExtraBold,
+                                    fontWeight = FontWeight.SemiBold,
                                 )
                             }
                         }

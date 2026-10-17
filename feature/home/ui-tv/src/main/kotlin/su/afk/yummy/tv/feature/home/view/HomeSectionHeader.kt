@@ -56,7 +56,6 @@ internal fun HomeSectionHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
             color = titleColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

@@ -37,7 +37,6 @@ internal fun DialogMobileAvatar(
         Text(
             text = name.avatarInitial(),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
         )
         if (!avatarUrl.isNullOrBlank()) {

@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -28,6 +29,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
@@ -36,20 +38,22 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.model.LibraryTab
+import su.afk.yummy.tv.feature.library.model.PendingLibraryTvRemoval
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.focusStateKey
+import su.afk.yummy.tv.feature.library.utils.isLocalLoading
+import su.afk.yummy.tv.feature.library.utils.label
 import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
-import su.afk.yummy.tv.feature.library.view.LibraryRemoteErrorBanner
 import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
-import su.afk.yummy.tv.feature.library.view.LibraryTvHistoryPage
+import su.afk.yummy.tv.feature.library.view.LibraryTvRemoveConfirmDialog
 
 @Preview(
     name = "Default",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
-    showBackground = true
+    showBackground = true,
 )
 @Composable
 private fun LibraryTvScreenDefaultPreview() = ScreenPreviewTheme {
@@ -62,12 +66,21 @@ fun LibraryTvScreen(
     effect: Flow<LibraryState.Effect>,
     onEvent: (LibraryState.Event) -> Unit,
 ) {
+    // История на ТВ — отдельный пункт бокового меню: во вкладках её нет, чтобы LEFT с первой
+    // вкладки уходил в меню, а не на «Историю».
+    val tvTabs = remember(state.tabs) { state.tabs.filterNot { it == LibraryTab.HISTORY } }
+    val selectedTab = state.selectedTab.takeIf { it != LibraryTab.HISTORY }
+        ?: tvTabs.firstOrNull()
+        ?: LibraryTab.CONTINUE_WATCHING
+    LaunchedEffect(state.selectedTab, selectedTab) {
+        if (state.selectedTab != selectedTab) onEvent(LibraryState.Event.TabSelected(selectedTab))
+    }
     val gridFocusRequester = remember { FocusRequester() }
     // Вкладок фиксированный набор: запросы фокуса не зависят от порядка, который задаёт пользователь.
     val tabFocusRequesters = remember {
         LibraryTab.entries.associateWith { FocusRequester() }
     }
-    val selectedTabFocusRequester = tabFocusRequesters.getValue(state.selectedTab)
+    val selectedTabFocusRequester = tabFocusRequesters.getValue(selectedTab)
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -76,16 +89,27 @@ fun LibraryTvScreen(
     val scope = rememberCoroutineScope()
     val currentOnEvent by rememberUpdatedState(onEvent)
     var restoreGridFocusOnResume by rememberSaveable { mutableStateOf(false) }
+    var pendingRemoval by remember { mutableStateOf<PendingLibraryTvRemoval?>(null) }
+    val selectedTabTitle = selectedTab.label()
+    val confirmRemoval: (String, () -> Unit) -> Unit = remember(selectedTabTitle) {
+        { title, proceed ->
+            pendingRemoval = PendingLibraryTvRemoval(
+                title = title,
+                listTitle = selectedTabTitle,
+                proceed = proceed,
+            )
+        }
+    }
     val tabCounts = remember(
         state.continueWatching,
         state.items,
     ) {
         LibraryTab.entries.associateWith { tab -> state.tvTabItemCount(tab) }
     }
-    val hasFocusableGridContent = when (state.selectedTab) {
+    val hasFocusableGridContent = when (selectedTab) {
         LibraryTab.CONTINUE_WATCHING -> state.continueWatching.isNotEmpty()
-        LibraryTab.HISTORY -> state.isSignedIn
-        else -> state.tabItems[state.selectedTab]?.isNotEmpty() == true
+        LibraryTab.HISTORY -> false
+        else -> state.tabItems[selectedTab]?.isNotEmpty() == true
     }
 
     val preferredContentFocusRequester =
@@ -135,8 +159,8 @@ fun LibraryTvScreen(
             .background(MaterialTheme.colorScheme.background),
     ) {
         LibraryTopTabs(
-            tabs = state.tabs,
-            selectedTab = state.selectedTab,
+            tabs = tvTabs,
+            selectedTab = selectedTab,
             tabCounts = tabCounts,
             contentCanFocus = hasFocusableGridContent,
             onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
@@ -146,9 +170,10 @@ fun LibraryTvScreen(
         )
 
         state.remoteError?.let { error ->
-            LibraryRemoteErrorBanner(
+            ErrorBanner(
+                tv = true,
                 message = error.asString(),
-                isLoading = state.isRemoteLoading,
+                enabled = !state.isRemoteLoading,
                 onRetry = { onEvent(LibraryState.Event.RetrySelected) },
             )
         }
@@ -159,15 +184,18 @@ fun LibraryTvScreen(
                 .weight(1f),
             contentAlignment = Alignment.Center,
         ) {
-            val isInitialLoading = state.isRemoteLoading &&
-                    state.remoteError == null &&
-                    state.items.isEmpty() &&
-                    state.continueWatching.isEmpty()
+            val isInitialLoading = state.isLocalLoading(selectedTab) ||
+                (
+                    state.isRemoteLoading &&
+                        state.remoteError == null &&
+                        state.items.isEmpty() &&
+                        state.continueWatching.isEmpty()
+                    )
             if (isInitialLoading) {
                 TvLoadingScreen()
                 return@Box
             }
-            when (state.selectedTab) {
+            when (selectedTab) {
                 LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
                     entries = state.continueWatching,
                     launchingAnimeId = state.launchingContinueWatchingAnimeId,
@@ -175,7 +203,7 @@ fun LibraryTvScreen(
                     gridFocusRequester = gridFocusRequester,
                     selectedTabFocusRequester = selectedTabFocusRequester,
                     focusStateKey = LibraryTab.CONTINUE_WATCHING.focusStateKey(
-                        LibraryFocusSourceLocal
+                        LibraryFocusSourceLocal,
                     ),
                     onEntrySelected = {
                         restoreGridFocusOnResume = true
@@ -188,19 +216,11 @@ fun LibraryTvScreen(
                     onRemoveWatchProgress = {
                         onEvent(LibraryState.Event.RemoveWatchProgress(it))
                     },
+                    confirmRemoval = confirmRemoval,
                 )
 
-                LibraryTab.HISTORY -> LibraryTvHistoryPage(
-                    history = state.watchHistory,
-                    localProgress = state.historyLocalProgress,
-                    isSignedIn = state.isSignedIn,
-                    gridFocusRequester = gridFocusRequester,
-                    focusStateKey = LibraryTab.HISTORY.focusStateKey(LibraryFocusSourceLocal),
-                    // Восстановление фокуса по ON_RESUME живёт внутри страницы:
-                    // restoreGridFocusOnResume гонялся бы с ним за фокус.
-                    onEntrySelected = { onEvent(LibraryState.Event.HistorySelected(it)) },
-                    onDetailsSelected = { onEvent(LibraryState.Event.HistoryDetailsSelected(it.animeId)) },
-                )
+                // Не показывается на ТВ: выше вкладка подменяется на первую из tvTabs.
+                LibraryTab.HISTORY -> Unit
 
                 LibraryTab.FAVORITES -> {
                     val favoriteItems = state.tabItems[LibraryTab.FAVORITES].orEmpty()
@@ -210,7 +230,7 @@ fun LibraryTvScreen(
                         gridFocusRequester = gridFocusRequester,
                         selectedTabFocusRequester = selectedTabFocusRequester,
                         focusStateKey = LibraryTab.FAVORITES.focusStateKey(
-                            LibraryFocusSourceLocal
+                            LibraryFocusSourceLocal,
                         ),
                         showTitleYear = state.showTitleYear,
                         onAnimeSelected = {
@@ -222,9 +242,10 @@ fun LibraryTvScreen(
                                 LibraryState.Event.RemoveEntry(
                                     it,
                                     LibraryRemoveTarget.FAVORITE,
-                                )
+                                ),
                             )
                         },
+                        confirmRemoval = confirmRemoval,
                     )
                 }
 
@@ -232,14 +253,15 @@ fun LibraryTvScreen(
                 LibraryTab.PLANNED,
                 LibraryTab.COMPLETED,
                 LibraryTab.POSTPONED,
-                LibraryTab.DROPPED -> {
-                    val localItems = state.tabItems[state.selectedTab].orEmpty()
+                LibraryTab.DROPPED,
+                -> {
+                    val localItems = state.tabItems[selectedTab].orEmpty()
                     LibraryGrid(
-                        tab = state.selectedTab,
+                        tab = selectedTab,
                         items = localItems,
                         gridFocusRequester = gridFocusRequester,
                         selectedTabFocusRequester = selectedTabFocusRequester,
-                        focusStateKey = state.selectedTab.focusStateKey(LibraryFocusSourceLocal),
+                        focusStateKey = selectedTab.focusStateKey(LibraryFocusSourceLocal),
                         showTitleYear = state.showTitleYear,
                         onAnimeSelected = {
                             restoreGridFocusOnResume = true
@@ -250,13 +272,31 @@ fun LibraryTvScreen(
                                 LibraryState.Event.RemoveEntry(
                                     it,
                                     LibraryRemoveTarget.LIST,
-                                )
+                                ),
                             )
                         },
+                        confirmRemoval = confirmRemoval,
                     )
                 }
             }
         }
+    }
+
+    pendingRemoval?.let { removal ->
+        LibraryTvRemoveConfirmDialog(
+            title = removal.title,
+            listTitle = removal.listTitle,
+            onConfirm = {
+                pendingRemoval = null
+                // Перенос фокуса на соседнюю карточку — после закрытия окна диалога, иначе
+                // запрос уходит в окно, которое вот-вот исчезнет.
+                scope.launch {
+                    withFrameNanos { }
+                    removal.proceed()
+                }
+            },
+            onDismiss = { pendingRemoval = null },
+        )
     }
 }
 

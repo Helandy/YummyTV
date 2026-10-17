@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,10 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.library.LibraryState
@@ -76,6 +80,7 @@ internal fun LibraryMobilePage(
                     ),
                 )
             },
+            onOpenCatalog = { onEvent(LibraryState.Event.OpenCatalogSelected) },
         )
         return
     }
@@ -87,6 +92,7 @@ internal fun LibraryMobilePage(
             isSignedIn = state.isSignedIn,
             onEntrySelected = { onEvent(LibraryState.Event.HistorySelected(it)) },
             onDetailsSelected = { onEvent(LibraryState.Event.HistoryDetailsSelected(it.animeId)) },
+            onSignInSelected = { onEvent(LibraryState.Event.SignInSelected) },
         )
         return
     }
@@ -115,7 +121,9 @@ internal fun LibraryMobilePage(
 
         if (isEmpty && !showRemoteLoader) {
             item(key = "empty") {
-                LibraryMobileEmptyList()
+                LibraryMobileEmptyList(
+                    onOpenCatalog = { onEvent(LibraryState.Event.OpenCatalogSelected) },
+                )
             }
         }
 
@@ -165,9 +173,9 @@ internal fun LibraryMobilePage(
 
         if (tab == state.selectedTab && state.remoteError != null) {
             item(key = "remote_error") {
-                LibraryMobileRemoteError(
+                ErrorBanner(
                     message = state.remoteError?.asString().orEmpty(),
-                    isLoading = state.isRemoteLoading,
+                    enabled = !state.isRemoteLoading,
                     onRetry = { onEvent(LibraryState.Event.RetrySelected) },
                 )
             }
@@ -176,20 +184,14 @@ internal fun LibraryMobilePage(
 }
 
 @Composable
-internal fun LibraryMobileEmptyList() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 72.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.library_empty_list),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
+internal fun LibraryMobileEmptyList(onOpenCatalog: () -> Unit) {
+    MobileMessage(
+        title = stringResource(R.string.library_empty_list),
+        icon = Icons.AutoMirrored.Filled.List,
+        actionLabel = stringResource(R.string.library_mobile_open_catalog),
+        onAction = onOpenCatalog,
+        fillMaxSize = false,
+    )
 }
 
 /**
@@ -202,8 +204,8 @@ private fun LibraryMobileYearBadge(
 ) {
     Text(
         text = text,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.inverseSurface,
         modifier = modifier
             .background(

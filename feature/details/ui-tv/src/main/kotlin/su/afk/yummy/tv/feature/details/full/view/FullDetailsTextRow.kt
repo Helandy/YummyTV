@@ -11,7 +11,6 @@ internal fun FullDetailsTextRow(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.90f),
         )
     }

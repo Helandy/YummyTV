@@ -13,6 +13,11 @@ import su.afk.yummy.tv.R
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import javax.inject.Inject
 
+/**
+ * Пуш о новой серии. Основной тап и кнопка «Смотреть» ведут в `yummytv://continue/{id}` — сразу
+ * плеер (без записи «продолжить» резолвер сам откроет детали), «Подробнее» — в детали тайтла.
+ * Без id тайтла пуш просто открывает главную и кнопок не имеет.
+ */
 class NewEpisodePushNotificationService @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
@@ -26,14 +31,28 @@ class NewEpisodePushNotificationService @Inject constructor(
             .setContentText(notification.text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(notification.text))
             .setAutoCancel(true)
-            .setContentIntent(contentIntent(animeId))
-            .build()
+        if (animeId != null) {
+            val watchIntent = deepLinkIntent("$CONTINUE_DEEP_LINK_PREFIX$animeId")
+            builder
+                .setContentIntent(watchIntent)
+                .addAction(
+                    0,
+                    context.getString(R.string.episode_push_action_watch),
+                    watchIntent,
+                )
+                .addAction(
+                    0,
+                    context.getString(R.string.episode_push_action_details),
+                    deepLinkIntent("$DETAILS_DEEP_LINK_PREFIX$animeId"),
+                )
+        } else {
+            builder.setContentIntent(deepLinkIntent(HOME_DEEP_LINK))
+        }
         context.getSystemService(NotificationManager::class.java)
-            .notify(NOTIFICATION_ID_BASE + notification.id, builder)
+            .notify(NOTIFICATION_ID_BASE + notification.id, builder.build())
     }
 
-    private fun contentIntent(animeId: Int?): PendingIntent {
-        val deepLink = if (animeId != null) "$DETAILS_DEEP_LINK_PREFIX$animeId" else HOME_DEEP_LINK
+    private fun deepLinkIntent(deepLink: String): PendingIntent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink)).apply {
             setPackage(context.packageName)
         }
@@ -61,7 +80,11 @@ class NewEpisodePushNotificationService @Inject constructor(
     private companion object {
         const val CHANNEL_ID = "new_episodes"
         const val NOTIFICATION_ID_BASE = 61_000
+
+        // PendingIntent различаются по data-ссылке, поэтому «Смотреть» и «Подробнее» не
+        // перетирают друг друга при общем requestCode.
         const val CONTENT_REQUEST_CODE = 61_000
+        const val CONTINUE_DEEP_LINK_PREFIX = "yummytv://continue/"
         const val DETAILS_DEEP_LINK_PREFIX = "yummytv://details/"
         const val HOME_DEEP_LINK = "yummytv://home"
         const val ACCENT_COLOR = 0xFFFF6666.toInt()

@@ -35,7 +35,6 @@ internal fun MobileRatingDistribution(
         Text(
             text = stringResource(R.string.details_mobile_rating_distribution),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         if (total <= 0) {
@@ -71,7 +70,7 @@ private fun MobileRatingDistributionRow(
         Text(
             text = bucket.rating.toString(),
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.width(20.dp),
         )

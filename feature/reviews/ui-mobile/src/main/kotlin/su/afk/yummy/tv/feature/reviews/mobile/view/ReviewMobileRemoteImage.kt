@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 
 @Composable
 internal fun ReviewMobileRemoteImage(url: String, alt: String) {
@@ -35,7 +35,7 @@ internal fun ReviewMobileRemoteImage(url: String, alt: String) {
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 120.dp), contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            ) { YummyLoadingIndicator() }
 
             is AsyncImagePainter.State.Error -> Box(
                 Modifier

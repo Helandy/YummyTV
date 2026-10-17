@@ -10,7 +10,6 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.watchlater.usecase.ObserveWatchLaterUseCase
-import su.afk.yummy.tv.domain.watchlater.usecase.PruneWatchedWatchLaterUseCase
 import su.afk.yummy.tv.domain.watchlater.usecase.RemoveWatchLaterEpisodeUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import javax.inject.Inject
@@ -22,13 +21,10 @@ class WatchLaterViewModel @Inject constructor(
     private val nav: INavigationManager,
     private val observeWatchLater: ObserveWatchLaterUseCase,
     private val removeWatchLaterEpisode: RemoveWatchLaterEpisodeUseCase,
-    private val pruneWatchedWatchLater: PruneWatchedWatchLaterUseCase,
     private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModel<WatchLaterState.State, WatchLaterState.Event, WatchLaterState.Effect>() {
 
     init {
-        // Досмотренные серии список и так не показывает, здесь чистим таблицу от них насовсем.
-        viewModelScope.launch { pruneWatchedWatchLater() }
         observeWatchLater()
             .onEach { items -> setState { copy(items = items.toImmutableList()) } }
             .launchIn(viewModelScope)

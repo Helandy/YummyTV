@@ -1,11 +1,9 @@
 package su.afk.yummy.tv.feature.details.utils
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.common.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.core.common.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.common.episode.releaseCountdown
@@ -42,18 +40,22 @@ internal fun AnimeEpisodes.formatAiredProgress(status: String? = null): String? 
     return stringResource(R.string.details_aired_with_release, progress, releaseCountdown)
 }
 
+/** «Серия 8 — пт, 18:00»; `null`, если даты нет или серия уже вышла. */
+@Composable
+internal fun AnimeEpisodes.formatNextEpisodeRelease(): String? {
+    val nextDate = nextDateEpochSeconds ?: return null
+    val nowEpochSeconds = rememberNowEpochSeconds()
+    if (nextDate <= nowEpochSeconds) return null
+    val dateTime = nextDate.formatReleaseWeekdayTime(nowEpochSeconds)
+    return nextEpisodeNumber()
+        ?.let { stringResource(R.string.details_next_episode_release, it, dateTime) }
+        ?: stringResource(R.string.details_next_episode_release_unnumbered, dateTime)
+}
+
 @Composable
 private fun AnimeEpisodes.formatReleaseCountdown(): String? {
     if (nextDateEpochSeconds == null) return null
-    val nowEpochSeconds by produceState(
-        initialValue = System.currentTimeMillis() / 1_000L,
-        key1 = nextDateEpochSeconds,
-    ) {
-        while (true) {
-            value = System.currentTimeMillis() / 1_000L
-            delay(60_000L)
-        }
-    }
+    val nowEpochSeconds = rememberNowEpochSeconds()
     val countdown = releaseCountdown(nextDateEpochSeconds, nowEpochSeconds) ?: return null
     val resource = when (countdown.unit) {
         EpisodeReleaseCountdown.TimeUnit.DAYS -> R.plurals.details_release_in_days

@@ -24,6 +24,9 @@ class TrailersState {
 
         /** Пользователь запросил повторную загрузку трейлеров. */
         data object RetrySelected : Event
+
+        /** Пользователь выбрал трейлер для просмотра в приложении. */
+        data class TrailerSelected(val trailer: AnimeTrailer) : Event
     }
 
     sealed interface Effect : UiEffect

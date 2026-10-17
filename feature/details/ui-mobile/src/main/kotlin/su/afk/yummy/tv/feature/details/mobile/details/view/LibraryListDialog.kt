@@ -7,6 +7,7 @@ import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.details.utils.label
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
+import su.afk.yummy.tv.feature.details.utils.statusIcon
 
 @Composable
 internal fun LibraryListDialog(
@@ -30,6 +31,7 @@ internal fun LibraryListDialog(
                     key = option.name,
                     title = option.label(),
                     color = option.statusColor(),
+                    icon = option.statusIcon(),
                     onClick = { onSelected(option) },
                 )
             },

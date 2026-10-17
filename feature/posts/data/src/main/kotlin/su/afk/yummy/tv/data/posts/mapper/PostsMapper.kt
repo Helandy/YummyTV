@@ -14,7 +14,7 @@ import su.afk.yummy.tv.domain.posts.model.PostSummary
 import su.afk.yummy.tv.domain.posts.model.PostVote
 import su.afk.yummy.tv.domain.posts.model.RelatedPostAnime
 
-internal fun YaniPostCategoryDto.domain() = PostCategory(id, title, uri)
+internal fun YaniPostCategoryDto.domain() = PostCategory(id, title.replaceFirstChar { it.uppercase() }, uri)
 
 internal fun YaniPostAuthorDto.domain() = PostAuthor(
     id,

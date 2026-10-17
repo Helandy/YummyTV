@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
-import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Favorite
@@ -80,6 +79,7 @@ import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import su.afk.yummy.tv.feature.details.utils.statusColor
+import su.afk.yummy.tv.feature.details.utils.statusIcon
 
 @Composable
 internal fun DetailsButtonBar(
@@ -142,7 +142,11 @@ internal fun DetailsButtonBar(
         } else {
             stringResource(R.string.details_add_library)
         },
-        icon = if (isInLibrary) Icons.AutoMirrored.Filled.PlaylistAddCheck else Icons.AutoMirrored.Filled.PlaylistAdd,
+        icon = if (isInLibrary) {
+            (libraryList ?: UserAnimeList.WATCHING).statusIcon()
+        } else {
+            Icons.AutoMirrored.Filled.PlaylistAdd
+        },
         style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
         onClick = onLibraryToggle,
         overrideColor = if (isInLibrary) (libraryList
@@ -365,38 +369,38 @@ internal fun DetailsButtonBar(
                         }
                     }
 
-                    is ButtonRowData.LibraryFavorite -> {
+                    is ButtonRowData.Pair -> {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(40.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                .height(ButtonRowHeight),
+                            horizontalArrangement = Arrangement.spacedBy(ButtonColumnSpacing),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             DetailsActionButton(
-                                button = row.libraryButton,
-                                index = row.libraryIndex,
-                                focusRequester = focusRequesters[row.libraryIndex],
+                                button = row.first,
+                                index = row.firstIndex,
+                                focusRequester = focusRequesters[row.firstIndex],
                                 onFocused = {
-                                    focusedAction = row.libraryButton.action
+                                    focusedAction = row.first.action
                                     onRowFocused(rowIndex)
                                 },
                                 modifier = Modifier.weight(1f),
                             )
-                            DetailsActionButton(
-                                button = row.favoriteButton,
-                                index = row.favoriteIndex,
-                                focusRequester = focusRequesters[row.favoriteIndex],
-                                onFocused = {
-                                    focusedAction = row.favoriteButton.action
-                                    onRowFocused(rowIndex)
-                                },
-                                showLabel = false,
-                                iconSize = 24.dp,
-                                verticalPadding = 5.dp,
-                                focusedScale = 1.10f,
-                                modifier = Modifier.width(56.dp),
-                            )
+                            if (row.second != null && row.secondIndex != null) {
+                                DetailsActionButton(
+                                    button = row.second,
+                                    index = row.secondIndex,
+                                    focusRequester = focusRequesters[row.secondIndex],
+                                    onFocused = {
+                                        focusedAction = row.second.action
+                                        onRowFocused(rowIndex)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
                         }
                     }
                 }
@@ -408,6 +412,7 @@ internal fun DetailsButtonBar(
 
 private val ButtonRowHeight = 40.dp
 private val ButtonRowSpacing = 6.dp
+private val ButtonColumnSpacing = 12.dp
 private const val ButtonFocusedScale = 1.04f
 
 private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
@@ -415,12 +420,16 @@ private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
     while (index <= this@toButtonRows.lastIndex) {
         val button = this@toButtonRows[index]
         val nextButton = this@toButtonRows.getOrNull(index + 1)
-        if (button.action == DetailsButtonAction.LIBRARY && nextButton?.action == DetailsButtonAction.FAVORITE) {
-            add(ButtonRowData.LibraryFavorite(index, button, index + 1, nextButton))
-            index += 2
-        } else {
-            add(ButtonRowData.Single(index, button))
+        if (button.action == DetailsButtonAction.WATCH || nextButton?.action == DetailsButtonAction.WATCH) {
+            if (button.action == DetailsButtonAction.WATCH) {
+                add(ButtonRowData.Single(index, button))
+            } else {
+                add(ButtonRowData.Pair(index, button, null, null))
+            }
             index += 1
+        } else {
+            add(ButtonRowData.Pair(index, button, nextButton?.let { index + 1 }, nextButton))
+            index += if (nextButton != null) 2 else 1
         }
     }
 }
@@ -521,7 +530,7 @@ private fun ActionButton(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     color = textColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

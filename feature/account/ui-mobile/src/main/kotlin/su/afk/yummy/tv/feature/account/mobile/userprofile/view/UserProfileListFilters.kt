@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -32,6 +31,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
@@ -101,7 +101,7 @@ internal fun UserProfileListFilters(
                                 Text(
                                     text = count.tabCountLabel(),
                                     style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.ExtraBold,
+                                    fontWeight = FontWeight.SemiBold,
                                 )
                             }
                         }
@@ -301,7 +301,7 @@ internal fun <T : Any> LazyListScope.appendStateItem(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator(strokeWidth = 2.dp)
+                YummyLoadingIndicator()
             }
         }
 

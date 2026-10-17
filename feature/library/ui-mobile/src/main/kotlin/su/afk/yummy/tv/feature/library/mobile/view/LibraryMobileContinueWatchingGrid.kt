@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -31,6 +32,7 @@ internal fun LibraryMobileContinueWatchingGrid(
     onEntrySelected: (HomeContinueWatchingItem) -> Unit,
     onDetailsSelected: (HomeContinueWatchingItem) -> Unit,
     onDeleteSelected: (HomeContinueWatchingItem) -> Unit,
+    onOpenCatalog: () -> Unit,
 ) {
     val spacing = cardSize.mobileGridSpacing
     LazyVerticalGrid(
@@ -53,7 +55,7 @@ internal fun LibraryMobileContinueWatchingGrid(
 
         if (isEmpty && !showRemoteLoader) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                LibraryMobileEmptyList()
+                LibraryMobileEmptyList(onOpenCatalog = onOpenCatalog)
             }
         }
 
@@ -78,9 +80,9 @@ internal fun LibraryMobileContinueWatchingGrid(
 
         remoteError?.let { message ->
             item(span = { GridItemSpan(maxLineSpan) }) {
-                LibraryMobileRemoteError(
+                ErrorBanner(
                     message = message,
-                    isLoading = isRemoteLoading,
+                    enabled = !isRemoteLoading,
                     onRetry = onRetry,
                 )
             }

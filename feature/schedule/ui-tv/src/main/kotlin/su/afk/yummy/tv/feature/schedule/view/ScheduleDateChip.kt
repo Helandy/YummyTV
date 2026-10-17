@@ -63,7 +63,7 @@ internal fun ScheduleDateChip(
 
     Box(
         modifier = Modifier
-            .width(78.dp)
+            .width(84.dp)
             .height(72.dp)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .focusProperties {
@@ -99,14 +99,12 @@ internal fun ScheduleDateChip(
             Text(
                 text = group.weekdayLabel,
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
                 color = contentColor,
                 maxLines = 1,
             )
             Text(
                 text = group.date.dayOfMonth.toString(),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
                 color = contentColor,
                 maxLines = 1,
             )
@@ -114,9 +112,9 @@ internal fun ScheduleDateChip(
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(8.dp)
-                .size(22.dp)
-                .clip(RoundedCornerShape(11.dp))
+                .padding(4.dp)
+                .size(20.dp)
+                .clip(RoundedCornerShape(10.dp))
                 .background(
                     color = if (selectedFocused) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f)
                     else MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
@@ -126,7 +124,7 @@ internal fun ScheduleDateChip(
             Text(
                 text = group.items.size.toString(),
                 style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = contentColor,
             )
         }

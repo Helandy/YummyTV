@@ -62,7 +62,6 @@ internal fun ReviewRatingCard(
                             Text(
                                 text = "$score / 10",
                                 style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
                             )
                         }
                     }

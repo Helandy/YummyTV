@@ -40,6 +40,10 @@ class DetailsState {
         val subscriptions: ImmutableList<SubscriptionOption> = persistentListOf(),
         val showSubscriptionsPicker: Boolean = false,
         val isSubscriptionsLoading: Boolean = false,
+        /** Гостю показана шторка «войдите, чтобы получать уведомления о новых сериях». */
+        val showSubscriptionsSignInPrompt: Boolean = false,
+        /** Системный запрос разрешения на уведомления уже показывали. */
+        val notificationPermissionRequested: Boolean = false,
         val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
             SettingsStore.defaultDetailsButtonOrder.toImmutableList(),
     ) : UiState
@@ -48,6 +52,9 @@ class DetailsState {
     sealed interface Event : UiEvent {
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** «Поделиться»: ссылка на страницу тайтла на сайте. */
+        data object ShareSelected : Event
 
         /** Пользователь запросил повторную загрузку деталей. */
         data object RetrySelected : Event
@@ -127,7 +134,22 @@ class DetailsState {
 
         /** Пользователь переключил подписку с указанным ключом. */
         data class SubscriptionToggled(val key: String) : Event
+
+        /** Гость нажал на заблокированный пункт «Подписки». */
+        data object SubscriptionsSignInPromptSelected : Event
+
+        /** Гость закрыл шторку с предложением войти. */
+        data object SubscriptionsSignInPromptDismissed : Event
+
+        /** Гость нажал «Войти» в шторке подписок — открываем вкладку профиля. */
+        data object SignInSelected : Event
+
+        /** Экран показал системный запрос разрешения на уведомления. */
+        data object NotificationPermissionRequested : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        /** Открыть системный шаринг со ссылкой [url] на тайтл [title]. */
+        data class ShareAnime(val title: String, val url: String) : Effect
+    }
 }

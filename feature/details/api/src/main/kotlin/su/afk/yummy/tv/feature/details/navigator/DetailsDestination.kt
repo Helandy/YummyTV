@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.details.navigator
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 
 @Serializable
 data class DetailsDestination(val animeId: Int) : NavKey
@@ -23,6 +24,14 @@ data class DetailsSubscriptionsDestination(val animeId: Int) : NavKey
 
 @Serializable
 data class DetailsTrailersDestination(val animeId: Int) : NavKey
+
+/** Встроенный просмотр трейлера. [videoId] задан для YouTube, иначе играется [embedUrl]. */
+@Serializable
+data class DetailsTrailerPlayerDestination(
+    val videoId: String?,
+    val embedUrl: String,
+    val externalUrl: String,
+) : NavKey, FullscreenDestination
 
 @Serializable
 data class DetailsSimilarDestination(val animeId: Int) : NavKey

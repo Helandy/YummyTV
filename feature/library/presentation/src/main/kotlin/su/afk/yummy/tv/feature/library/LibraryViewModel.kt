@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
@@ -92,6 +93,7 @@ class LibraryViewModel @Inject internal constructor(
                     copy(
                         items = entries.toImmutableList(),
                         tabItems = buildLibraryTabItems(entries, sort, sortDirection),
+                        isLibraryLoaded = true,
                     )
                 }
             }
@@ -99,7 +101,12 @@ class LibraryViewModel @Inject internal constructor(
 
         observeContinueWatching()
             .onEach { items ->
-                setState { copy(continueWatching = items.toImmutableList()) }
+                setState {
+                    copy(
+                        continueWatching = items.toImmutableList(),
+                        isContinueWatchingLoaded = true,
+                    )
+                }
             }
             .launchIn(viewModelScope)
         loadCachedContinueWatching()
@@ -228,10 +235,16 @@ class LibraryViewModel @Inject internal constructor(
                 refreshRemoteLists(forceRefresh = true)
             }
 
+            LibraryState.Event.RefreshRequested -> refreshRemoteLists(forceRefresh = true)
+
             is LibraryState.Event.RemoveEntry -> removeEntry(event)
 
             is LibraryState.Event.RemoveWatchProgress ->
                 removeWatchProgress(event.entry)
+
+            LibraryState.Event.SignInSelected -> nav.switchRoot(RootTab.ACCOUNT)
+
+            LibraryState.Event.OpenCatalogSelected -> nav.switchRoot(RootTab.CATALOG)
         }
     }
 

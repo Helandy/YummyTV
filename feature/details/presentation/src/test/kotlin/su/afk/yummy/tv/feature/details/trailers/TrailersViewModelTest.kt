@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
+import su.afk.yummy.tv.feature.details.navigator.DetailsTrailerPlayerDestination
 import su.afk.yummy.tv.feature.details.trailers.TrailersState.Event
 
 class TrailersViewModelTest : BaseUnitTest() {
@@ -69,6 +70,24 @@ class TrailersViewModelTest : BaseUnitTest() {
         createViewModel().setEvent(Event.BackSelected)
 
         verify(exactly = 1) { nav.back() }
+    }
+
+    @Test
+    fun `selecting a youtube trailer opens the in-app player`() {
+        val trailer = AnimeTrailer("https://www.youtube.com/embed/abc123")
+        coEvery { repository.getAnimeTrailers(ANIME_ID) } returns listOf(trailer)
+
+        createViewModel().setEvent(Event.TrailerSelected(trailer))
+
+        verify(exactly = 1) {
+            nav.navigate(
+                DetailsTrailerPlayerDestination(
+                    videoId = "abc123",
+                    embedUrl = trailer.iframeUrl,
+                    externalUrl = "https://www.youtube.com/watch?v=abc123",
+                ),
+            )
+        }
     }
 
     private companion object {

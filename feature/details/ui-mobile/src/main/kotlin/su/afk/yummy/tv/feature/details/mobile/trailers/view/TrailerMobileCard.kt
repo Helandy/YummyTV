@@ -1,10 +1,8 @@
 package su.afk.yummy.tv.feature.details.mobile.trailers.view
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
-import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.details.mobile.view.DetailsMediaCard
 import su.afk.yummy.tv.feature.details.mobile.view.DetailsPlayIcon
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -13,16 +11,14 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun TrailerMobileCard(
     number: Int,
     trailer: AnimeTrailer,
+    onClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     DetailsMediaCard(
         title = stringResource(R.string.details_trailer_number, number),
         subtitle = trailer.youtubeWatchUrl ?: trailer.iframeUrl,
         imageModel = trailer.youtubeThumbnailUrl,
         leadingIcon = DetailsPlayIcon,
         mediaWeight = 0.56f,
-        onClick = {
-            context.openExternalUri(trailer.externalWatchUrl)
-        },
+        onClick = onClick,
     )
 }

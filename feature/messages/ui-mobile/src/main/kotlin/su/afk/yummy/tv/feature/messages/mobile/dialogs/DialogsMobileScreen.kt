@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -24,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.MobileCompactListPane
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -58,7 +58,7 @@ fun DialogsMobileScreen(
                     Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    YummyLoadingIndicator()
                 }
 
                 !state.isAuthorized -> StateMessage(
@@ -94,7 +94,7 @@ fun DialogsMobileScreen(
                                         .fillMaxWidth()
                                         .fillParentMaxHeight(.7f),
                                     contentAlignment = Alignment.Center,
-                                ) { CircularProgressIndicator() }
+                                ) { YummyLoadingIndicator() }
                             }
 
                             dialogs.loadState.refresh is LoadState.Error -> item {

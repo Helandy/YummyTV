@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
+import su.afk.yummy.tv.core.designsystem.theme.tabularNumerals
 import su.afk.yummy.tv.core.utils.formatting.formatRating
 
 @Composable
@@ -32,8 +34,7 @@ internal fun YaniRatingLabel(rating: Double) {
         Spacer(modifier = Modifier.width(3.dp))
         Text(
             text = rating.formatRating(),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
+            style = MaterialTheme.typography.labelLarge.tabularNumerals(),
             color = color,
         )
     }

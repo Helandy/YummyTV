@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -185,8 +186,10 @@ private fun PlayerBufferedSlider(
         activeTickColor = Color.Transparent,
         inactiveTickColor = Color.Transparent,
     )
+    val sliderState = remember { SliderState(value = activeProgress) }
+    sliderState.value = activeProgress
     Slider(
-        value = activeProgress,
+        state = sliderState,
         onValueChange = onValueChange,
         onValueChangeFinished = onValueChangeFinished,
         modifier = modifier,

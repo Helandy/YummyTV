@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
@@ -33,12 +34,30 @@ internal class PlayerPreferencesBinder @Inject constructor(
             }
             host.bind(tvPlayerVolumeKeysEnabled) { copy(tvPlayerVolumeKeysEnabled = it) }
             host.bind(advancedPlayerVolumeEnabled) { copy(advancedPlayerVolumeEnabled = it) }
+            host.bind(volumeStabilizationEnabled) { copy(volumeStabilizationEnabled = it) }
             host.bind(playerSubtitleStyle) { copy(subtitleStyle = it) }
+            host.bind(playerPlaybackSpeed) { copy(selectedSpeed = it) }
         }
     }
 
     fun selectOrientationMode(host: PlayerStateHost, mode: PlayerOrientationMode) {
         host.scope.launch { settings.saveOrientationMode(mode) }
+    }
+
+    /** Скорость запоминается глобально, чтобы следующая серия и тайтл начинались с неё же. */
+    fun savePlaybackSpeed(host: PlayerStateHost, speed: Float) {
+        host.scope.launch { settings.savePlaybackSpeed(speed) }
+    }
+
+    /** Стиль субтитров общий с экраном настроек; оверлей подхватит его из DataStore-флоу. */
+    fun saveSubtitleStyle(host: PlayerStateHost, style: PlayerSubtitleStyleSettings) {
+        host.update { copy(subtitleStyle = style) }
+        host.scope.launch { settings.saveSubtitleStyle(style) }
+    }
+
+    fun setVolumeStabilization(host: PlayerStateHost, enabled: Boolean) {
+        host.update { copy(volumeStabilizationEnabled = enabled) }
+        host.scope.launch { settings.saveVolumeStabilizationEnabled(enabled) }
     }
 
     fun dismissMobileGestureTutorial(host: PlayerStateHost) {

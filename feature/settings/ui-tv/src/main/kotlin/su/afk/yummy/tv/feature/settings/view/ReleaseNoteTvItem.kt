@@ -37,7 +37,6 @@ internal fun ReleaseNoteTvItem(
             Text(
                 text = item.version,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             if (item.isPrerelease) {

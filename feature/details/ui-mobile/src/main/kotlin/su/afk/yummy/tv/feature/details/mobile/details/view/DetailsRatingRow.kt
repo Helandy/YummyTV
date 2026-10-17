@@ -134,7 +134,6 @@ private fun DetailsAverageRating(
         Text(
             text = rating?.formatRating() ?: stringResource(R.string.details_rating_button),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
             color = color ?: MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
         )
@@ -163,8 +162,6 @@ private fun DetailsRatingChip(item: RatingLabel) {
         Text(
             text = item.label,
             style = MaterialTheme.typography.labelMedium,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
             color = color,
             maxLines = 1,
         )

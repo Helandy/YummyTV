@@ -161,7 +161,6 @@ internal fun HeroBannerPage(
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

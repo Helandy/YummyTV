@@ -14,7 +14,6 @@ internal fun AccountTitle() {
     Text(
         text = stringResource(R.string.account_title),
         style = MaterialTheme.typography.displaySmall,
-        fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onBackground,
     )
 }

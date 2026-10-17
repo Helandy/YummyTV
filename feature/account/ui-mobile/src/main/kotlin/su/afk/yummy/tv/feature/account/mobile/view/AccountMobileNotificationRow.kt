@@ -121,7 +121,7 @@ internal fun AccountMobileNotificationRow(
                 Text(
                     text = notification.title.ifBlank { notification.type },
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = if (notification.viewed) FontWeight.Medium else FontWeight.Bold,
+                    fontWeight = if (notification.viewed) FontWeight.Medium else FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,

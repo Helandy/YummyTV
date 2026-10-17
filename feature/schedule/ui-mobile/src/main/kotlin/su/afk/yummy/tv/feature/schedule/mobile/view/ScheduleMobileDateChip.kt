@@ -62,7 +62,6 @@ internal fun ScheduleMobileDateChip(
                     modifier = Modifier.weight(weight = 1f, fill = false),
                     text = group.weekdayLabel,
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
                     color = contentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -85,7 +84,7 @@ internal fun ScheduleMobileDateChip(
                     Text(
                         text = group.items.size.toString(),
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         color = contentColor,
                         maxLines = 1,
                     )
@@ -94,7 +93,6 @@ internal fun ScheduleMobileDateChip(
             Text(
                 text = group.date.dayOfMonth.toString(),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
                 color = contentColor,
                 maxLines = 1,
             )

@@ -22,6 +22,8 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.navigation.root.RootTab
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
@@ -47,6 +49,7 @@ import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.utils.animeSiteUrl
 import su.afk.yummy.tv.feature.details.utils.fullscreenUrl
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
 import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
@@ -71,6 +74,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val subscriptionHandler: DetailsSubscriptionHandler,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
     private val analytics: DetailsAnalytics,
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
 ) : BaseViewModel<DetailsState.State, DetailsState.Event, DetailsState.Effect>() {
 
     @AssistedFactory
@@ -114,6 +118,9 @@ class DetailsViewModel @AssistedInject internal constructor(
     init {
         analytics.eventDetailsScreenOpened(animeId)
         load()
+        appLifecycleSettingsStore.notificationPermissionRequested
+            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
         screenDataHandler.observeLibraryState(animeId)
             .onEach { library ->
                 val pending = pendingFavorite
@@ -172,6 +179,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     override fun onEvent(event: DetailsState.Event) {
         when (event) {
             DetailsState.Event.BackSelected -> nav.back()
+            DetailsState.Event.ShareSelected -> shareAnime()
             DetailsState.Event.RetrySelected -> {
                 analytics.eventDetailsRetry(animeId)
                 load()
@@ -279,6 +287,20 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.SubscriptionsDismissed -> setState { copy(showSubscriptionsPicker = false) }
             is DetailsState.Event.SubscriptionToggled -> toggleSubscription(event.key)
+            DetailsState.Event.SubscriptionsSignInPromptSelected ->
+                setState { copy(showSubscriptionsSignInPrompt = true) }
+
+            DetailsState.Event.SubscriptionsSignInPromptDismissed ->
+                setState { copy(showSubscriptionsSignInPrompt = false) }
+
+            DetailsState.Event.SignInSelected -> {
+                setState { copy(showSubscriptionsSignInPrompt = false) }
+                nav.switchRoot(RootTab.ACCOUNT)
+            }
+
+            DetailsState.Event.NotificationPermissionRequested -> viewModelScope.launch {
+                appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
         }
     }
 
@@ -501,6 +523,12 @@ class DetailsViewModel @AssistedInject internal constructor(
             localEntries = localWatchProgress,
             videos = videos,
         )
+
+    private fun shareAnime() {
+        val details = currentState.details ?: return
+        val url = animeSiteUrl(details.animeUrl) ?: return
+        setEffect(DetailsState.Effect.ShareAnime(title = details.title, url = url))
+    }
 
     private fun onWatchSelected() {
         when (val videosState = currentState.videosState) {

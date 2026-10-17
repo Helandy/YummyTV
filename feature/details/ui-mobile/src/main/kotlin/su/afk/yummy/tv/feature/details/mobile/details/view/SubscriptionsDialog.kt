@@ -73,7 +73,6 @@ internal fun SubscriptionsDialog(
                                     },
                                 ),
                                 style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
                             )
                         }
                     }

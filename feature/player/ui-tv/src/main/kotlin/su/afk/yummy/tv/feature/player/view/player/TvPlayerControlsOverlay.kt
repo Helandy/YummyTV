@@ -43,8 +43,6 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     highlightedSkipKey: String?,
     qualityCount: Int,
     currentQualityLabel: String,
-    currentSpeedLabel: String,
-    showVolumeButton: Boolean,
     showAllohaButton: Boolean,
     onPlayPause: () -> Unit,
     onSeekTo: (positionMs: Long) -> Unit,
@@ -58,9 +56,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
-    onToggleResize: () -> Unit,
-    onToggleSpeed: () -> Unit,
-    onToggleVolume: () -> Unit,
+    onTogglePlayerSettings: () -> Unit,
     onToggleAlloha: () -> Unit,
 ) {
     val progressDownFocusRequester = when {
@@ -68,7 +64,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
         playback.balancerNames.size > 1 -> focus.balancer
         qualityCount > 0 -> focus.quality
         showAllohaButton -> focus.alloha
-        else -> focus.resize
+        else -> focus.playerSettings
     }
 
     AnimatedVisibility(
@@ -194,7 +190,6 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     qualityFocusRequester = focus.quality,
                     dubbingFocusRequester = focus.dubbing,
                     balancerFocusRequester = focus.balancer,
-                    speedFocusRequester = focus.speed,
                     upFocusRequester = focus.progress,
                     onInteraction = onInteraction,
                     onPrevEpisode = onPrevEpisode,
@@ -204,13 +199,8 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     onToggleQuality = onToggleQuality,
                     onToggleDubbing = onToggleDubbing,
                     onToggleBalancer = onToggleBalancer,
-                    resizeFocusRequester = focus.resize,
-                    onToggleResize = onToggleResize,
-                    currentSpeedLabel = currentSpeedLabel,
-                    onToggleSpeed = onToggleSpeed,
-                    volumeFocusRequester = focus.volume,
-                    showVolumeButton = showVolumeButton,
-                    onToggleVolume = onToggleVolume,
+                    playerSettingsFocusRequester = focus.playerSettings,
+                    onTogglePlayerSettings = onTogglePlayerSettings,
                     allohaFocusRequester = focus.alloha,
                     showAllohaButton = showAllohaButton,
                     onToggleAlloha = onToggleAlloha,

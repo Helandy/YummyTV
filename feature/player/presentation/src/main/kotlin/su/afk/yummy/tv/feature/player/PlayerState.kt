@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
+import su.afk.yummy.tv.core.utils.system.PlatformInfo
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
@@ -65,6 +66,9 @@ class PlayerState {
         val showTvControlsTutorial: Boolean = false,
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
+        val volumeStabilizationEnabled: Boolean = false,
+        /** DynamicsProcessing есть только с API 28 — ниже тумблер стабилизации не показываем. */
+        val volumeStabilizationSupported: Boolean = PlatformInfo.isAtLeastPie,
         val mobileVideoScale: Float = 1f,
         val mobileVideoOffsetX: Float = 0f,
         val mobileVideoOffsetY: Float = 0f,
@@ -138,6 +142,12 @@ class PlayerState {
 
         /** Пользователь выбрал субтитры Alloha (индекс в списке) или выключил их (null). */
         data class AllohaSubtitleSelected(val index: Int?, val currentPosMs: Long) : Event
+
+        /** Пользователь изменил стиль субтитров в боковой панели плеера. */
+        data class SubtitleStyleChanged(val settings: PlayerSubtitleStyleSettings) : Event
+
+        /** Пользователь включил или выключил стабилизацию громкости в боковой панели плеера. */
+        data class VolumeStabilizationToggled(val enabled: Boolean) : Event
 
         /** Пользователь выбрал скорость воспроизведения. */
         data class SpeedSelected(val speed: Float) : Event

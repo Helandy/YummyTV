@@ -28,6 +28,11 @@ private const val YANI_APPLICATION_HEADER = "X-Application"
 private const val YANI_LANGUAGE_HEADER = "Lang"
 private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
 
+// connect- и socket-таймауты GET ретраятся один раз, поэтому худший случай ≈ 2 × connect.
+private const val YANI_CONNECT_TIMEOUT_MS = 10_000L
+private const val YANI_SOCKET_TIMEOUT_MS = 15_000L
+private const val YANI_REQUEST_TIMEOUT_MS = 20_000L
+
 fun buildYaniHttpClient(
     settingsStore: YaniAccountSettingsStore,
     yaniAuthPreferences: YaniAuthPreferences,
@@ -45,13 +50,13 @@ fun buildYaniHttpClient(
             preconfigured = okHttpClient
         }
         install(HttpTimeout) {
-            connectTimeoutMillis = 20_000
-            requestTimeoutMillis = 40_000
-            socketTimeoutMillis = 40_000
+            connectTimeoutMillis = YANI_CONNECT_TIMEOUT_MS
+            requestTimeoutMillis = YANI_REQUEST_TIMEOUT_MS
+            socketTimeoutMillis = YANI_SOCKET_TIMEOUT_MS
         }
         // Ретраим только GET: мутации могут быть неидемпотентны.
         install(HttpRequestRetry) {
-            maxRetries = 2
+            maxRetries = 1
             retryIf { request, response ->
                 request.method == HttpMethod.Get && response.status.value in 500..599
             }

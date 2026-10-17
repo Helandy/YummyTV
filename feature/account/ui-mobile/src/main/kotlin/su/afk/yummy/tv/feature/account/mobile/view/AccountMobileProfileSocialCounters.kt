@@ -96,7 +96,6 @@ internal fun AccountMobileProfileSocialCounters(
                 Text(
                     text = item.count.toString(),
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
             }

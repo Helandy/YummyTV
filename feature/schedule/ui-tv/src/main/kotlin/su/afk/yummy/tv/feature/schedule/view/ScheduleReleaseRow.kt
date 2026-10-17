@@ -143,7 +143,6 @@ internal fun ScheduleReleaseRow(
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
                     color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -170,7 +169,6 @@ internal fun ScheduleReleaseRow(
                 text = releaseAt.timeLabel(),
                 modifier = Modifier.widthIn(min = 82.dp),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
                 color = accentColor,
                 maxLines = 1,
             )

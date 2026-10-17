@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_section_new">Новинки</string>
+    <string name="home_section_new">Новые серии</string>
+    <string name="home_section_new_titles">Новинки</string>
+    <string name="home_section_announcements">Скоро выйдет</string>
     <string name="home_section_schedule">Расписание</string>
     <string name="home_section_recommends">Рекомендации</string>
     <string name="home_section_collections">Коллекции</string>

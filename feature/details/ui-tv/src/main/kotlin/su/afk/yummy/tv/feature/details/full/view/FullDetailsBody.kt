@@ -172,7 +172,7 @@ internal fun FullDetailsBody(
                         Text(
                             text = details.title,
                             style = MaterialTheme.typography.displaySmall.copy(fontSize = 30.sp),
-                            fontWeight = FontWeight.ExtraBold,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         if (details.otherTitles.isNotEmpty()) {

@@ -40,7 +40,9 @@ internal fun SettingsMobileOptionRow(
     ) {
         // Значение без потолка по ширине вытесняло подпись: вес был только у колонки с ней, а длинное
         // значение («Смотрю, В планах, … Избранное») забирало строку целиком. Потолок оставляет подписи
-        // больше половины, а само значение переносится на вторую строку.
+        // больше половины, а само значение переносится на вторую строку. Подпись и подсказка
+        // переносятся без ограничения строк: с крупным системным шрифтом длинные заголовки
+        // («Карточки «Продолжить просмотр»») иначе обрезались многоточием.
         val valueMaxWidth = maxWidth * VALUE_MAX_WIDTH_FRACTION
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -53,16 +55,12 @@ internal fun SettingsMobileOptionRow(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
                 )
                 if (hint.isNotBlank()) {
                     Text(
                         text = hint,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -85,4 +83,4 @@ internal fun SettingsMobileOptionRow(
 }
 
 /** Какую долю ширины строки может занять значение; остальное остаётся подписи. */
-private const val VALUE_MAX_WIDTH_FRACTION = 0.45f
+private const val VALUE_MAX_WIDTH_FRACTION = 0.4f

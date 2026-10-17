@@ -51,3 +51,20 @@ fun String.playerDisplayOrderPriority(): Int =
         isKodikPlayerUrl() -> 1
         else -> 2
     }
+
+/**
+ * Порядок балансеров в списках: источник 4K всегда первым, остальные — по убыванию просмотров
+ * ([views]); при равенстве — по фиксированному приоритету, затем по имени.
+ */
+fun <T> balancerDisplayComparator(
+    playerName: (T) -> String,
+    iframeUrl: (T) -> String,
+    views: (T) -> Int,
+): Comparator<T> =
+    compareBy<T> { if (balancerDisplayPriority(playerName(it), iframeUrl(it)) < 0) 0 else 1 }
+        .thenByDescending { views(it) }
+        .thenBy { balancerDisplayPriority(playerName(it), iframeUrl(it)) }
+        .thenBy { playerName(it) }
+
+private fun balancerDisplayPriority(playerName: String, iframeUrl: String): Int =
+    minOf(playerName.playerDisplayOrderPriority(), iframeUrl.playerDisplayOrderPriority())

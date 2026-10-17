@@ -9,6 +9,7 @@ import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -25,7 +26,10 @@ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
@@ -54,6 +58,10 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val errorHandler: ErrorHandler = mockk(relaxed = true)
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
+    private val permissionRequested = MutableStateFlow(false)
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true) {
+        every { notificationPermissionRequested } returns permissionRequested
+    }
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val commentsNavigator: ICommentsNavigator = mockk()
     private val reviewsNavigator: IReviewsNavigator = mockk()
@@ -129,6 +137,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         subscriptionHandler = subscriptionHandler,
         playerNavigationHandler = playerNavigationHandler,
         analytics = DetailsAnalytics(tracker),
+        appLifecycleSettingsStore = appLifecycleSettingsStore,
     )
 
     private fun videosResult(
@@ -157,6 +166,19 @@ class DetailsViewModelTest : BaseUnitTest() {
         assertEquals("Anime", state.details?.title)
         assertTrue(state.videosState is VideosUiState.Content)
         assertEquals(DetailsButtonAction.entries, state.detailsButtonOrder)
+    }
+
+    @Test
+    fun `share sends the site link of the title`() = runTest {
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.ShareSelected)
+
+        assertEquals(
+            listOf(DetailsState.Effect.ShareAnime(title = "Anime", url = "https://ru.yummyani.me/catalog/item/url")),
+            effects,
+        )
     }
 
     @Test
@@ -329,6 +351,23 @@ class DetailsViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `guest subscriptions teaser opens and sign in switches to the account tab`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SubscriptionsSignInPromptSelected)
+        assertTrue(vm.currentState.showSubscriptionsSignInPrompt)
+
+        vm.setEvent(Event.SubscriptionsSignInPromptDismissed)
+        assertFalse(vm.currentState.showSubscriptionsSignInPrompt)
+
+        vm.setEvent(Event.SubscriptionsSignInPromptSelected)
+        vm.setEvent(Event.SignInSelected)
+
+        assertFalse(vm.currentState.showSubscriptionsSignInPrompt)
+        verify(exactly = 1) { nav.switchRoot(RootTab.ACCOUNT, any()) }
+    }
+
+    @Test
     fun `balancer picker can be dismissed`() {
         val vm = createViewModel()
 
@@ -358,6 +397,18 @@ class DetailsViewModelTest : BaseUnitTest() {
         verify(exactly = 10) { nav.navigate(navKey) }
         verify(exactly = 1) { nav.back() }
         verify(exactly = 1) { detailsNavigator.getDetailsDest(9) }
+    }
+
+    @Test
+    fun `permission request flag is mirrored and remembered`() {
+        val vm = createViewModel()
+        assertFalse(vm.currentState.notificationPermissionRequested)
+
+        vm.setEvent(Event.NotificationPermissionRequested)
+        permissionRequested.value = true
+
+        assertTrue(vm.currentState.notificationPermissionRequested)
+        coVerify(exactly = 1) { appLifecycleSettingsStore.markNotificationPermissionRequested() }
     }
 
     private companion object {

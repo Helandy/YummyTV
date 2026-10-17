@@ -47,18 +47,20 @@ internal fun LibraryTabOrderPanel(
             modifier = Modifier.padding(horizontal = 8.dp),
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         )
-        order.forEachIndexed { index, tab ->
+        // Закреплённая «История» на ТВ — отдельный пункт бокового меню, во вкладках Библиотеки её нет.
+        val visibleOrder = order.filterNot { it.isPinnedFirst }
+        visibleOrder.forEachIndexed { index, tab ->
             key(tab) {
                 DetailsButtonOrderRow(
                     label = tab.label(),
                     position = index + 1,
-                    canMoveUp = !tab.isPinnedFirst && index > 0 && !order[index - 1].isPinnedFirst,
-                    canMoveDown = !tab.isPinnedFirst && index < order.lastIndex,
+                    canMoveUp = index > 0,
+                    canMoveDown = index < visibleOrder.lastIndex,
                     onMoveUp = { onMoveUp(tab) },
                     onMoveDown = { onMoveDown(tab) },
                 )
             }
-            if (index < order.lastIndex) {
+            if (index < visibleOrder.lastIndex) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 8.dp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),

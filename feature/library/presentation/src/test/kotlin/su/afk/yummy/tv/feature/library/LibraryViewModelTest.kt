@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
@@ -153,6 +154,25 @@ class LibraryViewModelTest : BaseUnitTest() {
 
         assertEquals(listOf(1), vm.currentState.items.map { it.animeId })
         assertEquals(1, vm.currentState.continueWatching.size)
+    }
+
+    @Test
+    fun `lists are not loaded until local storage emits`() {
+        every { observeLibraryItems() } returns emptyFlow()
+        every { observeContinueWatching() } returns emptyFlow()
+
+        val state = createViewModel().currentState
+
+        assertFalse(state.isLibraryLoaded)
+        assertFalse(state.isContinueWatchingLoaded)
+    }
+
+    @Test
+    fun `empty local emission marks lists as loaded`() {
+        val state = createViewModel().currentState
+
+        assertTrue(state.isLibraryLoaded)
+        assertTrue(state.isContinueWatchingLoaded)
     }
 
     @Test
@@ -309,6 +329,17 @@ class LibraryViewModelTest : BaseUnitTest() {
 
         coVerify(exactly = 2) { remoteLibrarySyncHandler.loadRemoteLists(USER_ID, true) }
         coVerify(exactly = 2) { getMeaningfulVideoProgress() }
+    }
+
+    @Test
+    fun `empty state actions switch to the account and catalog tabs`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SignInSelected)
+        vm.setEvent(Event.OpenCatalogSelected)
+
+        verify(exactly = 1) { nav.switchRoot(RootTab.ACCOUNT, any()) }
+        verify(exactly = 1) { nav.switchRoot(RootTab.CATALOG, any()) }
     }
 
     private companion object {

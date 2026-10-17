@@ -28,7 +28,7 @@ internal fun BloggerVideoDto.toDomain() = BloggerVideo(
     commentsCount = commentsCount,
 )
 
-internal fun BloggerVideoCategoryDto.toDomain() = BloggerVideoCategory(id, title)
+internal fun BloggerVideoCategoryDto.toDomain() = BloggerVideoCategory(id, title.replaceFirstChar { it.uppercase() })
 
 internal fun BloggerDto.toDomain() =
     Blogger(id, nickname, (avatars.big ?: avatars.small)?.toHttpsUrl())

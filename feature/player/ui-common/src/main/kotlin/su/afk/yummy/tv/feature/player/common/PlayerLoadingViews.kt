@@ -3,11 +3,11 @@ package su.afk.yummy.tv.feature.player.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 
 @Composable
 fun PlayerBlackBackdrop(modifier: Modifier = Modifier) {
@@ -24,10 +24,6 @@ fun PlayerBufferingIndicator(
     modifier: Modifier = Modifier,
 ) {
     if (visible) {
-        CircularProgressIndicator(
-            color = Color.White,
-            strokeWidth = 2.dp,
-            modifier = modifier,
-        )
+        YummyLoadingIndicator(color = Color.White, modifier = modifier, strokeWidth = 2.dp)
     }
 }

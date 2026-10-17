@@ -11,6 +11,8 @@
         <string name="account_logout">Log out</string>
     <string name="account_login_placeholder">Email or nickname</string>
     <string name="account_password_placeholder">Password</string>
+    <string name="account_mobile_password_show">Show password</string>
+    <string name="account_mobile_password_hide">Hide password</string>
     <string name="account_mobile_register">Register</string>
     <string name="account_mobile_register_hint">Create a new account to sync your progress and much more.</string>
     <string name="account_registration_title">Registration</string>
@@ -235,8 +237,8 @@
     <string name="account_local_auth_login_from_mobile_hint">Discovery and code-based transfer via local network</string>
     <string name="account_local_auth_pairing_title">Login via mobile app</string>
     <string name="account_local_auth_pairing_subtitle">Make sure both devices are on the same Wi-Fi. On your mobile, go to Account -> Login on TV and scan the QR code or enter the code:</string>
-    <string name="account_local_auth_transferring">Receiving session...</string>
-    <string name="account_local_auth_success">Success! Logging in...</string>
+    <string name="account_local_auth_transferring">Receiving session…</string>
+    <string name="account_local_auth_success">Success! Logging in…</string>
     <string name="account_local_auth_error_pin_expired">The code has expired.</string>
     <string name="account_local_auth_error_too_many_attempts">Too many wrong attempts.</string>
     <string name="account_local_auth_error_service_unavailable">Could not announce the TV on the local network.</string>

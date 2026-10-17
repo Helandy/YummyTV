@@ -35,13 +35,13 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
-import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
@@ -175,7 +175,8 @@ fun ReviewsListTvScreen(
                             }
 
                             is LoadState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
-                                TvAppendErrorFooter(
+                                ErrorBanner(
+                                    tv = true,
                                     message = stringResource(R.string.reviews_error),
                                     onRetry = reviews::retry,
                                 )

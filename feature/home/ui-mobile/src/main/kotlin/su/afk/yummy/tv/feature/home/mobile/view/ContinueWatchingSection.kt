@@ -28,6 +28,7 @@ internal fun ContinueWatchingSection(
     entries: List<HomeContinueWatchingItem>,
     launchingAnimeId: Int?,
     onEntrySelected: (HomeContinueWatchingItem) -> Unit,
+    onEntryLongClick: (HomeContinueWatchingItem) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MobileSectionHeader(
@@ -63,6 +64,7 @@ internal fun ContinueWatchingSection(
                     progress = entry.watchProgress(),
                     isLoading = entry.animeId == launchingAnimeId,
                     placeholderText = entry.episode,
+                    onLongClick = { onEntryLongClick(entry) },
                     onClick = { onEntrySelected(entry) },
                 )
             }

@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -22,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.catalog.presentation.R
 
 @Composable
@@ -55,10 +55,7 @@ internal fun RandomAnimeButton(
         contentPadding = PaddingValues(0.dp),
     ) {
         if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(22.dp),
-                strokeWidth = 2.dp,
-            )
+            YummyLoadingIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
         } else {
             Icon(
                 imageVector = Icons.Filled.Casino,

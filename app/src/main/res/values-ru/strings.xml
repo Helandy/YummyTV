@@ -10,6 +10,8 @@
     <string name="interface_mode_mobile">Мобильный интерфейс</string>
     <string name="interface_mode_mobile_hint">Компактная компоновка для сенсорного управления</string>
     <string name="episode_push_notification_channel">Новые серии</string>
+    <string name="episode_push_action_watch">Смотреть</string>
+    <string name="episode_push_action_details">Подробнее</string>
     <string name="shortcut_search">Поиск</string>
     <string name="shortcut_downloads">Загрузки</string>
     <string name="shortcut_continue_long">Продолжить: %1$s</string>

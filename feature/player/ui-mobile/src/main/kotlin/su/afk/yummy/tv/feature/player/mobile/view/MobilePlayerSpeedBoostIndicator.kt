@@ -37,7 +37,6 @@ internal fun MobilePlayerSpeedBoostIndicator(
                 text = "2x",
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
             )
         }
     }

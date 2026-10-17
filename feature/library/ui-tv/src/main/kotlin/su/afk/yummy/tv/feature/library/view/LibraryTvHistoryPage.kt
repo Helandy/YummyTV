@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -54,6 +53,8 @@ import coil3.compose.SubcomposeAsyncImageContent
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyListKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -81,8 +82,11 @@ internal fun LibraryTvHistoryPage(
     focusStateKey: String,
     onEntrySelected: (WatchHistoryEntry) -> Unit,
     onDetailsSelected: (WatchHistoryEntry) -> Unit,
+    /** Есть ли в списке карточки, на которые можно поставить фокус (пока грузится — нет). */
+    onHasFocusableItemsChanged: (Boolean) -> Unit = {},
 ) {
     if (!isSignedIn) {
+        LaunchedEffect(Unit) { onHasFocusableItemsChanged(false) }
         HistoryMessage(stringResource(R.string.library_history_sign_in), icon = Icons.Filled.Lock)
         return
     }
@@ -93,6 +97,8 @@ internal fun LibraryTvHistoryPage(
     val lifecycleOwner = LocalLifecycleOwner.current
     val entries = items.itemSnapshotList.items
     val keys = remember(entries) { entries.historyFocusKeys() }
+    val hasFocusableItems = keys.isNotEmpty() && items.loadState.refresh !is LoadState.Loading
+    LaunchedEffect(hasFocusableItems) { onHasFocusableItemsChanged(hasFocusableItems) }
     val itemFocusRequesters = remember(keys) { keys.associateWith { FocusRequester() } }
     val focusRestoreState = rememberTvLazyFocusRestoreState<String>(focusStateKey)
     val restoreTargetFocusRequester = focusRestoreState.savedKey?.let(itemFocusRequesters::get)
@@ -255,7 +261,7 @@ internal fun LibraryTvHistoryPage(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(
-                                        entry.watchedAtLabel().orEmpty(),
+                                        entry.watchedAtLabel(LocalNowMillis.current()).orEmpty(),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -286,7 +292,7 @@ private fun HistoryMessage(
 ) {
     if (loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            YummyLoadingIndicator()
         }
     } else {
         TvStateMessage(title = text.orEmpty(), icon = icon)

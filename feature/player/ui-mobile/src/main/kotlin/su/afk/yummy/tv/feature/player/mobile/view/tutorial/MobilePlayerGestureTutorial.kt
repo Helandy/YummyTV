@@ -73,7 +73,6 @@ internal fun MobilePlayerGestureTutorial(
                     text = stringResource(R.string.player_mobile_gesture_tutorial_heading),
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                 )
                 Text(

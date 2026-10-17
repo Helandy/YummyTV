@@ -24,7 +24,7 @@
     <string name="error_msg_http">Помилка сервера (%1$d). Повторіть спробу пізніше.</string>
     <string name="common_back">Назад</string>
     <string name="common_retry">Повторити</string>
-    <string name="common_loading">Завантаження...</string>
+    <string name="common_loading">Завантаження…</string>
     <string name="common_close">Закрити</string>
     <string name="common_cancel">Скасувати</string>
     <string name="common_sign_in">Увійти</string>

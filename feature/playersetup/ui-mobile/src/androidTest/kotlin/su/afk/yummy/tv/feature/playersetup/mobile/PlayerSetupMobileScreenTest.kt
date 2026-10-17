@@ -48,16 +48,7 @@ class PlayerSetupMobileScreenTest {
         setScreen()
 
         composeRule.onNodeWithText(string(R.string.player_setup_title)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.player_setup_subtitle)).assertIsDisplayed()
-    }
-
-    @Test
-    fun openingTimelineToggleSendsEvent() {
-        setScreen()
-
-        clickRow(R.string.player_setup_opening_timeline_label)
-
-        assertTrue(PlayerSetupState.Event.ShowOpeningOnTimelineToggled in events)
+        composeRule.onNodeWithText(string(R.string.player_setup_mobile_subtitle)).assertIsDisplayed()
     }
 
     @Test
@@ -79,33 +70,6 @@ class PlayerSetupMobileScreenTest {
     }
 
     @Test
-    fun suggestNextToggleSendsEvent() {
-        setScreen()
-
-        clickRow(R.string.player_setup_suggest_next_label)
-
-        assertTrue(PlayerSetupState.Event.SuggestNextEpisodeOnWatchedToggled in events)
-    }
-
-    @Test
-    fun askDubbingToggleSendsEvent() {
-        setScreen()
-
-        clickRow(R.string.player_setup_ask_dubbing_label)
-
-        assertTrue(PlayerSetupState.Event.AskDubbingOnWatchToggled in events)
-    }
-
-    @Test
-    fun pictureInPictureToggleSendsEvent() {
-        setScreen()
-
-        clickRow(R.string.player_setup_mobile_pip_label)
-
-        assertTrue(PlayerSetupState.Event.PictureInPictureToggled in events)
-    }
-
-    @Test
     fun qualityPickerSendsPreferredVideoQualitySelected() {
         setScreen()
 
@@ -123,5 +87,14 @@ class PlayerSetupMobileScreenTest {
         composeRule.onNodeWithText(string(DesignSystemR.string.common_done)).performScrollTo().performClick()
 
         assertTrue(PlayerSetupState.Event.DoneSelected in events)
+    }
+
+    @Test
+    fun moreSettingsSendsMoreSettingsSelected() {
+        setScreen()
+
+        composeRule.onNodeWithText(string(R.string.player_setup_mobile_more_settings)).performScrollTo().performClick()
+
+        assertTrue(PlayerSetupState.Event.MoreSettingsSelected in events)
     }
 }

@@ -70,7 +70,7 @@ private fun AccountMobileProfileStatsLegendItem(
         Text(
             text = slice.title,
             style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -79,7 +79,7 @@ private fun AccountMobileProfileStatsLegendItem(
         Text(
             text = valueType.valueLabel(slice.value),
             style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
         )

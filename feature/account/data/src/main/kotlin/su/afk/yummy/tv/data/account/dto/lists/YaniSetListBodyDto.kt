@@ -9,5 +9,5 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 data class YaniSetListBodyDto(
     val list: Int,
-    val date: Long = System.currentTimeMillis() / 1000L,
+    val date: Long,
 )

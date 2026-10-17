@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.episodes.handler
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.core.common.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
@@ -100,17 +100,19 @@ internal class EpisodeDownloadHandler @Inject constructor(
         videos: List<AnimeVideo>,
         statuses: Map<String, EpisodesState.EpisodeDownloadUiState>,
         resolvingKeys: Set<String>,
+        /** Все видео тайтла — по ним считаются просмотры балансера, как в пикере деталки. */
+        allVideos: List<AnimeVideo> = videos,
     ): EpisodesState.EpisodeDownloadBalancerSelection {
+        val viewsByPlayer = allVideos
+            .groupingBy { it.player }
+            .fold(0) { sum, video -> sum + (video.views ?: 0) }
         val options = videos
             .sortedWith(
-                compareByDescending<AnimeVideo> { it.views ?: 0 }
-                    .thenBy {
-                        minOf(
-                            it.player.playerDisplayOrderPriority(),
-                            it.iframeUrl.playerDisplayOrderPriority(),
-                        )
-                    }
-                    .thenBy { it.player }
+                balancerDisplayComparator<AnimeVideo>(
+                    playerName = { it.player },
+                    iframeUrl = { it.iframeUrl },
+                    views = { viewsByPlayer[it.player] ?: 0 },
+                )
                     .thenBy { it.playerId ?: Int.MAX_VALUE }
                     .thenBy { it.id },
             )

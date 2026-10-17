@@ -180,7 +180,6 @@ internal fun FilterPanel(
             Text(
                 text = stringResource(R.string.search_filters),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
             )
             FlowRow(

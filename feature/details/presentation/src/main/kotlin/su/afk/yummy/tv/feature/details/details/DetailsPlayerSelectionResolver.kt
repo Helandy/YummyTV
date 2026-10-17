@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.details
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.core.common.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.feature.details.details.model.BalancerOption
@@ -64,14 +64,18 @@ internal fun resolveDetailsPlayerSelection(
                         it.player == playerName && it.dubbing == representative.dubbing
                     }
                     .dubbingEpisodeCount(),
+                // Просмотры балансера — по всему тайтлу, а не по выбранной серии: порядок
+                // в пикере не должен прыгать от серии к серии.
+                views = allVideos.filter { it.player == playerName }.sumOf { it.views ?: 0 },
             )
         }
-        .sortedBy { option ->
-            minOf(
-                option.playerName.playerDisplayOrderPriority(),
-                option.video.iframeUrl.playerDisplayOrderPriority(),
-            )
-        }
+        .sortedWith(
+            balancerDisplayComparator(
+                playerName = { it.playerName },
+                iframeUrl = { it.video.iframeUrl },
+                views = { it.views },
+            ),
+        )
     val supportedOptions = options.filter { it.isSupported }
 
     if (preferredPlayer != PreferredPlayer.NONE) {

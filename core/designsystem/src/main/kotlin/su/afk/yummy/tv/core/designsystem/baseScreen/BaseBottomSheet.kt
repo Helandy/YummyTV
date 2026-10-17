@@ -25,6 +25,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 
@@ -72,6 +73,8 @@ fun BaseBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     title: String? = null,
+    /** Ограничение строк заголовка: длинные названия тайтлов иначе съедают полшторки. */
+    titleMaxLines: Int = Int.MAX_VALUE,
     titleContent: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
@@ -106,6 +109,8 @@ fun BaseBottomSheet(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
+                    maxLines = titleMaxLines,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(bottom = 14.dp),
                 )
             }

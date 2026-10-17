@@ -19,6 +19,8 @@ class HomeState {
     @Immutable
     data class State(
         val isLoading: Boolean = true,
+        /** Идёт обновление по жесту pull-to-refresh поверх уже показанной ленты. */
+        val isRefreshing: Boolean = false,
         val feed: HomeFeed? = null,
         /** Есть ли секция расписания в исходной ленте (до фильтрации из [feed]). */
         val hasSchedule: Boolean = false,
@@ -40,6 +42,8 @@ class HomeState {
         val hiddenRecommendationIds: PersistentSet<Int> = persistentSetOf(),
         /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */
         val pendingRecommendationIds: PersistentSet<Int> = persistentSetOf(),
+        /** Тайтлы, убранные из «Продолжить просмотр», пока ещё можно отменить удаление. */
+        val pendingContinueWatchingRemovalIds: PersistentSet<Int> = persistentSetOf(),
     ) : UiState
 
     /** Пользовательские действия на главном экране. */
@@ -74,6 +78,9 @@ class HomeState {
         /** Пользователь открыл общую ленту рецензий с главного экрана. */
         data object ReviewsSelected : Event
 
+        /** Пользователь нажал поиск в верхней панели — открываем каталог с фокусом в поле. */
+        data object SearchSelected : Event
+
         data object BloggerVideosSelected : Event
 
         data object BloggerVideosRetrySelected : Event
@@ -97,6 +104,12 @@ class HomeState {
 
         /** Пользователь вернул скрытый тайтл в рекомендации. */
         data class RecommendationRestoreRequested(val animeId: Int) : Event
+
+        /** Пользователь убрал тайтл из «Продолжить просмотр» на главной. */
+        data class ContinueWatchingRemoveRequested(val entry: HomeContinueWatchingItem) : Event
+
+        /** Пользователь отменил удаление тайтла из «Продолжить просмотр». */
+        data class ContinueWatchingRemoveUndone(val animeId: Int) : Event
     }
 
     sealed interface Effect : UiEffect {
@@ -105,5 +118,8 @@ class HomeState {
 
         /** Тайтл скрыт из рекомендаций, действие можно откатить. */
         data class ShowRecommendationUndo(val message: String, val animeId: Int) : Effect
+
+        /** Тайтл убран из «Продолжить просмотр»; удаление ещё можно отменить. */
+        data class ShowContinueWatchingUndo(val message: String, val animeId: Int) : Effect
     }
 }

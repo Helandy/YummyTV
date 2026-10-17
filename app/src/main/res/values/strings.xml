@@ -9,6 +9,8 @@
     <string name="interface_mode_mobile">Mobile interface</string>
     <string name="interface_mode_mobile_hint">Compact layout optimized for touchscreen controls</string>
     <string name="episode_push_notification_channel">New episodes</string>
+    <string name="episode_push_action_watch">Watch</string>
+    <string name="episode_push_action_details">Details</string>
     <string name="shortcut_search">Search</string>
     <string name="shortcut_downloads">Downloads</string>
     <string name="shortcut_continue_long">Continue: %1$s</string>

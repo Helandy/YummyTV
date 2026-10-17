@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -54,6 +56,7 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.utils.label
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
+import su.afk.yummy.tv.feature.details.utils.statusIcon
 
 @Composable
 internal fun LibraryListPickerOverlay(
@@ -128,6 +131,7 @@ internal fun LibraryListPickerOverlay(
                         LibraryListOptionItem(
                             label = list.label(),
                             color = list.statusColor(),
+                            icon = list.statusIcon(),
                             focusRequester = if (index == 0) firstFocusRequester else null,
                             onFocused = { focusedOptionIndex = index },
                             onClick = { onConfirmed(list) },
@@ -143,6 +147,7 @@ internal fun LibraryListPickerOverlay(
 private fun LibraryListOptionItem(
     label: String,
     color: Color,
+    icon: ImageVector,
     focusRequester: FocusRequester?,
     onFocused: () -> Unit,
     onClick: () -> Unit,
@@ -172,11 +177,11 @@ private fun LibraryListOptionItem(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(color),
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(22.dp),
         )
         Text(
             text = label,

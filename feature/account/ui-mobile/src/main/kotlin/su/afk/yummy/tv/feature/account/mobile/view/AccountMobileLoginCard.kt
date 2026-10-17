@@ -6,16 +6,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -26,13 +35,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun AccountMobileLoginCard(
@@ -54,7 +65,6 @@ internal fun AccountMobileLoginCard(
                     Text(
                         text = stringResource(R.string.account_mobile_title),
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
                     )
@@ -80,14 +90,42 @@ internal fun AccountMobileLoginCard(
                     .fillMaxWidth()
                     .semantics { contentType = ContentType.Username + ContentType.EmailAddress },
             )
+            var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+            val canSubmit = !state.isCaptchaRequired && !state.isLoading
             OutlinedTextField(
                 value = state.password,
                 onValueChange = { onEvent(AccountState.Event.PasswordChanged(it)) },
                 placeholder = { Text(stringResource(R.string.account_password_placeholder)) },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (isPasswordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            imageVector = if (isPasswordVisible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
+                            contentDescription = stringResource(
+                                if (isPasswordVisible) {
+                                    R.string.account_mobile_password_hide
+                                } else {
+                                    R.string.account_mobile_password_show
+                                },
+                            ),
+                        )
+                    }
+                },
                 shape = MaterialTheme.shapes.large,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                // Done на клавиатуре отправляет форму, как кнопка «Войти»; при капче её нет.
+                keyboardActions = KeyboardActions(
+                    onDone = { if (canSubmit) onEvent(AccountState.Event.LoginSelected) },
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics { contentType = ContentType.Password },
@@ -110,10 +148,7 @@ internal fun AccountMobileLoginCard(
                         modifier = Modifier.weight(1f),
                     ) {
                         if (state.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                            )
+                            YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
                             Text(stringResource(CoreR.string.common_sign_in))
                         }

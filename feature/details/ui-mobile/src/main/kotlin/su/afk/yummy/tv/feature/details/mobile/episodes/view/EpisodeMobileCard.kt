@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -57,6 +59,7 @@ internal fun EpisodeMobileCard(
     video: AnimeVideo,
     episodeNumber: String = video.episode,
     watchStatus: EpisodeWatchStatus,
+    isInWatchLater: Boolean,
     kodikIframeUrl: String?,
     episodeTitle: String?,
     episodeDescription: String?,
@@ -95,10 +98,17 @@ internal fun EpisodeMobileCard(
         placeholderText = episodeNumber,
         mediaProgress = (watchStatus as? EpisodeWatchStatus.InProgress)?.progress,
         mediaProgressColor = InProgressColor,
-        mediaTopEndContent = when (watchStatus) {
-            EpisodeWatchStatus.None -> null
-            else -> {
-                { EpisodeMobileWatchIndicator(watchStatus = watchStatus) }
+        mediaTopEndContent = if (watchStatus == EpisodeWatchStatus.None && !isInWatchLater) {
+            null
+        } else {
+            {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (isInWatchLater) EpisodeMobileWatchLaterIndicator()
+                    EpisodeMobileWatchIndicator(watchStatus = watchStatus)
+                }
             }
         },
         trailingAction = {
@@ -324,6 +334,24 @@ private fun downloadStatusText(
         }
 
         else -> null
+    }
+}
+
+/** Серия отложена вручную — закладка в акцентном цвете, чтобы не путаться с белым «просмотрено». */
+@Composable
+private fun EpisodeMobileWatchLaterIndicator() {
+    Box(
+        modifier = Modifier
+            .size(24.dp)
+            .background(Color.Black.copy(alpha = 0.72f), CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Bookmark,
+            contentDescription = stringResource(R.string.details_episode_watch_later_badge),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 

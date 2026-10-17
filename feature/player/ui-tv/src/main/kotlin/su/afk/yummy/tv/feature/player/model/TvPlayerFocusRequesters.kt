@@ -10,17 +10,13 @@ internal class TvPlayerFocusRequesters {
     val quality = FocusRequester()
     val dubbing = FocusRequester()
     val balancer = FocusRequester()
-    val speed = FocusRequester()
-    val resize = FocusRequester()
-    val volume = FocusRequester()
+    val playerSettings = FocusRequester()
     val alloha = FocusRequester()
     val overlay = FocusRequester()
     val selectedQuality = FocusRequester()
     val selectedDubbing = FocusRequester()
     val selectedBalancer = FocusRequester()
-    val selectedSpeed = FocusRequester()
-    val selectedResize = FocusRequester()
-    val selectedVolume = FocusRequester()
+    val selectedPlayerSettings = FocusRequester()
     val selectedAlloha = FocusRequester()
     val skip = FocusRequester()
     val stay = FocusRequester()
@@ -32,9 +28,7 @@ internal class TvPlayerFocusRequesters {
             PlayerControlFocusTarget.Quality -> quality
             PlayerControlFocusTarget.Dubbing -> dubbing
             PlayerControlFocusTarget.Balancer -> balancer
-            PlayerControlFocusTarget.Resize -> resize
-            PlayerControlFocusTarget.Speed -> speed
-            PlayerControlFocusTarget.Volume -> volume
+            PlayerControlFocusTarget.PlayerSettings -> playerSettings
             PlayerControlFocusTarget.Alloha -> alloha
         }
 

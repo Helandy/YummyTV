@@ -51,7 +51,6 @@ internal fun AccountHeader(
             Text(
                 text = state.nickname.ifBlank { stringResource(R.string.account_unknown_user) },
                 style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

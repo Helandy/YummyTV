@@ -20,7 +20,13 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -32,12 +38,12 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileHideOnScrollState
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
-import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
@@ -148,6 +154,20 @@ private fun PostsList(
     posts: LazyPagingItems<PostSummary>,
     onEvent: (PostsListState.Event) -> Unit,
 ) {
+    // Индикатор жеста держим до конца именно этой перезагрузки, иначе он гаснет сразу.
+    var isPullRefreshing by remember { mutableStateOf(false) }
+    val isRefreshLoading = posts.loadState.refresh is LoadState.Loading
+    LaunchedEffect(isRefreshLoading) {
+        if (!isRefreshLoading) isPullRefreshing = false
+    }
+    PullToRefreshBox(
+        isRefreshing = isPullRefreshing,
+        onRefresh = {
+            isPullRefreshing = true
+            posts.refresh()
+        },
+        modifier = Modifier.fillMaxSize(),
+    ) {
     LazyColumn(
         modifier = Modifier
             .mobileContentMaxWidth()
@@ -156,7 +176,8 @@ private fun PostsList(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         when {
-            posts.loadState.refresh is LoadState.Loading -> item {
+            // При обновлении поверх показанного списка его не прячем: крутится индикатор жеста.
+            isRefreshLoading && posts.itemCount == 0 -> item {
                 PostsLoadingState()
             }
 
@@ -189,11 +210,12 @@ private fun PostsList(
         }
         if (posts.loadState.append is LoadState.Error) {
             item {
-                MobileAppendError(
+                ErrorBanner(
                     message = stringResource(R.string.posts_error),
                     onRetry = posts::retry,
                 )
             }
         }
+    }
     }
 }

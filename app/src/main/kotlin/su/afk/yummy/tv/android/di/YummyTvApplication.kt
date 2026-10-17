@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
+import su.afk.yummy.tv.core.utils.coroutines.TrustedAppClock
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
 import su.afk.yummy.tv.core.utils.logging.AppLogCollector
 import javax.inject.Inject
@@ -88,6 +89,9 @@ class YummyTvApplication :
     lateinit var appLogCollector: AppLogCollector
 
     @Inject
+    lateinit var trustedAppClock: TrustedAppClock
+
+    @Inject
     @DefaultApplicationScope
     lateinit var appScope: CoroutineScope
 
@@ -116,6 +120,7 @@ class YummyTvApplication :
         trace("App.featureToggleRefresh") { featureToggleRefreshCoordinator.start() }
         // Периодические задачи с KEEP: первый WorkManager.getInstance() поднимает WorkManager и
         // его Room-базу, на main это стоило бы каждому холодному старту.
+        appScope.launch { trace("App.trustedTime") { trustedAppClock.start() } }
         appScope.launch {
             trace("App.schedulers") {
                 homeFeedRefreshScheduler.schedule()

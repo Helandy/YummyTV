@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.collection.mobile.view
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -10,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
@@ -25,7 +25,7 @@ internal fun MobileDeleteCollectionDialog(
         confirmButton = {
             TextButton(onClick = onConfirm, enabled = !isDeleting) {
                 if (isDeleting) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
                     Text(stringResource(CoreR.string.common_delete))
                 }

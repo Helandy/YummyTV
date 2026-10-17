@@ -98,6 +98,33 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
         assertEquals("AniLibria", selection.dubbing)
     }
 
+    @Test
+    fun `extra 4k source stays first despite fewer views`() {
+        val fourK = video(id = 4, dubbing = "AniLibria", player = "4K", views = 1, url = "source://4k/1")
+
+        val selection = createHandler().balancerSelection(
+            listOf(alloha, kodik, fourK),
+            statuses = emptyMap(),
+            resolvingKeys = emptySet(),
+        )
+
+        assertEquals(listOf("4K", "Kodik", "Alloha"), selection.options.map { it.title })
+    }
+
+    @Test
+    fun `balancer views are summed over the whole title`() {
+        val otherEpisodeAlloha = video(id = 5, dubbing = "Dream Cast", player = "Alloha", views = 100, url = ALLOHA_URL)
+
+        val selection = createHandler().balancerSelection(
+            listOf(kodik, alloha),
+            statuses = emptyMap(),
+            resolvingKeys = emptySet(),
+            allVideos = listOf(kodik, alloha, otherEpisodeAlloha),
+        )
+
+        assertEquals(listOf("Alloha", "Kodik"), selection.options.map { it.title })
+    }
+
     // ---------------- prepare ----------------
 
     @Test

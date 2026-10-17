@@ -7,7 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import su.afk.yummy.tv.core.common.coroutines.AppClock
-import su.afk.yummy.tv.core.utils.coroutines.SystemAppClock
+import su.afk.yummy.tv.core.utils.coroutines.TrustedAppClock
 import su.afk.yummy.tv.core.utils.coroutines.defaultScope
 import su.afk.yummy.tv.core.utils.coroutines.ioScope
 import javax.inject.Singleton
@@ -17,7 +17,7 @@ import javax.inject.Singleton
 abstract class CoroutineScopesModule {
 
     @Binds
-    abstract fun bindAppClock(impl: SystemAppClock): AppClock
+    abstract fun bindAppClock(impl: TrustedAppClock): AppClock
 
     companion object {
 

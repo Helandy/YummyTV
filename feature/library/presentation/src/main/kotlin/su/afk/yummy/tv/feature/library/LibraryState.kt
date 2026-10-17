@@ -28,7 +28,11 @@ class LibraryState {
     data class State(
         val items: ImmutableList<LibraryItem> = persistentListOf(),
         val tabItems: ImmutableMap<LibraryTab, ImmutableList<LibraryItem>> = persistentMapOf(),
+        /** Локальная библиотека прочитана хотя бы раз: до этого пустой список — не «пусто». */
+        val isLibraryLoaded: Boolean = false,
         val continueWatching: ImmutableList<HomeContinueWatchingItem> = persistentListOf(),
+        /** «Продолжить просмотр» прочитан хотя бы раз: до этого пустой список — не «пусто». */
+        val isContinueWatchingLoaded: Boolean = false,
         /** Тайтл, для которого сейчас резолвится запуск плеера из «Продолжить просмотр». */
         val launchingContinueWatchingAnimeId: Int? = null,
         val watchHistory: Flow<PagingData<WatchHistoryEntry>> = flowOf(PagingData.empty()),
@@ -73,6 +77,9 @@ class LibraryState {
         /** Экран снова стал активным для пользователя. */
         data object ScreenResumed : Event
 
+        /** Пользователь потянул список вниз, чтобы обновить списки с сервера. */
+        data object RefreshRequested : Event
+
         /** Пользователь запросил повторную загрузку библиотеки. */
         data object RetrySelected : Event
 
@@ -81,6 +88,12 @@ class LibraryState {
 
         /** Пользователь скрыл запись продолжения просмотра. */
         data class RemoveWatchProgress(val entry: HomeContinueWatchingItem) : Event
+
+        /** Гость нажал «Войти» в пустом состоянии — открываем вкладку профиля. */
+        data object SignInSelected : Event
+
+        /** Пользователь нажал «Открыть каталог» в пустом списке. */
+        data object OpenCatalogSelected : Event
     }
 
     sealed interface Effect : UiEffect {

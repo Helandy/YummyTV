@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.domain.messages.model.MessageHistoryEntry
 import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
 import su.afk.yummy.tv.feature.messages.mobile.utils.label
@@ -45,7 +45,7 @@ internal fun MessageHistoryMobileDialog(
                 contentAlignment = Alignment.Center,
             ) {
                 when {
-                    isLoading -> CircularProgressIndicator()
+                    isLoading -> YummyLoadingIndicator()
                     hasError -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(stringResource(R.string.messages_history_error))
                         TextButton(onClick = onRetry) { Text(stringResource(CoreR.string.common_retry)) }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -23,8 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun MobilePlayerOverlay(
@@ -41,9 +42,7 @@ internal fun MobilePlayerOverlay(
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onTrackSettings: () -> Unit,
-    onPlaybackSettings: () -> Unit,
-    showVolumeButton: Boolean = false,
-    onVolumeSettings: () -> Unit = {},
+    onPlayerSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (!visible) return
@@ -83,23 +82,22 @@ internal fun MobilePlayerOverlay(
             ) {
                 MobilePlayerActionButton(
                     icon = Icons.Filled.SkipPrevious,
+                    contentDescription = stringResource(R.string.player_mobile_previous_episode),
                     enabled = hasPrevEpisode,
                     onClick = onPrevEpisode,
                 )
                 MobilePlayerActionButton(
                     icon = Icons.AutoMirrored.Filled.VolumeUp,
+                    contentDescription = stringResource(R.string.player_mobile_track_settings_title),
                     onClick = onTrackSettings,
                 )
-                if (showVolumeButton) {
-                    MobilePlayerActionButton(
-                        icon = Icons.Filled.GraphicEq,
-                        onClick = onVolumeSettings,
-                    )
-                }
             }
             Spacer(Modifier.weight(1f))
             MobilePlayerActionButton(
                 icon = if (wantsPlay) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                contentDescription = stringResource(
+                    if (wantsPlay) R.string.player_mobile_pip_pause else R.string.player_mobile_pip_play,
+                ),
                 primary = true,
                 onClick = onPlayPause,
             )
@@ -110,10 +108,12 @@ internal fun MobilePlayerOverlay(
             ) {
                 MobilePlayerActionButton(
                     icon = Icons.Filled.Tune,
-                    onClick = onPlaybackSettings,
+                    contentDescription = stringResource(R.string.player_mobile_playback_settings_title),
+                    onClick = onPlayerSettings,
                 )
                 MobilePlayerActionButton(
                     icon = Icons.Filled.SkipNext,
+                    contentDescription = stringResource(R.string.player_mobile_next_episode),
                     enabled = hasNextEpisode,
                     onClick = onNextEpisode,
                 )

@@ -107,7 +107,7 @@ internal fun NotificationRow(
                 Text(
                     text = notification.title.ifBlank { notification.type },
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (notification.viewed) FontWeight.Medium else FontWeight.Bold,
+                    fontWeight = if (notification.viewed) FontWeight.Medium else FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,

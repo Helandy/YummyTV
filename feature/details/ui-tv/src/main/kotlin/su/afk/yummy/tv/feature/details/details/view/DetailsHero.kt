@@ -151,20 +151,26 @@ internal fun DetailsHero(
                             color = if (titleFocused) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurface,
                         ),
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.SemiBold,
                         minLines = 1,
                         maxLines = titleMaxLines,
                         isFocused = titleFocused,
                         marqueeWhenOverflow = true,
                         modifier = Modifier
                             .weight(1f)
+                            .alignByBaseline()
                             .focusRequester(titleFocusRequester)
                             .focusProperties { down = downFocusRequester }
                             .focusable()
                             .onFocusChanged { fs -> titleFocused = fs.isFocused },
                     )
                     userRating?.let { userRating ->
-                        UserRatingChip(rating = userRating, textStyle = MaterialTheme.typography.titleMedium)
+                        // По первой строке заголовка, а не по центру двух строк.
+                        UserRatingChip(
+                            rating = userRating,
+                            textStyle = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.alignByBaseline(),
+                        )
                     }
                 }
 

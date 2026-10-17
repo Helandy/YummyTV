@@ -119,7 +119,6 @@ internal fun HomeHeroCard(
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         minLines = 2,
                         maxLines = 2,
@@ -147,7 +146,6 @@ private fun HomeHeroMeta(item: HomeFeedItem) {
         Text(
             text = year.toString(),
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

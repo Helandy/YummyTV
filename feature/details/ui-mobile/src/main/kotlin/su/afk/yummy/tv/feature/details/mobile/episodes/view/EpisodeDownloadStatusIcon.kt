@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.isDownloadBusy
 
@@ -35,7 +36,7 @@ internal fun EpisodeDownloadStatusIcon(
             val indeterminate = status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
                 (status?.progress ?: 0f) <= 0f
             if (indeterminate) {
-                CircularProgressIndicator(strokeWidth = 2.dp, modifier = modifier)
+                YummyLoadingIndicator(modifier = modifier, strokeWidth = 2.dp)
             } else {
                 CircularProgressIndicator(
                     progress = { status?.progress ?: 0f },

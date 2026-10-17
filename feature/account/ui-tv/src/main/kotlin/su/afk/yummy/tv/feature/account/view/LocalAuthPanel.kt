@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.InlineError
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
@@ -55,7 +56,6 @@ internal fun LocalAuthPanel(
         Text(
             text = stringResource(R.string.account_local_auth_pairing_title),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
 
@@ -75,10 +75,9 @@ internal fun LocalAuthPanel(
                 )
                 val lastError = state.lastError
                 if (lastError != null) {
-                    Text(
-                        text = lastError.message(),
+                    InlineError(
+                        message = lastError.message(),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
                     )
                     Text(
@@ -110,10 +109,9 @@ internal fun LocalAuthPanel(
             }
 
             is LocalAuthServerState.Error -> {
-                Text(
-                    text = state.reason.message(),
+                InlineError(
+                    message = state.reason.message(),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
                 )
                 Text(

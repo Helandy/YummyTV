@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -24,6 +25,7 @@ internal fun DetailsSecondaryActions(
     state: DetailsState.State,
     details: AnimeDetails,
     onSubscriptionsSelected: () -> Unit,
+    onSubscriptionsLockedSelected: () -> Unit,
     onFullDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
@@ -40,6 +42,7 @@ internal fun DetailsSecondaryActions(
         state = state,
         details = details,
         onSubscriptionsSelected = onSubscriptionsSelected,
+        onSubscriptionsLockedSelected = onSubscriptionsLockedSelected,
         onFullDetailsSelected = onFullDetailsSelected,
         onEpisodesSelected = onEpisodesSelected,
         onTrailersSelected = onTrailersSelected,
@@ -57,12 +60,7 @@ internal fun DetailsSecondaryActions(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = stringResource(R.string.details_mobile_sections),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        MobileSectionHeader(title = stringResource(R.string.details_mobile_sections))
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

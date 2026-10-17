@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 
 internal fun LibraryTab.userAnimeList(): UserAnimeList? = when (this) {
@@ -19,6 +20,21 @@ internal fun LibraryTab.userAnimeList(): UserAnimeList? = when (this) {
     LibraryTab.CONTINUE_WATCHING,
     LibraryTab.HISTORY,
     LibraryTab.FAVORITES -> null
+}
+
+/**
+ * Данные вкладки ещё не прочитаны из локального хранилища — показывать лоадер, а не «Список пуст».
+ * У истории своё состояние загрузки в Paging, поэтому она здесь не учитывается.
+ */
+fun LibraryState.State.isLocalLoading(tab: LibraryTab): Boolean = when (tab) {
+    LibraryTab.CONTINUE_WATCHING -> !isContinueWatchingLoaded
+    LibraryTab.HISTORY -> false
+    LibraryTab.FAVORITES,
+    LibraryTab.WATCHING,
+    LibraryTab.PLANNED,
+    LibraryTab.COMPLETED,
+    LibraryTab.POSTPONED,
+    LibraryTab.DROPPED -> !isLibraryLoaded
 }
 
 /** Раскладывает элементы библиотеки по вкладкам, чтобы UI не занимался фильтрацией. */

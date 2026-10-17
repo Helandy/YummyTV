@@ -1,9 +1,11 @@
 package su.afk.yummy.tv.feature.playersetup
 
+import androidx.navigation3.runtime.NavKey
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -17,6 +19,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState.Event
 import su.afk.yummy.tv.feature.playersetup.handler.PlayerSetupSettingsHandler
+import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 
 class PlayerSetupViewModelTest : BaseUnitTest() {
 
@@ -24,12 +27,15 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val settingsHandler: PlayerSetupSettingsHandler = mockk(relaxed = true)
+    private val settingsNavigator: ISettingsNavigator = mockk()
+    private val navKey: NavKey = mockk()
 
     private val settings = MutableStateFlow(PlayerSetupState.State())
 
     @Before
     fun setUp() {
         every { settingsHandler.observe() } returns settings
+        every { settingsNavigator.getSettingsDest() } returns navKey
     }
 
     @Test
@@ -99,10 +105,23 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
         verify { nav.back() }
     }
 
+    @Test
+    fun `more settings closes the setup and opens the settings`() {
+        val viewModel = createViewModel()
+
+        viewModel.setEvent(Event.MoreSettingsSelected)
+
+        verifyOrder {
+            nav.back()
+            nav.navigate(navKey)
+        }
+    }
+
     private fun createViewModel() = PlayerSetupViewModel(
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,
         settingsHandler = settingsHandler,
+        settingsNavigator = settingsNavigator,
     )
 }

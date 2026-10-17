@@ -4,7 +4,6 @@ import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.commonscreen.R
 
 /**
@@ -99,10 +99,7 @@ internal fun ZoomableImage(
 
         when {
             loadState is AsyncImagePainter.State.Loading ->
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                YummyLoadingIndicator(color = Color.White, modifier = Modifier.align(Alignment.Center))
 
             isError && attempt >= AUTO_RETRY_COUNT ->
                 TextButton(

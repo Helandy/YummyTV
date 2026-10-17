@@ -38,7 +38,7 @@ internal fun HeroMetaRow(details: AnimeDetails) {
         items.forEach { label ->
             Text(
                 text = label,
-                fontSize = 10.sp,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
                 color = chipColor.copy(alpha = 0.85f),
                 modifier = Modifier
@@ -64,7 +64,7 @@ internal fun HeroMetaRow(details: AnimeDetails) {
                 Spacer(modifier = Modifier.width(3.dp))
                 Text(
                     text = views,
-                    fontSize = 10.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
                     color = chipColor.copy(alpha = 0.85f),
                 )

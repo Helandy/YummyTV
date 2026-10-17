@@ -15,9 +15,6 @@ interface WatchLaterDao {
     @Query("SELECT * FROM watch_later WHERE animeId = :animeId")
     fun observeByAnimeId(animeId: Int): Flow<List<WatchLaterEntry>>
 
-    @Query("SELECT * FROM watch_later")
-    suspend fun all(): List<WatchLaterEntry>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(entry: WatchLaterEntry)
 

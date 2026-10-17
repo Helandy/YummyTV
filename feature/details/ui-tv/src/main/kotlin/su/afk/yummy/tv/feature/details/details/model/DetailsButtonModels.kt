@@ -24,13 +24,13 @@ internal sealed interface ButtonRowData {
         override val buttonIndices = listOf(index)
     }
 
-    data class LibraryFavorite(
-        val libraryIndex: Int,
-        val libraryButton: ButtonData,
-        val favoriteIndex: Int,
-        val favoriteButton: ButtonData,
+    data class Pair(
+        val firstIndex: Int,
+        val first: ButtonData,
+        val secondIndex: Int?,
+        val second: ButtonData?,
     ) : ButtonRowData {
-        override val key = "${libraryButton.action.name}_${favoriteButton.action.name}"
-        override val buttonIndices = listOf(libraryIndex, favoriteIndex)
+        override val key = "${first.action.name}_${second?.action?.name.orEmpty()}"
+        override val buttonIndices = listOfNotNull(firstIndex, secondIndex)
     }
 }

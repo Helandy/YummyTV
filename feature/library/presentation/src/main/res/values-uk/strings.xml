@@ -15,7 +15,8 @@
     <string name="library_tab_dropped">Кинуто</string>
     <string name="library_episode_number">Серія %1$s</string>
     <string name="library_mobile_added_date">Додано %1$s</string>
-    <string name="library_empty_list">Список поки порожній - саме час щось додати</string>
+    <string name="library_empty_list">Список поки порожній — саме час щось додати</string>
+    <string name="library_mobile_open_catalog">Відкрити каталог</string>
     <string name="library_mobile_remove_title">Видалити тайтл?</string>
     <string name="library_mobile_remove_message">“%1$s” буде видалено з розділу “%2$s”.</string>
     <string name="library_remove_success">Видалено</string>

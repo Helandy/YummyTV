@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -52,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.formatReleaseNotes
 import su.afk.yummy.tv.core.utils.system.openExternalUri
@@ -154,7 +154,6 @@ private fun AvailableContent(
                 if (status.required) R.string.update_required_title else R.string.update_available_title
             ),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(4.dp))
@@ -308,7 +307,6 @@ private fun AvailableContent(
                     Text(
                         text = stringResource(R.string.update_install),
                         color = updateButtonContentColor,
-                        fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelLarge,
                     )
                 }
@@ -407,7 +405,7 @@ private fun InstallingContent() {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        YummyLoadingIndicator(color = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.update_installing),
@@ -434,7 +432,6 @@ private fun ErrorContent(
         Text(
             text = stringResource(R.string.update_error_title),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(8.dp))
@@ -456,7 +453,6 @@ private fun ErrorContent(
                     Text(
                         text = stringResource(CoreR.string.common_retry),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelLarge,
                     )
                 }

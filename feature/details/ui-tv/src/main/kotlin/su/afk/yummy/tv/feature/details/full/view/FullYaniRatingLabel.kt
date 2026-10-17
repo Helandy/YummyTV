@@ -33,7 +33,6 @@ internal fun FullYaniRatingLabel(rating: Double) {
         Text(
             text = rating.formatRating(),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
             color = color,
         )
     }

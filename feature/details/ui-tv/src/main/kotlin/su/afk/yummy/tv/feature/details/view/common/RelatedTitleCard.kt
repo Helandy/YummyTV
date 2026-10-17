@@ -101,7 +101,6 @@ internal fun RelatedTitleCard(
                     Text(
                         text = number.toString().padStart(2, '0'),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -128,7 +127,6 @@ internal fun RelatedTitleCard(
                     Text(
                         text = value.toString(),
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -153,7 +151,7 @@ internal fun RelatedTitleCard(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     minLines = 2,
                     maxLines = 2,
                     isFocused = isFocused,

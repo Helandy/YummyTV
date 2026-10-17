@@ -20,7 +20,7 @@ internal fun NotificationMiniRow(notification: ProfileNotification) {
         Text(
             text = notification.title.ifBlank { notification.type },
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (notification.viewed) FontWeight.SemiBold else FontWeight.ExtraBold,
+            fontWeight = if (notification.viewed) FontWeight.SemiBold else FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

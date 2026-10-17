@@ -37,13 +37,12 @@ internal fun AccountMobileDaysOnlineTile(daysOnline: Int) {
         Text(
             text = daysOnline.coerceAtLeast(0).toString(),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
             text = stringResource(R.string.account_profile_days_online),
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

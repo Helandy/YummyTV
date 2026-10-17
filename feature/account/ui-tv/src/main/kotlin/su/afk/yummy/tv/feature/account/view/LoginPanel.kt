@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
+import su.afk.yummy.tv.core.designsystem.components.InlineError
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -113,14 +114,14 @@ internal fun LoginPanel(
             modifier = Modifier.fillMaxWidth(),
         )
         // Ошибка входа — над полями, чтобы не терялась под кнопками и капчей.
-        ErrorText(
-            error = state.error.accountErrorMessage(),
+        InlineError(
+            message = state.error.accountErrorMessage(),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
         // Причина ошибки (сеть, Keystore, отказ сервера) — как в мобильной версии: без неё
-        ErrorText(
-            error = state.errorMessage,
+        InlineError(
+            message = state.errorMessage,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )

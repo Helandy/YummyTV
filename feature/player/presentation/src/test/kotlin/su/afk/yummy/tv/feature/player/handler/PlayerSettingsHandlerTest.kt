@@ -14,6 +14,8 @@ import org.junit.Test
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
@@ -48,5 +50,17 @@ class PlayerSettingsHandlerTest : BaseUnitTest() {
         advanceTimeBy(100)
         runCurrent()
         coVerify { store.setPlayerMobileVideoTransformSettings(42, "Title", "Kodik", value) }
+    }
+
+    @Test
+    fun `subtitle style and volume stabilization are written to the shared store`() = runTest {
+        val style = PlayerSubtitleStyleSettings(textColor = PlayerSubtitleTextColor.YELLOW)
+        val handler = PlayerSettingsHandler(store)
+
+        handler.saveSubtitleStyle(style)
+        handler.saveVolumeStabilizationEnabled(true)
+
+        coVerify { store.setPlayerSubtitleStyle(style) }
+        coVerify { store.setVolumeStabilizationEnabled(true) }
     }
 }
