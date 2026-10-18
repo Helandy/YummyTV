@@ -6,8 +6,11 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.feature.details.mobile.utils.trimBelowLastBaseline
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -55,6 +59,8 @@ internal fun DetailsMediaCard(
     mediaProgress: Float? = null,
     mediaProgressColor: Color = Color.Unspecified,
     mediaTopEndContent: (@Composable () -> Unit)? = null,
+    /** Прижать подзаголовок и подписи к нижнему краю превью, заголовок остаётся сверху. */
+    subtitleAtBottom: Boolean = false,
     /** Блок под основной строкой карточки — например, раскрывашка описания. */
     bottomContent: (@Composable () -> Unit)? = null,
     onClick: () -> Unit,
@@ -62,6 +68,7 @@ internal fun DetailsMediaCard(
     onLongClick: (() -> Unit)? = null,
 ) {
     val contentWeight = 1f - mediaWeight
+    val hasBottomTexts = !subtitle.isNullOrBlank() || !footerText.isNullOrBlank() || !secondaryFooterText.isNullOrBlank()
     val resolvedMediaProgressColor = if (mediaProgressColor == Color.Unspecified) {
         MaterialTheme.colorScheme.primary
     } else {
@@ -90,7 +97,9 @@ internal fun DetailsMediaCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (subtitleAtBottom) Modifier.height(IntrinsicSize.Min) else Modifier),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -170,11 +179,15 @@ internal fun DetailsMediaCard(
             Row(
                 modifier = Modifier
                     .weight(contentWeight)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                    .then(if (subtitleAtBottom) Modifier.fillMaxHeight() else Modifier)
+                    // Внизу базовая линия текста приподнята на высоту полосы прогресса у края превью.
+                    .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (subtitleAtBottom) 2.dp else 10.dp),
                 verticalAlignment = Alignment.Top,
             ) {
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(if (subtitleAtBottom) Modifier.fillMaxHeight() else Modifier),
                     verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Text(
@@ -184,32 +197,46 @@ internal fun DetailsMediaCard(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    if (!subtitle.isNullOrBlank()) {
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = resolvedSubtitleColor,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    if (!footerText.isNullOrBlank()) {
-                        Text(
-                            text = footerText,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = resolvedFooterTextColor,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    if (!secondaryFooterText.isNullOrBlank()) {
-                        Text(
-                            text = secondaryFooterText,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = resolvedSecondaryFooterTextColor,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                    if (subtitleAtBottom) Spacer(modifier = Modifier.weight(1f))
+                    // Пустая колонка дала бы лишний зазор spacedBy под заголовком.
+                    if (hasBottomTexts) {
+                        Column(
+                            modifier = if (subtitleAtBottom) Modifier.trimBelowLastBaseline() else Modifier,
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                        ) {
+                            if (!subtitle.isNullOrBlank()) {
+                                Text(
+                                    text = subtitle,
+                                    // Внизу — тот же стиль, что у времени серии на ТВ.
+                                    style = if (subtitleAtBottom) {
+                                        MaterialTheme.typography.labelSmall
+                                    } else {
+                                        MaterialTheme.typography.bodySmall
+                                    },
+                                    color = resolvedSubtitleColor,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            if (!footerText.isNullOrBlank()) {
+                                Text(
+                                    text = footerText,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = resolvedFooterTextColor,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            if (!secondaryFooterText.isNullOrBlank()) {
+                                Text(
+                                    text = secondaryFooterText,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = resolvedSecondaryFooterTextColor,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
                     }
                 }
                 trailingAction?.invoke()

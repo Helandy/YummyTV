@@ -50,6 +50,20 @@
     <string name="account_profile_duration_less_hour">&lt;1 h</string>
     <string name="account_profile_percent_full">100%</string>
     <string name="account_profile_days_online">days in a row</string>
+    <string name="account_mobile_heatmap_no_watches">No watches</string>
+    <string name="account_mobile_activity_title">Activity</string>
+    <string name="account_mobile_about_expand">Show more</string>
+    <string name="account_mobile_about_collapse">Show less</string>
+    <plurals name="account_mobile_streak_days">
+        <item quantity="one">%d day in a row</item>
+        <item quantity="other">%d days in a row</item>
+    </plurals>
+    <string name="account_mobile_heatmap_duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="account_mobile_heatmap_duration_minutes">%1$d min</string>
+    <plurals name="account_mobile_heatmap_episodes">
+        <item quantity="one">%d episode</item>
+        <item quantity="other">%d episodes</item>
+    </plurals>
     <string name="account_profile_list_watching">Watching</string>
     <string name="account_profile_list_planned">Planned</string>
     <string name="account_profile_list_completed">Completed</string>
@@ -88,9 +102,12 @@
     <string name="account_error_update_notifications_failed">Could not update notifications</string>
     <string name="account_tab_profile">Profile</string>
     <string name="user_profile_registered">Registered: %1$s</string>
+    <string name="user_profile_comments_all">All comments</string>
+    <string name="user_profile_comments_empty">No comments yet</string>
+    <string name="user_profile_comments_error">Couldn\'t load comments</string>
     <string name="user_profile_tab_overview">Overview</string>
     <string name="user_profile_tab_lists">Lists</string>
-        <string name="user_profile_tab_posts">Posts</string>
+        <string name="user_profile_tab_posts">News</string>
             <string name="user_profile_load_error">Could not load profile</string>
     <string name="user_profile_section_error">Could not load this section</string>
     <string name="user_profile_section_empty">Nothing here yet</string>
@@ -177,8 +194,8 @@
     <string name="password_reset_captcha_error">Captcha verification failed. Please try again.</string>
     <string name="account_my_subscriptions">My subscriptions</string>
     <string name="account_my_subscriptions_empty">You have no subscriptions yet</string>
-    <string name="account_mobile_my_subscriptions_player">Balancer: %1$s</string>
-    <string name="account_mobile_my_subscriptions_player_unknown">Balancer unknown</string>
+    <string name="account_mobile_my_subscriptions_player">Player: %1$s</string>
+    <string name="account_mobile_my_subscriptions_player_unknown">Player unknown</string>
     <string name="account_error_load_subscriptions_failed">Could not load subscriptions</string>
     <string name="account_episode_push_enabled">Push for new episodes</string>
     <string name="account_episode_push_enabled_hint">Notify me when a subscribed episode airs</string>

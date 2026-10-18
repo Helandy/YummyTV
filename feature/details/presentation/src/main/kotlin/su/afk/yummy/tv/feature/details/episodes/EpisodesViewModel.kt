@@ -95,7 +95,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
         fun create(animeId: Int, pendingEpisode: String?): EpisodesViewModel
     }
 
-    override fun createInitialState() = EpisodesState.State()
+    override fun createInitialState() = EpisodesState.State(animeId = animeId)
 
     private val preferredPlayerState = settingsStore.preferredPlayer.stateIn(
         scope = viewModelScope,

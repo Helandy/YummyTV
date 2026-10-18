@@ -48,6 +48,7 @@ internal fun CommentItem(
     onVote: (Int, CommentVote) -> Unit,
     onToggleChildren: (Int) -> Unit,
     onAuthorSelected: (Int) -> Unit,
+    onAnimeSelected: (Int) -> Unit,
 ) {
     val canEdit = currentUserId == comment.author.id || isModerator
     Column(Modifier.fillMaxWidth()) {
@@ -107,6 +108,9 @@ internal fun CommentItem(
                         onDelete = { onDelete(comment.id) },
                         onReport = { onReport(comment.id) },
                     )
+                }
+                comment.item?.let { item ->
+                    CommentAnimeChip(item = item, onClick = { onAnimeSelected(item.animeId) })
                 }
                 if (comment.deletedAtEpochSeconds != null) {
                     Text(

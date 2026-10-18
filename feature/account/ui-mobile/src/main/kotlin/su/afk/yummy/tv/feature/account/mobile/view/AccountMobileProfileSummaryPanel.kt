@@ -1,81 +1,29 @@
-@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
-
 package su.afk.yummy.tv.feature.account.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
-import su.afk.yummy.tv.feature.account.mobile.account.utils.hasAny
-import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.common.utils.hasAny
 
 @Composable
 internal fun AccountMobileProfileSummaryPanel(
     summary: UserProfileSummary,
     stats: UserStats?,
 ) {
-    AccountMobileSurfacePanel {
-        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            AccountMobileProfileStatsPager(summary = summary, stats = stats)
-            Row(
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        AccountMobileSurfacePanel {
+            AccountMobileProfileHeatmap(
+                history = summary.watchHistory,
+                daysOnline = summary.daysOnline,
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                AccountMobileDaysOnlineTile(daysOnline = summary.daysOnline)
-                AccountMobileProfileHeatmap(
-                    history = summary.watchHistory,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            if (summary.counts.hasAny()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AccountMobileSectionLabel(
-                        icon = Icons.Filled.VideoLibrary,
-                        title = stringResource(R.string.account_section_lists),
-                    )
-                    AccountMobileProfileListCounters(counts = summary.counts)
-                }
-            }
-            if (summary.socialCounts.hasAny()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AccountMobileSectionLabel(
-                        icon = Icons.Filled.Groups,
-                        title = stringResource(R.string.account_section_social),
-                    )
-                    AccountMobileProfileSocialCounters(counts = summary.socialCounts)
-                }
-            }
-            if (summary.about.isNotBlank()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AccountMobileSectionLabel(
-                        icon = Icons.Filled.Info,
-                        title = stringResource(R.string.account_section_about),
-                    )
-                    Text(
-                        text = summary.about,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
+            )
+        }
+        AccountMobileSurfacePanel {
+            AccountMobileProfileStatsPager(summary = summary, stats = stats)
         }
     }
 }

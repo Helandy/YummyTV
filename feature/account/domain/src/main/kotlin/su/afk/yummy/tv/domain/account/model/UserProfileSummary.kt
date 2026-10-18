@@ -6,6 +6,8 @@ data class UserProfileSummary(
     val nickname: String = "",
     val avatarUrl: String? = null,
     val bannerUrl: String? = null,
+    /** Широкая панорама баннера (AVIF), как на сайте; [bannerUrl] — запасной вариант. */
+    val bannerWideUrl: String? = null,
     val registerDateSeconds: Long = 0L,
     val birthDateSeconds: Long = 0L,
     val sex: UserProfileSex = UserProfileSex.UNKNOWN,

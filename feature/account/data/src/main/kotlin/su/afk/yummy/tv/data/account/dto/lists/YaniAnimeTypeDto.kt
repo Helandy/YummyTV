@@ -11,4 +11,6 @@ data class YaniAnimeTypeDto(
     val name: String = "",
     val shortname: String = "",
     val value: Int = 0,
+    /** Слаг типа; `unknown` у тайтлов без типа. */
+    val alias: String = "",
 )

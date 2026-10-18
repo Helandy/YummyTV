@@ -3,10 +3,10 @@ package su.afk.yummy.tv.core.tv
 import android.content.ContentValues
 import android.content.Context
 import androidx.tvprovider.media.tv.TvContractCompat
-import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import dagger.hilt.android.qualifiers.ApplicationContext
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
-import su.afk.yummy.tv.core.utils.kodik.isKodikSourceUrl
+import su.afk.yummy.tv.core.utils.kodik.isKodikIframeUrl
 import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -67,9 +67,9 @@ internal class WatchNextManager @Inject constructor(
     }
 
     private suspend fun resolveEpisodeThumbnail(entry: AnimeWatchProgress): String? {
-        val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
+        val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikIframeUrl() }
         return screenshotSource?.let { resolveKodikThumbnailUrl(it) }
-            ?: entry.episodeUrl.takeIf { it.isNotBlank() }
+            ?: entry.episodeUrl.takeIf { it.isKodikIframeUrl() }
                 ?.let { resolveKodikThumbnailUrl(it) }
     }
 }

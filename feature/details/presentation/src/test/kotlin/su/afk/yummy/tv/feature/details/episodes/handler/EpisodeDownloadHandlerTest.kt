@@ -52,7 +52,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
         val selection = createHandler().dubbingSelection(listOf(kodik, alloha, dream), emptyMap(), emptySet())
 
         assertEquals(listOf("Dream Cast", "AniLibria"), selection.options.map { it.title })
-        assertEquals("Kodik / Alloha", selection.options[1].subtitle)
+        assertEquals("Kodik • Alloha", selection.options[1].subtitle)
         assertEquals("3", selection.episode)
         assertFalse(selection.hasAlternativeDubbings)
     }

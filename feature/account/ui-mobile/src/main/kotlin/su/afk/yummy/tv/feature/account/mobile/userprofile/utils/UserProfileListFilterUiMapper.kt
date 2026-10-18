@@ -1,9 +1,14 @@
 package su.afk.yummy.tv.feature.account.mobile.userprofile.utils
 
 import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
+import su.afk.yummy.tv.core.model.anime.CardListStatus
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.feature.account.mobile.userprofile.model.UserProfileListFilterUi
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -18,6 +23,7 @@ internal fun UserProfileState.ListFilter.toMobileListFilterUi(
         label = label(),
         count = count(counts),
         color = color(),
+        icon = icon(),
     )
 
 @Composable
@@ -49,4 +55,14 @@ private fun UserProfileState.ListFilter.color(): Color = when (this) {
     UserProfileState.ListFilter.DROPPED -> YummySemanticColors.StatusDropped
     UserProfileState.ListFilter.POSTPONED -> YummySemanticColors.StatusPostponed
     UserProfileState.ListFilter.FAVORITES -> YummySemanticColors.StatusFavorite
+}
+
+/** Те же иконки, что у тайтлов и в библиотеке ([CardListStatus.icon]); у «Любимого» своего статуса нет. */
+private fun UserProfileState.ListFilter.icon(): ImageVector = when (this) {
+    UserProfileState.ListFilter.WATCHING -> CardListStatus.WATCHING.icon()
+    UserProfileState.ListFilter.PLANNED -> CardListStatus.PLANNED.icon()
+    UserProfileState.ListFilter.COMPLETED -> CardListStatus.COMPLETED.icon()
+    UserProfileState.ListFilter.DROPPED -> CardListStatus.DROPPED.icon()
+    UserProfileState.ListFilter.POSTPONED -> CardListStatus.POSTPONED.icon()
+    UserProfileState.ListFilter.FAVORITES -> Icons.Filled.Favorite
 }

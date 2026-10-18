@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+import su.afk.yummy.tv.domain.account.model.UserSocialCounts
+import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import androidx.navigation3.runtime.NavKey
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -29,7 +32,9 @@ import su.afk.yummy.tv.feature.account.userprofile.UserProfileState.Tab
 import su.afk.yummy.tv.feature.account.userprofile.handler.FriendshipFetchResult
 import su.afk.yummy.tv.feature.account.userprofile.handler.FriendshipOwnership
 import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfileContentHandler
+import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfileCommentsHandler
 import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfileFriendshipHandler
+import su.afk.yummy.tv.feature.account.userprofile.model.UserProfileCommentPreview
 import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfilePagingFetchHandler
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
@@ -53,12 +58,16 @@ class UserProfileViewModelTest : BaseUnitTest() {
     private val contentHandler: UserProfileContentHandler = mockk()
     private val pagingFetchHandler: UserProfilePagingFetchHandler = mockk(relaxed = true)
     private val friendshipHandler: UserProfileFriendshipHandler = mockk()
+    private val commentsHandler: UserProfileCommentsHandler = mockk()
+    private val appearanceSettingsStore: AppearanceSettingsStore = mockk()
+    private val showTitleYear = MutableStateFlow(false)
     private val collectionMutationNotifier: CollectionMutationRepository = mockk()
     private val analytics: UserProfileAnalytics = mockk(relaxed = true)
 
     private val navKey: NavKey = mockk()
     private val stats: UserStats = mockk()
     private val listItem: UserAnimeListItem = mockk()
+    private val commentPreview: UserProfileCommentPreview = mockk()
 
     @Before
     fun setUp() {
@@ -78,6 +87,8 @@ class UserProfileViewModelTest : BaseUnitTest() {
         every { accountNavigator.getAccountDest() } returns navKey
         every { messagesNavigator.chat(any(), any(), any()) } returns navKey
         every { commentsNavigator.getCommentsDest(any(), any()) } returns navKey
+        coEvery { commentsHandler.loadPreview(USER_ID) } returns Result.success(listOf(commentPreview))
+        every { appearanceSettingsStore.showLibraryTitleYear } returns showTitleYear
     }
 
     private fun createViewModel(userId: Int = USER_ID) = UserProfileViewModel(
@@ -95,6 +106,8 @@ class UserProfileViewModelTest : BaseUnitTest() {
         contentHandler = contentHandler,
         pagingFetchHandler = pagingFetchHandler,
         friendshipHandler = friendshipHandler,
+        commentsHandler = commentsHandler,
+        appearanceSettingsStore = appearanceSettingsStore,
         collectionMutationNotifier = collectionMutationNotifier,
         analytics = analytics,
     )
@@ -306,6 +319,69 @@ class UserProfileViewModelTest : BaseUnitTest() {
         createViewModel().setEvent(Event.BackSelected)
 
         verify(exactly = 1) { nav.back() }
+    }
+
+    @Test
+    fun `init loads comments preview`() {
+        val comments = createViewModel().currentState.comments
+
+        assertEquals(listOf(commentPreview), comments.items)
+        assertTrue(comments.loaded)
+        assertFalse(comments.error)
+    }
+
+    @Test
+    fun `comments preview failure marks error and retry reloads`() {
+        coEvery { commentsHandler.loadPreview(USER_ID) } returns Result.failure(IllegalStateException())
+        val vm = createViewModel()
+
+        assertTrue(vm.currentState.comments.error)
+
+        coEvery { commentsHandler.loadPreview(USER_ID) } returns Result.success(listOf(commentPreview))
+        vm.setEvent(Event.RetryCommentsSelected)
+
+        assertFalse(vm.currentState.comments.error)
+        assertEquals(listOf(commentPreview), vm.currentState.comments.items)
+    }
+
+    @Test
+    fun `comment anime opens details`() {
+        createViewModel().setEvent(Event.CommentAnimeSelected(619))
+
+        verify(exactly = 1) { detailsNavigator.getDetailsDest(619) }
+        verify(exactly = 1) { nav.navigate(navKey) }
+    }
+
+    @Test
+    fun `empty tabs are hidden after overview loads`() {
+        coEvery { contentHandler.loadOverview(USER_ID) } returns Result.success(
+            UserProfileSummary(
+                userId = USER_ID,
+                counts = UserProfileCounts(watching = 3),
+                socialCounts = UserSocialCounts(friends = 2),
+            ) to stats,
+        )
+
+        val state = createViewModel().currentState
+
+        assertEquals(listOf(Tab.OVERVIEW, Tab.LISTS, Tab.FRIENDS), state.visibleTabs)
+    }
+
+    @Test
+    fun `overview failure shows every tab`() {
+        coEvery { contentHandler.loadOverview(USER_ID) } returns Result.failure(IllegalStateException())
+
+        assertEquals(Tab.entries, createViewModel().currentState.visibleTabs)
+    }
+
+    @Test
+    fun `library year setting reaches profile lists`() {
+        val vm = createViewModel()
+        assertFalse(vm.currentState.showTitleYear)
+
+        showTitleYear.value = true
+
+        assertTrue(vm.currentState.showTitleYear)
     }
 
     private companion object {

@@ -28,11 +28,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.utils.formatting.toGroupedCount
 import su.afk.yummy.tv.core.utils.formatting.formatRating
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.feature.details.mobile.rating.utils.weightedAverage
 import su.afk.yummy.tv.feature.details.presentation.R
-import java.text.NumberFormat
 
 @Composable
 internal fun MobileRatingOverview(
@@ -42,7 +42,6 @@ internal fun MobileRatingOverview(
 ) {
     val total = ratingSummary.distribution.sumOf { it.count }
     val average = ratingSummary.weightedAverage()
-    val integerFormat = remember { NumberFormat.getIntegerInstance() }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -78,7 +77,7 @@ internal fun MobileRatingOverview(
                     Text(
                         text = stringResource(
                             R.string.details_full_rating_votes,
-                            integerFormat.format(total),
+                            total.toGroupedCount(),
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

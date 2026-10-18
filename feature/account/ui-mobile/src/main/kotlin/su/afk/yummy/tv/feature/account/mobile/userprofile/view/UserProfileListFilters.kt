@@ -1,45 +1,28 @@
 package su.afk.yummy.tv.feature.account.mobile.userprofile.view
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Badge
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileChipTab
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileChipTabs
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
-import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserFriend
 import su.afk.yummy.tv.domain.account.model.UserPostSummary
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserReviewSummary
-import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.tabCountLabel
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.toMobileListFilterUi
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
@@ -48,72 +31,36 @@ import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 import su.afk.yummy.tv.feature.account.common.utils.label
 
+/** Фильтры списков — те же компактные вкладки-чипы, что в библиотеке. */
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 internal fun UserProfileListFilters(
     selected: UserProfileState.ListFilter,
     counts: UserProfileCounts?,
     onSelected: (UserProfileState.ListFilter) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        UserProfileState.ListFilter.entries.forEach { filter ->
+    MobileChipTabs(
+        tabs = UserProfileState.ListFilter.entries.map { filter ->
             val item = filter.toMobileListFilterUi(counts)
-            val selectedFilter = filter == selected
-            FilterChip(
-                selected = selectedFilter,
-                onClick = { onSelected(filter) },
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    selectedContainerColor = item.color.copy(alpha = 0.18f),
-                    selectedLabelColor = MaterialTheme.colorScheme.onSurface,
-                ),
-                label = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(item.color),
-                        )
-                        Text(
-                            text = item.label,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        item.count?.let { count ->
-                            Badge(
-                                modifier = Modifier.sizeIn(minWidth = 18.dp, minHeight = 18.dp),
-                                containerColor = item.color.copy(
-                                    alpha = if (selectedFilter) 0.28f else 0.18f,
-                                ),
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                            ) {
-                                Text(
-                                    text = count.tabCountLabel(),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                            }
-                        }
-                    }
-                },
+            MobileChipTab(
+                key = filter,
+                title = item.label,
+                icon = item.icon,
+                count = item.count,
+                color = item.color,
             )
-        }
-    }
+        },
+        selectedKey = selected,
+        onSelected = onSelected,
+        modifier = Modifier.padding(horizontal = 16.dp),
+    )
 }
 
 internal fun LazyListScope.userAnimeListItems(
     content: UserProfileState.PagedContent<UserAnimeListItem>,
+    filter: UserProfileState.ListFilter,
+    showYear: Boolean,
+    isOwnProfile: Boolean,
+    nowEpochSeconds: Long,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
     pagedStateItems(
@@ -123,34 +70,13 @@ internal fun LazyListScope.userAnimeListItems(
     items(content.items, key = { "anime_${it.animeId}" }) { item ->
         UserAnimeListRow(
             item = item,
+            filter = filter,
+            showYear = showYear,
+            isOwnProfile = isOwnProfile,
+            nowEpochSeconds = nowEpochSeconds,
             onClick = { onEvent(UserProfileState.Event.AnimeSelected(item.animeId)) },
         )
     }
-}
-
-internal fun LazyListScope.collectionItems(
-    content: LazyPagingItems<AnimeCollectionSummary>,
-    onEvent: (UserProfileState.Event) -> Unit,
-) {
-    val onRetry = {
-        onEvent(UserProfileState.Event.RetryTabSelected)
-        content.retry()
-    }
-    pagedStateItems(content, onRetry)
-    items(
-        count = content.itemCount,
-        key = content.itemKey { "collection_${it.id}" },
-    ) { index ->
-        content[index]?.let { item ->
-            UserCollectionRow(
-                item = item,
-                onClick = {
-                    onEvent(UserProfileState.Event.CollectionSelected(item.id))
-                },
-            )
-        }
-    }
-    appendStateItem(content, onRetry)
 }
 
 internal fun LazyListScope.postItems(

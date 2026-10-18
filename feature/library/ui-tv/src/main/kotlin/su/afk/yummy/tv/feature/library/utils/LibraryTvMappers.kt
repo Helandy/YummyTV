@@ -1,15 +1,18 @@
 package su.afk.yummy.tv.feature.library.utils
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.designsystem.components.color
+import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.LibraryState
+import su.afk.yummy.tv.feature.library.mapper.toLibraryTabKind
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 
 internal fun LibraryState.State.tvTabItemCount(tab: LibraryTab): Int? = when (tab) {
@@ -21,11 +24,10 @@ internal fun LibraryState.State.tvTabItemCount(tab: LibraryTab): Int? = when (ta
 internal fun LibraryTab.focusStateKey(source: String): String = "${name}_$source"
 
 @Composable
-internal fun LibraryTab.tabColor(): Color = when (this) {
-    LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
-    LibraryTab.HISTORY -> MaterialTheme.colorScheme.tertiary
-    else -> requireNotNull(semanticColorOrNull())
-}
+internal fun LibraryTab.tabColor(): Color = toLibraryTabKind().color()
+
+/** Иконка вкладки — общая с мобилкой и настройками порядка вкладок. */
+internal fun LibraryTab.tabIcon(): ImageVector = toLibraryTabKind().icon()
 
 internal fun HomeContinueWatchingItem.continueWatchingFocusKey(): String =
     "$animeId:$videoId:$episode:$episodeUrl"

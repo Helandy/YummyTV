@@ -8,9 +8,11 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 fun MobileRatingBadge(
     rating: Double,
     modifier: Modifier = Modifier,
+    showStar: Boolean = true,
 ) {
     RatingBadge(
         rating = rating,
         modifier = modifier,
+        showStar = showStar,
     )
 }

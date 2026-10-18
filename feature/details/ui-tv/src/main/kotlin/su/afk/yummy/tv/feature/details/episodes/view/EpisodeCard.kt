@@ -48,7 +48,7 @@ internal fun EpisodeCard(
     video: AnimeVideo,
     watchStatus: EpisodeWatchStatus = EpisodeWatchStatus.None,
     episodeTitle: String? = null,
-    kodikIframeUrl: String?,
+    thumbnail: KodikThumbnail?,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -80,10 +80,9 @@ internal fun EpisodeCard(
                     color = Color.White.copy(alpha = 0.15f),
                     modifier = Modifier.align(Alignment.Center),
                 )
-                val previewModel = kodikIframeUrl?.let(::KodikThumbnail)
-                if (previewModel != null) {
+                if (thumbnail != null) {
                     AsyncImage(
-                        model = previewModel,
+                        model = thumbnail,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
@@ -126,13 +125,13 @@ internal fun EpisodeCard(
                             .align(Alignment.BottomCenter)
                             .fillMaxWidth()
                             .height(3.dp)
-                            .background(InProgressColor.copy(alpha = 0.25f)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(watchStatus.progress)
                                 .height(3.dp)
-                                .background(InProgressColor),
+                                .background(MaterialTheme.colorScheme.primary),
                         )
                     }
                 }

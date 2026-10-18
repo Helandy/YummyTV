@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.account.view
 
-import su.afk.yummy.tv.feature.account.account.model.NotificationsTabState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +18,7 @@ import androidx.compose.ui.input.key.type
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.hasOpenAction
 import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.account.model.NotificationsTabState
 
 /** One row in the notifications list: wires [NotificationRow]'s focus/click plumbing to [notificationsTabState]. */
 @Composable
@@ -51,6 +51,12 @@ internal fun NotificationsTabRow(
 
     fun next(): FocusRequester? =
         notificationsTabState.nextVerticalFocusRequester(index, notificationIds)
+
+    fun downFromRow(): Boolean = if (showLinks) {
+        notificationsTabState.requestFocusSafely(linkRequesters.first())
+    } else {
+        notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
+    }
 
     NotificationRow(
         notification = notification,
@@ -160,15 +166,15 @@ internal fun NotificationsTabRow(
                         true
                     }
 
+                    // Превью-событие строки приходит раньше, чем у вложенных кнопок
+                    // (ссылки, «Прочитать», «Удалить») — их стрелки обрабатывают они сами.
                     Key.DirectionDown -> {
-                        if (showLinks) {
-                            notificationsTabState.requestFocusSafely(linkRequesters.first())
-                        } else {
-                            notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
-                        }
+                        if (!rowIsFocused) return@onPreviewKeyEvent false
+                        downFromRow()
                     }
 
                     Key.DirectionUp -> {
+                        if (!rowIsFocused) return@onPreviewKeyEvent false
                         notificationsTabState.requestPreviousNotificationFocus(
                             index,
                             notificationIds,
@@ -192,7 +198,7 @@ internal fun NotificationsTabRow(
                 left = rowFocusRequester
                 right = deleteFocusRequester
                 previous()?.let { up = it }
-                next()?.let { down = it }
+                if (showLinks) down = linkRequesters.first() else next()?.let { down = it }
             }
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
@@ -207,9 +213,7 @@ internal fun NotificationsTabRow(
                         true
                     }
 
-                    Key.DirectionDown -> {
-                        notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
-                    }
+                    Key.DirectionDown -> downFromRow()
 
                     Key.DirectionUp -> {
                         notificationsTabState.requestPreviousNotificationFocus(
@@ -233,7 +237,7 @@ internal fun NotificationsTabRow(
             .focusProperties {
                 left = readFocusRequester.takeIf { !notification.viewed } ?: rowFocusRequester
                 previous()?.let { up = it }
-                next()?.let { down = it }
+                if (showLinks) down = linkRequesters.first() else next()?.let { down = it }
             }
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) {
@@ -247,9 +251,7 @@ internal fun NotificationsTabRow(
                         true
                     }
 
-                    Key.DirectionDown -> {
-                        notificationsTabState.requestNotificationFocus(index + 1, notificationIds)
-                    }
+                    Key.DirectionDown -> downFromRow()
 
                     Key.DirectionUp -> {
                         notificationsTabState.requestPreviousNotificationFocus(

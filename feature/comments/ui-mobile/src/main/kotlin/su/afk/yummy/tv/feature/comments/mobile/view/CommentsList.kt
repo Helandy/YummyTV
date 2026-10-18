@@ -79,6 +79,7 @@ internal fun CommentsList(
                     onAuthorSelected = {
                         onEvent(CommentsState.Event.AuthorSelected(it))
                     },
+                    onAnimeSelected = { onEvent(CommentsState.Event.AnimeSelected(it)) },
                 )
             }
         }
@@ -109,6 +110,7 @@ internal fun CommentsList(
                 onAuthorSelected = {
                     onEvent(CommentsState.Event.AuthorSelected(it))
                 },
+                onAnimeSelected = { onEvent(CommentsState.Event.AnimeSelected(it)) },
             )
         }
         if (appendState is LoadState.Loading) {

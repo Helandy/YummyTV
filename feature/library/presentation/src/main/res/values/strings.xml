@@ -29,23 +29,6 @@
     <string name="library_mobile_sort_user_rating">by my score</string>
     <string name="library_mobile_sort_title">by title</string>
     <string name="library_mobile_sort_direction_content_description">Reverse sort order</string>
-    <plurals name="library_release_in_days">
-        <item quantity="one">Next episode in %1$d day</item>
-        <item quantity="other">Next episode in %1$d days</item>
-    </plurals>
-    <plurals name="library_release_in_hours">
-        <item quantity="one">Next episode in %1$d hour</item>
-        <item quantity="other">Next episode in %1$d hours</item>
-    </plurals>
-    <plurals name="library_release_in_minutes">
-        <item quantity="one">Next episode in %1$d minute</item>
-        <item quantity="other">Next episode in %1$d minutes</item>
-    </plurals>
-    <string name="library_season_winter">Winter</string>
-    <string name="library_season_spring">Spring</string>
-    <string name="library_season_summer">Summer</string>
-    <string name="library_season_fall">Fall</string>
-    <string name="library_year_season">%1$s · %2$s</string>
         <string name="library_episode">Episode</string>
     <string name="library_details">Details</string>
     <string name="library_tab_continue_watching_short">Co</string>

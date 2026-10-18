@@ -62,9 +62,9 @@
     <string name="details_mobile_subscription_meta">%1$s · серій: %2$d</string>
     <string name="details_subscription_subscribe">Підписатися</string>
     <string name="details_subscription_unsubscribe">Відписатися</string>
-    <string name="details_balancer_title">Серія %1$s · Балансер</string>
+    <string name="details_balancer_title">Серія %1$s · Плеєр</string>
     <string name="details_mobile_unsupported_player">%1$s · не підтримується</string>
-    <string name="details_balancer_preferred_unavailable">Бажаного балансера немає в цього озвучення — виберіть із доступних</string>
+    <string name="details_balancer_preferred_unavailable">Бажаного плеєра немає в цього озвучення — виберіть із доступних</string>
     <string name="details_mobile_aired">Вийшло: %1$d із %2$s</string>
     <string name="details_released_episodes">Кількість серій: %1$d</string>
     <string name="details_aired_progress">%1$d із %2$s</string>
@@ -133,7 +133,7 @@
     <string name="details_mobile_episode_download_error_unknown">Помилка завантаження</string>
     <string name="details_episode_dubbings_title">Серія %1$s · Озвучення</string>
     <string name="details_mobile_download_dubbing_empty">Озвучення недоступні</string>
-        <string name="details_mobile_download_balancer_empty">Балансери недоступні</string>
+        <string name="details_mobile_download_balancer_empty">Плеєри недоступні</string>
     <string name="details_mobile_download_quality_title">Якість завантаження</string>
     <string name="details_mobile_download_quality_prompt">Виберіть якість</string>
     <string name="details_mobile_download_quality_empty">Немає доступних якостей</string>
@@ -209,7 +209,7 @@
     <string name="details_full_rating_yani">Yani %1$s</string>
     <string name="details_rate_value">Оцінити %1$d</string>
     <string name="details_rating_not_set">Ви ще не оцінювали цей тайтл</string>
-    <string name="details_rating_votes_short">%1$d оцінок користувачів</string>
+    <string name="details_rating_votes_short">%1$s оцінок користувачів</string>
                         <string name="details_collections_title">Колекції з цим тайтлом</string>
     <string name="details_collections_empty">Колекції не знайдено</string>
     <string name="details_viewing_order_title">Порядок перегляду</string>

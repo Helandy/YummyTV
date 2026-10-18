@@ -11,11 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
-import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.toDetailsButtonOrderItems
+import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 
 @Composable
 internal fun DetailsButtonOrderPanel(
@@ -53,6 +54,7 @@ internal fun DetailsButtonOrderPanel(
                     canMoveDown = index < items.lastIndex,
                     onMoveUp = { onMoveUp(item.action) },
                     onMoveDown = { onMoveDown(item.action) },
+                    icon = item.action.icon(),
                 )
             }
             if (index < items.lastIndex) {

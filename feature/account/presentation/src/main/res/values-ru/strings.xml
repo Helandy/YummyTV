@@ -50,6 +50,24 @@
     <string name="account_profile_duration_less_hour">&lt;1 ч</string>
     <string name="account_profile_percent_full">100%</string>
     <string name="account_profile_days_online">дней подряд</string>
+    <string name="account_mobile_heatmap_no_watches">Без просмотров</string>
+    <string name="account_mobile_activity_title">Активность</string>
+    <string name="account_mobile_about_expand">Показать полностью</string>
+    <string name="account_mobile_about_collapse">Свернуть</string>
+    <plurals name="account_mobile_streak_days">
+        <item quantity="one">%d день подряд</item>
+        <item quantity="few">%d дня подряд</item>
+        <item quantity="many">%d дней подряд</item>
+        <item quantity="other">%d дня подряд</item>
+    </plurals>
+    <string name="account_mobile_heatmap_duration_hours_minutes">%1$d ч %2$d мин</string>
+    <string name="account_mobile_heatmap_duration_minutes">%1$d мин</string>
+    <plurals name="account_mobile_heatmap_episodes">
+        <item quantity="one">%d серия</item>
+        <item quantity="few">%d серии</item>
+        <item quantity="many">%d серий</item>
+        <item quantity="other">%d серии</item>
+    </plurals>
     <string name="account_profile_list_watching">Смотрю</string>
     <string name="account_profile_list_planned">В планах</string>
     <string name="account_profile_list_completed">Просмотрено</string>
@@ -88,9 +106,12 @@
     <string name="account_error_update_notifications_failed">Не удалось обновить уведомления</string>
     <string name="account_tab_profile">Профиль</string>
     <string name="user_profile_registered">Зарегистрирован: %1$s</string>
+    <string name="user_profile_comments_all">Все комментарии</string>
+    <string name="user_profile_comments_empty">Комментариев пока нет</string>
+    <string name="user_profile_comments_error">Не удалось загрузить комментарии</string>
     <string name="user_profile_tab_overview">Обзор</string>
     <string name="user_profile_tab_lists">Списки</string>
-        <string name="user_profile_tab_posts">Посты</string>
+        <string name="user_profile_tab_posts">Новости</string>
             <string name="user_profile_load_error">Не удалось загрузить профиль</string>
     <string name="user_profile_section_error">Не удалось загрузить раздел</string>
     <string name="user_profile_section_empty">Здесь пока пусто</string>
@@ -177,8 +198,8 @@
     <string name="password_reset_captcha_error">Не удалось пройти проверку captcha. Попробуйте ещё раз.</string>
     <string name="account_my_subscriptions">Мои подписки</string>
     <string name="account_my_subscriptions_empty">Подписок пока нет</string>
-    <string name="account_mobile_my_subscriptions_player">Балансер: %1$s</string>
-    <string name="account_mobile_my_subscriptions_player_unknown">Балансер неизвестен</string>
+    <string name="account_mobile_my_subscriptions_player">Плеер: %1$s</string>
+    <string name="account_mobile_my_subscriptions_player_unknown">Плеер неизвестен</string>
     <string name="account_error_load_subscriptions_failed">Не удалось загрузить подписки</string>
     <string name="account_episode_push_enabled">Пуш о новых сериях</string>
     <string name="account_episode_push_enabled_hint">Присылать уведомление о новой серии по подписке</string>

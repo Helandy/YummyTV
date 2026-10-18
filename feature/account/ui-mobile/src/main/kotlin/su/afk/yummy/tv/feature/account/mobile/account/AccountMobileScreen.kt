@@ -3,9 +3,15 @@ package su.afk.yummy.tv.feature.account.mobile.account
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -33,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
@@ -43,6 +50,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileQuickAction
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
@@ -55,8 +63,6 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsGrid
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileTabs
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.core.designsystem.R as CoreR
-import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -130,10 +136,12 @@ fun AccountMobileScreen(
 
     BaseScreen(
         isScroll = false,
+        // Верхний инсет не берём: шапка профиля заходит под статус-бар, остальные состояния отступают сами.
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
     ) {
         if (!state.isSessionResolved) {
             // Пока не пришёл первый снапшот сессии, не мигаем формой входа авторизованному пользователю.
-            AccountMobileLoadingIndicator(modifier = Modifier.fillMaxSize())
+            AccountMobileLoadingIndicator(modifier = Modifier.fillMaxSize().statusBarsPadding())
         } else if (!state.isSignedIn) {
             val quickActions = buildList {
                 add(
@@ -190,6 +198,7 @@ fun AccountMobileScreen(
                 modifier = Modifier
                     .mobileContentMaxWidth()
                     .fillMaxSize()
+                    .statusBarsPadding()
                     .imePadding(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
@@ -266,16 +275,12 @@ fun AccountMobileScreen(
                     ),
                 )
             }
+            // Шапка на всю ширину и под статус-баром; остальным блокам отступ по бокам задаём сами.
             LazyColumn(
                 modifier = Modifier
                     .mobileContentMaxWidth()
                     .fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    top = 12.dp,
-                    end = 16.dp,
-                    bottom = MobileBottomBarDefaults.contentBottomPadding,
-                ),
+                contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item(key = "profile") {
@@ -287,10 +292,14 @@ fun AccountMobileScreen(
                     )
                 }
                 item(key = "quick_actions") {
-                    AccountMobileQuickActionsGrid(actions = quickActions)
+                    AccountMobileQuickActionsGrid(
+                        actions = quickActions,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
                 }
                 item(key = "tabs") {
                     AccountMobileTabs(
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         selected = state.selectedTab,
                         unreadCount = state.unreadNotificationCount,
                         onSelected = { tab -> tabsState.selectPage(accountTabs.indexOf(tab)) },
@@ -301,6 +310,7 @@ fun AccountMobileScreen(
                     item(key = "hub_error") {
                         state.hubError.accountErrorMessage()?.let { error ->
                             MobileMessage(
+                                modifier = Modifier.padding(horizontal = 16.dp),
                                 title = error,
                                 icon = Icons.Filled.Warning,
                                 actionLabel = stringResource(CoreR.string.common_retry),
@@ -313,7 +323,9 @@ fun AccountMobileScreen(
                 item(key = "tabs_pager") {
                     MobileSwipeableTabsPager(
                         state = tabsState,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         key = { page -> accountTabs[page].name },
                     ) { page ->
                         when (accountTabs[page]) {

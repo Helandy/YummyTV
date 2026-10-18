@@ -2,9 +2,9 @@ package su.afk.yummy.tv.feature.details.mobile.episodes.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,7 +60,7 @@ internal fun EpisodeMobileCard(
     episodeNumber: String = video.episode,
     watchStatus: EpisodeWatchStatus,
     isInWatchLater: Boolean,
-    kodikIframeUrl: String?,
+    thumbnail: KodikThumbnail?,
     episodeTitle: String?,
     episodeDescription: String?,
     descriptionExpanded: Boolean,
@@ -93,11 +93,11 @@ internal fun EpisodeMobileCard(
         },
         secondaryFooterText = downloadStatusText,
         secondaryFooterTextColor = downloadStatusColor,
-        imageModel = kodikIframeUrl?.let(::KodikThumbnail),
+        imageModel = thumbnail,
         badge = episodeNumber,
         placeholderText = episodeNumber,
         mediaProgress = (watchStatus as? EpisodeWatchStatus.InProgress)?.progress,
-        mediaProgressColor = InProgressColor,
+        subtitleAtBottom = true,
         mediaTopEndContent = if (watchStatus == EpisodeWatchStatus.None && !isInWatchLater) {
             null
         } else {

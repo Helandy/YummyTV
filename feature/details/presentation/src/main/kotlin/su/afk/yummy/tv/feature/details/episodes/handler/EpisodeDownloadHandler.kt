@@ -2,8 +2,9 @@ package su.afk.yummy.tv.feature.details.episodes.handler
 
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
-import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
+import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.utils.aggregateDubbingDownloadStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.downloadBalancersLabel
 import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadDubbingName
 import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadStatusKey
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -79,9 +81,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
                 EpisodesState.EpisodeDownloadDubbingOption(
                     videos = group.toImmutableList(),
                     title = dubbing,
-                    subtitle = group.map { it.player }
-                        .distinct()
-                        .joinToString(" / ")
+                    subtitle = group.downloadBalancersLabel(titleVideos.ifEmpty { group })
                         .takeIf { it.isNotBlank() && it != dubbing },
                     status = group.aggregateDubbingDownloadStatus(statuses),
                     resolving = group.all { it.toDownloadStatusKey() in resolvingKeys },
@@ -120,7 +120,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
                 val key = video.toDownloadStatusKey()
                 EpisodesState.EpisodeDownloadBalancerOption(
                     video = video,
-                    title = video.player.ifBlank { video.dubbing },
+                    title = video.player.playerDisplayName().ifBlank { video.dubbing },
                     subtitle = null,
                     status = statuses[key],
                     resolving = key in resolvingKeys,
@@ -158,7 +158,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
 
                 is PlayerStreamResolveResult.Failed,
                 PlayerStreamResolveResult.Unsupported,
-                    -> EpisodeDownloadPrepareResult.Failure(
+                -> EpisodeDownloadPrepareResult.Failure(
                     key,
                     strings.get(R.string.details_download_resolve_error),
                 )

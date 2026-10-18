@@ -5,7 +5,6 @@ package su.afk.yummy.tv.feature.account.mobile.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -33,7 +32,7 @@ internal fun AccountMobileProfileStatsPage(
     val positiveSlices = remember(page.slices) { page.slices.filter { it.value > 0L } }
     val totalValue = remember(positiveSlices) { positiveSlices.positiveValueSum() }
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(

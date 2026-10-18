@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.account.mobile.userprofile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
-import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 import su.afk.yummy.tv.feature.account.common.utils.label
@@ -30,19 +29,4 @@ internal fun UserProfileState.Tab.label(): String = when (this) {
     UserProfileState.Tab.POSTS -> stringResource(R.string.user_profile_tab_posts)
     UserProfileState.Tab.REVIEWS -> stringResource(R.string.account_profile_social_reviews)
     UserProfileState.Tab.FRIENDS -> stringResource(R.string.account_profile_social_friends)
-}
-
-internal fun UserProfileState.Tab.count(profile: UserProfileSummary?): Int? {
-    if (profile == null) return null
-    return when (this) {
-        UserProfileState.Tab.OVERVIEW -> null
-        UserProfileState.Tab.LISTS -> with(profile.counts) {
-            watching + planned + completed + dropped + postponed + favorite
-        }
-
-        UserProfileState.Tab.COLLECTIONS -> profile.socialCounts.collections
-        UserProfileState.Tab.POSTS -> profile.socialCounts.posts
-        UserProfileState.Tab.REVIEWS -> profile.socialCounts.reviews
-        UserProfileState.Tab.FRIENDS -> profile.socialCounts.friends
-    }
 }

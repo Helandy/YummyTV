@@ -280,3 +280,28 @@ internal val MIGRATION_55_56 = object : Migration(55, 56) {
         db.execSQL("DROP TABLE IF EXISTS anime_top_pages")
     }
 }
+
+/**
+ * Тайтл комментария для ленты комментариев пользователя (`item_data` в ответе API).
+ * Старые строки кэша остаются без тайтла и перезаписываются при ближайшей загрузке.
+ */
+internal val MIGRATION_56_57 = object : Migration(56, 57) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE comment_items ADD COLUMN itemObjectId INTEGER")
+        db.execSQL("ALTER TABLE comment_items ADD COLUMN itemTitle TEXT")
+        db.execSQL("ALTER TABLE comment_items ADD COLUMN itemPosterUrl TEXT")
+    }
+}
+
+/**
+ * Тип тайтла (короткое имя с сервера: «ТВ», «OVA»…) и статус выхода для карточек библиотеки и
+ * списков профиля. Старые строки остаются пустыми и дозаполняются при ближайшей синхронизации.
+ */
+internal val MIGRATION_57_58 = object : Migration(57, 58) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE library ADD COLUMN kind TEXT")
+        db.execSQL("ALTER TABLE library ADD COLUMN releaseStatus TEXT")
+        db.execSQL("ALTER TABLE account_user_list_items ADD COLUMN kind TEXT")
+        db.execSQL("ALTER TABLE account_user_list_items ADD COLUMN releaseStatus TEXT")
+    }
+}

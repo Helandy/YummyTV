@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,6 +25,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -122,12 +127,22 @@ internal fun BoxScope.MobilePlayerSidePanel(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 item(key = "title") {
-                    Text(
-                        text = stringResource(R.string.player_side_panel_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.player_side_panel_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = stringResource(R.string.player_side_panel_close),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
                 item(key = "playback") {
                     MobilePlayerPlaybackSection(
@@ -183,5 +198,5 @@ internal fun BoxScope.MobilePlayerSidePanel(
 
 /** Предел ширины в портрете — для планшетов; на телефоне панель упирается в долю экрана. */
 private val MobilePlayerSidePanelMaxWidth = 560.dp
-private const val MobilePlayerSidePanelPortraitFraction = 0.92f
+private const val MobilePlayerSidePanelPortraitFraction = 0.85f
 private const val MobilePlayerSidePanelLandscapeFraction = 0.7f

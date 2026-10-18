@@ -95,6 +95,7 @@ fun EpisodesTvScreen(
     ) {
         EpisodesSection(
             state = state.videosState,
+            animeId = state.animeId,
             episodeGroups = state.episodeGroups,
             bestDubbing = state.bestDubbing,
             watchProgress = state.watchProgress,

@@ -9,11 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.color
+import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
+import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Composable
 internal fun SettingsMobileLibraryTabOrder(
@@ -38,6 +40,8 @@ internal fun SettingsMobileLibraryTabOrder(
                 canMoveDown = !tab.isPinnedFirst && index < order.lastIndex,
                 onMoveUp = { onMove(tab, DetailsButtonMoveDirection.UP) },
                 onMoveDown = { onMove(tab, DetailsButtonMoveDirection.DOWN) },
+                icon = tab.icon(),
+                iconColor = tab.color(),
             )
         }
     }

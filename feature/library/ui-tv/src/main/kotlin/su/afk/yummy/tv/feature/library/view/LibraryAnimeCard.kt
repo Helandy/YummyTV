@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.library.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -15,12 +14,14 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.designsystem.model.TitleListCardUi
+import su.afk.yummy.tv.core.designsystem.tv.TvTitleListCard
 
 @Composable
 internal fun LibraryAnimeCard(
-    title: String,
-    posterUrl: String?,
+    item: TitleListCardUi,
+    nowEpochSeconds: Long,
+    showYear: Boolean,
     onClick: () -> Unit,
     onFocused: () -> Unit,
     onDelete: () -> Unit,
@@ -28,9 +29,6 @@ internal fun LibraryAnimeCard(
     cardModifier: Modifier = Modifier,
     deleteModifier: Modifier = Modifier,
     cardWidth: Dp = currentTvTitleCardDimensions().width,
-    subtitle: String? = null,
-    caption: String? = null,
-    posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     var isCardFocused by remember { mutableStateOf(false) }
 
@@ -41,16 +39,14 @@ internal fun LibraryAnimeCard(
             .width(cardWidth),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        TvTitleCard(
-            title = title,
-            posterUrl = posterUrl,
-            subtitle = subtitle,
-            caption = caption,
+        TvTitleListCard(
+            item = item,
+            nowEpochSeconds = nowEpochSeconds,
+            showYear = showYear,
             onClick = onClick,
             onFocused = onFocused,
             modifier = cardModifier,
             width = cardWidth,
-            posterOverlay = posterOverlay,
         )
         LibraryDeleteButton(
             onClick = onDelete,

@@ -31,8 +31,35 @@
     <string name="common_delete">Удалить</string>
     <string name="common_done">Готово</string>
     <string name="core_list_status_watching">Смотрю</string>
+    <string name="core_season_winter">Зима</string>
+    <string name="core_season_spring">Весна</string>
+    <string name="core_season_summer">Лето</string>
+    <string name="core_season_fall">Осень</string>
+    <string name="core_year_season">%1$s · %2$s</string>
     <string name="core_list_status_planned">В планах</string>
     <string name="core_list_status_completed">Просмотрено</string>
     <string name="core_list_status_postponed">Отложено</string>
     <string name="core_list_status_dropped">Брошено</string>
+    <plurals name="core_release_in_days">
+        <item quantity="one">До выхода серии %1$d день</item>
+        <item quantity="few">До выхода серии %1$d дня</item>
+        <item quantity="many">До выхода серии %1$d дней</item>
+        <item quantity="other">До выхода серии %1$d дня</item>
+    </plurals>
+    <plurals name="core_release_in_hours">
+        <item quantity="one">До выхода серии %1$d час</item>
+        <item quantity="few">До выхода серии %1$d часа</item>
+        <item quantity="many">До выхода серии %1$d часов</item>
+        <item quantity="other">До выхода серии %1$d часа</item>
+    </plurals>
+    <plurals name="core_release_in_minutes">
+        <item quantity="one">До выхода серии %1$d минута</item>
+        <item quantity="few">До выхода серии %1$d минуты</item>
+        <item quantity="many">До выхода серии %1$d минут</item>
+        <item quantity="other">До выхода серии %1$d минуты</item>
+    </plurals>
+    <string name="core_release_status_ongoing">Онгоинг</string>
+    <string name="core_release_status_released">Вышел</string>
+    <string name="core_release_status_announcement">Анонс</string>
+    <string name="core_title_card_favorite">В любимых</string>
 </resources>

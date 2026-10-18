@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -41,6 +44,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 @Composable
 internal fun LibraryTopTabItem(
     label: String,
+    icon: ImageVector,
     count: Int?,
     color: Color,
     selected: Boolean,
@@ -107,8 +111,11 @@ internal fun LibraryTopTabItem(
             }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }
             .background(
-                color = if (focused) color.copy(alpha = 0.15f)
-                else Color.Transparent,
+                color = if (focused) {
+                    color.copy(alpha = 0.15f)
+                } else {
+                    Color.Transparent
+                },
                 shape = shape,
             )
             .focusRequester(focusRequester)
@@ -119,19 +126,18 @@ internal fun LibraryTopTabItem(
                 focusedScale = 1f,
                 focusedBorderColor = Color.Transparent,
             )
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 14.dp, vertical = 4.dp),
     ) {
+        // Как на мобилке: сверху иконка со счётчиком, под ними подпись.
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = contentColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(20.dp),
             )
             if (count != null) {
                 LibraryTopTabCountBadge(
@@ -142,7 +148,16 @@ internal fun LibraryTopTabItem(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(1.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = contentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
         Box(
             modifier = Modifier
                 .width(24.dp)
@@ -178,9 +193,9 @@ private fun LibraryTopTabCountBadge(
             textAlign = TextAlign.Center,
             maxLines = 1,
             modifier = Modifier
-                .heightIn(min = 22.dp)
+                .heightIn(min = 20.dp)
                 .widthIn(min = 24.dp)
-                .padding(horizontal = 7.dp, vertical = 3.dp),
+                .padding(horizontal = 7.dp, vertical = 1.dp),
         )
     }
 }

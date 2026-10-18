@@ -55,4 +55,8 @@ data class CommentItemEntry(
     val vote: Int,
     val roles: String,
     val deletedAtEpochSeconds: Long?,
+    /** Тайтл, под которым оставлен комментарий (только в ленте комментариев пользователя). */
+    val itemObjectId: Int? = null,
+    val itemTitle: String? = null,
+    val itemPosterUrl: String? = null,
 )

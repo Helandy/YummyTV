@@ -12,4 +12,5 @@ data class Comment(
     val vote: CommentVote,
     val roles: List<String>,
     val deletedAtEpochSeconds: Long?,
+    val item: CommentItem? = null,
 )

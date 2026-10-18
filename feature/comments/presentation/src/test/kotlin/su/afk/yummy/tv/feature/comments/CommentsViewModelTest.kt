@@ -43,6 +43,7 @@ import su.afk.yummy.tv.feature.comments.CommentsState.Effect
 import su.afk.yummy.tv.feature.comments.CommentsState.Event
 import su.afk.yummy.tv.feature.comments.handler.CommentVoteChange
 import su.afk.yummy.tv.feature.comments.handler.CommentsMutationHandler
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 
 class CommentsViewModelTest : BaseUnitTest() {
 
@@ -50,6 +51,7 @@ class CommentsViewModelTest : BaseUnitTest() {
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk()
+    private val detailsNavigator: IDetailsNavigator = mockk()
     private val settingsStore: YaniAccountSettingsStore = mockk()
     private val stringProvider: StringProvider = mockk()
     private val repository: CommentsRepository = mockk()
@@ -63,15 +65,17 @@ class CommentsViewModelTest : BaseUnitTest() {
         every { settingsStore.yaniUserId } returns userId
         every { stringProvider.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { accountNavigator.getUserProfileDest(any()) } returns navKey
+        every { detailsNavigator.getDetailsDest(any()) } returns navKey
     }
 
-    private fun createViewModel() = CommentsViewModel(
-        targetType = CommentTargetType.POST,
+    private fun createViewModel(targetType: CommentTargetType = CommentTargetType.POST) = CommentsViewModel(
+        targetType = targetType,
         targetId = TARGET_ID,
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,
         accountNavigator = accountNavigator,
+        detailsNavigator = detailsNavigator,
         settingsStore = settingsStore,
         stringProvider = stringProvider,
         getComments = GetCommentsUseCase(repository),
@@ -412,6 +416,19 @@ class CommentsViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { accountNavigator.getUserProfileDest(OTHER_ID) }
         verify(exactly = 1) { nav.navigate(navKey) }
         verify(exactly = 1) { nav.back() }
+    }
+
+    @Test
+    fun `user comments start with the newest`() {
+        assertEquals(CommentSort.NEW, createViewModel(CommentTargetType.USER).currentState.sort)
+    }
+
+    @Test
+    fun `anime of a comment opens details`() {
+        createViewModel().setEvent(Event.AnimeSelected(619))
+
+        verify(exactly = 1) { detailsNavigator.getDetailsDest(619) }
+        verify(exactly = 1) { nav.navigate(navKey) }
     }
 
     private companion object {

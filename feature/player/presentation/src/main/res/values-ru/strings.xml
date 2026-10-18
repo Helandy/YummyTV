@@ -122,9 +122,10 @@
     <string name="player_mobile_orientation_right">Вправо</string>
     <string name="player_mobile_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
     <string name="player_toast_dubbing_changed">Озвучка: %1$s</string>
-    <string name="player_toast_balancer_changed">Балансер: %1$s</string>
+    <string name="player_toast_balancer_changed">Плеер: %1$s</string>
     <string name="player_side_panel_title">Настройки плеера</string>
     <string name="player_side_panel_open">Настройки плеера</string>
+    <string name="player_side_panel_close">Свернуть панель</string>
     <string name="player_subtitle_track_title">Дорожка субтитров</string>
     <string name="player_subtitle_style_title">Оформление субтитров</string>
     <string name="player_subtitle_size_title">Размер текста</string>

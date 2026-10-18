@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.bundles.navigation.serialization)
 
     implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.paging.compose)
     implementation(libs.coil.compose)
 

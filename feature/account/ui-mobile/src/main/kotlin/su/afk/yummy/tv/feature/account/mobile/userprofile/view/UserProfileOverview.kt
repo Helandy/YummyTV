@@ -39,5 +39,8 @@ internal fun UserProfileOverview(
                 isLoading = state.isOverviewLoading,
             )
         }
+        if (state.userId > 0) {
+            UserProfileCommentsSection(comments = state.comments, onEvent = onEvent)
+        }
     }
 }

@@ -47,6 +47,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
@@ -57,6 +58,7 @@ import su.afk.yummy.tv.feature.details.utils.isAlloha
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun EpisodesGrid(
+    animeId: Int,
     episodeGroups: List<EpisodesState.EpisodeGroup>,
     bestDubbing: String,
     watchProgress: DetailsWatchProgressIndex,
@@ -194,7 +196,8 @@ internal fun EpisodesGrid(
                             episodeNumber = episode,
                             watchStatus = groupVideos.watchStatus(watchProgress),
                             episodeTitle = episodeInfo[episode]?.title,
-                            kodikIframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing),
+                            thumbnail = groupVideos.kodikThumbnailIframeUrl(bestDubbing)
+                                ?.let { KodikThumbnail(it, animeId, episode) },
                             onClick = {
                                 lastFocusedIndex = index
                                 val kodikOpts = groupVideos.filter {

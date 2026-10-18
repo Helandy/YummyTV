@@ -35,6 +35,7 @@ internal fun CommentThread(
     onToggleChildren: (Int) -> Unit,
     onLoadMoreChildren: (Int) -> Unit,
     onAuthorSelected: (Int) -> Unit,
+    onAnimeSelected: (Int) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         CommentItem(
@@ -49,6 +50,7 @@ internal fun CommentThread(
             onVote = onVote,
             onToggleChildren = onToggleChildren,
             onAuthorSelected = onAuthorSelected,
+            onAnimeSelected = onAnimeSelected,
         )
         if (item.childrenVisible) {
             RepliesBranch(depth = depth) {
@@ -66,6 +68,7 @@ internal fun CommentThread(
                         onToggleChildren = onToggleChildren,
                         onLoadMoreChildren = onLoadMoreChildren,
                         onAuthorSelected = onAuthorSelected,
+                        onAnimeSelected = onAnimeSelected,
                     )
                 }
                 if (item.childrenLoading) {

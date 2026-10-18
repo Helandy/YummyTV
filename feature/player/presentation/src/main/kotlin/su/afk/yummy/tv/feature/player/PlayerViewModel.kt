@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
@@ -388,7 +389,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 )
                 setEffect(
                     PlayerState.Effect.ShowToast(
-                        strings.get(R.string.player_toast_balancer_changed, activeBalancerName(nextState)),
+                        strings.get(
+                            R.string.player_toast_balancer_changed,
+                            activeBalancerName(nextState).playerDisplayName(),
+                        ),
                     ),
                 )
                 applySourceSelection(nextState, sourceScopeChanged = true)

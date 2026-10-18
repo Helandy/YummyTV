@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.account.storage.mapper
 
+import su.afk.yummy.tv.data.account.utils.toWideBannerUrl
+import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionItemEntry
@@ -257,6 +259,7 @@ internal fun AccountUserProfileSummaryCache.toUserProfileSummary(): UserProfileS
         nickname = entry.nickname,
         avatarUrl = entry.avatarUrl,
         bannerUrl = entry.bannerUrl,
+        bannerWideUrl = entry.bannerUrl?.toWideBannerUrl(),
         registerDateSeconds = entry.registerDateSeconds,
         birthDateSeconds = entry.birthDateSeconds,
         sex = entry.sex.toProfileSex(),
@@ -324,6 +327,8 @@ private fun AccountUserListItemEntry.toUserListItem(): UserAnimeListItem {
         updatedAtSeconds = updatedAtSeconds,
         nextEpisodeAtSeconds = nextEpisodeAtSeconds,
         season = AnimeSeason.fromSlug(season),
+        kind = kind,
+        releaseStatus = AnimeReleaseStatus.fromSlug(releaseStatus),
     )
 }
 

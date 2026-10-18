@@ -35,4 +35,8 @@ data class AccountUserListItemEntry(
     val nextEpisodeAtSeconds: Long? = null,
     /** Сезон выхода, слаг [su.afk.yummy.tv.core.model.anime.AnimeSeason]. */
     val season: String? = null,
+    /** Короткое имя типа тайтла с сервера («ТВ», «OVA», «п/ф»). */
+    val kind: String? = null,
+    /** Статус выхода, слаг [su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus]. */
+    val releaseStatus: String? = null,
 )

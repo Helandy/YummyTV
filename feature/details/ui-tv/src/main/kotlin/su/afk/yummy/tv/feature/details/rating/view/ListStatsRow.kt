@@ -3,18 +3,17 @@ package su.afk.yummy.tv.feature.details.rating.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.utils.formatting.toGroupedCount
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.rating.utils.count
 import su.afk.yummy.tv.feature.details.utils.statusColor
 import su.afk.yummy.tv.feature.details.utils.statusIcon
-import java.text.NumberFormat
 
 @Composable
 internal fun ListStatsRow(
@@ -49,8 +48,6 @@ internal fun ListStatsRow(
         ),
     ).filter { it.third > 0 }
     if (items.isEmpty()) return
-
-    val integerFormat = remember { NumberFormat.getIntegerInstance() }
     FlowRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
@@ -61,7 +58,7 @@ internal fun ListStatsRow(
                 label = stringResource(
                     R.string.details_list_stat_item,
                     stringResource(labelRes),
-                    integerFormat.format(count),
+                    count.toGroupedCount(),
                 ),
                 accentColor = status.statusColor(),
                 accentIcon = status.statusIcon(),

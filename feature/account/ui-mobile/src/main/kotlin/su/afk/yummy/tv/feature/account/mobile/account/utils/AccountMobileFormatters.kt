@@ -7,10 +7,8 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
-import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
-import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.domain.account.model.ratingsByValue
@@ -21,7 +19,6 @@ import su.afk.yummy.tv.core.utils.formatting.formatLocalizedShortDateSeconds
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateSeconds
 import su.afk.yummy.tv.feature.account.common.utils.MAX_PROFILE_GENRE_SLICES
 import su.afk.yummy.tv.feature.account.common.utils.fallbackProfileColors
-import su.afk.yummy.tv.feature.account.common.utils.hasAny
 import su.afk.yummy.tv.feature.account.common.utils.listProfileColor
 import su.afk.yummy.tv.feature.account.common.utils.profileRatingColor
 import su.afk.yummy.tv.feature.account.common.utils.watchSlices
@@ -75,6 +72,3 @@ internal fun UserStats.ratingCountSlices(): PersistentList<ProfileStatSlice> {
         )
     }.toPersistentList()
 }
-
-internal fun UserProfileCounts.hasAny(): Boolean =
-    watching + planned + completed + dropped + postponed + favorite > 0

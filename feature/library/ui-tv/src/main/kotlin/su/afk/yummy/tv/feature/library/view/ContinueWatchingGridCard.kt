@@ -46,7 +46,7 @@ internal fun ContinueWatchingGridCard(
         screenshotUrl = entry.screenshotUrl,
         episodeUrl = entry.episodeUrl,
         posterUrl = entry.poster.bestUrl(),
-        kodikThumbnailModel = ::KodikThumbnail,
+        kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
     )
     val progress =
         if (entry.durationMs > 0L) {

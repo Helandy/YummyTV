@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,56 +29,37 @@ import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun UserProfileActions(
-    showMessage: Boolean,
-    showFriendship: Boolean,
-    showComments: Boolean,
     isAuthorized: Boolean,
     friendshipStatus: FriendshipStatus,
     friendshipLoading: Boolean,
     messageLabel: String,
     friendshipLabel: String,
-    commentsLabel: String,
     onMessageClick: () -> Unit,
     onFriendshipClick: () -> Unit,
-    onCommentsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (showMessage) {
-            ProfileAction(
-                icon = Icons.Filled.MailOutline,
-                label = messageLabel,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                onClick = onMessageClick,
-                modifier = Modifier.weight(1f),
-            )
-        }
-        if (showFriendship) {
-            ProfileAction(
-                icon = friendshipStatus.actionIcon(isAuthorized),
-                label = friendshipLabel,
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                enabled = !friendshipLoading,
-                loading = friendshipLoading,
-                onClick = onFriendshipClick,
-                modifier = Modifier.weight(1f),
-            )
-        }
-        if (showComments) {
-            ProfileAction(
-                icon = Icons.Filled.ChatBubbleOutline,
-                label = commentsLabel,
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                onClick = onCommentsClick,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        ProfileAction(
+            icon = friendshipStatus.actionIcon(isAuthorized),
+            label = friendshipLabel,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            enabled = !friendshipLoading,
+            loading = friendshipLoading,
+            onClick = onFriendshipClick,
+            modifier = Modifier.weight(1f),
+        )
+        ProfileAction(
+            icon = Icons.Filled.MailOutline,
+            label = messageLabel,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            onClick = onMessageClick,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

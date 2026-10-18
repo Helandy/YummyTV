@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.account.model
 
+import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 
 data class UserAnimeListItem(
@@ -17,4 +18,7 @@ data class UserAnimeListItem(
     val nextEpisodeAtSeconds: Long? = null,
     /** Сезон выхода (квартал года). */
     val season: AnimeSeason? = null,
+    /** Короткое имя типа тайтла с сервера («ТВ», «OVA», «п/ф»). */
+    val kind: String? = null,
+    val releaseStatus: AnimeReleaseStatus? = null,
 )

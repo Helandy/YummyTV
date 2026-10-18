@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
@@ -102,7 +103,8 @@ fun EpisodesMobileScreen(
             ) {
                 items(state.episodeGroups, key = { it.episode }) { group ->
                     val video = group.videos.representativeVideo(state.bestDubbing)
-                    val kodikIframeUrl = group.videos.kodikThumbnailIframeUrl(state.bestDubbing)
+                    val thumbnail = group.videos.kodikThumbnailIframeUrl(state.bestDubbing)
+                        ?.let { KodikThumbnail(it, state.animeId, group.episode) }
                     val downloadStatus = state.resolvedDownloadStatuses[group.episode]
                     val downloadKeys = remember(group.videos) {
                         group.videos.map { video ->
@@ -119,7 +121,7 @@ fun EpisodesMobileScreen(
                         episodeNumber = group.episode,
                         watchStatus = group.videos.watchStatus(state.watchProgress),
                         isInWatchLater = group.episode.episodeGroupKey() in state.watchLaterEpisodes,
-                        kodikIframeUrl = kodikIframeUrl,
+                        thumbnail = thumbnail,
                         episodeTitle = episodeInfo?.title,
                         episodeDescription = episodeInfo?.description,
                         descriptionExpanded = group.episode in state.expandedEpisodeDescriptions,

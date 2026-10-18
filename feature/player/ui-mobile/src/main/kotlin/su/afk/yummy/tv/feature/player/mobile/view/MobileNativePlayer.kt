@@ -532,7 +532,7 @@ internal fun MobileNativePlayer(
             title = state.animeTitle,
             episode = ui.activeEpisode,
             dubbing = ui.activeDubbing,
-            playerName = ui.activeBalancerName,
+            playerName = ui.activeBalancerLabel,
             onBack = { onEvent(PlayerState.Event.Back) },
             onDetails = { onEvent(PlayerState.Event.OpenDetails) },
             onPictureInPicture = { activity?.let(pipSession::enter) },

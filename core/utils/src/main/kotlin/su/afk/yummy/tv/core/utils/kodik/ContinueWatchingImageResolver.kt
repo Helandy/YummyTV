@@ -9,8 +9,8 @@ private fun pickContinueWatchingImageSource(
     episodeUrl: String,
     posterUrl: String?,
 ): Pair<ContinueWatchingImageSource, String>? = when {
-    screenshotUrl.isKodikSourceUrl() -> ContinueWatchingImageSource.KODIK_SCREENSHOT to screenshotUrl
-    episodeUrl.isKodikSourceUrl() -> ContinueWatchingImageSource.KODIK_EPISODE to episodeUrl
+    screenshotUrl.isKodikIframeUrl() -> ContinueWatchingImageSource.KODIK_SCREENSHOT to screenshotUrl
+    episodeUrl.isKodikIframeUrl() -> ContinueWatchingImageSource.KODIK_EPISODE to episodeUrl
     screenshotUrl.isLikelyImageUrl() -> ContinueWatchingImageSource.DIRECT_SCREENSHOT to screenshotUrl
     posterUrl != null -> ContinueWatchingImageSource.POSTER to posterUrl
     else -> null
@@ -55,3 +55,9 @@ fun resolveContinueWatchingImageModel(
 }
 
 fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)
+
+/**
+ * Kodik-iframe, из HTML которого достаётся превью. Скриншоты с `i.kodikres.com` тоже содержат
+ * «kodik», но это уже готовые картинки — их грузим напрямую.
+ */
+fun String.isKodikIframeUrl(): Boolean = isKodikSourceUrl() && !isLikelyImageUrl()

@@ -1,15 +1,20 @@
 package su.afk.yummy.tv.feature.account.mobile.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileQuickAction
 
-private const val ColumnsPerRow = 3
+private const val ColumnsPerRow = 4
 
 @Composable
 internal fun AccountMobileQuickActionsGrid(
@@ -17,16 +22,17 @@ internal fun AccountMobileQuickActionsGrid(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         actions.chunked(ColumnsPerRow).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
+            Row(modifier = Modifier.fillMaxWidth()) {
                 row.forEach { action ->
-                    AccountMobileNavigationButton(
+                    AccountMobileQuickActionButton(
                         title = action.title,
                         icon = action.icon,
                         onClick = action.onClick,
@@ -34,6 +40,7 @@ internal fun AccountMobileQuickActionsGrid(
                         modifier = Modifier.weight(1f),
                     )
                 }
+                repeat(ColumnsPerRow - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }

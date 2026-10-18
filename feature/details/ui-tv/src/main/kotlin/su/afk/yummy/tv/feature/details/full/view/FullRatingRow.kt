@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.utils.formatting.formatRating
+import su.afk.yummy.tv.core.utils.formatting.toGroupedCount
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatViews
 
@@ -17,7 +18,7 @@ import su.afk.yummy.tv.feature.details.utils.formatViews
 internal fun FullRatingRow(details: AnimeDetails) {
     val ratings = buildList {
         details.views?.let { add(stringResource(R.string.details_full_views, it.formatViews())) }
-        details.rating.counters?.let { add(stringResource(R.string.details_full_rating_votes, it)) }
+        details.rating.counters?.let { add(stringResource(R.string.details_full_rating_votes, it.toGroupedCount())) }
         details.rating.myAnimeList?.let {
             add(
                 stringResource(

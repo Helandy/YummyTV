@@ -2,13 +2,13 @@
 
 package su.afk.yummy.tv.feature.account.mobile.view
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -93,9 +93,10 @@ internal fun AccountMobileProfileStatsPager(
             state = pagerState,
             key = { page -> pages[page].title },
             pageSpacing = 10.dp,
+            verticalAlignment = Alignment.Top,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(230.dp),
+                .animateContentSize(),
         ) { page ->
             AccountMobileProfileStatsPage(page = pages[page])
         }

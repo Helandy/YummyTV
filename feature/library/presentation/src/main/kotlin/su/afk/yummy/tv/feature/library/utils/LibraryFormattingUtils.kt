@@ -17,9 +17,6 @@ fun LibraryItem.dateText(tab: LibraryTab): String? =
         else -> listUpdatedAt
     }.formatLibraryDate()
 
-fun LibraryItem.validUserRating(): Double? =
-    userRating?.takeIf { it in 1..10 }?.toDouble()
-
 private fun Long.formatLibraryDate(): String? =
     takeIf { it > 0L }?.formatLocalizedDateMillis()
 

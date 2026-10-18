@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
+import su.afk.yummy.tv.feature.details.mobile.episodes.utils.playerLabel
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
@@ -35,11 +36,11 @@ internal fun BalancerDialog(
                 MobilePickerItem(
                     key = "${option.playerName}:${option.video.id}",
                     title = if (option.isSupported) {
-                        option.playerName
+                        option.playerName.playerLabel()
                     } else {
                         stringResource(
                             R.string.details_mobile_unsupported_player,
-                            option.playerName
+                            option.playerName.playerLabel()
                         )
                     },
                     subtitle = option.video.dubbing,

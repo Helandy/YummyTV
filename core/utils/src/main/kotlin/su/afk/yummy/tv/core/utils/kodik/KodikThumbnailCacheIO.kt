@@ -23,9 +23,9 @@ import javax.inject.Singleton
 /**
  * Читает/пишет байты Kodik-превью серии напрямую в выделенный [DiskCache] (15 МБ, отдельно от
  * общего кэша картинок Coil). Используется и [KodikThumbnailFetcher] (продолжить просмотр, серии),
- * и History-фетчером из feature:library — по одному и тому же ключу на iframe-урл, поэтому одна и
- * та же серия хранится на диске один раз, независимо от того, с какого экрана она была впервые
- * открыта.
+ * и History-фетчером из feature:library — по одному и тому же ключу серии
+ * ([episodeThumbnailCacheKey]), поэтому одна и та же серия хранится на диске один раз, независимо
+ * от того, с какого экрана и какой озвучки она была впервые открыта.
  */
 @Singleton
 class KodikThumbnailCacheIO @Inject constructor(
@@ -34,11 +34,17 @@ class KodikThumbnailCacheIO @Inject constructor(
 ) {
 
     /**
-     * Сначала отдаёт снапшот с диска; [resolveUrl] (сетевой резолв через HTML iframe) вызывается
-     * только при промахе — иначе после рестарта процесса каждое превью ждало бы запрос к Kodik.
+     * Сначала отдаёт снапшот с диска — по [cacheKey], затем по [fallbackKeys] (ключи, под которыми
+     * превью могло лечь раньше); [resolveUrl] (сетевой резолв через HTML iframe) вызывается только
+     * при промахе — иначе после рестарта процесса каждое превью ждало бы запрос к Kodik.
+     * Скачанное пишется под [cacheKey].
      */
-    suspend fun fetch(cacheKey: String, resolveUrl: suspend () -> String?): FetchResult? {
-        readSnapshot(cacheKey)?.let { return it }
+    suspend fun fetch(
+        cacheKey: String,
+        fallbackKeys: List<String> = emptyList(),
+        resolveUrl: suspend () -> String?,
+    ): FetchResult? {
+        (listOf(cacheKey) + fallbackKeys).firstNotNullOfOrNull(::readSnapshot)?.let { return it }
         val url = resolveUrl() ?: return null
         return downloadAndCache(cacheKey, url)
     }

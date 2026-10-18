@@ -31,6 +31,7 @@ import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentChildrenUseCase
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentsUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.comments.CommentsState.CommentUi
 import su.afk.yummy.tv.feature.comments.CommentsState.ComposerMode
 import su.afk.yummy.tv.feature.comments.handler.CommentsMutationHandler
@@ -51,6 +52,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val accountNavigator: IAccountNavigator,
+    private val detailsNavigator: IDetailsNavigator,
     private val settingsStore: YaniAccountSettingsStore,
     private val stringProvider: StringProvider,
     private val getComments: GetCommentsUseCase,
@@ -66,8 +68,11 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     private val target = CommentTarget(targetType, targetId)
 
+    // В ленте комментариев пользователя важнее свежие, у тайтлов — лучшие.
+    private val defaultSort = if (targetType == CommentTargetType.USER) CommentSort.NEW else CommentSort.BEST
+
     override fun createInitialState() =
-        CommentsState.State(comments = createCommentsFlow(CommentSort.BEST))
+        CommentsState.State(sort = defaultSort, comments = createCommentsFlow(defaultSort))
 
     private var visibleComments: Map<Int, CommentUi> = emptyMap()
 
@@ -147,6 +152,10 @@ class CommentsViewModel @AssistedInject internal constructor(
                     analytics.eventAuthorSelected(target, event.userId)
                     nav.navigate(accountNavigator.getUserProfileDest(event.userId))
                 }
+            }
+
+            is CommentsState.Event.AnimeSelected -> {
+                if (event.animeId > 0) nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
         }
     }

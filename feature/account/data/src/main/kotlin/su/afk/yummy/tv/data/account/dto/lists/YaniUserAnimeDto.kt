@@ -29,4 +29,7 @@ data class YaniUserAnimeDto(
      * разбор всего списка целиком; разбираем вручную в `toAnimeSeason`.
      */
     val season: JsonElement? = null,
+    /** Тип тайтла; `shortname` уже локализован сервером («ТВ», «OVA», «п/ф»). */
+    val type: YaniAnimeTypeDto? = null,
+    @SerialName("anime_status") val animeStatus: YaniAnimeStatusDto? = null,
 )

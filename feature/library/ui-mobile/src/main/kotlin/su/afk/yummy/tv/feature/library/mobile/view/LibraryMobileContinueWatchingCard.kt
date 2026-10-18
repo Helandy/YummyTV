@@ -43,7 +43,7 @@ internal fun LibraryMobileContinueWatchingCard(
         screenshotUrl = entry.screenshotUrl,
         episodeUrl = entry.episodeUrl,
         posterUrl = entry.poster.posterUrl(),
-        kodikThumbnailModel = ::KodikThumbnail,
+        kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
     )
 
     MobileProgressMediaCard(

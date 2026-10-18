@@ -6,6 +6,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
+import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
+import su.afk.yummy.tv.core.common.player.withoutPlayerPrefix
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
@@ -14,6 +16,26 @@ internal fun AnimeVideo.toDownloadStatusKey(): String =
     listOf(id.toString(), iframeUrl).joinToString("|")
 
 internal fun AnimeVideo.toDownloadDubbingName(): String = dubbing.ifBlank { player }
+
+/**
+ * Плееры озвучки для подписи в шторке скачивания — в том же порядке и виде, что в шторке
+ * просмотра: без префикса «Плеер», через « • ». [viewsSource] — видео, по которым считаются
+ * просмотры балансера для сортировки.
+ */
+internal fun List<AnimeVideo>.downloadBalancersLabel(viewsSource: List<AnimeVideo>): String {
+    val viewsByPlayer = viewsSource
+        .groupingBy { it.player }
+        .fold(0) { sum, video -> sum + (video.views ?: 0) }
+    return distinctBy { it.player }
+        .sortedWith(
+            balancerDisplayComparator<AnimeVideo>(
+                playerName = { it.player },
+                iframeUrl = { it.iframeUrl },
+                views = { viewsByPlayer[it.player] ?: 0 },
+            ),
+        )
+        .joinToString(" • ") { it.player.withoutPlayerPrefix() }
+}
 
 internal fun buildEpisodeGroups(videos: List<AnimeVideo>): ImmutableList<EpisodesState.EpisodeGroup> =
     videos

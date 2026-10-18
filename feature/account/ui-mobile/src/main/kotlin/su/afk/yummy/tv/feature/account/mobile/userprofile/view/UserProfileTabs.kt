@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
-import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.count
+import su.afk.yummy.tv.feature.account.userprofile.utils.contentCount
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.label
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.tabCountLabel
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
@@ -25,18 +25,18 @@ import su.afk.yummy.tv.feature.account.common.utils.label
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 internal fun UserProfileTabs(
+    tabs: List<UserProfileState.Tab>,
     selected: UserProfileState.Tab,
     profile: UserProfileSummary?,
     onSelected: (UserProfileState.Tab) -> Unit,
 ) {
-    val tabs = UserProfileState.Tab.entries
     PrimaryScrollableTabRow(
-        selectedTabIndex = tabs.indexOf(selected),
+        selectedTabIndex = tabs.indexOf(selected).coerceAtLeast(0),
         edgePadding = 8.dp,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         tabs.forEach { tab ->
-            val count = tab.count(profile)
+            val count = tab.contentCount(profile)
             Tab(
                 selected = tab == selected,
                 onClick = { onSelected(tab) },

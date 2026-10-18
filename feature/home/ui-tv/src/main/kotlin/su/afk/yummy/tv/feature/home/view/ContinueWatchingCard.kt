@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
@@ -16,7 +15,6 @@ import su.afk.yummy.tv.feature.home.presentation.R
 
 private val CardWidth = 220.dp
 private val ThumbnailHeight = 124.dp
-private val InProgressColor = YummySemanticColors.InProgress
 
 @Composable
 internal fun ContinueWatchingCard(
@@ -43,7 +41,7 @@ internal fun ContinueWatchingCard(
         screenshotUrl = entry.screenshotUrl,
         episodeUrl = entry.episodeUrl,
         posterUrl = entry.poster.bestUrl(),
-        kodikThumbnailModel = ::KodikThumbnail,
+        kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
     )
     val episodeLabel = if (entry.episode.isNotBlank()) {
         stringResource(R.string.home_episode_number, entry.episode)
@@ -65,7 +63,6 @@ internal fun ContinueWatchingCard(
         upFocusRequester = upFocusRequester,
         downFocusRequester = downFocusRequester,
         onFocused = onFocused,
-        progressColor = InProgressColor,
         isLoading = isLoading,
     )
 }

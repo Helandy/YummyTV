@@ -48,4 +48,6 @@ internal fun UserAnimeListItem.toLibraryItem(
     rating = rating ?: current?.rating,
     nextEpisodeAtSeconds = nextEpisodeAtSeconds ?: current?.nextEpisodeAtSeconds,
     season = season ?: current?.season,
+    kind = kind ?: current?.kind,
+    releaseStatus = releaseStatus ?: current?.releaseStatus,
 )

@@ -4,6 +4,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
+import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_FRIENDS
 import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_POSTS
@@ -43,6 +44,7 @@ import su.afk.yummy.tv.data.account.utils.toLinksJson
 import su.afk.yummy.tv.data.account.utils.toNotificationLinks
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.account.dto.common.YaniAccountPosterDto
+import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeTypeDto
 import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeListStatDto
 import su.afk.yummy.tv.data.account.dto.collections.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.notifications.YaniNotificationCountDto
@@ -102,6 +104,8 @@ internal fun List<YaniUserAnimeDto>.toUserListCache(
                 updatedAtSeconds = item.date?.takeIf { it > 0L },
                 nextEpisodeAtSeconds = item.nextEpisode?.takeIf { it > 0L },
                 season = item.season.toAnimeSeason()?.slug,
+                kind = item.type?.toKindShortName(),
+                releaseStatus = AnimeReleaseStatus.fromSlug(item.animeStatus?.alias)?.slug,
             )
         },
     )
@@ -339,3 +343,6 @@ private fun JsonElement?.toFlexibleInt(): Int? {
     return primitive.content.toIntOrNull()
 }
 
+/** Короткое имя типа для карточки; у тайтлов без типа (`unknown`, value 0) — `null`. */
+internal fun YaniAnimeTypeDto.toKindShortName(): String? =
+    shortname.trim().takeIf { it.isNotEmpty() && value > 0 && alias != "unknown" }

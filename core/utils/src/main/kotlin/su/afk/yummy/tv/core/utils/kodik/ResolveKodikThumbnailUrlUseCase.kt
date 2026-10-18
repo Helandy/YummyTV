@@ -8,11 +8,13 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
+import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,17 +22,22 @@ import javax.inject.Singleton
 /**
  * Резолвит прямой URL превью серии из Kodik iframe.
  *
- * Один и тот же iframe-урл резолвится один раз за время жизни процесса: результат (включая
- * `null`) кэшируется в памяти, а параллельные запросы на один и тот же урл (например одна серия
+ * Один и тот же iframe-урл резолвится один раз за время жизни процесса: найденный URL кэшируется
+ * в памяти. Неудача (`null`) помнится только [FAILURE_TTL_MS] — иначе один таймаут Kodik на старте
+ * оставлял серию без превью до перезапуска. Параллельные запросы на один и тот же урл (например одна серия
  * одновременно отрисовывается в "продолжить просмотр" и в сетке серий) не плодят несколько HTML
  * запросов, а ждут один и тот же результат — single-flight на [IoApplicationScope], поэтому отмена
  * одного из ожидающих (например, экран закрылся) не тащит за собой отмену запроса для остальных.
+ *
+ * Прямая ссылка на картинку (серверная история отдаёт скриншоты с `i.kodikres.com`) возвращается
+ * как есть: HTML из неё не достать.
  */
 @Singleton
 class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     @KodikHttpClient private val httpClient: HttpClient,
     @IoApplicationScope private val scope: CoroutineScope,
     private val userAgents: BrowserUserAgentProvider,
+    private val clock: AppClock,
 ) {
 
     // ConcurrentHashMap не допускает null-значений, поэтому результат (в т.ч. неудачный) заворачиваем.
@@ -39,21 +46,25 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
 
     suspend operator fun invoke(iframeUrl: String): String? {
         val normalizedUrl = normalizeIframeUrl(iframeUrl)
-        resolvedCache[normalizedUrl]?.let { return it.url }
+        if (normalizedUrl.isLikelyImageUrl()) return toHttpsUrl(normalizedUrl)
+        resolvedCache[normalizedUrl]?.takeIf { it.isFresh() }?.let { return it.url }
 
         val deferred = inFlight.computeIfAbsent(normalizedUrl) {
             scope.async { resolve(normalizedUrl) }
         }
         try {
             val result = deferred.await()
-            resolvedCache[normalizedUrl] = CacheEntry(result)
+            resolvedCache[normalizedUrl] = CacheEntry(result, clock.nowMillis())
             return result
         } finally {
             inFlight.remove(normalizedUrl, deferred)
         }
     }
 
-    private class CacheEntry(val url: String?)
+    private class CacheEntry(val url: String?, val resolvedAtMs: Long)
+
+    private fun CacheEntry.isFresh(): Boolean =
+        url != null || clock.nowMillis() - resolvedAtMs < FAILURE_TTL_MS
 
     private suspend fun resolve(normalizedUrl: String): String? {
         return runSuspendCatching {
@@ -76,6 +87,7 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     private companion object {
         const val CONNECT_TIMEOUT_MS = 8_000L
         const val READ_TIMEOUT_MS = 10_000L
+        const val FAILURE_TTL_MS = 60_000L
     }
 }
 

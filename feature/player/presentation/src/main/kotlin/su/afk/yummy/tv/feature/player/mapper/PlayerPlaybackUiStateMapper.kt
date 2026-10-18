@@ -72,6 +72,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeVideoId = activeVideoId(this),
         activeDubbing = activeDubbingName,
         activeBalancerName = activeBalancerName(this),
+        activeBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix),
         activeScreenshotUrl = activeScreenshotUrl(this),
         activeSkips = activeEpisodeSource(this)?.skips ?: PlayerSkips.Empty,
         hasPrevEpisode = selection.episodeIndex > 0,

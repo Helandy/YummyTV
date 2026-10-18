@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.library.view
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
@@ -9,14 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.runtime.Composable
@@ -29,7 +24,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -39,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
-import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
@@ -56,13 +49,10 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.feature.library.mapper.toTitleListCardUi
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.posterUrl
-import su.afk.yummy.tv.feature.library.utils.dateText
-import su.afk.yummy.tv.feature.library.utils.tvReleaseCountdownText
-import su.afk.yummy.tv.feature.library.utils.validUserRating
-import su.afk.yummy.tv.feature.library.utils.tvYearSeasonText
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -228,8 +218,8 @@ internal fun LibraryGrid(
                     }
                     val stableOnFocused =
                         remember(item.animeId, index) { { rememberFocusedItem(index) } }
-                    val rating = item.validUserRating()
-                    val yearSeasonText = item.tvYearSeasonText()
+                    val posterUrl = item.posterUrl(posterQuality)
+                    val card = remember(item, tab, posterUrl) { item.toTitleListCardUi(tab, posterUrl) }
                     val stableOnDelete = remember(item.animeId, index) {
                         {
                           confirmRemoval(item.title) {
@@ -249,34 +239,13 @@ internal fun LibraryGrid(
                         }
                     }
                     LibraryAnimeCard(
-                        title = item.title,
-                        posterUrl = item.posterUrl(posterQuality),
+                        item = card,
+                        nowEpochSeconds = nowEpochSeconds,
+                        showYear = showTitleYear,
                         onClick = stableOnClick,
                         onFocused = stableOnFocused,
                         onDelete = stableOnDelete,
                         cardWidth = adaptiveCardWidth,
-                        subtitle = item.dateText(tab),
-                        caption = item.tvReleaseCountdownText(nowEpochSeconds),
-                        posterOverlay = {
-                            rating?.let {
-                                RatingBadge(
-                                    rating = it,
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(4.dp),
-                                )
-                            }
-                            if (showTitleYear) {
-                                yearSeasonText?.let { text ->
-                                    LibraryYearBadge(
-                                        text = text,
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .padding(4.dp),
-                                    )
-                                }
-                            }
-                        },
                         modifier = Modifier
                             .tvWholeItemBringIntoView()
                             .onFocusChanged { state ->
@@ -317,23 +286,4 @@ internal fun LibraryGrid(
             }
         }
     }
-}
-
-/** Год и сезон выхода тайтла в углу постера — разметка совпадает с карточкой топа. */
-@Composable
-private fun LibraryYearBadge(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier
-            .background(
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                RoundedCornerShape(4.dp),
-            )
-            .padding(horizontal = 6.dp, vertical = 3.dp),
-    )
 }

@@ -20,6 +20,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 @Composable
 internal fun EpisodesSection(
     state: VideosUiState,
+    animeId: Int,
     episodeGroups: List<EpisodesState.EpisodeGroup>,
     bestDubbing: String,
     watchProgress: DetailsWatchProgressIndex,
@@ -45,6 +46,7 @@ internal fun EpisodesSection(
         )
 
         is VideosUiState.Content -> EpisodesGrid(
+            animeId = animeId,
             episodeGroups = episodeGroups,
             bestDubbing = bestDubbing,
             watchProgress = watchProgress,

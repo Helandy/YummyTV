@@ -74,6 +74,15 @@ object YummySemanticColors {
     /** Статус пользовательского списка: избранное. */
     val StatusFavorite = YummyPalette.Magenta
 
+    /** Статус выхода тайтла: онгоинг. */
+    val ReleaseOngoing = YummyPalette.Green
+
+    /** Статус выхода тайтла: анонс. */
+    val ReleaseAnnouncement = YummyPalette.Amber
+
+    /** Статус выхода тайтла: вышел. */
+    val ReleaseReleased = YummyPalette.Gray
+
     /** Контент в процессе (продолжить просмотр, идёт эфир, активная загрузка). */
     val InProgress = YummyPalette.ForestGreen
 

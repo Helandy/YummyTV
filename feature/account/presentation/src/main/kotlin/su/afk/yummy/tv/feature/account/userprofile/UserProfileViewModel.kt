@@ -1,5 +1,11 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.launchIn
+import su.afk.yummy.tv.feature.account.userprofile.utils.visibleProfileTabs
+import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfileCommentsHandler
+import kotlinx.collections.immutable.toPersistentList
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -50,6 +56,8 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private val contentHandler: UserProfileContentHandler,
     private val pagingFetchHandler: UserProfilePagingFetchHandler,
     private val friendshipHandler: UserProfileFriendshipHandler,
+    private val commentsHandler: UserProfileCommentsHandler,
+    private val appearanceSettingsStore: AppearanceSettingsStore,
     private val collectionMutationNotifier: CollectionMutationRepository,
     private val analytics: UserProfileAnalytics,
 ) : BaseViewModel<UserProfileState.State, UserProfileState.Event, UserProfileState.Effect>() {
@@ -70,7 +78,11 @@ class UserProfileViewModel @AssistedInject internal constructor(
     init {
         analytics.eventScreenOpened(userId)
         loadOverview()
+        loadComments()
         loadFriendship()
+        appearanceSettingsStore.showLibraryTitleYear
+            .onEach { enabled -> setState { copy(showTitleYear = enabled) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: UserProfileState.Event) {
@@ -160,6 +172,12 @@ class UserProfileViewModel @AssistedInject internal constructor(
             UserProfileState.Event.CommentsSelected -> if (userId > 0) {
                 nav.navigate(commentsNavigator.getCommentsDest(CommentTargetType.USER, userId))
             }
+
+            UserProfileState.Event.RetryCommentsSelected -> loadComments()
+
+            is UserProfileState.Event.CommentAnimeSelected -> if (event.animeId > 0) {
+                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            }
         }
     }
 
@@ -224,18 +242,50 @@ class UserProfileViewModel @AssistedInject internal constructor(
             setState { copy(isOverviewLoading = true, overviewError = false) }
             contentHandler.loadOverview(userId).fold(
                 onSuccess = { (profile, stats) ->
+                    val visibleTabs = profile.visibleProfileTabs()
                     setState {
                         copy(
                             profile = profile,
                             stats = stats,
                             isOverviewLoading = false,
                             overviewError = false,
+                            visibleTabs = visibleTabs,
+                            selectedTab = selectedTab.takeIf { it in visibleTabs } ?: UserProfileState.Tab.OVERVIEW,
                         )
                     }
                 },
                 onFailure = { error ->
                     analytics.eventOverviewLoadError(userId, error)
-                    setState { copy(isOverviewLoading = false, overviewError = true) }
+                    // Без счётчиков не знаем, что пусто, — показываем все вкладки.
+                    setState {
+                        copy(
+                            isOverviewLoading = false,
+                            overviewError = true,
+                            visibleTabs = UserProfileState.Tab.entries.toPersistentList(),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun loadComments() {
+        if (userId <= 0) return
+        viewModelScope.launch {
+            setState { copy(comments = comments.copy(isLoading = true, error = false)) }
+            commentsHandler.loadPreview(userId).fold(
+                onSuccess = { items ->
+                    setState {
+                        copy(
+                            comments = UserProfileState.PagedContent(
+                                items = items.toPersistentList(),
+                                loaded = true,
+                            ),
+                        )
+                    }
+                },
+                onFailure = {
+                    setState { copy(comments = comments.copy(isLoading = false, error = true, loaded = true)) }
                 },
             )
         }

@@ -23,10 +23,10 @@
     <string name="blogger_video_about">О видео</string>
     <string name="blogger_open_page">Страница блогера</string>
     <string name="blogger_videos_title">Видео блогеров</string>
-    <string name="blogger_videos_anime_title">Видео об аниме</string>
+    <string name="blogger_videos_anime_title">От блогеров</string>
     <string name="blogger_videos_loading">Загружаем видео блогеров…</string>
     <string name="blogger_videos_error">Не удалось загрузить видео блогеров</string>
-    <string name="blogger_videos_empty">Видео блогеров не найдены</string>
+    <string name="blogger_videos_empty">Видео не найдены</string>
     <string name="blogger_videos_all">Все</string>
     <string name="blogger_videos_all_bloggers">Все блогеры</string>
     <string name="blogger_videos_sort_new">Новые</string>

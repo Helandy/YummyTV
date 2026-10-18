@@ -82,6 +82,7 @@ class CommentsState {
         data class ChildrenToggleSelected(val commentId: Int) : Event
         data class LoadMoreChildrenSelected(val commentId: Int) : Event
         data class AuthorSelected(val userId: Int) : Event
+        data class AnimeSelected(val animeId: Int) : Event
     }
 
     sealed interface Effect : UiEffect {

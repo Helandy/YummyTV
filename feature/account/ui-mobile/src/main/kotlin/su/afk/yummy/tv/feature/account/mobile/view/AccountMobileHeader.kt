@@ -1,34 +1,14 @@
 package su.afk.yummy.tv.feature.account.mobile.view
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.account.AccountState
-import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.common.utils.formatProfileDate
-import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun AccountMobileHeader(
@@ -38,81 +18,29 @@ internal fun AccountMobileHeader(
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AccountMobileSurfacePanel(modifier = modifier) {
-        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                val nickname =
-                    profileSummary?.nickname?.ifBlank { state.nickname } ?: state.nickname
-                val avatarUrl = profileSummary?.avatarUrl ?: state.avatarUrl
-                AccountMobileAvatar(avatarUrl = avatarUrl, nickname = nickname)
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = nickname.ifBlank { stringResource(R.string.account_unknown_user) },
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    profileSummary?.let { summary ->
-                        AccountMobileProfileMetaLine(
-                            icon = Icons.Filled.CalendarMonth,
-                            value = summary.registerDateSeconds.formatProfileDate(),
-                        )
-                        AccountMobileProfileMetaLine(
-                            icon = Icons.Filled.Cake,
-                            value = summary.birthDateSeconds.formatProfileDate(),
-                        )
-                        AccountMobileProfileMetaLine(
-                            icon = Icons.Filled.Person,
-                            value = summary.sex.label(),
-                        )
-                    }
-                }
-                IconButton(onClick = onEditClick) {
-                    Icon(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = stringResource(R.string.account_edit_profile),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                IconButton(onClick = onLogoutClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = stringResource(R.string.account_logout),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AccountMobileProfileMetaLine(icon: ImageVector, value: String) {
-    if (value.isBlank()) return
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    val nickname = profileSummary?.nickname?.ifBlank { state.nickname } ?: state.nickname
+    AccountMobileProfileHero(
+        bannerUrl = profileSummary?.bannerUrl.orEmpty(),
+        bannerWideUrl = profileSummary?.bannerWideUrl,
+        avatarUrl = profileSummary?.avatarUrl ?: state.avatarUrl,
+        nickname = nickname,
+        modifier = modifier,
+        topActions = {
+            AccountMobileHeroActionButton(
+                icon = Icons.Filled.Edit,
+                contentDescription = stringResource(R.string.account_edit_profile),
+                onClick = onEditClick,
+            )
+            AccountMobileHeroActionButton(
+                icon = Icons.AutoMirrored.Filled.ExitToApp,
+                contentDescription = stringResource(R.string.account_logout),
+                onClick = onLogoutClick,
+            )
+        },
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(14.dp),
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        AccountMobileProfileIdentity(
+            nickname = nickname.ifBlank { stringResource(R.string.account_unknown_user) },
+            summary = profileSummary,
         )
     }
 }

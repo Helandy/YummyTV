@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
+import su.afk.yummy.tv.feature.account.userprofile.model.UserProfileCommentPreview
 import androidx.compose.runtime.Immutable
 import androidx.paging.PagingData
 import kotlinx.collections.immutable.ImmutableList
@@ -24,12 +25,17 @@ class UserProfileState {
     data class State(
         val userId: Int = 0,
         val selectedTab: Tab = Tab.OVERVIEW,
+        /** Вкладки, которые показываем: пока профиль не загружен — только обзор, потом без пустых. */
+        val visibleTabs: ImmutableList<Tab> = persistentListOf(Tab.OVERVIEW),
         val profile: UserProfileSummary? = null,
         val stats: UserStats? = null,
         val isOverviewLoading: Boolean = true,
         val overviewError: Boolean = false,
         val selectedList: ListFilter = ListFilter.WATCHING,
         val lists: PagedContent<UserAnimeListItem> = PagedContent(),
+        /** Настройка «Отображать год у тайтлов в библиотеке» — действует и на списки в профиле. */
+        val showTitleYear: Boolean = false,
+        val comments: PagedContent<UserProfileCommentPreview> = PagedContent(),
         val collections: Flow<PagingData<AnimeCollectionSummary>> = flowOf(PagingData.empty()),
         val posts: Flow<PagingData<UserPostSummary>> = flowOf(PagingData.empty()),
         val reviews: Flow<PagingData<UserReviewSummary>> = flowOf(PagingData.empty()),
@@ -58,12 +64,13 @@ class UserProfileState {
         FRIENDS,
     }
 
+    /** Порядок объявления — порядок фильтров в UI (как списки в библиотеке, «Любимое» в конце). */
     enum class ListFilter(val list: UserAnimeList?) {
         WATCHING(UserAnimeList.WATCHING),
         PLANNED(UserAnimeList.PLANNED),
         COMPLETED(UserAnimeList.COMPLETED),
-        DROPPED(UserAnimeList.DROPPED),
         POSTPONED(UserAnimeList.POSTPONED),
+        DROPPED(UserAnimeList.DROPPED),
         FAVORITES(null),
     }
 
@@ -82,6 +89,8 @@ class UserProfileState {
         data object LoginToFriendSelected : Event
         data object MessageSelected : Event
         data object CommentsSelected : Event
+        data object RetryCommentsSelected : Event
+        data class CommentAnimeSelected(val animeId: Int) : Event
     }
 
     sealed interface Effect : UiEffect

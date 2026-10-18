@@ -2,8 +2,6 @@ package su.afk.yummy.tv.feature.library.mobile.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -20,11 +18,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
-internal fun BoxScope.LibraryMobileDeleteButton(onClick: () -> Unit) {
+internal fun LibraryMobileDeleteButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(6.dp)
             .size(34.dp)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.error.copy(alpha = 0.92f)),

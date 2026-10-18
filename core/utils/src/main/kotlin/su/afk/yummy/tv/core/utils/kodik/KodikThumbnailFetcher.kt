@@ -7,7 +7,8 @@ import coil3.request.Options
 
 /**
  * Резолвит URL Kodik-превью и читает/пишет картинку через [KodikThumbnailCacheIO] —
- * отдельный, небольшой disk cache (не общий кэш постеров), ключ по iframe-урлу.
+ * отдельный, небольшой disk cache (не общий кэш постеров). Ключ — [KodikThumbnail.cacheKey]
+ * (общий для серии), при промахе — прежний ключ по iframe-урлу, и только потом сеть.
  */
 class KodikThumbnailFetcher(
     private val data: KodikThumbnail,
@@ -16,7 +17,10 @@ class KodikThumbnailFetcher(
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult? =
-        cacheIO.fetch(data.cacheKey) { resolveKodikThumbnailUrl(data.iframeUrl) }
+        cacheIO.fetch(
+            cacheKey = data.cacheKey,
+            fallbackKeys = listOf(data.legacyCacheKey).filter { it != data.cacheKey },
+        ) { resolveKodikThumbnailUrl(data.iframeUrl) }
 
     class Factory(
         private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,

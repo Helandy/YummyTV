@@ -9,6 +9,7 @@ import su.afk.yummy.tv.data.comments.dto.YaniCommentsResponseDto
 import su.afk.yummy.tv.data.comments.dto.YaniVoteCommentPayloadDto
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentAuthor
+import su.afk.yummy.tv.domain.comments.model.CommentItem
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.model.CommentVoteResult
 import su.afk.yummy.tv.domain.comments.model.CommentsPage
@@ -34,6 +35,7 @@ internal fun YaniCommentDto.toComment(): Comment =
         vote = CommentVote.fromApi(vote),
         roles = roles,
         deletedAtEpochSeconds = deletedAt.takeIf { it > 0 },
+        item = toCommentItem(),
     )
 
 internal fun YaniVoteCommentPayloadDto.toCommentVoteResult(): CommentVoteResult =
@@ -87,8 +89,9 @@ internal fun YaniCommentDto.toCommentItemEntry(
     limit: Int,
     skip: Int,
     position: Int,
-): CommentItemEntry =
-    CommentItemEntry(
+): CommentItemEntry {
+    val item = toCommentItem()
+    return CommentItemEntry(
         scopeType = scopeType,
         ownerId = ownerId,
         sort = sort,
@@ -110,7 +113,11 @@ internal fun YaniCommentDto.toCommentItemEntry(
         vote = CommentVote.fromApi(vote).apiValue,
         roles = roles.joinToString(ROLE_SEPARATOR),
         deletedAtEpochSeconds = deletedAt.takeIf { it > 0 },
+        itemObjectId = item?.animeId,
+        itemTitle = item?.title,
+        itemPosterUrl = item?.posterUrl,
     )
+}
 
 private fun CommentItemEntry.toComment(): Comment =
     Comment(
@@ -131,5 +138,18 @@ private fun CommentItemEntry.toComment(): Comment =
         vote = CommentVote.fromApi(vote),
         roles = roles.split(ROLE_SEPARATOR).filter { it.isNotBlank() },
         deletedAtEpochSeconds = deletedAtEpochSeconds,
+        item = itemObjectId?.takeIf { it > 0 }?.let { animeId ->
+            CommentItem(animeId = animeId, title = itemTitle.orEmpty(), posterUrl = itemPosterUrl)
+        },
     )
+
+private fun YaniCommentDto.toCommentItem(): CommentItem? {
+    val data = itemData ?: return null
+    if (objectId <= 0 || data.title.isBlank()) return null
+    return CommentItem(
+        animeId = objectId,
+        title = data.title,
+        posterUrl = (data.posters.medium ?: data.posters.small ?: data.posters.big).toHttpsUrlOrNull(),
+    )
+}
 

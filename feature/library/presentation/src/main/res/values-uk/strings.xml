@@ -29,29 +29,6 @@
     <string name="library_mobile_sort_user_rating">за моєю оцінкою</string>
     <string name="library_mobile_sort_title">за назвою</string>
     <string name="library_mobile_sort_direction_content_description">Розгорнути порядок</string>
-    <plurals name="library_release_in_days">
-        <item quantity="one">До виходу серії %1$d день</item>
-        <item quantity="few">До виходу серії %1$d дні</item>
-        <item quantity="many">До виходу серії %1$d днів</item>
-        <item quantity="other">До виходу серії %1$d дня</item>
-    </plurals>
-    <plurals name="library_release_in_hours">
-        <item quantity="one">До виходу серії %1$d година</item>
-        <item quantity="few">До виходу серії %1$d години</item>
-        <item quantity="many">До виходу серії %1$d годин</item>
-        <item quantity="other">До виходу серії %1$d години</item>
-    </plurals>
-    <plurals name="library_release_in_minutes">
-        <item quantity="one">До виходу серії %1$d хвилина</item>
-        <item quantity="few">До виходу серії %1$d хвилини</item>
-        <item quantity="many">До виходу серії %1$d хвилин</item>
-        <item quantity="other">До виходу серії %1$d хвилини</item>
-    </plurals>
-    <string name="library_season_winter">Зима</string>
-    <string name="library_season_spring">Весна</string>
-    <string name="library_season_summer">Літо</string>
-    <string name="library_season_fall">Осінь</string>
-    <string name="library_year_season">%1$s · %2$s</string>
         <string name="library_episode">Серія</string>
     <string name="library_details">Деталі</string>
     <string name="library_tab_continue_watching_short">Пр</string>

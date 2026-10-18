@@ -34,6 +34,23 @@ data class YaniCommentDto(
     val dislikes: Int = 0,
     val likes: Int = 0,
     @SerialName("parent_id") val parentId: Int = 0,
+    @SerialName("object_id") val objectId: Int = 0,
+    @SerialName("item_data") val itemData: YaniCommentItemDataDto? = null,
+)
+
+/** Тайтл, под которым оставлен комментарий; приходит в ленте комментариев пользователя. */
+@Serializable
+data class YaniCommentItemDataDto(
+    val title: String = "",
+    val url: String = "",
+    val posters: YaniCommentPostersDto = YaniCommentPostersDto(),
+)
+
+@Serializable
+data class YaniCommentPostersDto(
+    val small: String? = null,
+    val medium: String? = null,
+    val big: String? = null,
 )
 
 @Serializable

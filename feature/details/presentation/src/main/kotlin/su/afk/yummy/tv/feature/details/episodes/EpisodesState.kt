@@ -20,6 +20,8 @@ import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 class EpisodesState {
     @Immutable
     data class State(
+        /** Тайтл экрана: нужен для общего ключа превью серии. */
+        val animeId: Int = 0,
         val videosState: VideosUiState = VideosUiState.Loading,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
         val pendingBalancerSelection: BalancerPickerState? = null,

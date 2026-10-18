@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.mobile.userprofile
 
+import kotlinx.collections.immutable.toPersistentList
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -30,7 +31,12 @@ class UserProfileMobileScreenTest {
         InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
 
     private fun loaded(block: UserProfileState.State.() -> UserProfileState.State = { this }) =
-        UserProfileState.State(userId = 12, profile = profile, isOverviewLoading = false).block()
+        UserProfileState.State(
+            userId = 12,
+            profile = profile,
+            isOverviewLoading = false,
+            visibleTabs = UserProfileState.Tab.entries.toPersistentList(),
+        ).block()
 
     private fun setScreen(state: UserProfileState.State) {
         composeRule.setContent {

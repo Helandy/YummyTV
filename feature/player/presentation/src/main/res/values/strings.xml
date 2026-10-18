@@ -125,6 +125,7 @@
     <string name="player_toast_balancer_changed">Player: %1$s</string>
     <string name="player_side_panel_title">Player settings</string>
     <string name="player_side_panel_open">Player settings</string>
+    <string name="player_side_panel_close">Collapse panel</string>
     <string name="player_subtitle_track_title">Subtitle track</string>
     <string name="player_subtitle_style_title">Subtitle look</string>
     <string name="player_subtitle_size_title">Text size</string>

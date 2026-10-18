@@ -50,6 +50,24 @@
     <string name="account_profile_duration_less_hour">&lt;1 год</string>
     <string name="account_profile_percent_full">100%</string>
     <string name="account_profile_days_online">днів поспіль</string>
+    <string name="account_mobile_heatmap_no_watches">Без переглядів</string>
+    <string name="account_mobile_activity_title">Активність</string>
+    <string name="account_mobile_about_expand">Показати повністю</string>
+    <string name="account_mobile_about_collapse">Згорнути</string>
+    <plurals name="account_mobile_streak_days">
+        <item quantity="one">%d день поспіль</item>
+        <item quantity="few">%d дні поспіль</item>
+        <item quantity="many">%d днів поспіль</item>
+        <item quantity="other">%d дня поспіль</item>
+    </plurals>
+    <string name="account_mobile_heatmap_duration_hours_minutes">%1$d год %2$d хв</string>
+    <string name="account_mobile_heatmap_duration_minutes">%1$d хв</string>
+    <plurals name="account_mobile_heatmap_episodes">
+        <item quantity="one">%d серія</item>
+        <item quantity="few">%d серії</item>
+        <item quantity="many">%d серій</item>
+        <item quantity="other">%d серії</item>
+    </plurals>
     <string name="account_profile_list_watching">Дивлюся</string>
     <string name="account_profile_list_planned">У планах</string>
     <string name="account_profile_list_completed">Переглянуто</string>
@@ -88,9 +106,12 @@
     <string name="account_error_update_notifications_failed">Не вдалося оновити сповіщення</string>
     <string name="account_tab_profile">Профіль</string>
     <string name="user_profile_registered">Зареєстрований: %1$s</string>
+    <string name="user_profile_comments_all">Усі коментарі</string>
+    <string name="user_profile_comments_empty">Коментарів поки немає</string>
+    <string name="user_profile_comments_error">Не вдалося завантажити коментарі</string>
     <string name="user_profile_tab_overview">Огляд</string>
     <string name="user_profile_tab_lists">Списки</string>
-        <string name="user_profile_tab_posts">Пости</string>
+        <string name="user_profile_tab_posts">Новини</string>
             <string name="user_profile_load_error">Не вдалося завантажити профіль</string>
     <string name="user_profile_section_error">Не вдалося завантажити розділ</string>
     <string name="user_profile_section_empty">Тут поки порожньо</string>
@@ -177,8 +198,8 @@
     <string name="password_reset_captcha_error">Не вдалося пройти перевірку captcha. Спробуйте ще раз.</string>
     <string name="account_my_subscriptions">Мої підписки</string>
     <string name="account_my_subscriptions_empty">Підписок поки немає</string>
-    <string name="account_mobile_my_subscriptions_player">Балансер: %1$s</string>
-    <string name="account_mobile_my_subscriptions_player_unknown">Балансер невідомий</string>
+    <string name="account_mobile_my_subscriptions_player">Плеєр: %1$s</string>
+    <string name="account_mobile_my_subscriptions_player_unknown">Плеєр невідомий</string>
     <string name="account_error_load_subscriptions_failed">Не вдалося завантажити підписки</string>
     <string name="account_episode_push_enabled">Пуш про нові серії</string>
     <string name="account_episode_push_enabled_hint">Надсилати сповіщення про нову серію за підпискою</string>

@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.label
 import su.afk.yummy.tv.feature.library.utils.tabColor
+import su.afk.yummy.tv.feature.library.utils.tabIcon
 
 @Composable
 internal fun LibraryTopTabs(
@@ -49,9 +50,10 @@ internal fun LibraryTopTabs(
                 }
             }
             .focusGroup(),
+        // Ряд вкладок по центру на одной линии с аватаркой бокового меню, а не ниже неё.
         contentPadding = PaddingValues(
             start = TvScreenPadding.Horizontal,
-            top = TvScreenPadding.Vertical,
+            top = LibraryTopTabsTopPadding,
             end = TvScreenPadding.Horizontal,
         ),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -61,6 +63,7 @@ internal fun LibraryTopTabs(
             val selected = selectedTab == tab
             LibraryTopTabItem(
                 label = tab.label(),
+                icon = tab.tabIcon(),
                 count = tabCounts[tab],
                 color = tab.tabColor(),
                 selected = selected,
@@ -84,3 +87,5 @@ internal fun LibraryTopTabs(
         }
     }
 }
+
+private val LibraryTopTabsTopPadding = 14.dp

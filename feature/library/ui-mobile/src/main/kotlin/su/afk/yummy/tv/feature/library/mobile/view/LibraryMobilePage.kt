@@ -1,25 +1,19 @@
 package su.afk.yummy.tv.feature.library.mobile.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,13 +29,11 @@ import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.dateText
-import su.afk.yummy.tv.feature.library.mobile.utils.mobileReleaseCountdownText
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTabItemCount
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTitle
-import su.afk.yummy.tv.feature.library.utils.validUserRating
-import su.afk.yummy.tv.feature.library.mobile.utils.mobileYearSeasonText
 import su.afk.yummy.tv.feature.library.mobile.utils.posterUrl
 import su.afk.yummy.tv.feature.library.mobile.utils.shouldShowRemoteLoader
+import su.afk.yummy.tv.feature.library.mapper.toTitleListCardUi
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 
 @Composable
@@ -128,26 +120,13 @@ internal fun LibraryMobilePage(
         }
 
         items(libraryItems, key = { lazyKey("library", it.animeId) }) { item ->
-            val yearSeasonText = item.mobileYearSeasonText()
+            val posterUrl = item.posterUrl()
+            val card = remember(item, tab, posterUrl) { item.toTitleListCardUi(tab, posterUrl) }
             MobileTitleListCard(
-                title = item.title,
-                posterUrl = item.posterUrl(),
-                dateText = item.dateText(tab),
-                rating = item.validUserRating(),
-                captionText = item.mobileReleaseCountdownText(nowEpochSeconds),
-                posterOverlay = {
-                    if (state.showTitleYear) {
-                        yearSeasonText?.let { text ->
-                            LibraryMobileYearBadge(
-                                text = text,
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(3.dp),
-                            )
-                        }
-                    }
-                },
-                contentOverlay = {
+                item = card,
+                nowEpochSeconds = nowEpochSeconds,
+                showYear = state.showTitleYear,
+                trailingAction = {
                     LibraryMobileDeleteButton(
                         onClick = {
                             val removal = if (tab == LibraryTab.FAVORITES) {
@@ -197,21 +176,3 @@ internal fun LibraryMobileEmptyList(onOpenCatalog: () -> Unit) {
 /**
  * Год и сезон выхода в углу постера — как на карточках топа, но компактнее под узкий постер.
  */
-@Composable
-private fun LibraryMobileYearBadge(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.inverseSurface,
-        modifier = modifier
-            .background(
-                MaterialTheme.colorScheme.inverseOnSurface,
-                RoundedCornerShape(4.dp),
-            )
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-    )
-}

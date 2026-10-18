@@ -220,7 +220,7 @@ internal fun LibraryTvHistoryPage(
                                                 screenshotUrl = it.screenshotUrl,
                                                 episodeUrl = it.episodeUrl,
                                                 posterUrl = null,
-                                                kodikThumbnailModel = ::KodikThumbnail,
+                                                kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
                                             )
                                         }
                                     ?: HistoryEpisodeThumbnail(entry.animeId, entry.episode),

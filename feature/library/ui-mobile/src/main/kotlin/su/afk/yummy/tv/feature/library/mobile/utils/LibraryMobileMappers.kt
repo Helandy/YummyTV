@@ -1,15 +1,17 @@
 package su.afk.yummy.tv.feature.library.mobile.utils
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import su.afk.yummy.tv.core.designsystem.components.color
+import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.feature.library.LibraryState
+import su.afk.yummy.tv.feature.library.mapper.toLibraryTabKind
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.isLocalLoading
-import su.afk.yummy.tv.feature.library.utils.semanticColorOrNull
 
 internal fun LibraryTab.toLibraryMobilePage(tabs: List<LibraryTab>): Int =
     tabs.indexOf(this).coerceAtLeast(0)
@@ -47,8 +49,7 @@ internal fun HomePoster?.posterUrl(): String? =
     this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
 
 @Composable
-internal fun LibraryTab.tabColor(): Color = when (this) {
-    LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
-    LibraryTab.HISTORY -> MaterialTheme.colorScheme.tertiary
-    else -> requireNotNull(semanticColorOrNull())
-}
+internal fun LibraryTab.tabColor(): Color = toLibraryTabKind().color()
+
+/** Иконка вкладки — общая с настройками порядка вкладок. */
+internal fun LibraryTab.tabIcon(): ImageVector = toLibraryTabKind().icon()

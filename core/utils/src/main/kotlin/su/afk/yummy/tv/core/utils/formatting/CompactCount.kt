@@ -17,3 +17,6 @@ fun Long.toCompactCount(): String = when {
 /** Число без дробной части, если она нулевая, иначе с одним знаком: `2`, `1.1`. */
 fun Float.toCompactDecimal(): String =
     if (this % 1f == 0f) toInt().toString() else String.format(Locale.US, "%.1f", this)
+
+/** Полное число с разделителем разрядов-запятой: 12345 -> "12,345". */
+fun Int.toGroupedCount(): String = String.format(Locale.US, "%,d", this)

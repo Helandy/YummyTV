@@ -7,6 +7,7 @@ private val spoilerRegex = Regex(
     options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
 )
 private val bbCodeRegex = Regex("\\[/?[^\\]]+]")
+private val nickRegex = Regex("\\[ник](.*?)\\[/ник]", RegexOption.IGNORE_CASE)
 
 /** Делит текст комментария на обычные фрагменты и спойлеры. */
 fun splitSpoilers(
@@ -29,9 +30,10 @@ fun splitSpoilers(
     return result.ifEmpty { listOf(CommentTextPart.Plain(text)) }
 }
 
-/** Убирает BB-коды и неразрывные пробелы из текста комментария. */
+/** Убирает BB-коды и неразрывные пробелы из текста комментария; `[ник]x[/ник]` становится «@x». */
 fun String.stripBbCode(): String =
-    replace(bbCodeRegex, "")
+    replace(nickRegex) { "@${it.groupValues[1]}" }
+        .replace(bbCodeRegex, "")
         .replace("&nbsp;", " ")
         .trim()
 

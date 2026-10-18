@@ -3,12 +3,12 @@ package su.afk.yummy.tv.feature.library.model
 enum class LibraryTab {
     HISTORY,
     CONTINUE_WATCHING,
-    FAVORITES,
     WATCHING,
     PLANNED,
     COMPLETED,
     POSTPONED,
     DROPPED,
+    FAVORITES,
 
     ;
 

@@ -12,12 +12,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.color
+import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
-import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 
 @Composable
 internal fun LibraryTabOrderPanel(
@@ -58,6 +60,8 @@ internal fun LibraryTabOrderPanel(
                     canMoveDown = index < visibleOrder.lastIndex,
                     onMoveUp = { onMoveUp(tab) },
                     onMoveDown = { onMoveDown(tab) },
+                    icon = tab.icon(),
+                    iconColor = tab.color(),
                 )
             }
             if (index < visibleOrder.lastIndex) {
