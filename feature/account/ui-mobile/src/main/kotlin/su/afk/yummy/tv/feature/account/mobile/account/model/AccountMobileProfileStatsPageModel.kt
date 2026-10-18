@@ -10,4 +10,5 @@ internal data class AccountMobileProfileStatsPageModel(
     val slices: PersistentList<ProfileStatSlice>,
     val valueType: AccountMobileProfileStatsValueType,
     val legendColumns: Int = 2,
+    val chartType: AccountMobileProfileStatsChartType = AccountMobileProfileStatsChartType.DONUT,
 )

@@ -90,6 +90,7 @@ internal fun YaniUserProfileDto.toUserProfileSummaryCache(
             commentsCount = commentsCount ?: 0,
             postsCount = postsCount?.approved ?: 0,
             collectionsCount = collectionsCount ?: 0,
+            lastOnlineSeconds = lastOnline ?: 0L,
         ),
         watchTypes = watches?.sum.orEmpty()
             .filter { it.spentTime.coerceAtLeast(0L) > 0L }

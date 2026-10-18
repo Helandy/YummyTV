@@ -1,8 +1,7 @@
 <resources>
         <string name="account_faq">Developer FAQ</string>
     <string name="account_site_pages">Site FAQ and rules</string>
-    <string name="account_mobile_title">Account</string>
-    <string name="account_signed_out">Sign in to sync library, ratings, and subscriptions</string>
+    <string name="account_mobile_title" translatable="false">Yummyani.me</string>
     <string name="account_unknown_user">Unknown user</string>
     <string name="account_refresh">Refresh profile</string>
     <string name="account_settings">Settings</string>
@@ -120,6 +119,7 @@
     <string name="account_user_search">Find users</string>
     <string name="account_edit_profile">Edit profile</string>
     <string name="account_forgot_password">Forgot password?</string>
+    <string name="account_mobile_or_divider">or</string>
         <string name="user_search_hint">Nickname</string>
     <string name="user_search_initial">Enter at least two characters</string>
     <string name="user_search_empty">No users found</string>
@@ -153,7 +153,7 @@
     <string name="profile_privacy_public">Everyone</string>
         <string name="profile_privacy_authorized">Signed-in users</string>
     <string name="profile_privacy_private">Only me</string>
-    <string name="profile_edit_save">Save profile</string>
+    <string name="profile_edit_save">Save changes</string>
     <string name="profile_edit_password">Change password</string>
     <string name="profile_old_password">Current password</string>
     <string name="profile_new_password">New password</string>
@@ -238,12 +238,11 @@
     <string name="account_error_local_auth_sign_in_failed">The code is correct, but the TV could not sign in. Try again.</string>
     <string name="account_error_local_auth_invalid_qr">This QR code is not from YummyTV. Scan the code on the TV login screen.</string>
     <string name="account_error_local_auth_scanner_unavailable">QR scanner is unavailable: Google Play services are required. Enter the code manually.</string>
-    <string name="account_title">Yummy account</string>
     <string name="account_signed_in">Signed in</string>
     <string name="account_refresh_hint">Update account data from Yummy</string>
     <string name="account_logout_hint">Keep local library and progress on this device</string>
     <string name="account_login_hint">Use email or nickname and password</string>
-    <string name="account_tv_register_hint">No account? Sign up on yummyani.me — registration isn\'t available in the app. Then sign in here with the same email or nickname and password.</string>
+    <string name="account_tv_register_hint">No account? Sign up on yummyani.me or in the mobile app.</string>
     <string name="account_captcha_title">Verification required</string>
     <string name="account_captcha_hint_tv">The site asks for a captcha, which can\'t be solved with a remote. Sign in from your phone: tap “Login from mobile”.</string>
         <string name="account_notifications_preview">Latest notifications</string>
@@ -251,7 +250,7 @@
     <string name="account_my_subscriptions_signed_out">Sign in to see your subscriptions</string>
     <string name="account_tv_section_activity">Activity</string>
     <string name="account_local_auth_login_from_mobile">Login from mobile</string>
-    <string name="account_local_auth_login_from_mobile_hint">Discovery and code-based transfer via local network</string>
+    <string name="account_local_auth_login_from_mobile_hint">Authorize with a code from the mobile app</string>
     <string name="account_local_auth_pairing_title">Login via mobile app</string>
     <string name="account_local_auth_pairing_subtitle">Make sure both devices are on the same Wi-Fi. On your mobile, go to Account -> Login on TV and scan the QR code or enter the code:</string>
     <string name="account_local_auth_transferring">Receiving session…</string>
@@ -275,4 +274,9 @@
     <string name="account_tv_error_local_auth_scanner_unavailable">QR scanner is unavailable on this device.</string>
     <string name="account_notification_expand">Expand</string>
     <string name="account_notification_collapse">Collapse</string>
+    <string name="user_profile_online">Online</string>
+    <string name="user_profile_last_seen_male">Last seen %1$s</string>
+    <string name="user_profile_last_seen_female">Last seen %1$s</string>
+    <string name="user_profile_last_seen_unknown">Last seen %1$s</string>
+    <string name="user_profile_lists_hidden">This user has hidden their lists</string>
 </resources>

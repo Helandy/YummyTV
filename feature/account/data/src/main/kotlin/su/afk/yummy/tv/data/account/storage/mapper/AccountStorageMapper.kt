@@ -187,6 +187,7 @@ internal fun AccountUserFriendsPageCache.toUserFriends(): List<UserFriend> =
             avatarUrl = it.avatarUrl,
             lastOnlineSeconds = it.lastOnlineSeconds,
             status = it.status,
+            sex = it.sex.toProfileSex(),
         )
     }
 
@@ -281,6 +282,7 @@ internal fun AccountUserProfileSummaryCache.toUserProfileSummary(): UserProfileS
             )
         },
         daysOnline = entry.daysOnline,
+        lastOnlineSeconds = entry.lastOnlineSeconds,
         counts = UserProfileCounts(
             watching = entry.watchingCount,
             planned = entry.plannedCount,

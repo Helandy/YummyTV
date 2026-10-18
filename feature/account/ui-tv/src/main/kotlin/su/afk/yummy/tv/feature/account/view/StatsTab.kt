@@ -57,9 +57,6 @@ internal fun StatsTab(
     val fallbackSelectedTabFocusRequester = remember { FocusRequester() }
     val statsTabFocusRequester = selectedTabFocusRequester ?: fallbackSelectedTabFocusRequester
     val profileOverviewFocusRequester = remember { FocusRequester() }
-    val statsGridBottomStartFocusRequester = remember { FocusRequester() }
-    val daysOnlineFocusRequester = remember { FocusRequester() }
-    val listCountersFocusRequester = remember { FocusRequester() }
     val contentFocusRequester =
         if (profileSummary != null) profileOverviewFocusRequester else listFocusRequester
     val scope = rememberCoroutineScope()
@@ -79,11 +76,6 @@ internal fun StatsTab(
         scope.launch {
             listState.animateScrollBy(listState.profilePageScrollPx() * direction)
         }
-        return true
-    }
-
-    fun requestDaysOnlineFocus(): Boolean {
-        scope.launch { requestFocusUntilTimeout(daysOnlineFocusRequester) }
         return true
     }
 
@@ -181,11 +173,8 @@ internal fun StatsTab(
                 AccountProfileOverviewPanel(
                     summary = profileSummary,
                     stats = stats,
-                    statsGridFocusRequester = profileOverviewFocusRequester,
-                    statsGridBottomStartFocusRequester = statsGridBottomStartFocusRequester,
-                    statsGridTopExitFocusRequester = statsTabFocusRequester,
-                    daysOnlineFocusRequester = daysOnlineFocusRequester,
-                    listCountersFocusRequester = listCountersFocusRequester,
+                    activityFocusRequester = profileOverviewFocusRequester,
+                    topExitFocusRequester = statsTabFocusRequester,
                     onContentFocusChanged = {
                         isProfileOverviewFocused = it
                         onStatsContentFocusChanged(it)
@@ -194,7 +183,6 @@ internal fun StatsTab(
                         onEvent(AccountState.Event.TabSelected(AccountState.AccountTab.NOTIFICATIONS))
                         true
                     },
-                    onStatsGridExitDown = ::requestDaysOnlineFocus,
                 )
             }
         } else if (stats != null && !stats.isEmpty()) {

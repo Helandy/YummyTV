@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.feature.account.account.model.ProfileStatsChartType
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsValueType
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -48,9 +49,9 @@ internal fun ProfileStatsGrid(
     summary: UserProfileSummary,
     stats: UserStats?,
     focusRequester: FocusRequester? = null,
-    bottomStartFocusRequester: FocusRequester? = null,
     topExitFocusRequester: FocusRequester? = null,
     onFocusChanged: (Boolean) -> Unit = {},
+    onExitLeft: () -> Boolean = { false },
     onExitRight: () -> Boolean = { false },
     onExitDown: () -> Boolean = { false },
     modifier: Modifier = Modifier,
@@ -71,6 +72,7 @@ internal fun ProfileStatsGrid(
                     icon = Icons.Filled.BarChart,
                     slices = it.listDurationSlices(),
                     valueType = ProfileStatsValueType.DURATION,
+                    legendColumns = 1,
                 )
             )
             add(
@@ -90,7 +92,7 @@ internal fun ProfileStatsGrid(
                     icon = Icons.Filled.Star,
                     slices = it.ratingCountSlices(),
                     valueType = ProfileStatsValueType.COUNT,
-                    compactLegend = true,
+                    chartType = ProfileStatsChartType.HISTOGRAM,
                 )
             )
         }
@@ -102,9 +104,6 @@ internal fun ProfileStatsGrid(
     val cardFocusRequesters = internalFocusRequesters.toMutableList().apply {
         if (isNotEmpty() && focusRequester != null) {
             this[0] = focusRequester
-        }
-        if (size > PROFILE_STATS_BOTTOM_START_INDEX && bottomStartFocusRequester != null) {
-            this[PROFILE_STATS_BOTTOM_START_INDEX] = bottomStartFocusRequester
         }
     }
     var focusedCardIndex by remember(pages.size) { mutableStateOf<Int?>(null) }
@@ -149,6 +148,7 @@ internal fun ProfileStatsGrid(
                                     }
                                 },
                                 topExitFocusRequester = topExitFocusRequester,
+                                onExitLeft = onExitLeft,
                                 onExitRight = onExitRight,
                                 onExitDown = onExitDown,
                             ),
@@ -169,6 +169,7 @@ internal fun Modifier.profileStatsBlockFocus(
     onFocused: () -> Unit,
     onUnfocused: () -> Unit,
     topExitFocusRequester: FocusRequester?,
+    onExitLeft: () -> Boolean,
     onExitRight: () -> Boolean,
     onExitDown: () -> Boolean,
 ): Modifier {
@@ -214,7 +215,7 @@ internal fun Modifier.profileStatsBlockFocus(
                     if (leftIndex >= 0 && pageIndex % PROFILE_STATS_COLUMNS != 0) {
                         requestFocusAt(leftIndex)
                     } else {
-                        false
+                        onExitLeft()
                     }
                 }
 
@@ -250,5 +251,4 @@ internal fun Modifier.profileStatsBlockFocus(
         .focusable()
 }
 
-internal const val PROFILE_STATS_COLUMNS = 2
-internal const val PROFILE_STATS_BOTTOM_START_INDEX = PROFILE_STATS_COLUMNS
+internal const val PROFILE_STATS_COLUMNS = 1

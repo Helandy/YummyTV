@@ -39,8 +39,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.presentation.R
-
-private val RelatedCardWidth = 188.dp
+import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCardWidth
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -127,7 +126,7 @@ internal fun ViewingOrderRow(
         }
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val sideInset =
-                ((maxWidth - RelatedCardWidth) / 2).coerceAtLeast(TvScreenPadding.Horizontal)
+                ((maxWidth - RelatedTitleCardWidth) / 2).coerceAtLeast(TvScreenPadding.Horizontal)
             CompositionLocalProvider(
                 LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
             ) {

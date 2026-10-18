@@ -10,6 +10,8 @@ import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
 import su.afk.yummy.tv.domain.account.model.ProfileListPrivacy
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
+import su.afk.yummy.tv.feature.account.profileedit.mapper.toForm
+import su.afk.yummy.tv.feature.account.profileedit.model.ProfileForm
 
 class ProfileEditState {
     @Immutable
@@ -41,7 +43,11 @@ class ProfileEditState {
         val linkedAccounts: ImmutableSet<LinkedAccountProvider> = persistentSetOf(),
         val pendingUnlinkAccount: LinkedAccountProvider? = null,
         val unlinkingAccount: LinkedAccountProvider? = null,
-    ) : UiState
+        val savedForm: ProfileForm? = null,
+    ) : UiState {
+        /** Есть несохранённые правки формы относительно последнего загруженного/сохранённого профиля. */
+        val hasChanges: Boolean get() = savedForm != null && toForm() != savedForm
+    }
 
     sealed interface Event : UiEvent {
         data object BackSelected : Event

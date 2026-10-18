@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,16 @@ internal fun UserProfileHeader(
         modifier = modifier,
         // Шапка и прилипающие вкладки — один блок одного цвета, без стыка.
         bottomCorner = 0.dp,
+        avatarBadge = {
+            // В своём профиле «в сети» всегда правда и ничего не сообщает.
+            if (profile != null && !state.isOwnProfile) {
+                UserProfileOnlineBadge(
+                    lastOnlineSeconds = profile.lastOnlineSeconds,
+                    sex = profile.sex,
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                )
+            }
+        },
         navigationAction = {
             AccountMobileHeroActionButton(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,

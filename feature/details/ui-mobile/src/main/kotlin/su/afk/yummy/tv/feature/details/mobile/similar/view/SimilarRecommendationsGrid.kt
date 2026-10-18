@@ -5,33 +5,28 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
-import su.afk.yummy.tv.core.model.anime.bestUrl
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.details.presentation.R
 
 private const val SIMILAR_SKELETON_COUNT = 6
@@ -94,21 +89,7 @@ internal fun SimilarRecommendationsGrid(
                         animeId = item.animeId,
                         rating = item.rating,
                         posterOverlay = {
-                            item.year?.let { year ->
-                                Text(
-                                    text = year.toString(),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.inverseSurface,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(4.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.inverseOnSurface,
-                                            RoundedCornerShape(4.dp),
-                                        )
-                                        .padding(horizontal = 6.dp, vertical = 3.dp),
-                                )
-                            }
+                            item.year?.let { MobilePosterYear(it) }
                         },
                         footer = {
                             if (showVoting) {

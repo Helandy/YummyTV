@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateSeconds
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateTimeSeconds
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedShortDateSeconds
+import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
@@ -93,6 +94,14 @@ fun UserStats.averageRatingLabel(): String {
     }
 }
 
+/** «950», «1.2k», «12k» — подпись над столбцом гистограммы. */
+fun Long.toCompactCountLabel(): String =
+    when {
+        this >= 10_000L -> "${this / 1_000L}k"
+        this >= 1_000L -> String.format(Locale.US, "%.1fk", this / 1_000.0)
+        else -> toString()
+    }
+
 fun List<ProfileStatSlice>.positiveValueSum(): Long =
     sumOf { it.value.coerceAtLeast(0L) }
 
@@ -152,3 +161,27 @@ val fallbackProfileColors = listOf(
 
 const val MAX_PROFILE_GENRE_SLICES = 12
 const val SECONDS_IN_HOUR = 3600L
+
+/**
+ * Сайт держит статус живым через сокет и считает «в сети» последнюю минуту; у нас профиль и
+ * друзья приходят из кэша и обновляются реже, поэтому окно шире.
+ */
+private const val ONLINE_WINDOW_SECONDS = 5 * 60L
+
+fun Long.isOnlineAt(nowEpochSeconds: Long): Boolean =
+    this > 0L && nowEpochSeconds - this < ONLINE_WINDOW_SECONDS
+
+/** «В сети» или «Был(а) в сети 5 мин. назад» с учётом пола; null, если время визита неизвестно. */
+@Composable
+fun Long.lastOnlineLabel(sex: UserProfileSex, nowEpochSeconds: Long): String? = when {
+    this <= 0L -> null
+    isOnlineAt(nowEpochSeconds) -> stringResource(R.string.user_profile_online)
+    else -> stringResource(
+        when (sex) {
+            UserProfileSex.MALE -> R.string.user_profile_last_seen_male
+            UserProfileSex.FEMALE -> R.string.user_profile_last_seen_female
+            UserProfileSex.UNKNOWN -> R.string.user_profile_last_seen_unknown
+        },
+        formatRelativeDateTime(nowEpochSeconds * 1_000L),
+    )
+}

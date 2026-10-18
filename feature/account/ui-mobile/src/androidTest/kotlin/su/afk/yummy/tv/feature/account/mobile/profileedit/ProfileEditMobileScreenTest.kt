@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditState
+import su.afk.yummy.tv.feature.account.profileedit.mapper.toForm
 import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 
 class ProfileEditMobileScreenTest {
@@ -92,13 +93,22 @@ class ProfileEditMobileScreenTest {
 
     @Test
     fun saveButtonSendsSaveSelected() {
-        setScreen(loaded())
+        setScreen(loaded().withUnsavedChanges())
 
-        scrollToText(string(R.string.profile_edit_save))
         composeRule.onNodeWithText(string(R.string.profile_edit_save)).performClick()
 
         assertTrue(ProfileEditState.Event.SaveSelected in events)
     }
+
+    @Test
+    fun saveButtonHiddenWithoutChanges() {
+        setScreen(loaded())
+
+        composeRule.onNodeWithText(string(R.string.profile_edit_save)).assertDoesNotExist()
+    }
+
+    private fun ProfileEditState.State.withUnsavedChanges() =
+        copy(savedForm = toForm().copy(about = "saved on server"))
 
     @Test
     fun changePasswordButtonSendsChangePasswordSelected() {

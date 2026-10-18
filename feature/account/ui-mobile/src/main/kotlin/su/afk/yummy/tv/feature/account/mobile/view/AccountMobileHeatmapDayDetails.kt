@@ -23,18 +23,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileWatchHistoryCell
-import su.afk.yummy.tv.feature.account.mobile.account.utils.dayTitle
-import su.afk.yummy.tv.feature.account.mobile.account.utils.durationLabel
-import su.afk.yummy.tv.feature.account.mobile.account.utils.episodesLabel
-import su.afk.yummy.tv.feature.account.mobile.account.utils.hasWatches
-import su.afk.yummy.tv.feature.account.mobile.account.utils.weekdayName
+import su.afk.yummy.tv.feature.account.common.model.WatchHistoryCell
+import su.afk.yummy.tv.feature.account.common.utils.dayTitle
+import su.afk.yummy.tv.feature.account.common.utils.durationLabel
+import su.afk.yummy.tv.feature.account.common.utils.episodesLabel
+import su.afk.yummy.tv.feature.account.common.utils.hasWatches
+import su.afk.yummy.tv.feature.account.common.utils.weekdayName
 import su.afk.yummy.tv.feature.account.presentation.R
 
 /** Выбранный день календаря: дата слева, время и серии — отдельными чипами справа. */
 @Composable
 internal fun AccountMobileHeatmapDayDetails(
-    cell: AccountMobileWatchHistoryCell,
+    cell: WatchHistoryCell,
     modifier: Modifier = Modifier,
 ) {
     Row(

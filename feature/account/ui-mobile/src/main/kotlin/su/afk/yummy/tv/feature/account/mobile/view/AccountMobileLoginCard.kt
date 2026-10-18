@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -72,13 +73,6 @@ internal fun AccountMobileLoginCard(
                     errorMessage?.let { AccountMobileInfoText(it, isError = true) }
                 }
             }
-            Text(
-                text = stringResource(R.string.account_signed_out),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
             OutlinedTextField(
                 value = state.login,
                 onValueChange = { onEvent(AccountState.Event.LoginChanged(it)) },
@@ -134,13 +128,13 @@ internal fun AccountMobileLoginCard(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    FilledTonalButton(
-                        onClick = { onEvent(AccountState.Event.RegistrationSelected) },
-                        enabled = !state.isLoading,
+                    TextButton(
+                        onClick = { onEvent(AccountState.Event.PasswordResetSelected) },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text(stringResource(R.string.account_mobile_register))
+                        Text(stringResource(R.string.account_forgot_password))
                     }
                     Button(
                         onClick = { onEvent(AccountState.Event.LoginSelected) },
@@ -154,11 +148,25 @@ internal fun AccountMobileLoginCard(
                         }
                     }
                 }
-                TextButton(
-                    onClick = { onEvent(AccountState.Event.PasswordResetSelected) },
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(R.string.account_mobile_or_divider),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                }
+                FilledTonalButton(
+                    onClick = { onEvent(AccountState.Event.RegistrationSelected) },
+                    enabled = !state.isLoading,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.account_forgot_password))
+                    Text(stringResource(R.string.account_mobile_register))
                 }
             }
             Text(

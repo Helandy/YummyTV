@@ -48,7 +48,6 @@
     <string name="search_placeholder">Search anime…</string>
     <string name="search_empty">Nothing found</string>
     <string name="search_mobile_reset_filters">Reset filters</string>
-    <string name="search_mobile_history_title">Recent searches</string>
     <string name="search_mobile_history_clear">Clear</string>
     <string name="search_filter_sort_rating_counters">Rating votes</string>
     <string name="search_filter_sort_id">New</string>

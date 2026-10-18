@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.account.repository
 
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
@@ -17,6 +19,7 @@ import su.afk.yummy.tv.data.account.storage.mapper.toUpdatedAnimeListStateEntry
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListCache
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListItems
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListsHiddenException
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListItem as toStoredUserListItem
@@ -135,7 +138,7 @@ class YaniUserListsRepository(
         listId: Int,
         languageCode: String,
     ): AccountUserListCache {
-        val cache = api.getUserList(userId, listId).toUserListCache(
+        val cache = rethrowHiddenLists(userId) { api.getUserList(userId, listId) }.toUserListCache(
             userId = userId,
             listId = listId,
             language = languageCode,
@@ -149,7 +152,7 @@ class YaniUserListsRepository(
         userId: Int,
         languageCode: String,
     ): List<AccountUserListCache> {
-        val response = api.getAllUserLists(userId)
+        val response = rethrowHiddenLists(userId) { api.getAllUserLists(userId) }
         val cachedAt = System.currentTimeMillis()
         val caches = ALL_LIST_IDS.map { listId ->
             response.filter { item ->
@@ -205,4 +208,22 @@ class YaniUserListsRepository(
             accountStorage.deleteUserLists(userId)
         }
     }
+
+    /**
+     * Скрытые списки сервер отдаёт как 401: `error_code` 2 «Доступ запрещён» (только друзьям / никому)
+     * или 1 «необходимо авторизоваться» (только авторизованным). Сессию это не трогает — токен не
+     * отзывается, — поэтому переводим в доменное «списки скрыты», а не в общую ошибку. Свои списки
+     * от себя не скрыть: там 401 — настоящая ошибка авторизации, её не подменяем.
+     */
+    private suspend fun <T> rethrowHiddenLists(userId: Int, block: suspend () -> T): T =
+        try {
+            block()
+        } catch (error: ClientRequestException) {
+            val status = error.response.status
+            val isAccessDenied = status == HttpStatusCode.Unauthorized || status == HttpStatusCode.Forbidden
+            if (isAccessDenied && userId != settingsStore.currentUserId()) {
+                throw UserAnimeListsHiddenException()
+            }
+            throw error
+        }
 }

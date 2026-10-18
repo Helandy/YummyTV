@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.account
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 
@@ -33,4 +34,6 @@ data class AccountUserProfileSummaryCacheEntry(
     val commentsCount: Int,
     val postsCount: Int,
     val collectionsCount: Int,
+    @ColumnInfo(defaultValue = "0")
+    val lastOnlineSeconds: Long = 0L,
 )

@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.catalog.mobile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -30,7 +28,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,18 +36,20 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
-import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
-import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
+import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.catalog.CatalogState
 import su.afk.yummy.tv.feature.catalog.mobile.view.CATALOG_SKELETON_ITEMS
@@ -61,7 +60,6 @@ import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileSearchHistory
 import su.afk.yummy.tv.feature.catalog.mobile.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.catalog.presentation.R
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -251,21 +249,7 @@ fun CatalogMobileScreen(
                         animeId = item.id,
                         rating = item.rating,
                         posterOverlay = {
-                            item.year?.takeIf { state.showTitleYear }?.let { year ->
-                                Text(
-                                    text = year.toString(),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.inverseSurface,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(4.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.inverseOnSurface,
-                                            RoundedCornerShape(4.dp),
-                                        )
-                                        .padding(horizontal = 6.dp, vertical = 3.dp),
-                                )
-                            }
+                            item.year?.takeIf { state.showTitleYear }?.let { MobilePosterYear(it) }
                         },
                         onClick = { onEvent(CatalogState.Event.ItemSelected(item.id)) },
                     )

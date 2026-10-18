@@ -22,7 +22,7 @@
     <string name="details_restore_recommendation">Restore this anime in recommendations</string>
     <string name="details_similar_like">Like similar title</string>
     <string name="details_similar_dislike">Dislike similar title</string>
-    <string name="details_blogger_videos">Blogger videos</string>
+    <string name="details_blogger_videos">Video reviews</string>
     <string name="details_mobile_blogger_videos">Video reviews</string>
     <string name="details_reviews">Reviews</string>
     <string name="details_reviews_count">Reviews (%1$d)</string>

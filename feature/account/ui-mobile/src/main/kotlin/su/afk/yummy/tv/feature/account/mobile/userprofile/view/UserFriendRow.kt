@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.mobile.userprofile.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -16,16 +17,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserFriend
+import su.afk.yummy.tv.domain.account.model.UserProfileSex
+import su.afk.yummy.tv.feature.account.common.utils.isOnlineAt
+import su.afk.yummy.tv.feature.account.common.utils.label
+import su.afk.yummy.tv.feature.account.common.utils.lastOnlineLabel
+import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileOnlineDot
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileSurfacePanel
 import su.afk.yummy.tv.feature.account.presentation.R
 
+/** Друг в профиле: аватар с точкой статуса (зелёная/красная), ник, под ним пол и последний визит. */
 @Composable
-internal fun UserFriendRow(item: UserFriend, onClick: () -> Unit) {
+internal fun UserFriendRow(item: UserFriend, nowEpochSeconds: Long, onClick: () -> Unit) {
+    val isOnline = item.lastOnlineSeconds.isOnlineAt(nowEpochSeconds)
+    val sexLabel = item.sex.takeIf { it != UserProfileSex.UNKNOWN }?.label()
+    val lastOnline = item.lastOnlineSeconds.lastOnlineLabel(item.sex, nowEpochSeconds)
     AccountMobileSurfacePanel(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -35,15 +45,26 @@ internal fun UserFriendRow(item: UserFriend, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            AsyncImage(
-                model = item.avatarUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-            )
+            Box {
+                AsyncImage(
+                    model = item.avatarUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                )
+                if (item.lastOnlineSeconds > 0L) {
+                    AccountMobileOnlineDot(
+                        isOnline = isOnline,
+                        size = 14.dp,
+                        ring = 2.dp,
+                        ringColor = MaterialTheme.colorScheme.surfaceContainer,
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                    )
+                }
+            }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = item.nickname.ifBlank { stringResource(R.string.account_unknown_user) },
@@ -52,11 +73,24 @@ internal fun UserFriendRow(item: UserFriend, onClick: () -> Unit) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (item.status.isNotBlank()) {
+                if (sexLabel != null) {
                     Text(
-                        text = item.status,
+                        text = sexLabel,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                if (lastOnline != null) {
+                    Text(
+                        text = lastOnline,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isOnline) {
+                            YummySemanticColors.UserOnline
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

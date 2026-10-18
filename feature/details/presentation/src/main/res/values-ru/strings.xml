@@ -22,7 +22,7 @@
     <string name="details_restore_recommendation">Вернуть это аниме в рекомендации</string>
     <string name="details_similar_like">Нравится похожий тайтл</string>
     <string name="details_similar_dislike">Не нравится похожий тайтл</string>
-    <string name="details_blogger_videos">Видео блогеров</string>
+    <string name="details_blogger_videos">Обзоры</string>
     <string name="details_mobile_blogger_videos">Обзоры</string>
     <string name="details_reviews">Рецензии</string>
     <string name="details_reviews_count">Рецензии (%1$d)</string>

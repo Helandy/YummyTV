@@ -127,6 +127,7 @@ internal fun LazyListScope.reviewItems(
 
 internal fun LazyListScope.friendItems(
     content: LazyPagingItems<UserFriend>,
+    nowEpochSeconds: Long,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
     val onRetry = {
@@ -141,6 +142,7 @@ internal fun LazyListScope.friendItems(
         content[index]?.let { item ->
             UserFriendRow(
                 item = item,
+                nowEpochSeconds = nowEpochSeconds,
                 onClick = { onEvent(UserProfileState.Event.FriendSelected(item.id)) },
             )
         }

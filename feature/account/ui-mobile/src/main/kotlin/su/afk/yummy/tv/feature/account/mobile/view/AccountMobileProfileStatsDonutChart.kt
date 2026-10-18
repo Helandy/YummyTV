@@ -16,11 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.common.utils.positiveValueSum
+import su.afk.yummy.tv.feature.account.mobile.account.utils.PROFILE_STATS_BODY_HEIGHT_DP
 import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
 @Composable
@@ -31,13 +31,14 @@ internal fun AccountMobileProfileStatsDonutChart(
     modifier: Modifier = Modifier,
 ) {
     val totalValue = slices.positiveValueSum()
+    val emptyColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
     Box(
-        modifier = modifier.size(132.dp),
+        modifier = modifier.size(PROFILE_STATS_BODY_HEIGHT_DP.dp),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             if (totalValue <= 0L) {
-                drawCircle(color = Color.White.copy(alpha = 0.10f))
+                drawCircle(color = emptyColor)
                 return@Canvas
             }
             var startAngle = -90f

@@ -36,7 +36,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -105,14 +104,6 @@ internal fun LoginPanel(
             Spacer(Modifier.width(16.dp))
             AccountTitle()
         }
-        Text(
-            text = stringResource(R.string.account_signed_out),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
         // Ошибка входа — над полями, чтобы не терялась под кнопками и капчей.
         InlineError(
             message = state.error.accountErrorMessage(),

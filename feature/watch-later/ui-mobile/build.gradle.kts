@@ -14,6 +14,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:utils"))
     implementation(project(":feature:watch-later:api"))
     implementation(project(":feature:watch-later:presentation"))
     implementation(project(":feature:watch-later:domain"))

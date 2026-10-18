@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.account
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 
@@ -24,4 +25,6 @@ data class AccountUserFriendEntry(
     val avatarUrl: String? = null,
     val lastOnlineSeconds: Long,
     val status: String,
+    @ColumnInfo(defaultValue = "0")
+    val sex: Int = 0,
 )

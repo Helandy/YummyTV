@@ -8,5 +8,6 @@ internal data class ProfileStatsPageModel(
     val icon: ImageVector,
     val slices: List<ProfileStatSlice>,
     val valueType: ProfileStatsValueType,
-    val compactLegend: Boolean = false,
+    val legendColumns: Int = 2,
+    val chartType: ProfileStatsChartType = ProfileStatsChartType.DONUT,
 )

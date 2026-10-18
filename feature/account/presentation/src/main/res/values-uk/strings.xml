@@ -1,8 +1,6 @@
 <resources>
         <string name="account_faq">FAQ розробника</string>
     <string name="account_site_pages">FAQ і правила сайту</string>
-    <string name="account_mobile_title">Акаунт</string>
-    <string name="account_signed_out">Увійдіть, щоб синхронізувати бібліотеку, оцінки та підписки</string>
     <string name="account_unknown_user">Невідомий користувач</string>
     <string name="account_refresh">Оновити профіль</string>
     <string name="account_settings">Налаштування</string>
@@ -124,6 +122,7 @@
     <string name="account_user_search">Пошук користувачів</string>
     <string name="account_edit_profile">Редагувати профіль</string>
     <string name="account_forgot_password">Забули пароль?</string>
+    <string name="account_mobile_or_divider">або</string>
         <string name="user_search_hint">Нікнейм</string>
     <string name="user_search_initial">Введіть щонайменше два символи</string>
     <string name="user_search_empty">Користувачів не знайдено</string>
@@ -157,7 +156,7 @@
     <string name="profile_privacy_public">Усі</string>
         <string name="profile_privacy_authorized">Авторизовані</string>
     <string name="profile_privacy_private">Тільки я</string>
-    <string name="profile_edit_save">Зберегти профіль</string>
+    <string name="profile_edit_save">Зберегти зміни</string>
     <string name="profile_edit_password">Зміна пароля</string>
     <string name="profile_old_password">Поточний пароль</string>
     <string name="profile_new_password">Новий пароль</string>
@@ -242,12 +241,11 @@
     <string name="account_error_local_auth_sign_in_failed">Код правильний, але ТВ не зміг увійти. Спробуйте ще раз.</string>
     <string name="account_error_local_auth_invalid_qr">Це не QR-код YummyTV. Відскануйте код з екрана входу на ТВ.</string>
     <string name="account_error_local_auth_scanner_unavailable">Сканер QR недоступний: потрібні сервіси Google Play. Введіть код вручну.</string>
-    <string name="account_title">Акаунт Yummy</string>
     <string name="account_signed_in">Ви увійшли</string>
     <string name="account_refresh_hint">Завантажити актуальні дані акаунта з Yummy</string>
     <string name="account_logout_hint">Локальна бібліотека і прогрес залишаться на пристрої</string>
     <string name="account_login_hint">Використовуйте email або нікнейм і пароль</string>
-    <string name="account_tv_register_hint">Немає акаунта? Зареєструйтеся на сайті yummyani.me — у застосунку реєстрації немає. Після цього увійдіть тут із тими самими email або нікнеймом і паролем.</string>
+    <string name="account_tv_register_hint">Немає акаунта? Зареєструйтеся на сайті yummyani.me або в мобільному застосунку.</string>
     <string name="account_captcha_title">Потрібна перевірка</string>
     <string name="account_captcha_hint_tv">Сайт запитує капчу, її не пройти пультом. Авторизуйтесь з телефону: натисніть «Увійти з телефону».</string>
         <string name="account_notifications_preview">Останні сповіщення</string>
@@ -255,7 +253,7 @@
     <string name="account_my_subscriptions_signed_out">Увійдіть, щоб побачити підписки</string>
     <string name="account_tv_section_activity">Активність</string>
     <string name="account_local_auth_login_from_mobile">Увійти з телефону</string>
-    <string name="account_local_auth_login_from_mobile_hint">Пошук пристрою та передача через локальну мережу за кодом</string>
+    <string name="account_local_auth_login_from_mobile_hint">Авторизація через код із мобільного застосунку</string>
     <string name="account_local_auth_pairing_title">Вхід через мобільний додаток</string>
     <string name="account_local_auth_pairing_subtitle">Переконайтеся, що обидва пристрої в одній мережі Wi-Fi. На телефоні перейдіть в Акаунт -> Увійти на ТВ та відскануйте QR-код або введіть код:</string>
     <string name="account_local_auth_transferring">Отримання сесії…</string>
@@ -281,4 +279,9 @@
     <string name="account_tv_error_local_auth_scanner_unavailable">Сканер QR недоступний на цьому пристрої.</string>
     <string name="account_notification_expand">Розгорнути</string>
     <string name="account_notification_collapse">Згорнути</string>
+    <string name="user_profile_online">У мережі</string>
+    <string name="user_profile_last_seen_male">Був у мережі %1$s</string>
+    <string name="user_profile_last_seen_female">Була в мережі %1$s</string>
+    <string name="user_profile_last_seen_unknown">Був(ла) в мережі %1$s</string>
+    <string name="user_profile_lists_hidden">Користувач приховав свої списки</string>
 </resources>

@@ -2,7 +2,6 @@
 
 package su.afk.yummy.tv.feature.account.mobile.view
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsChartType
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
 import su.afk.yummy.tv.feature.account.mobile.account.utils.genreCountSlices
@@ -79,10 +79,12 @@ internal fun AccountMobileProfileStatsPager(
                     slices = it.ratingCountSlices(),
                     valueType = AccountMobileProfileStatsValueType.COUNT,
                     legendColumns = 3,
+                    chartType = AccountMobileProfileStatsChartType.HISTOGRAM,
                 )
             )
         }
     }
+
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     Column(
@@ -91,12 +93,9 @@ internal fun AccountMobileProfileStatsPager(
     ) {
         HorizontalPager(
             state = pagerState,
-            key = { page -> pages[page].title },
             pageSpacing = 10.dp,
             verticalAlignment = Alignment.Top,
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize(),
+            modifier = Modifier.fillMaxWidth(),
         ) { page ->
             AccountMobileProfileStatsPage(page = pages[page])
         }

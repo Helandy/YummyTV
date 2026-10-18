@@ -44,11 +44,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
-import su.afk.yummy.tv.feature.account.mobile.account.mapper.WATCH_HISTORY_GRID_COLUMNS
-import su.afk.yummy.tv.feature.account.mobile.account.mapper.toWatchHistoryGrid
-import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileWatchHistoryCell
-import su.afk.yummy.tv.feature.account.mobile.account.utils.detailsLabel
-import su.afk.yummy.tv.feature.account.mobile.account.utils.weekdayLabels
+import su.afk.yummy.tv.feature.account.common.mapper.WATCH_HISTORY_GRID_COLUMNS
+import su.afk.yummy.tv.feature.account.common.mapper.toWatchHistoryGrid
+import su.afk.yummy.tv.feature.account.common.model.WatchHistoryCell
+import su.afk.yummy.tv.feature.account.common.utils.detailsLabel
+import su.afk.yummy.tv.feature.account.common.utils.weekdayLabels
 import su.afk.yummy.tv.feature.account.presentation.R
 import java.time.LocalDate
 import java.time.ZoneId
@@ -154,7 +154,7 @@ private fun AccountMobileStreakPill(daysOnline: Int) {
 
 @Composable
 private fun AccountMobileHeatmapCell(
-    cell: AccountMobileWatchHistoryCell,
+    cell: WatchHistoryCell,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

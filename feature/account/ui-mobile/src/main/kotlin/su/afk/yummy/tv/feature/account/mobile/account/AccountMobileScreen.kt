@@ -39,7 +39,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
@@ -63,6 +62,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsGrid
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileTabs
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -162,19 +162,19 @@ fun AccountMobileScreen(
                 )
                 add(
                     AccountMobileQuickAction(
+                        key = "user_search",
+                        title = stringResource(R.string.account_user_search),
+                        icon = Icons.Filled.PersonSearch,
+                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
                         key = "settings",
                         title = stringResource(R.string.account_settings),
                         icon = Icons.Filled.Settings,
                         onClick = { onEvent(AccountState.Event.SettingsSelected) },
                         focusRequester = bottomBarUpFocusRequester,
-                    ),
-                )
-                add(
-                    AccountMobileQuickAction(
-                        key = "user_search",
-                        title = stringResource(R.string.account_user_search),
-                        icon = Icons.Filled.PersonSearch,
-                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
                     ),
                 )
                 add(
@@ -235,19 +235,19 @@ fun AccountMobileScreen(
                 )
                 add(
                     AccountMobileQuickAction(
+                        key = "user_search",
+                        title = stringResource(R.string.account_user_search),
+                        icon = Icons.Filled.PersonSearch,
+                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
                         key = "settings",
                         title = stringResource(R.string.account_settings),
                         icon = Icons.Filled.Settings,
                         onClick = { onEvent(AccountState.Event.SettingsSelected) },
                         focusRequester = bottomBarUpFocusRequester,
-                    ),
-                )
-                add(
-                    AccountMobileQuickAction(
-                        key = "user_search",
-                        title = stringResource(R.string.account_user_search),
-                        icon = Icons.Filled.PersonSearch,
-                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
                     ),
                 )
                 add(

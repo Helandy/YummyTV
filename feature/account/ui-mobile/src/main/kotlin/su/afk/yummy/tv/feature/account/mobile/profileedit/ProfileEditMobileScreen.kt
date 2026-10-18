@@ -5,16 +5,17 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +49,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.ProfileMainSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfileMediaSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePasswordSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePrivacySection
+import su.afk.yummy.tv.feature.account.mobile.view.ProfileSaveButton
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditState
 import java.time.Instant
@@ -103,12 +105,15 @@ fun ProfileEditMobileScreen(
                 onAction = { onEvent(ProfileEditState.Event.RetrySelected) },
             )
 
-            else -> LazyColumn(
+            else -> Box(
                 modifier = Modifier
                     .mobileContentMaxWidth()
                     .fillMaxSize()
                     .imePadding(),
-                contentPadding = PaddingValues(16.dp),
+            ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item(key = "media") {
@@ -184,13 +189,6 @@ fun ProfileEditMobileScreen(
                         onNotifyVkChanged = { onEvent(ProfileEditState.Event.NotifyVkChanged(it)) },
                     )
                 }
-                item(key = "save") {
-                    Button(
-                        onClick = { onEvent(ProfileEditState.Event.SaveSelected) },
-                        enabled = !state.isSaving,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text(stringResource(R.string.profile_edit_save)) }
-                }
                 item(key = "password") {
                     ProfilePasswordSection(
                         oldPassword = state.oldPassword,
@@ -229,6 +227,13 @@ fun ProfileEditMobileScreen(
                         onUnlink = { onEvent(ProfileEditState.Event.UnlinkAccountSelected(it)) },
                     )
                 }
+            }
+            ProfileSaveButton(
+                visible = state.hasChanges,
+                isSaving = state.isSaving,
+                onClick = { onEvent(ProfileEditState.Event.SaveSelected) },
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
             }
         }
     }

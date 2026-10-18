@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.account.mobile.account.model
+package su.afk.yummy.tv.feature.account.common.model
 
 import androidx.compose.runtime.Immutable
 import java.time.LocalDate
@@ -8,7 +8,7 @@ import java.time.LocalDate
  * [isFuture] — оставшиеся дни текущей недели, их рисуем пустыми и не даём выбрать.
  */
 @Immutable
-internal data class AccountMobileWatchHistoryCell(
+data class WatchHistoryCell(
     val date: LocalDate,
     val durationSeconds: Long,
     val episodeCount: Int,

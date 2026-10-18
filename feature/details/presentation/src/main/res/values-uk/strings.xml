@@ -22,7 +22,7 @@
     <string name="details_restore_recommendation">Повернути це аніме в рекомендації</string>
     <string name="details_similar_like">Подобається схожий тайтл</string>
     <string name="details_similar_dislike">Не подобається схожий тайтл</string>
-    <string name="details_blogger_videos">Відео блогерів</string>
+    <string name="details_blogger_videos">Огляди</string>
     <string name="details_mobile_blogger_videos">Огляди</string>
     <string name="details_reviews">Рецензії</string>
     <string name="details_reviews_count">Рецензії (%1$d)</string>

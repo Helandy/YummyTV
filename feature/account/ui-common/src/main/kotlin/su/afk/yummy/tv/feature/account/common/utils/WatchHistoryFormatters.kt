@@ -1,10 +1,10 @@
-package su.afk.yummy.tv.feature.account.mobile.account.utils
+package su.afk.yummy.tv.feature.account.common.utils
 
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileWatchHistoryCell
+import su.afk.yummy.tv.feature.account.common.model.WatchHistoryCell
 import su.afk.yummy.tv.feature.account.presentation.R
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
@@ -13,7 +13,7 @@ import java.util.Locale
 
 /** Полное описание дня одной строкой — для озвучки ячейки (TalkBack). */
 @Composable
-internal fun AccountMobileWatchHistoryCell.detailsLabel(): String {
+fun WatchHistoryCell.detailsLabel(): String {
     val parts = buildList {
         add(dayLabel())
         if (!hasWatches) {
@@ -26,34 +26,34 @@ internal fun AccountMobileWatchHistoryCell.detailsLabel(): String {
     return parts.joinToString(separator = ", ")
 }
 
-internal val AccountMobileWatchHistoryCell.hasWatches: Boolean
+val WatchHistoryCell.hasWatches: Boolean
     get() = durationSeconds > 0L || episodeCount > 0
 
 /** «18 окт.» — заголовок блока выбранного дня. */
-internal fun AccountMobileWatchHistoryCell.dayTitle(locale: Locale = Locale.getDefault()): String =
+fun WatchHistoryCell.dayTitle(locale: Locale = Locale.getDefault()): String =
     DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "dMMM"), locale).format(date)
 
 /** «воскресенье» — подпись под датой. */
-internal fun AccountMobileWatchHistoryCell.weekdayName(locale: Locale = Locale.getDefault()): String =
+fun WatchHistoryCell.weekdayName(locale: Locale = Locale.getDefault()): String =
     date.dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale)
 
 /** «1 ч 20 мин», «21 мин»; null для дня без времени просмотра. */
 @Composable
-internal fun AccountMobileWatchHistoryCell.durationLabel(): String? =
+fun WatchHistoryCell.durationLabel(): String? =
     durationSeconds.takeIf { it > 0L }?.watchDurationLabel()
 
 /** «7 серий»; null для дня без серий. */
 @Composable
-internal fun AccountMobileWatchHistoryCell.episodesLabel(): String? =
+fun WatchHistoryCell.episodesLabel(): String? =
     episodeCount.takeIf { it > 0 }?.let {
         pluralStringResource(R.plurals.account_mobile_heatmap_episodes, it, it)
     }
 
 /** Короткие подписи дней недели («пн», «вт», …) в порядке колонок календаря. */
-internal fun DayOfWeek.weekdayLabels(locale: Locale = Locale.getDefault()): List<String> =
+fun DayOfWeek.weekdayLabels(locale: Locale = Locale.getDefault()): List<String> =
     (0 until DAYS_IN_WEEK).map { plus(it.toLong()).getDisplayName(TextStyle.SHORT_STANDALONE, locale) }
 
-private fun AccountMobileWatchHistoryCell.dayLabel(): String {
+private fun WatchHistoryCell.dayLabel(): String {
     val locale = Locale.getDefault()
     val pattern = DateFormat.getBestDateTimePattern(locale, "EEEdMMM")
     return DateTimeFormatter.ofPattern(pattern, locale).format(date)

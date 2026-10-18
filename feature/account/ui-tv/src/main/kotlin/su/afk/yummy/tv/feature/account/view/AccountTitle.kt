@@ -12,7 +12,7 @@ import su.afk.yummy.tv.feature.account.presentation.R
 @Composable
 internal fun AccountTitle() {
     Text(
-        text = stringResource(R.string.account_title),
+        text = stringResource(R.string.account_mobile_title),
         style = MaterialTheme.typography.displaySmall,
         color = MaterialTheme.colorScheme.onBackground,
     )

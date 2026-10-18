@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.account.model.EditableProfile
 import su.afk.yummy.tv.domain.account.model.ProfileUpdate
 import su.afk.yummy.tv.feature.account.profileedit.handler.ProfileEditHandler
+import su.afk.yummy.tv.feature.account.profileedit.mapper.toForm
 import su.afk.yummy.tv.feature.account.profileedit.utils.toIsoDate
 import javax.inject.Inject
 
@@ -97,7 +98,7 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     private fun saveProfile() = viewModelScope.launch {
-        if (currentState.isSaving) return@launch
+        if (currentState.isSaving || !currentState.hasChanges) return@launch
         val state = currentState
         setState { copy(isSaving = true) }
         runSuspendCatching {
@@ -221,7 +222,7 @@ class ProfileEditViewModel @Inject constructor(
                 showDiscord = profile.showDiscord,
                 notifyTelegram = profile.notifyTelegram,
                 notifyVk = profile.notifyVk,
-            )
+            ).let { it.copy(savedForm = it.toForm()) }
         }
     }
 

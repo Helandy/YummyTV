@@ -17,18 +17,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
-import su.afk.yummy.tv.feature.catalog.presentation.R
 
 @Composable
 internal fun SheetHeader(
     title: String,
     onBack: (() -> Unit)? = null,
+    backIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
     actionLabel: String? = null,
     actionVisible: Boolean = true,
     onClose: (() -> Unit)? = null,
@@ -39,10 +40,10 @@ internal fun SheetHeader(
         if (onBack != null) {
             IconButton(
                 onClick = onBack,
-                modifier = Modifier.align(Alignment.CenterStart),
+                modifier = Modifier.align(Alignment.CenterEnd),
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = backIcon,
                     contentDescription = stringResource(CoreR.string.common_back),
                     tint = MaterialTheme.colorScheme.onBackground,
                 )
@@ -50,7 +51,8 @@ internal fun SheetHeader(
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -72,7 +74,7 @@ internal fun SheetHeader(
                 onClick = onClose,
                 enabled = actionVisible,
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
+                    .align(Alignment.CenterStart)
                     .graphicsLayer { alpha = actionAlpha },
             ) {
                 Text(actionLabel)

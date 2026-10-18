@@ -48,7 +48,6 @@
     <string name="search_placeholder">Пошук аніме…</string>
     <string name="search_empty">Нічого не знайдено</string>
     <string name="search_mobile_reset_filters">Скинути фільтри</string>
-    <string name="search_mobile_history_title">Нещодавні запити</string>
     <string name="search_mobile_history_clear">Очистити</string>
     <string name="search_filter_sort_rating_counters">Оцінки</string>
     <string name="search_filter_sort_id">Нове</string>

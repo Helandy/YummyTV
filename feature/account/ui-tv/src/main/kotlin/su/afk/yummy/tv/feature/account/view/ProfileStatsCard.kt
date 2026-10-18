@@ -1,5 +1,3 @@
-@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
-
 package su.afk.yummy.tv.feature.account.view
 
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +19,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.account.account.model.ProfileStatsChartType
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.utils.PROFILE_STATS_BODY_HEIGHT_DP
 import su.afk.yummy.tv.feature.account.utils.totalLabel
 import su.afk.yummy.tv.feature.account.common.utils.positiveValueSum
 
@@ -38,7 +38,6 @@ internal fun ProfileStatsCard(
 
     Column(
         modifier = modifier
-            .height(252.dp)
             .profileTileVisual(
                 focused = focused,
                 shape = shape,
@@ -62,19 +61,19 @@ internal fun ProfileStatsCard(
                 text = page.title,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
         if (totalValue <= 0L) {
-            ProfileStatsEmptyState(modifier = Modifier.weight(1f))
+            ProfileStatsEmptyState(modifier = Modifier.height(PROFILE_STATS_BODY_HEIGHT_DP.dp))
+        } else if (page.chartType == ProfileStatsChartType.HISTOGRAM) {
+            ProfileRatingsChart(slices = page.slices)
         } else {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 ProfileStatsDonutChart(
                     slices = positiveSlices,
@@ -84,8 +83,10 @@ internal fun ProfileStatsCard(
                 ProfileStatsLegend(
                     slices = page.slices,
                     valueType = page.valueType,
-                    compact = page.compactLegend,
-                    modifier = Modifier.weight(1f),
+                    columns = page.legendColumns,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PROFILE_STATS_BODY_HEIGHT_DP.dp),
                 )
             }
         }

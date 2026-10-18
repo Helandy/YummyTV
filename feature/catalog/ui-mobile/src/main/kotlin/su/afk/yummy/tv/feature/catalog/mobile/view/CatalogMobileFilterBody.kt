@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Button
@@ -49,6 +50,7 @@ internal fun ColumnScope.CatalogMobileFilterBody(
     SheetHeader(
         title = stringResource(R.string.search_filters),
         onBack = onBack,
+        backIcon = Icons.AutoMirrored.Filled.ArrowForward,
         actionLabel = stringResource(R.string.search_filters_reset),
         actionVisible = draftFilters.activeCount > 0,
         onClose = onReset,

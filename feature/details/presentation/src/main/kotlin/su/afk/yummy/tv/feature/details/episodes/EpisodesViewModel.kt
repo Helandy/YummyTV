@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
@@ -139,7 +140,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         downloadStatuses = uiStatuses,
                         resolvedDownloadStatuses = resolveDownloadStatuses(
                             episodeGroups,
-                            uiStatuses
+                            uiStatuses,
                         ),
                     )
                 }
@@ -179,7 +180,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         expandedEpisodeDescriptions - event.episode
                     } else {
                         expandedEpisodeDescriptions + event.episode
-                    }
+                    },
                 )
             }
 
@@ -207,7 +208,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                             videos = videos,
                             isWatched = watchProgress.bestFor(videos)?.isWatchedProgress() == true,
                             isInWatchLater = episode.episodeGroupKey() in watchLaterEpisodes,
-                        )
+                        ),
                     )
                 }
             }
@@ -229,7 +230,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         meta = EpisodeWatchedHandler.EpisodeMeta(
                             animeTitle = animeTitle,
                             posterUrl = posterUrl,
-                            screenshotUrl = screenshotsByEpisode[action.episode].orEmpty(),
+                            screenshotUrl = episodeThumbnailIframeUrl(action.episode),
                         ),
                     )
                     // Список отложенных на этом экране не виден, поэтому подтверждаем действие тостом.
@@ -240,9 +241,9 @@ class EpisodesViewModel @AssistedInject internal constructor(
                                     R.string.details_episode_watch_later_removed
                                 } else {
                                     R.string.details_episode_watch_later_added
-                                }
-                            )
-                        )
+                                },
+                            ),
+                        ),
                     )
                 }
             }
@@ -276,7 +277,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                             hasAlternativeDubbings = event.videos.any {
                                 downloadHandler.downloadDubbingName(it) != downloadedDubbing
                             },
-                        )
+                        ),
                     )
                 }
             }
@@ -378,8 +379,8 @@ class EpisodesViewModel @AssistedInject internal constructor(
         if (!succeeded) {
             setEffect(
                 EpisodesState.Effect.ShowToast(
-                    stringProvider.get(R.string.details_episode_watched_sync_failed)
-                )
+                    stringProvider.get(R.string.details_episode_watched_sync_failed),
+                ),
             )
         }
         if (isSignedIn) {
@@ -416,7 +417,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         videosState = VideosUiState.Error(UiText.Failure(it)),
-                        watchProgress = DetailsWatchProgressIndex.Empty
+                        watchProgress = DetailsWatchProgressIndex.Empty,
                     )
                 }
             },
@@ -450,9 +451,13 @@ class EpisodesViewModel @AssistedInject internal constructor(
         setState {
             val groups = buildEpisodeGroups(videos)
             copy(
-                videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(
-                    videos.toImmutableList()
-                ),
+                videosState = if (videos.isEmpty()) {
+                    VideosUiState.Empty
+                } else {
+                    VideosUiState.Content(
+                        videos.toImmutableList(),
+                    )
+                },
                 watchProgress = buildWatchProgressIndex(videos),
                 episodeGroups = groups,
                 bestDubbing = videos.mostWatchedDubbing(),
@@ -531,30 +536,44 @@ class EpisodesViewModel @AssistedInject internal constructor(
         }
     }
 
+    /**
+     * Kodik-iframe превью серии — тот же, что рисует сетка серий, чтобы в «Отложенных» была та же
+     * картинка (общий ключ кэша [su.afk.yummy.tv.core.utils.kodik.KodikThumbnail]).
+     */
+    private fun episodeThumbnailIframeUrl(episode: String): String =
+        (currentState.videosState as? VideosUiState.Content)
+            ?.videos
+            .orEmpty()
+            .filter { it.episode.episodeGroupKey() == episode.episodeGroupKey() }
+            .kodikThumbnailIframeUrl(currentState.bestDubbing)
+            .orEmpty()
+
     private fun enqueueSelectedDownload(option: EpisodesState.EpisodeDownloadQualityOption) {
         val episodeVideos = (currentState.videosState as? VideosUiState.Content)
             ?.videos
             .orEmpty()
             .filter { it.episode == currentState.pendingDownloadQualitySelection?.episode }
         viewModelScope.launch {
-            when (downloadHandler.enqueue(
-                option = option,
-                animeId = animeId,
-                animeTitle = animeTitle,
-                posterUrl = posterUrl,
-                episodeVideos = episodeVideos,
-            )) {
+            when (
+                downloadHandler.enqueue(
+                    option = option,
+                    animeId = animeId,
+                    animeTitle = animeTitle,
+                    posterUrl = posterUrl,
+                    episodeVideos = episodeVideos,
+                )
+            ) {
                 EpisodeDownloadEnqueueResult.ReplacementDeleteFailed -> setEffect(
                     EpisodesState.Effect.ShowToast(
-                        stringProvider.get(R.string.details_download_replace_delete_error)
-                    )
+                        stringProvider.get(R.string.details_download_replace_delete_error),
+                    ),
                 )
 
                 EpisodeDownloadEnqueueResult.EnqueueFailed -> {
                     setEffect(
                         EpisodesState.Effect.ShowToast(
-                            stringProvider.get(R.string.details_download_enqueue_error)
-                        )
+                            stringProvider.get(R.string.details_download_enqueue_error),
+                        ),
                     )
                     setState { copy(pendingDownloadQualitySelection = null) }
                 }
@@ -570,12 +589,14 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private fun showBalancerPickerForDubbing(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val dubbingVideos = allVideos.sameEpisodeDubbing(video)
-        when (val selection = playerNavigationHandler.selectPlayer(
-            video = video,
-            allVideos = dubbingVideos,
-            preferredPlayer = preferredPlayerState.value,
-            rememberedAnime4kDubbing = anime4kDubbingState.value,
-        )) {
+        when (
+            val selection = playerNavigationHandler.selectPlayer(
+                video = video,
+                allVideos = dubbingVideos,
+                preferredPlayer = preferredPlayerState.value,
+                rememberedAnime4kDubbing = anime4kDubbingState.value,
+            )
+        ) {
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
             is DetailsPlayerSelection.ShowPicker -> {
                 reportUnsupportedPlayers(selection.picker)
@@ -586,7 +607,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     private fun showEpisodeDubbingPicker(
         balancerVideo: AnimeVideo,
-        restrictToBalancer: Boolean = true
+        restrictToBalancer: Boolean = true,
     ) {
         val episode = balancerVideo.episode
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
@@ -620,7 +641,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                     episode = episode,
                     options = options.toImmutableList(),
                     episodeTitle = info?.title,
-                )
+                ),
             )
         }
     }
@@ -648,9 +669,8 @@ class EpisodesViewModel @AssistedInject internal constructor(
                     posterUrl = posterUrl,
                     screenshotByEpisode = screenshotsByEpisode,
                     resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
-                )
+                ),
             )
         }
     }
-
 }

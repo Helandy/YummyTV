@@ -74,6 +74,12 @@ object YummySemanticColors {
     /** Статус пользовательского списка: избранное. */
     val StatusFavorite = YummyPalette.Magenta
 
+    /** Пользователь сейчас в сети (точка у аватара, чип в профиле). */
+    val UserOnline = YummyPalette.Green
+
+    /** Пользователь не в сети (точка у аватара). */
+    val UserOffline = YummyPalette.Red
+
     /** Статус выхода тайтла: онгоинг. */
     val ReleaseOngoing = YummyPalette.Green
 

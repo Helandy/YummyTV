@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account.mobile.view
 
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -53,9 +54,15 @@ internal fun AccountMobileProfileHero(
     /** Слот слева сверху — например кнопка «назад» на чужом профиле. */
     navigationAction: @Composable BoxScope.() -> Unit = {},
     topActions: @Composable RowScope.() -> Unit = {},
+    /** Поверх аватара без обрезки кругом — например точка «в сети» у края. */
+    avatarBadge: @Composable BoxScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val surface = MaterialTheme.colorScheme.surfaceContainer
+    var avatarOpened by remember { mutableStateOf(false) }
+    if (avatarOpened && avatarUrl.isNotBlank()) {
+        AccountMobileAvatarViewer(avatarUrl = avatarUrl, onDismiss = { avatarOpened = false })
+    }
     // Баннер на всю ширину и под статус-баром, как фон деталки.
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bannerHeight = statusBarTop + BannerHeight
@@ -133,19 +140,23 @@ internal fun AccountMobileProfileHero(
                 .padding(start = 20.dp, end = 20.dp, top = bannerHeight - (AvatarSize + AvatarRing * 2) / 3, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(AvatarSize + AvatarRing * 2)
-                    .clip(CircleShape)
-                    .background(surface)
-                    .padding(AvatarRing),
-            ) {
-                AccountMobileAvatar(
-                    avatarUrl = avatarUrl,
-                    nickname = nickname,
-                    isLoading = isLoading,
-                    modifier = Modifier.size(AvatarSize),
-                )
+            Box(modifier = Modifier.size(AvatarSize + AvatarRing * 2)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(surface)
+                        .clickable(enabled = avatarUrl.isNotBlank()) { avatarOpened = true }
+                        .padding(AvatarRing),
+                ) {
+                    AccountMobileAvatar(
+                        avatarUrl = avatarUrl,
+                        nickname = nickname,
+                        isLoading = isLoading,
+                        modifier = Modifier.size(AvatarSize),
+                    )
+                }
+                avatarBadge()
             }
             content()
         }
@@ -154,5 +165,5 @@ internal fun AccountMobileProfileHero(
 
 private val BannerHeight = 140.dp
 private val HeroCorner = 28.dp
-private val AvatarSize = 80.dp
+private val AvatarSize = 90.dp
 private val AvatarRing = 4.dp

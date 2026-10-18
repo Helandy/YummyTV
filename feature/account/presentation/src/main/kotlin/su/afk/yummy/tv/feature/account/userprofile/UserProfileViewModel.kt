@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
+import su.afk.yummy.tv.domain.account.model.UserAnimeListsHiddenException
 import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.userprofile.handler.FriendshipFetchResult
@@ -323,6 +324,10 @@ class UserProfileViewModel @AssistedInject internal constructor(
             contentHandler.loadLists(userId, currentState.selectedList, force).fold(
                 onSuccess = { items -> setState { copy(lists = lists.finish(items)) } },
                 onFailure = { error ->
+                    if (error is UserAnimeListsHiddenException) {
+                        setState { copy(listsHidden = true, lists = lists.finish(emptyList())) }
+                        return@fold
+                    }
                     analytics.eventTabLoadError(userId, UserProfileState.Tab.LISTS, error)
                     setState { copy(lists = lists.fail()) }
                 },

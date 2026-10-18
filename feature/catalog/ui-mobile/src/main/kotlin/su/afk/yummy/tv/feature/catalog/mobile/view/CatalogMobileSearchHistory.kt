@@ -1,14 +1,14 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import su.afk.yummy.tv.feature.catalog.presentation.R
 
-/** Последние запросы чипами под пустым полем поиска и кнопка очистки истории. */
+/** Последние запросы чипами в горизонтальной ленте под пустым полем поиска и кнопка очистки справа. */
 @Composable
 internal fun CatalogMobileSearchHistory(
     queries: ImmutableList<String>,
@@ -29,23 +29,15 @@ internal fun CatalogMobileSearchHistory(
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LazyRow(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = stringResource(R.string.search_mobile_history_title),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            TextButton(onClick = onClear) {
-                Text(stringResource(R.string.search_mobile_history_clear))
-            }
-        }
-        ChipFlow {
-            queries.forEach { query ->
+            items(queries, key = { it }) { query ->
                 SuggestionChip(
                     onClick = { onQuerySelected(query) },
                     label = { Text(query, maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -58,6 +50,9 @@ internal fun CatalogMobileSearchHistory(
                     },
                 )
             }
+        }
+        TextButton(onClick = onClear) {
+            Text(stringResource(R.string.search_mobile_history_clear))
         }
     }
 }

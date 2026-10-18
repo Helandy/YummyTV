@@ -255,6 +255,7 @@ internal fun List<YaniUserFriendDto>.toUserFriendsPageCache(
                 item.avatars?.full?.toHttpsUrl() ?: item.avatars?.big?.toHttpsUrl()
                 ?: item.avatars?.small?.toHttpsUrl(),
                 item.lastOnline, item.friendStatus.ifBlank { item.list },
+                sex = item.sex?.takeIf { it == 1 || it == 2 } ?: 0,
             )
         },
     )

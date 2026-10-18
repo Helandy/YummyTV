@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ internal fun ColumnScope.CatalogMobileGenrePickerBody(
             GenrePickerMode.EXCLUDE -> stringResource(R.string.search_filter_exclude_genres)
         },
         onBack = onBack,
+        backIcon = Icons.AutoMirrored.Filled.ArrowForward,
     )
     Text(
         text = stringResource(R.string.search_filter_selected_count, selectedIds.size),

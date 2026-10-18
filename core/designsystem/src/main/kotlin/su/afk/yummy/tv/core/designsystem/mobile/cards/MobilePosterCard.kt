@@ -43,6 +43,8 @@ fun MobilePosterCard(
     posterUrl: String?,
     modifier: Modifier = Modifier.width(currentMobilePosterWidth()),
     subtitle: String? = null,
+    /** Акцентная строка под [subtitle] — например вид связи тайтла («продолжение»). */
+    caption: String? = null,
     badge: String? = null,
     rating: Double? = null,
     titleMinLines: Int = 2,
@@ -136,6 +138,17 @@ fun MobilePosterCard(
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (!caption.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = caption,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }

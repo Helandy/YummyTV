@@ -33,6 +33,8 @@ class UserProfileState {
         val overviewError: Boolean = false,
         val selectedList: ListFilter = ListFilter.WATCHING,
         val lists: PagedContent<UserAnimeListItem> = PagedContent(),
+        /** Пользователь закрыл списки приватностью — вместо фильтров показываем «Доступ запрещён». */
+        val listsHidden: Boolean = false,
         /** Настройка «Отображать год у тайтлов в библиотеке» — действует и на списки в профиле. */
         val showTitleYear: Boolean = false,
         val comments: PagedContent<UserProfileCommentPreview> = PagedContent(),

@@ -128,6 +128,38 @@ class ProfileEditViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `hasChanges tracks edits against the loaded profile`() {
+        val vm = createViewModel()
+        assertFalse(vm.currentState.hasChanges)
+
+        vm.setEvent(Event.AboutChanged("changed"))
+        assertTrue(vm.currentState.hasChanges)
+
+        vm.setEvent(Event.AboutChanged("about"))
+        assertFalse(vm.currentState.hasChanges)
+    }
+
+    @Test
+    fun `save without changes does nothing`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.SaveSelected)
+
+        coVerify(exactly = 0) { handler.update(any()) }
+    }
+
+    @Test
+    fun `successful save clears hasChanges`() = runTest {
+        coEvery { handler.update(any()) } returns profile(about = "saved")
+        val vm = createViewModel()
+        vm.setEvent(Event.AboutChanged("saved"))
+
+        vm.setEvent(Event.SaveSelected)
+
+        assertFalse(vm.currentState.hasChanges)
+    }
+
+    @Test
     fun `failed save reports the failure and keeps the form`() = runTest {
         coEvery { handler.update(any()) } throws IllegalStateException("boom")
         val vm = createViewModel()

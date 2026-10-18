@@ -44,12 +44,15 @@ import su.afk.yummy.tv.core.designsystem.focus.TvCenteredCarouselBringIntoViewSp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
+import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard
+import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCardWidth
 
 private val RelatedCardWidth = 188.dp
 
@@ -197,13 +200,17 @@ internal fun SimilarTab(
                                     item.poster?.run { big ?: medium ?: fullsize ?: small }
                                 val meta =
                                     listOfNotNull(item.type).joinToString(" · ")
-                                RelatedTitleCard(
+                                TvTitleCard(
                                     title = item.title,
                                     posterUrl = posterUrl,
                                     onClick = { onAnimeSelected(item.animeId) },
-                                    rating = item.rating,
-                                    year = item.year,
-                                    meta = meta,
+                                    width = RelatedTitleCardWidth,
+                                    subtitle = meta,
+                                    animeId = item.animeId,
+                                    posterOverlay = {
+                                        item.rating?.let { TvPosterRating(it) }
+                                        item.year?.let { TvPosterYear(it) }
+                                    },
                                     onFocused = { rememberFocusedItem(index) },
                                     modifier = Modifier
                                         .focusRequester(focusRequesters[index])

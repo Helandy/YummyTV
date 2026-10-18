@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +50,8 @@ fun TvTitleCard(
     /** Если задан — карточка подписывается списком пользователя, в котором лежит тайтл. */
     animeId: Int? = null,
     posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
+    /** Слот под текстом карточки — например кнопки голосования. Живёт внутри Card. */
+    footer: @Composable ColumnScope.() -> Unit = {},
 ) {
     val shape = MaterialTheme.shapes.medium
     val cardDimensions = currentTvTitleCardDimensions()
@@ -142,6 +145,7 @@ fun TvTitleCard(
                     )
                 }
             }
+            footer()
         }
     }
 }

@@ -1,27 +1,27 @@
-package su.afk.yummy.tv.feature.account.mobile.account.mapper
+package su.afk.yummy.tv.feature.account.common.mapper
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
-import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileWatchHistoryCell
+import su.afk.yummy.tv.feature.account.common.model.WatchHistoryCell
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
-internal const val WATCH_HISTORY_GRID_COLUMNS = 7
-internal const val WATCH_HISTORY_GRID_ROWS = 4
+const val WATCH_HISTORY_GRID_COLUMNS = 7
+const val WATCH_HISTORY_GRID_ROWS = 4
 
 /**
  * Календарь последних 4 недель: колонки — дни недели начиная с [firstDayOfWeek],
  * последняя строка — текущая неделя. Пропущенные сервером дни заполняются нулями.
  */
-internal fun List<UserWatchHistoryDay>.toWatchHistoryGrid(
+fun List<UserWatchHistoryDay>.toWatchHistoryGrid(
     today: LocalDate,
     zone: ZoneId,
     firstDayOfWeek: DayOfWeek,
-): ImmutableList<AccountMobileWatchHistoryCell> {
+): ImmutableList<WatchHistoryCell> {
     val byDate = groupBy { Instant.ofEpochSecond(it.dateSeconds).atZone(zone).toLocalDate() }
     val start = today
         .with(TemporalAdjusters.previousOrSame(firstDayOfWeek))
@@ -37,7 +37,7 @@ internal fun List<UserWatchHistoryDay>.toWatchHistoryGrid(
     }
     val maxDuration = days.maxOf { it.second }.coerceAtLeast(1L)
     return days.map { (date, duration, episodes) ->
-        AccountMobileWatchHistoryCell(
+        WatchHistoryCell(
             date = date,
             durationSeconds = duration,
             episodeCount = episodes,

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.PersistentList
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
+import su.afk.yummy.tv.feature.account.mobile.account.utils.PROFILE_STATS_LEGEND_MAX_ROWS
 import su.afk.yummy.tv.feature.account.mobile.account.utils.valueLabel
 import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
@@ -31,9 +32,9 @@ internal fun AccountMobileProfileStatsLegend(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
     ) {
-        slices.chunked(columns).forEach { row ->
+        slices.take(columns * PROFILE_STATS_LEGEND_MAX_ROWS).chunked(columns).forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),

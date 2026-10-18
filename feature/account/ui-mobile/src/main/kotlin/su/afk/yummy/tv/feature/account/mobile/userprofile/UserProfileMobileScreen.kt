@@ -51,6 +51,7 @@ import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileCollec
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileCurrentListPill
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileHeader
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileListFilters
+import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileListsHidden
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileOverview
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileStickyTabs
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.friendItems
@@ -217,7 +218,9 @@ private fun UserProfileTabContent(
                     UserProfileOverview(state = state, onEvent = onEvent)
                 }
 
-                UserProfileState.Tab.LISTS -> {
+                UserProfileState.Tab.LISTS -> if (state.listsHidden) {
+                    item(key = "lists_hidden") { UserProfileListsHidden() }
+                } else {
                     item(key = "list_filters") {
                         UserProfileListFilters(
                             selected = state.selectedList,
@@ -247,7 +250,7 @@ private fun UserProfileTabContent(
                     reviews?.let { reviewItems(it, onEvent) }
 
                 UserProfileState.Tab.FRIENDS ->
-                    friends?.let { friendItems(it, onEvent) }
+                    friends?.let { friendItems(it, nowEpochSeconds, onEvent) }
             }
         }
         AnimatedVisibility(

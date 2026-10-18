@@ -6,4 +6,5 @@ data class UserFriend(
     val avatarUrl: String?,
     val lastOnlineSeconds: Long,
     val status: String,
+    val sex: UserProfileSex = UserProfileSex.UNKNOWN,
 )

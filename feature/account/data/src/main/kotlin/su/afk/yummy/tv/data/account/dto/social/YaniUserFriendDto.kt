@@ -15,4 +15,5 @@ data class YaniUserFriendDto(
     @SerialName("last_online") val lastOnline: Long = 0L,
     @SerialName("friend_status") val friendStatus: String = "",
     val list: String = "",
+    val sex: Int? = null,
 )

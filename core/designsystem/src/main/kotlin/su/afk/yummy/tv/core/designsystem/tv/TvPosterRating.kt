@@ -1,0 +1,20 @@
+package su.afk.yummy.tv.core.designsystem.tv
+
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.RatingBadge
+
+/** Рейтинг в правом верхнем углу постера; для слота `posterOverlay` у [TvTitleCard]. */
+@Composable
+fun BoxScope.TvPosterRating(rating: Double) {
+    RatingBadge(
+        rating = rating,
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .padding(4.dp),
+    )
+}

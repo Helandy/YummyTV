@@ -54,4 +54,5 @@ internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_55_56,
     MIGRATION_56_57,
     MIGRATION_57_58,
+    MIGRATION_58_59,
 )

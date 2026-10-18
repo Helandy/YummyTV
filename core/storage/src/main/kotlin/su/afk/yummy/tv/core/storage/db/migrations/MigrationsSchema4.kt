@@ -305,3 +305,16 @@ internal val MIGRATION_57_58 = object : Migration(57, 58) {
         db.execSQL("ALTER TABLE account_user_list_items ADD COLUMN releaseStatus TEXT")
     }
 }
+
+/**
+ * Время последнего визита в кэше профиля и пол в кэше друзей — для статуса «в сети».
+ * Старые строки остаются с нулями и перезаписываются при ближайшей загрузке.
+ */
+internal val MIGRATION_58_59 = object : Migration(58, 59) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "ALTER TABLE account_user_profile_summary_caches ADD COLUMN lastOnlineSeconds INTEGER NOT NULL DEFAULT 0",
+        )
+        db.execSQL("ALTER TABLE account_user_friends ADD COLUMN sex INTEGER NOT NULL DEFAULT 0")
+    }
+}

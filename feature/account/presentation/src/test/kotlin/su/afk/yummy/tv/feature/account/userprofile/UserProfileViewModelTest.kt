@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+import su.afk.yummy.tv.domain.account.model.UserAnimeListsHiddenException
 import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import androidx.navigation3.runtime.NavKey
@@ -242,6 +243,19 @@ class UserProfileViewModelTest : BaseUnitTest() {
 
         assertFalse(vm.currentState.lists.error)
         assertEquals(listOf(listItem), vm.currentState.lists.items)
+    }
+
+    @Test
+    fun `hidden lists show the access denied state instead of an error`() {
+        coEvery { contentHandler.loadLists(any(), any(), any()) } returns
+            Result.failure(UserAnimeListsHiddenException())
+        val vm = createViewModel()
+
+        vm.setEvent(Event.TabSelected(Tab.LISTS))
+
+        assertTrue(vm.currentState.listsHidden)
+        assertFalse(vm.currentState.lists.error)
+        assertTrue(vm.currentState.lists.loaded)
     }
 
     @Test

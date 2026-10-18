@@ -15,6 +15,8 @@ data class UserProfileSummary(
     val watchTypes: List<UserWatchTypeStat> = emptyList(),
     val watchHistory: List<UserWatchHistoryDay> = emptyList(),
     val daysOnline: Int = 0,
+    /** Последний визит на сайт (unix-секунды), 0 — неизвестно. */
+    val lastOnlineSeconds: Long = 0L,
     val counts: UserProfileCounts = UserProfileCounts(),
     val socialCounts: UserSocialCounts = UserSocialCounts(),
 )

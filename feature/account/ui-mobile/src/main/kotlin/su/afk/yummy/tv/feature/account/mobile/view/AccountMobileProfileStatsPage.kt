@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +19,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsChartType
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
+import su.afk.yummy.tv.feature.account.mobile.account.utils.PROFILE_STATS_BODY_HEIGHT_DP
 import su.afk.yummy.tv.feature.account.mobile.account.utils.totalLabel
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.common.utils.isEmpty
@@ -49,12 +52,18 @@ internal fun AccountMobileProfileStatsPage(
                 text = page.title,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
         if (page.slices.isEmpty()) {
             AccountMobileProfileStatsEmptyState()
+        } else if (page.chartType == AccountMobileProfileStatsChartType.HISTOGRAM) {
+            if (totalValue <= 0L) {
+                AccountMobileProfileStatsEmptyState()
+            } else {
+                AccountMobileProfileRatingsChart(slices = page.slices)
+            }
         } else {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -70,7 +79,9 @@ internal fun AccountMobileProfileStatsPage(
                     slices = page.slices,
                     valueType = page.valueType,
                     columns = page.legendColumns,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PROFILE_STATS_BODY_HEIGHT_DP.dp),
                 )
             }
         }
