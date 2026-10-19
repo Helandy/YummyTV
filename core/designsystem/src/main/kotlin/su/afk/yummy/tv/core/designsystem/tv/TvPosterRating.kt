@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 /** Рейтинг в правом верхнем углу постера; для слота `posterOverlay` у [TvTitleCard]. */
 @Composable
 fun BoxScope.TvPosterRating(rating: Double) {
+    if (rating <= 0.0) return
     RatingBadge(
         rating = rating,
         modifier = Modifier

@@ -167,3 +167,9 @@ fun mergeExtraDubbings(base: List<AnimeVideo>, extras: List<AnimeVideo>): List<A
         if (skips == null) renamed else renamed.copy(skips = skips)
     }
 }
+
+/** Оставляет из [merged] (результат [mergeExtraDubbings]) только видео озвучек, которые есть в [base]. */
+fun retainBaseDubbings(base: List<AnimeVideo>, merged: List<AnimeVideo>): List<AnimeVideo> {
+    val names = base.map { it.dubbing.trim() }.toSet()
+    return merged.filter { it.dubbing.trim() in names }
+}

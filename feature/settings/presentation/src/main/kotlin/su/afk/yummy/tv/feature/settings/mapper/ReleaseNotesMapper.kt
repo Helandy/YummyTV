@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.settings.mapper
 
-import su.afk.yummy.tv.core.utils.formatting.formatReleaseNotes
 import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
 import su.afk.yummy.tv.domain.update.utils.compareVersions
 import su.afk.yummy.tv.feature.settings.model.ReleaseNoteItem
@@ -9,7 +8,7 @@ internal fun AppReleaseNotes.toReleaseNoteItem(currentVersion: String): ReleaseN
     ReleaseNoteItem(
         version = version.substringBefore('-'),
         date = publishedDate?.toDisplayDate(),
-        notes = changelog.formatReleaseNotes(),
+        notes = changelog.trim(),
         isPrerelease = isPrerelease,
         isCurrent = compareVersions(version, currentVersion) == 0,
     )

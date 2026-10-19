@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 internal fun DetailsChip(
     label: String,
     icon: ImageVector? = null,
+    textColor: Color? = null,
 ) {
     Row(
         modifier = Modifier
@@ -43,7 +45,7 @@ internal fun DetailsChip(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f),
+            color = textColor ?: MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f),
             maxLines = 1,
         )
     }

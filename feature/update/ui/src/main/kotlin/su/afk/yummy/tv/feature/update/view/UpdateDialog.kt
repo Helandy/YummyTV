@@ -50,10 +50,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.components.ReleaseNotesMarkdown
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
-import su.afk.yummy.tv.core.utils.formatting.formatReleaseNotes
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.update.UpdateState
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
@@ -123,17 +123,14 @@ private fun AvailableContent(
             Configuration.UI_MODE_TYPE_TELEVISION
     val changelogMinHeight = if (configuration.screenHeightDp < 640) 160.dp else 200.dp
     val changelogMaxHeight = when {
-        configuration.screenHeightDp < 640 -> 220.dp
-        isTelevision -> 320.dp
-        else -> 280.dp
+        configuration.screenHeightDp < 640 -> 260.dp
+        isTelevision -> 380.dp
+        else -> 360.dp
     }
     val closeFocus = remember { FocusRequester() }
     val updateFocus = remember { FocusRequester() }
     val changelogScrollState = rememberScrollState()
     val changelogFocus = remember { FocusRequester() }
-    val formattedChangelog = remember(status.changelog) {
-        status.changelog.formatReleaseNotes()
-    }
     val updateInteractionSource = remember { MutableInteractionSource() }
     val updateFocused by updateInteractionSource.collectIsFocusedAsState()
     val scope = rememberCoroutineScope()
@@ -189,7 +186,7 @@ private fun AvailableContent(
             UnsupportedAutoUpdateBanner()
         }
 
-        if (formattedChangelog.isNotBlank()) {
+        if (status.changelog.isNotBlank()) {
             Spacer(Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.update_changelog_title),
@@ -235,10 +232,8 @@ private fun AvailableContent(
                     .focusable()
                     .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
-                Text(
-                    text = formattedChangelog,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                ReleaseNotesMarkdown(
+                    markdown = status.changelog,
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(changelogScrollState),

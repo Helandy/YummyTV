@@ -205,3 +205,8 @@ if (file("source/anime4k").isDirectory) {
     include(":source:anime4k:domain")
     include(":source:anime4k:data")
 }
+
+if (file("source/anilibria").isDirectory) {
+    include(":source:anilibria:domain")
+    include(":source:anilibria:data")
+}

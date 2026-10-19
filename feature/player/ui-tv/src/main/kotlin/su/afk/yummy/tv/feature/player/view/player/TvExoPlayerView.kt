@@ -32,7 +32,6 @@ import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
 import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
@@ -41,6 +40,8 @@ import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
 import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
+import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
+import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
@@ -282,6 +283,14 @@ internal fun TvExoPlayerView(
 
     PlayerStallWatchdogEffect(player = player, onEvent = onPlayerEvent)
 
+    PlayerQualityAdaptationEffect(
+        player = player,
+        enabled = playback.adaptiveQuality,
+        qualities = playback.qualityLabels,
+        activeQuality = playback.activeQuality,
+        onEvent = onPlayerEvent,
+    )
+
     PlayerListenerEffect(
         player = player,
         skipUi = skipUi,
@@ -495,6 +504,7 @@ internal fun TvExoPlayerView(
             highlightedSkipKey = skipUi.highlightedSkipKey,
             qualityCount = playback.qualityLabels.size,
             currentQualityLabel = activeQuality.orEmpty(),
+            adaptiveQuality = playback.adaptiveQuality,
             showAllohaButton = trackMenu.showAudioChoice,
             onPlayPause = { if (wantsPlay) player.pause() else player.play() },
             onSeekTo = seekController::seekTo,
@@ -542,6 +552,8 @@ internal fun TvExoPlayerView(
             subtitleStyle = state.subtitleStyle,
             showStabilization = state.volumeStabilizationSupported,
             stabilizationEnabled = state.volumeStabilizationEnabled,
+            showAdaptiveQuality = playback.qualityLabels.size > 1,
+            adaptiveQualityEnabled = playback.adaptiveQuality,
             audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
             selectedAudioTrackIndex = trackMenu.selectedAudioIndex,
             // Пустой список прячет секцию дорожек: «Выкл» в опциях есть всегда, даже без субтитров.
@@ -585,6 +597,7 @@ internal fun TvExoPlayerView(
             onVolumeChange = { volumeController.setPercent(it) },
             onSubtitleStyleChange = { onPlayerEvent(PlayerState.Event.SubtitleStyleChanged(it)) },
             onStabilizationChange = { onPlayerEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
+            onAdaptiveQualityChange = { onPlayerEvent(PlayerState.Event.AdaptiveQualityToggled(it)) },
             onAudioTrackSelected = { idx ->
                 trackMenu.selectAudio(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)
                 panels.close(PanelReturnFocusTarget.Alloha)

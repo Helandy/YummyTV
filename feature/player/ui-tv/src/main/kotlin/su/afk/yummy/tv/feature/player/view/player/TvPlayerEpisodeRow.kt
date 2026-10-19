@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
@@ -40,6 +41,7 @@ internal fun TvPlayerEpisodeRow(
     playerName: String,
     dubbing: String,
     currentQualityLabel: String,
+    adaptiveQuality: Boolean,
     qualityFocusRequester: FocusRequester? = null,
     dubbingFocusRequester: FocusRequester? = null,
     balancerFocusRequester: FocusRequester? = null,
@@ -133,13 +135,25 @@ internal fun TvPlayerEpisodeRow(
                     .focusProperties { up = upFocusRequester }
                     .widthIn(min = 92.dp),
             ) { color ->
-                Text(
-                    text = currentQualityLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = color,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Буква перед качеством: это выбор адаптации, а не пользователя.
+                    if (adaptiveQuality) {
+                        Text(
+                            text = stringResource(R.string.player_adaptive_quality_badge),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = color,
+                            maxLines = 1,
+                        )
+                    }
+                    Text(
+                        text = currentQualityLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = color,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             Spacer(Modifier.width(8.dp))
         }

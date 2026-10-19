@@ -31,6 +31,10 @@ class PlayerState {
         val streamHeaders: Map<String, String> = emptyMap(),
         val streamQualityMap: LinkedHashMap<String, String>? = null,
         val selectedQuality: String? = null,
+        /** Адаптивное качество включено в настройках (общее с экраном настроек). */
+        val adaptiveQualityEnabled: Boolean = false,
+        /** Серия, в которой пользователь выбрал качество вручную: адаптация в ней не вмешивается. */
+        val manualQualityEpisode: String? = null,
         /**
          * Резервный узел CDN для текущего потока: подпись от узла не зависит, поэтому при отказе
          * узла хост подменяется на месте, без перерезолва источника.
@@ -131,8 +135,15 @@ class PlayerState {
          */
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
 
-        /** Пользователь выбрал качество потока, сохранив текущую позицию. */
-        data class QualitySelected(val quality: String, val currentPosMs: Long) : Event
+        /**
+         * Выбрано качество потока с сохранением текущей позиции. [auto] — переключение адаптивным
+         * режимом, а не пользователем: ручной выбор отключает адаптацию для серии.
+         */
+        data class QualitySelected(
+            val quality: String,
+            val currentPosMs: Long,
+            val auto: Boolean = false,
+        ) : Event
 
         /**
          * Пользователь выбрал озвучку из собственного списка Alloha (шестерёнка её плеера) —
@@ -145,6 +156,12 @@ class PlayerState {
 
         /** Пользователь изменил стиль субтитров в боковой панели плеера. */
         data class SubtitleStyleChanged(val settings: PlayerSubtitleStyleSettings) : Event
+
+        /**
+         * Пользователь включил или выключил адаптивное качество в боковой панели плеера; настройка
+         * общая. Включение возвращает адаптацию и в серии, где качество выбрали вручную.
+         */
+        data class AdaptiveQualityToggled(val enabled: Boolean) : Event
 
         /** Пользователь включил или выключил стабилизацию громкости в боковой панели плеера. */
         data class VolumeStabilizationToggled(val enabled: Boolean) : Event

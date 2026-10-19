@@ -35,6 +35,7 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(tvPlayerVolumeKeysEnabled) { copy(tvPlayerVolumeKeysEnabled = it) }
             host.bind(advancedPlayerVolumeEnabled) { copy(advancedPlayerVolumeEnabled = it) }
             host.bind(volumeStabilizationEnabled) { copy(volumeStabilizationEnabled = it) }
+            host.bind(adaptiveVideoQualityEnabled) { copy(adaptiveQualityEnabled = it) }
             host.bind(playerSubtitleStyle) { copy(subtitleStyle = it) }
             host.bind(playerPlaybackSpeed) { copy(selectedSpeed = it) }
         }
@@ -58,6 +59,17 @@ internal class PlayerPreferencesBinder @Inject constructor(
     fun setVolumeStabilization(host: PlayerStateHost, enabled: Boolean) {
         host.update { copy(volumeStabilizationEnabled = enabled) }
         host.scope.launch { settings.saveVolumeStabilizationEnabled(enabled) }
+    }
+
+    /** Включение снимает ручную блокировку серии: адаптация снова управляет качеством. */
+    fun setAdaptiveQuality(host: PlayerStateHost, enabled: Boolean) {
+        host.update {
+            copy(
+                adaptiveQualityEnabled = enabled,
+                manualQualityEpisode = if (enabled) null else manualQualityEpisode,
+            )
+        }
+        host.scope.launch { settings.saveAdaptiveVideoQualityEnabled(enabled) }
     }
 
     fun dismissMobileGestureTutorial(host: PlayerStateHost) {

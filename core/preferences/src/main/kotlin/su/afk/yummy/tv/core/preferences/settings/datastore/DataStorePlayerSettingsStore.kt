@@ -37,6 +37,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerPl
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerResizeModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerZoomLevelKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.screenOffAfterEndKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
@@ -64,6 +65,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val preferredVideoQuality: Flow<PreferredVideoQuality> =
         store.enumFlow(preferredVideoQualityKey, PreferredVideoQuality.BEST)
+
+    override val adaptiveVideoQualityEnabled: Flow<Boolean> =
+        store.boolean(adaptiveVideoQualityEnabledKey, false)
 
     override val autoSkipOpeningsEndings: Flow<Boolean> =
         store.boolean(autoSkipOpeningsEndingsKey, false)
@@ -195,6 +199,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality) =
         store.setEnum(preferredVideoQualityKey, quality)
+
+    override suspend fun setAdaptiveVideoQualityEnabled(enabled: Boolean) =
+        store.setBoolean(adaptiveVideoQualityEnabledKey, enabled)
 
     override suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) =
         store.setBoolean(autoSkipOpeningsEndingsKey, enabled)

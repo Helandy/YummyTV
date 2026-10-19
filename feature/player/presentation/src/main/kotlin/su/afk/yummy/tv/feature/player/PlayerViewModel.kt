@@ -49,6 +49,7 @@ import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeQuality
+import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.artworkSource
@@ -400,6 +401,8 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             is PlayerState.Event.QualitySelected -> {
                 if (event.quality == activeQuality(currentState)) return
+                // Ответ на уже отменённую адаптацией ситуацию: пользователь успел выбрать вручную.
+                if (event.auto && !adaptiveQualityActive(currentState)) return
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
                 allohaSource.onQualitySelected(event.quality)
@@ -408,6 +411,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                         selectedQuality = event.quality,
                         resumeFromMs = position,
                         playbackPositionMs = position,
+                        manualQualityEpisode = if (event.auto) {
+                            manualQualityEpisode
+                        } else {
+                            activeEpisode(currentState)
+                        },
                     )
                 }
             }
@@ -420,6 +428,9 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             is PlayerState.Event.SubtitleStyleChanged ->
                 preferences.saveSubtitleStyle(host, event.settings)
+
+            is PlayerState.Event.AdaptiveQualityToggled ->
+                preferences.setAdaptiveQuality(host, event.enabled)
 
             is PlayerState.Event.VolumeStabilizationToggled ->
                 preferences.setVolumeStabilization(host, event.enabled)

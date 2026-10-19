@@ -77,6 +77,8 @@ internal fun BoxScope.MobilePlayerSidePanel(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
+    adaptiveQuality: Boolean,
+    onAdaptiveQualityChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     AnimatedVisibility(
@@ -157,6 +159,8 @@ internal fun BoxScope.MobilePlayerSidePanel(
                         qualities = qualities,
                         selectedQuality = selectedQuality,
                         onQualitySelected = onQualitySelected,
+                        adaptiveQuality = adaptiveQuality,
+                        onAdaptiveQualityChange = onAdaptiveQualityChange,
                         selectedSpeed = selectedSpeed,
                         onSpeedSelected = onSpeedSelected,
                         selectedResizeMode = selectedResizeMode,

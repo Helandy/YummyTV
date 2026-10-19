@@ -46,7 +46,7 @@ internal fun List<YaniSearchItemDto>.toSearchPageCache(
                 animeId = animeId,
                 title = item.title,
                 posterUrl = item.poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
-                rating = item.rating?.average,
+                rating = item.rating?.average?.takeIf { it > 0.0 },
                 year = item.year,
             )
         },

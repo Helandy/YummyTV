@@ -31,6 +31,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     val tvPlayerVolumeKeysEnabled: Flow<Boolean> = settingsStore.tvPlayerVolumeKeysEnabled
     val advancedPlayerVolumeEnabled: Flow<Boolean> = settingsStore.advancedPlayerVolumeEnabled
     val volumeStabilizationEnabled: Flow<Boolean> = settingsStore.volumeStabilizationEnabled
+    val adaptiveVideoQualityEnabled: Flow<Boolean> = settingsStore.adaptiveVideoQualityEnabled
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings> = settingsStore.playerSubtitleStyle
     val playerPlaybackSpeed: Flow<Float> = settingsStore.playerPlaybackSpeed
 
@@ -48,6 +49,10 @@ internal class PlayerSettingsHandler @Inject constructor(
 
     suspend fun saveVolumeStabilizationEnabled(enabled: Boolean) {
         settingsStore.setVolumeStabilizationEnabled(enabled)
+    }
+
+    suspend fun saveAdaptiveVideoQualityEnabled(enabled: Boolean) {
+        settingsStore.setAdaptiveVideoQualityEnabled(enabled)
     }
 
     suspend fun dismissMobilePlayerGestureTutorial() {

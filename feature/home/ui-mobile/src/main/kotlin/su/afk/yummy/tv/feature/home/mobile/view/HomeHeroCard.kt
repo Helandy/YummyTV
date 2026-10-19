@@ -101,7 +101,7 @@ internal fun HomeHeroCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.matchParentSize(),
                     )
-                    item.rating?.let { rating ->
+                    item.rating?.takeIf { it > 0.0 }?.let { rating ->
                         MobileRatingBadge(
                             rating = rating,
                             modifier = Modifier

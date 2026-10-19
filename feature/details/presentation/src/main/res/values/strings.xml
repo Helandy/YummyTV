@@ -40,6 +40,8 @@
     <string name="details_subscriptions">Subscriptions</string>
     <string name="details_mobile_subscriptions_sign_in_title">Sign in to get notified about new episodes</string>
     <string name="details_mobile_subscriptions_sign_in_description">Subscribe to a dub and we will let you know as soon as a new episode is out.</string>
+    <string name="details_mobile_more">More…</string>
+    <string name="details_mobile_less">Less</string>
     <string name="details_full_details">Details</string>
     <string name="details_trailers">Trailers</string>
     <string name="details_similar">Similar</string>

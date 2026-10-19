@@ -40,6 +40,8 @@
     <string name="details_subscriptions">Подписки</string>
     <string name="details_mobile_subscriptions_sign_in_title">Войдите, чтобы получать уведомления о новых сериях</string>
     <string name="details_mobile_subscriptions_sign_in_description">Подпишитесь на озвучку — и мы сообщим, как только выйдет новая серия.</string>
+    <string name="details_mobile_more">Подробнее…</string>
+    <string name="details_mobile_less">Свернуть</string>
     <string name="details_full_details">Детали</string>
     <string name="details_trailers">Трейлеры</string>
     <string name="details_similar">Похожее</string>

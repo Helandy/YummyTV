@@ -79,6 +79,7 @@ class SettingsViewModel @Inject internal constructor(
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
                         preferredPlayer = snapshot.preferredPlayer,
                         preferredVideoQuality = snapshot.preferredVideoQuality,
+                        adaptiveVideoQualityEnabled = snapshot.adaptiveVideoQualityEnabled,
                         watchNextEnabled = snapshot.watchNextEnabled,
                         previewCacheSize = snapshot.previewCacheSize,
                         autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
@@ -346,6 +347,10 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.advancedPlayerVolumeEnabled
                 analytics.eventAdvancedPlayerVolumeToggled(enabled)
                 settingsStore.setAdvancedPlayerVolumeEnabled(enabled)
+            }
+
+            SettingsState.Event.AdaptiveVideoQualityToggled -> viewModelScope.launch {
+                settingsStore.setAdaptiveVideoQualityEnabled(!currentState.adaptiveVideoQualityEnabled)
             }
 
             SettingsState.Event.VolumeStabilizationToggled -> viewModelScope.launch {

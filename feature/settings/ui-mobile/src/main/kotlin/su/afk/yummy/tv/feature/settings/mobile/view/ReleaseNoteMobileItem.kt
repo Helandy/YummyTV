@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.ReleaseNotesMarkdown
 import su.afk.yummy.tv.feature.settings.model.ReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.color
@@ -33,8 +34,8 @@ internal fun ReleaseNoteMobileItem(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                 shape = RoundedCornerShape(12.dp),
             )
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -66,11 +67,15 @@ internal fun ReleaseNoteMobileItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Text(
-            text = item.notes.ifBlank { stringResource(R.string.settings_release_notes_no_notes) },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        if (item.notes.isBlank()) {
+            Text(
+                text = stringResource(R.string.settings_release_notes_no_notes),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            ReleaseNotesMarkdown(markdown = item.notes)
+        }
     }
 }
 

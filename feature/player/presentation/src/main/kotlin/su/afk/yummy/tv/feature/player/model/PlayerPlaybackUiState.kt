@@ -34,6 +34,8 @@ data class PlayerPlaybackUiState(
     val qualityLabels: ImmutableList<String>,
     /** Выбранное качество, а если его нет среди доступных — лучшее доступное. */
     val activeQuality: String?,
+    /** Качеством управляет адаптивный режим: включён в настройках и в серии не выбрано вручную. */
+    val adaptiveQuality: Boolean,
     /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
     val playbackUrl: String,
     val canChangePlayer: Boolean,

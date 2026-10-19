@@ -117,6 +117,24 @@ class DubbingMatchUtilsTest {
         assertEquals(own, mergeExtraDubbings(base, extras)[0].skips)
     }
 
+    @Test
+    fun `retain base dubbings drops unmatched extras`() {
+        val base = listOf(video(1, "Озвучка AniLibria", "Kodik", "https://kodik"))
+        val extras = listOf(
+            video(-1, "AniLibria", "AniLibria", "source://anilibria/1/1"),
+            video(-2, "Unknown Team", "AniLibria", "source://anilibria/1/2"),
+        )
+        val kept = retainBaseDubbings(base, mergeExtraDubbings(base, extras))
+        assertEquals(listOf("source://anilibria/1/1"), kept.map { it.iframeUrl })
+        assertEquals("Озвучка AniLibria", kept[0].dubbing)
+    }
+
+    @Test
+    fun `retain base dubbings drops everything when base is empty`() {
+        val extras = listOf(video(-1, "AniLibria", "AniLibria", "source://anilibria/1/1"))
+        assertEquals(emptyList<AnimeVideo>(), retainBaseDubbings(emptyList(), mergeExtraDubbings(emptyList(), extras)))
+    }
+
     private fun video(id: Int, dubbing: String, player: String, url: String) = AnimeVideo(
         id = id,
         episode = "1",

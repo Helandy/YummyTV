@@ -26,6 +26,10 @@
     <string name="player_download_resolve_error">Не удалось подготовить серию к скачиванию</string>
     <string name="player_download_enqueue_error">Не удалось поставить скачивание в очередь</string>
     <string name="player_server_error">Ошибка сервера (%1$d)</string>
+    <string name="player_adaptive_quality_title">Адаптивное качество</string>
+    <string name="player_adaptive_quality_current">Сейчас: %1$s</string>
+    <string name="player_adaptive_quality_badge">А</string>
+    <string name="player_adaptive_quality_hint">Подстраивается под сеть и устройство</string>
     <string name="player_quality_auto">авто</string>
     <string name="player_selected">Сейчас</string>
     <string name="player_quality_title">Качество</string>

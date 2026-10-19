@@ -48,6 +48,7 @@ import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLau
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.animeSiteUrl
 import su.afk.yummy.tv.feature.details.utils.fullscreenUrl
@@ -217,6 +218,21 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.FullDetailsSelected ->
                 nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
+
+            DetailsState.Event.InfoSelected -> setState { copy(showInfoSheet = true) }
+
+            DetailsState.Event.InfoDismissed -> setState { copy(showInfoSheet = false) }
+
+            is DetailsState.Event.GenreSelected ->
+                nav.navigate(detailsNavigator.getRelationDest(DetailsRelationKind.GENRE, event.id))
+
+            is DetailsState.Event.StudioSelected ->
+                nav.navigate(
+                    detailsNavigator.getRelationDest(DetailsRelationKind.STUDIO, event.id, event.url)
+                )
+
+            is DetailsState.Event.DirectorSelected ->
+                nav.navigate(detailsNavigator.getRelationDest(DetailsRelationKind.DIRECTOR, event.id))
 
             DetailsState.Event.EpisodesSelected ->
                 nav.navigate(detailsNavigator.getEpisodesDest(animeId))

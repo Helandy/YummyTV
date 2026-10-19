@@ -50,7 +50,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.color
 private const val DPAD_SCROLL_STEP_PX = 120
 
 /** Стандартная ширина AlertDialog (до 560dp) мала для списка изменений на ТВ. */
-private const val DIALOG_WIDTH_FRACTION = 0.72f
+private const val DIALOG_WIDTH_FRACTION = 0.8f
 private val DIALOG_MAX_WIDTH = 960.dp
 
 /**
@@ -140,7 +140,7 @@ private fun ReleaseNotesTvList(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 360.dp)
+            .heightIn(max = 480.dp)
             .border(
                 width = 2.dp,
                 color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,

@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
+import su.afk.yummy.tv.feature.player.common.PlayerQualitySignals
 import javax.inject.Inject
 
 /** Собирает ExoPlayer сервиса: трек-селектор, декодеры, источники, буфер и аудио-фокус. */
@@ -25,6 +26,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
     private val playbackConfig: PlayerPlaybackConfig,
     private val settingsStore: PlayerSettingsStore,
     private val analyticsTracker: AnalyticsTracker,
+    private val qualitySignals: PlayerQualitySignals,
 ) {
     fun create(context: Context): PlayerExoPlayerBundle {
         val isLowRamDevice = context.isLowRamDevice()
@@ -64,6 +66,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             .setHandleAudioBecomingNoisy(true)
             .build()
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
+        exoPlayer.addAnalyticsListener(PlayerQualitySignalsListener(qualitySignals))
         exoPlayer.addAnalyticsListener(
             PlayerBufferingAnalyticsListener(
                 tracker = analyticsTracker,

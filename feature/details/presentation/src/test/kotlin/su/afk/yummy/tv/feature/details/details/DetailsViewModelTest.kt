@@ -36,6 +36,7 @@ import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
+import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.animeDetails
@@ -110,6 +111,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { subscriptionHandler.pendingSubscriptionStates(any()) } returns emptyMap()
         every { detailsNavigator.getDetailsDest(any()) } returns navKey
         every { detailsNavigator.getFullDetailsDest(any()) } returns navKey
+        every { detailsNavigator.getRelationDest(any(), any(), any()) } returns navKey
         every { detailsNavigator.getEpisodesDest(any(), any()) } returns navKey
         every { detailsNavigator.getTrailersDest(any()) } returns navKey
         every { detailsNavigator.getSimilarDest(any()) } returns navKey
@@ -376,6 +378,37 @@ class DetailsViewModelTest : BaseUnitTest() {
 
         assertNull(vm.currentState.pendingBalancerSelection)
         assertNull(vm.currentState.pendingDubbingSelection)
+    }
+
+    @Test
+    fun `info sheet opens and closes`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.InfoSelected)
+        assertTrue(vm.currentState.showInfoSheet)
+        vm.setEvent(Event.InfoDismissed)
+        assertFalse(vm.currentState.showInfoSheet)
+    }
+
+    @Test
+    fun `genre click opens genre relation screen`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.GenreSelected(5))
+
+        verify(exactly = 1) { detailsNavigator.getRelationDest(DetailsRelationKind.GENRE, 5, null) }
+        verify(exactly = 1) { nav.navigate(navKey) }
+    }
+
+    @Test
+    fun `studio and director clicks open relation screens`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.StudioSelected(7, "url"))
+        vm.setEvent(Event.DirectorSelected(8))
+
+        verify(exactly = 1) { detailsNavigator.getRelationDest(DetailsRelationKind.STUDIO, 7, "url") }
+        verify(exactly = 1) { detailsNavigator.getRelationDest(DetailsRelationKind.DIRECTOR, 8, null) }
     }
 
     @Test

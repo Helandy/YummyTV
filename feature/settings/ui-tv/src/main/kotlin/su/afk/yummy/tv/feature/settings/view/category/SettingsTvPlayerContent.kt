@@ -37,6 +37,14 @@ internal fun SettingsTvPlayerContent(
             .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_adaptive_video_quality_title),
+        hint = stringResource(R.string.settings_adaptive_video_quality_hint),
+        enabled = state.adaptiveVideoQualityEnabled,
+        onClick = { onEvent(SettingsState.Event.AdaptiveVideoQualityToggled) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsDivider()
     val qualities = videoQualitySliderEntries
     val qualityIndex =
         qualities.indexOf(state.preferredVideoQuality).coerceAtLeast(0)
@@ -45,7 +53,7 @@ internal fun SettingsTvPlayerContent(
         valueText = qualities[qualityIndex].label(),
         value = qualityIndex,
         valueRange = 0..qualities.lastIndex,
-        enabled = true,
+        enabled = !state.adaptiveVideoQualityEnabled,
         onValueChange = {
             onEvent(
                 SettingsState.Event.PreferredVideoQualitySelected(qualities[it]),

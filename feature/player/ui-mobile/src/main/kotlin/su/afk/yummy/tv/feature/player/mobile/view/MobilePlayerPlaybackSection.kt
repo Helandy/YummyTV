@@ -2,11 +2,18 @@ package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
@@ -19,6 +26,8 @@ internal fun MobilePlayerPlaybackSection(
     qualities: List<String>,
     selectedQuality: String?,
     onQualitySelected: (String) -> Unit,
+    adaptiveQuality: Boolean,
+    onAdaptiveQualityChange: (Boolean) -> Unit,
     selectedSpeed: Float,
     onSpeedSelected: (Float) -> Unit,
     selectedResizeMode: PlayerResizeMode,
@@ -31,12 +40,50 @@ internal fun MobilePlayerPlaybackSection(
                 title = stringResource(R.string.player_quality_title),
                 icon = Icons.Filled.HighQuality,
             ) {
+                // Сверху переключатель: он решает, кто управляет качеством, а ползунок ниже —
+                // лишь показывает/задаёт уровень. Текущее качество названо один раз.
+                if (qualities.size > 1) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.player_adaptive_quality_title),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = if (adaptiveQuality) {
+                                    stringResource(
+                                        R.string.player_adaptive_quality_current,
+                                        qualities.getOrNull(qualityIndex).orEmpty(),
+                                    )
+                                } else {
+                                    stringResource(R.string.player_adaptive_quality_hint)
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (adaptiveQuality) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+                        Switch(checked = adaptiveQuality, onCheckedChange = onAdaptiveQualityChange)
+                    }
+                }
                 MobilePlayerSliderRow(
                     value = qualityIndex,
                     valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
                     valueLabel = { index -> qualities[index] },
                     onValueCommitted = { index -> onQualitySelected(qualities[index]) },
                     tickLabels = qualities,
+                    // Качеством рулит адаптация: чтобы выбрать вручную, её нужно выключить.
+                    enabled = !adaptiveQuality,
+                    // Выбранное качество уже подсвечено в подписях под треком.
+                    showValueLabel = false,
                 )
             }
         }

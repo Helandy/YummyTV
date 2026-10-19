@@ -18,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -27,7 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -42,7 +40,8 @@ import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsInfoBlock
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsInfoSheet
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileSkeleton
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
@@ -85,7 +84,6 @@ fun DetailsMobileScreen(
     val emptyText = stringResource(R.string.details_mobile_empty)
     val error = state.error?.asString().takeIf { details == null }
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
     val notificationPermissionGate = rememberNotificationPermissionGate()
     val context = LocalContext.current
     LaunchedEffect(effect) {
@@ -141,11 +139,7 @@ fun DetailsMobileScreen(
                     onBack = { onEvent(DetailsState.Event.BackSelected) },
                     onShare = { onEvent(DetailsState.Event.ShareSelected) },
                     onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
-                    onTitleClick = {
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(2)
-                        }
-                    },
+                    onInfoClick = { onEvent(DetailsState.Event.InfoSelected) },
                     onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
                     onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
                     onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
@@ -159,7 +153,6 @@ fun DetailsMobileScreen(
                     onSubscriptionsLockedSelected = {
                         onEvent(DetailsState.Event.SubscriptionsSignInPromptSelected)
                     },
-                    onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                     onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
                     onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
                     onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
@@ -173,8 +166,11 @@ fun DetailsMobileScreen(
                 )
             }
             item(key = "description") {
-                DetailsDescriptionSection(
-                    description = details.description,
+                DetailsInfoBlock(
+                    details = details,
+                    onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
+                    onStudioSelected = { id, url -> onEvent(DetailsState.Event.StudioSelected(id, url)) },
+                    onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
@@ -223,6 +219,14 @@ fun DetailsMobileScreen(
             onPermissionRequested = { onEvent(DetailsState.Event.NotificationPermissionRequested) },
             explanationRes = CoreR.string.notification_permission_explanation_episode_push,
         )
+        if (state.showInfoSheet) {
+            state.details?.let { details ->
+                DetailsInfoSheet(
+                    titles = details.otherTitles.filter { it.isNotBlank() },
+                    onDismiss = { onEvent(DetailsState.Event.InfoDismissed) },
+                )
+            }
+        }
         if (state.showSubscriptionsSignInPrompt) {
             SubscriptionsSignInSheet(
                 onSignIn = { onEvent(DetailsState.Event.SignInSelected) },

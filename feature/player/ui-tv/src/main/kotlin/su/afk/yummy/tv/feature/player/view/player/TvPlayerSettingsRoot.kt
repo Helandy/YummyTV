@@ -35,6 +35,9 @@ internal fun TvPlayerSettingsRoot(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
+    showAdaptiveQuality: Boolean,
+    adaptiveQualityEnabled: Boolean,
+    onAdaptiveQualityChange: (Boolean) -> Unit,
     onOpenPage: (TvPlayerSettingsPage) -> Unit,
 ) {
     @Composable
@@ -68,6 +71,15 @@ internal fun TvPlayerSettingsRoot(
         label = stringResource(R.string.player_resize_title),
         value = tvPlayerScaleOptions.firstOrNull { it.isSelected(resizeMode, zoomLevel) }?.tvLabel().orEmpty(),
     )
+    if (showAdaptiveQuality) {
+        TvPlayerSettingsMenuRow(
+            label = stringResource(R.string.player_adaptive_quality_title),
+            value = stringResource(if (adaptiveQualityEnabled) R.string.player_toggle_on else R.string.player_toggle_off),
+            toggleChecked = adaptiveQualityEnabled,
+            onClick = { onAdaptiveQualityChange(!adaptiveQualityEnabled) },
+            showChevron = false,
+        )
+    }
 
     TvPlayerSettingsHeader(stringResource(R.string.player_settings_section_subtitles))
     if (subtitleTrackNames.isNotEmpty()) {

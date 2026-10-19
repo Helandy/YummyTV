@@ -40,20 +40,24 @@ internal fun MobilePlayerSliderRow(
     onValueCommitted: (Int) -> Unit,
     modifier: Modifier = Modifier,
     tickLabels: List<String>? = null,
+    enabled: Boolean = true,
+    showValueLabel: Boolean = true,
 ) {
     var dragValue by remember(value) { mutableStateOf<Int?>(null) }
     val shownValue = dragValue ?: value
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = valueLabel(shownValue),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        if (showValueLabel) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = valueLabel(shownValue),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Slider(
             value = shownValue.toFloat(),
@@ -63,6 +67,7 @@ internal fun MobilePlayerSliderRow(
                 dragValue = null
                 if (committed != value) onValueCommitted(committed)
             },
+            enabled = enabled,
             valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
             steps = (valueRange.last - valueRange.first - 1).coerceAtLeast(0),
             colors = SliderDefaults.colors(

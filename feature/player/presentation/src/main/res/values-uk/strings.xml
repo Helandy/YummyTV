@@ -26,6 +26,10 @@
     <string name="player_download_resolve_error">Не вдалося підготувати серію до завантаження</string>
     <string name="player_download_enqueue_error">Не вдалося поставити завантаження в чергу</string>
     <string name="player_server_error">Помилка сервера (%1$d)</string>
+    <string name="player_adaptive_quality_title">Адаптивна якість</string>
+    <string name="player_adaptive_quality_current">Зараз: %1$s</string>
+    <string name="player_adaptive_quality_badge">А</string>
+    <string name="player_adaptive_quality_hint">Підлаштовується під мережу та пристрій</string>
     <string name="player_quality_auto">авто</string>
     <string name="player_selected">Зараз</string>
     <string name="player_quality_title">Якість</string>

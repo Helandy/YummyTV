@@ -68,6 +68,8 @@
     <string name="settings_player_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
     <string name="settings_player_orientation_right">Right</string>
     <string name="settings_player_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
+    <string name="settings_adaptive_video_quality_title">Adaptive quality</string>
+    <string name="settings_adaptive_video_quality_hint">Adjusts to your device and network: drops when playback stutters, returns when it improves. Preferred quality is not used</string>
     <string name="settings_preferred_video_quality_title">Preferred video quality</string>
     <string name="settings_preferred_video_quality_best">Best available</string>
     <string name="settings_preferred_video_quality_best_hint">Use the highest stream quality</string>

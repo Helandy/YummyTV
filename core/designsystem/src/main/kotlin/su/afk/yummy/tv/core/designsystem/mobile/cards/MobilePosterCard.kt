@@ -97,7 +97,7 @@ fun MobilePosterCard(
                             .padding(horizontal = 8.dp, vertical = 3.dp),
                     )
                 }
-                rating?.let { value ->
+                rating?.takeIf { it > 0.0 }?.let { value ->
                     MobileRatingBadge(
                         rating = value,
                         modifier = Modifier

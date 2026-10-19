@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +53,7 @@ internal fun DetailsMobileHero(
     onBack: () -> Unit,
     onShare: () -> Unit,
     onPosterClick: () -> Unit,
-    onTitleClick: () -> Unit,
+    onInfoClick: () -> Unit,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFavoriteToggle: () -> Unit,
@@ -158,43 +160,58 @@ internal fun DetailsMobileHero(
             )
             Text(
                 text = details.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onTitleClick),
+                modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
-            DetailsMetaChips(details)
-            details.genres.take(5).joinToString(" • ") { it.title }.takeIf { it.isNotBlank() }
-                ?.let { genres ->
+            val originalTitle = details.otherTitles.firstOrNull { it.isNotBlank() }
+            val ageRating = details.ageRating?.takeIf { it.isNotBlank() }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            ) {
+                originalTitle?.let {
                     Text(
-                        text = genres,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f),
+                        text = it,
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         textAlign = TextAlign.Center,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-            details.episodes?.formatAiredProgress(details.status)?.let { progress ->
-                Text(
-                    text = progress,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f),
-                    textAlign = TextAlign.Center,
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = stringResource(DetailsR.string.details_full_details),
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onInfoClick),
                 )
+                ageRating?.let { DetailsChip(label = it) }
             }
+            DetailsMetaChips(details)
             details.episodes?.formatNextEpisodeRelease()?.let { nextEpisode ->
                 Text(
                     text = nextEpisode,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            details.episodes?.formatAiredProgress(details.status)?.let { progress ->
+                Text(
+                    text = progress,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f),
                     textAlign = TextAlign.Center,
                 )
             }

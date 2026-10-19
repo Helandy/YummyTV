@@ -18,6 +18,9 @@ interface PlayerSettingsStore {
 
     val preferredPlayer: Flow<PreferredPlayer>
     val preferredVideoQuality: Flow<PreferredVideoQuality>
+
+    /** Включено ли адаптивное качество видео. */
+    val adaptiveVideoQualityEnabled: Flow<Boolean>
     val autoSkipOpeningsEndings: Flow<Boolean>
 
     /** Задержка перед автопропуском опенинга/эндинга, сек (1..15). */
@@ -89,6 +92,9 @@ interface PlayerSettingsStore {
 
     suspend fun setPreferredPlayer(player: PreferredPlayer)
     suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality)
+
+    /** Адаптивное качество: плеер сам понижает и повышает качество; предпочитаемое тогда не нужно. */
+    suspend fun setAdaptiveVideoQualityEnabled(enabled: Boolean)
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean)
     suspend fun setAutoSkipDelaySeconds(seconds: Int)
     suspend fun setShowOpeningOnTimeline(enabled: Boolean)

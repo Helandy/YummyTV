@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.utils
 
+import su.afk.yummy.tv.feature.player.PlayerState
+
 private val ALL_QUALITY_LEVELS = listOf(360, 480, 720, 1080, 1440, 2160)
 
 // From URL like ".../1080.mp4:hls:manifest.m3u8" generates quality map up to detected max.
@@ -12,3 +14,7 @@ internal fun deriveQualityUrls(url: String): LinkedHashMap<String, String> {
         "${q}p" to url.replace("$detected.mp4:hls:", "$q.mp4:hls:")
     }
 }
+
+/** Адаптация качества работает: включена в настройках и в этой серии качество не выбрано вручную. */
+internal fun adaptiveQualityActive(state: PlayerState.State): Boolean =
+    state.adaptiveQualityEnabled && state.manualQualityEpisode != activeEpisode(state)

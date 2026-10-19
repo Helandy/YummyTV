@@ -13,6 +13,7 @@ data class SettingsSnapshot(
     val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize,
     val preferredPlayer: PreferredPlayer,
     val preferredVideoQuality: PreferredVideoQuality,
+    val adaptiveVideoQualityEnabled: Boolean = false,
     val watchNextEnabled: Boolean,
     val previewCacheSize: Int,
     val autoSkipOpeningsEndings: Boolean,

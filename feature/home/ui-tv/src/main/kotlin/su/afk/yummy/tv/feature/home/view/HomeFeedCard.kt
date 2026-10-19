@@ -139,7 +139,7 @@ internal fun HomeFeedCard(
                     )
                 }
 
-                item.rating?.let { rating ->
+                item.rating?.takeIf { it > 0.0 }?.let { rating ->
                     RatingBadge(
                         rating = rating,
                         modifier = Modifier

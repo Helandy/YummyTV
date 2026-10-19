@@ -49,7 +49,7 @@ internal fun YaniPostDetailsDto.domain() = PostDetails(
             it.title,
             it.poster?.run { mega ?: huge ?: big ?: medium ?: small }?.toHttpsUrl(),
             it.year,
-            it.rating?.average,
+            it.rating?.average?.takeIf { it > 0.0 },
         )
     },
     reaction = PostReaction(

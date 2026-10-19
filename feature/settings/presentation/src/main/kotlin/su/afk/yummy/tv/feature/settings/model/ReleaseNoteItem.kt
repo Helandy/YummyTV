@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 
 /**
  * Релиз в истории изменений. [version] без суффикса `-beta` (бета отмечена [isPrerelease]),
- * [date] уже отформатирована (`20.09.2026`), [notes] — changelog без markdown-разметки.
+ * [date] уже отформатирована (`20.09.2026`), [notes] — сырой markdown из GitHub.
  * [isCurrent] — установленная сейчас версия.
  */
 @Immutable

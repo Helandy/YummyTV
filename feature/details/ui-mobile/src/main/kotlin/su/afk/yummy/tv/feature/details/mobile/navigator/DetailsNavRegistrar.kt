@@ -11,12 +11,10 @@ import su.afk.yummy.tv.feature.details.collections.CollectionsViewModel
 import su.afk.yummy.tv.feature.details.details.DetailsViewModel
 import su.afk.yummy.tv.feature.details.episodes.EpisodesViewModel
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsViewModel
-import su.afk.yummy.tv.feature.details.full.FullDetailsViewModel
 import su.afk.yummy.tv.feature.details.mobile.collections.CollectionsMobileScreen
 import su.afk.yummy.tv.feature.details.mobile.details.DetailsMobileScreen
 import su.afk.yummy.tv.feature.details.mobile.episodes.EpisodesMobileScreen
 import su.afk.yummy.tv.feature.details.mobile.episodes.dubbings.EpisodeDubbingsMobileScreen
-import su.afk.yummy.tv.feature.details.mobile.full.FullDetailsMobileScreen
 import su.afk.yummy.tv.feature.details.mobile.rating.RatingMobileScreen
 import su.afk.yummy.tv.feature.details.mobile.relation.RelationMobileScreen
 import su.afk.yummy.tv.feature.details.mobile.screenshots.ScreenshotsMobileScreen
@@ -28,7 +26,6 @@ import su.afk.yummy.tv.feature.details.navigator.DetailsCollectionsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodeDubbingsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodesDestination
-import su.afk.yummy.tv.feature.details.navigator.DetailsFullDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsRatingDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsRelationDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsScreenshotsDestination
@@ -69,15 +66,6 @@ class DetailsNavRegistrar @Inject constructor() : IMobileDetailsEntry {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     DetailsMobileScreen(state = state, effect = effect, onEvent = onEvent)
-                }
-            }
-            entry<DetailsFullDestination> { dest ->
-                val viewModel = hiltViewModel<FullDetailsViewModel, FullDetailsViewModel.Factory>(
-                    key = "mobile-full-details-${dest.animeId}",
-                    creationCallback = { factory -> factory.create(dest.animeId) },
-                )
-                ScreenNavigator(viewModel) { state, effect, onEvent ->
-                    FullDetailsMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
             entry<DetailsEpisodesDestination> { dest ->

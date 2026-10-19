@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOr
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewCacheSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.screenOffAfterEndKey
@@ -111,6 +112,7 @@ internal class DataStoreSettingsStore @Inject constructor(
                 preferredVideoQualityKey,
                 PreferredVideoQuality.BEST,
             ),
+            adaptiveVideoQualityEnabled = prefs[adaptiveVideoQualityEnabledKey] ?: false,
             watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
             previewCacheSize = (prefs[previewCacheSizeKey] ?: 100).coerceIn(50, 500),
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,

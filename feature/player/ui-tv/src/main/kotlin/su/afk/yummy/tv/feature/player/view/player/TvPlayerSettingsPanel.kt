@@ -61,6 +61,9 @@ internal fun TvPlayerSettingsPanel(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
+    showAdaptiveQuality: Boolean,
+    adaptiveQualityEnabled: Boolean,
+    onAdaptiveQualityChange: (Boolean) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -140,6 +143,9 @@ internal fun TvPlayerSettingsPanel(
                     showStabilization = showStabilization,
                     stabilizationEnabled = stabilizationEnabled,
                     onStabilizationChange = onStabilizationChange,
+                    showAdaptiveQuality = showAdaptiveQuality,
+                    adaptiveQualityEnabled = adaptiveQualityEnabled,
+                    onAdaptiveQualityChange = onAdaptiveQualityChange,
                     onOpenPage = ::openPage,
                 )
 

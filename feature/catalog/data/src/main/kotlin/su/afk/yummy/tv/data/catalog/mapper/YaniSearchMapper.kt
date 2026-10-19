@@ -10,7 +10,7 @@ internal fun YaniSearchItemDto.toSearchItem(): SearchItem? {
         id = id,
         title = title,
         posterUrl = poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
-        rating = rating?.average,
+        rating = rating?.average?.takeIf { it > 0.0 },
         year = year,
     )
 }

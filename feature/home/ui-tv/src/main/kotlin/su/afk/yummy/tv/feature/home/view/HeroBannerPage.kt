@@ -152,7 +152,7 @@ internal fun HeroBannerPage(
                 .padding(start = 24.dp, end = HERO_ART_WIDTH - 40.dp, top = 32.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
         ) {
-            item.rating?.let { rating ->
+            item.rating?.takeIf { it > 0.0 }?.let { rating ->
                 RatingBadge(
                     rating = rating,
                     decimals = 1,

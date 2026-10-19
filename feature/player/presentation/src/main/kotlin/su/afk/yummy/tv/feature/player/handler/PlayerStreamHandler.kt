@@ -18,6 +18,7 @@ import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
@@ -59,14 +60,24 @@ internal class PlayerStreamHandler @Inject constructor(
         // session's master URL to the bnsi one parsed out of the source list, and that URL carries
         // a path token the CDN answers with 403 token_decrypt once the session is live. It may only
         // run after the correctly-signed master is in play, which is why it stays in the ViewModel.
-        val preferredHeightAsync = async { settingsStore.preferredVideoQuality.first().height }
+        // Адаптивный режим стартует с лучшего не выше потолка политики: предпочитаемое качество
+        // при нём отключено в настройках и не учитывается.
+        val preferredHeightAsync = async {
+            if (settingsStore.adaptiveVideoQualityEnabled.first()) {
+                QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT
+            } else {
+                settingsStore.preferredVideoQuality.first().height
+            }
+        }
         val resumeAsync = async {
             pendingResumeMs ?: loadResumePosition(state.animeId, activeEpisode(state))
         }
 
         val session = if (request.iframeUrl.isAllohaPlayerUrl()) {
             openAllohaStreamSession(request)
-        } else null
+        } else {
+            null
+        }
         // Свежая сессия (без переиспользования) ещё никому не принадлежит — её регистрирует activate
         // во ViewModel. Отмена или сбой на await ниже иначе оставили бы открытыми WebView и прокси.
         // Переиспользованную сессию не трогаем: она живая и принадлежит менеджеру сессий.

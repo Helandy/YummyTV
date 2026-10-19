@@ -36,6 +36,12 @@ internal fun SettingsMobilePlayerContent(
                 hint = state.preferredPlayer.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.PLAYER) },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_adaptive_video_quality_title),
+                hint = stringResource(R.string.settings_adaptive_video_quality_hint),
+                enabled = state.adaptiveVideoQualityEnabled,
+                onClick = { onEvent(SettingsState.Event.AdaptiveVideoQualityToggled) },
+            )
             val videoQualityIndex = videoQualitySliderEntries
                 .indexOf(state.preferredVideoQuality).coerceAtLeast(0)
             SettingsMobileSliderRow(
@@ -43,7 +49,7 @@ internal fun SettingsMobilePlayerContent(
                 valueLabel = { videoQualitySliderEntries[it].label() },
                 value = videoQualityIndex,
                 valueRange = 0..videoQualitySliderEntries.lastIndex,
-                enabled = true,
+                enabled = !state.adaptiveVideoQualityEnabled,
                 onValueCommitted = {
                     onEvent(
                         SettingsState.Event.PreferredVideoQualitySelected(

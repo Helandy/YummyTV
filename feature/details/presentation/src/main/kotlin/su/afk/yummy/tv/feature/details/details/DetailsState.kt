@@ -42,6 +42,8 @@ class DetailsState {
         val isSubscriptionsLoading: Boolean = false,
         /** Гостю показана шторка «войдите, чтобы получать уведомления о новых сериях». */
         val showSubscriptionsSignInPrompt: Boolean = false,
+        /** Открыта шторка с другими названиями тайтла (кнопка (i) у названия). */
+        val showInfoSheet: Boolean = false,
         /** Системный запрос разрешения на уведомления уже показывали. */
         val notificationPermissionRequested: Boolean = false,
         val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
@@ -67,6 +69,21 @@ class DetailsState {
 
         /** Пользователь открыл полный текст деталей. */
         data object FullDetailsSelected : Event
+
+        /** Пользователь нажал (i) у названия — открыть шторку с другими названиями. */
+        data object InfoSelected : Event
+
+        /** Пользователь закрыл шторку с другими названиями. */
+        data object InfoDismissed : Event
+
+        /** Пользователь нажал на жанр. */
+        data class GenreSelected(val id: Int) : Event
+
+        /** Пользователь нажал на студию. */
+        data class StudioSelected(val id: Int, val url: String?) : Event
+
+        /** Пользователь нажал на создателя. */
+        data class DirectorSelected(val id: Int) : Event
 
         /** Пользователь открыл список эпизодов. */
         data object EpisodesSelected : Event

@@ -40,6 +40,8 @@
     <string name="details_subscriptions">Підписки</string>
     <string name="details_mobile_subscriptions_sign_in_title">Увійдіть, щоб отримувати сповіщення про нові серії</string>
     <string name="details_mobile_subscriptions_sign_in_description">Підпишіться на озвучення — і ми повідомимо, щойно вийде нова серія.</string>
+    <string name="details_mobile_more">Докладніше…</string>
+    <string name="details_mobile_less">Згорнути</string>
     <string name="details_full_details">Деталі</string>
     <string name="details_trailers">Трейлери</string>
     <string name="details_similar">Схоже</string>

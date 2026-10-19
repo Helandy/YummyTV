@@ -46,7 +46,7 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
                 animeId = animeId,
                 title = item.title,
                 posterUrl = item.poster?.toUrl(),
-                rating = item.rating?.average,
+                rating = item.rating?.average?.takeIf { it > 0.0 },
                 year = item.year?.takeIf { it > 0 },
             )
         },

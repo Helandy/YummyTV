@@ -49,6 +49,7 @@ import su.afk.yummy.tv.domain.anime.model.StudioUrlUnavailableException
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import su.afk.yummy.tv.domain.anime.utils.mergeExtraDubbings
+import su.afk.yummy.tv.domain.anime.utils.retainBaseDubbings
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAnimeDetails
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailers as toStoredAnimeTrailers
@@ -142,9 +143,11 @@ class YaniAnimeRepository(
             if (allowNetwork) getAnimeDetails(animeId) else getCachedAnimeDetails(animeId)
         }.getOrNull() ?: return this
         val extras = extraVideoRepositories.flatMap { repository ->
-            runSuspendCatching { repository.videos(details) }.getOrDefault(emptyList())
+            val videos = runSuspendCatching { repository.videos(details) }.getOrDefault(emptyList())
+            val merged = mergeExtraDubbings(this, videos)
+            if (repository.requiresMatchingDubbing) retainBaseDubbings(this, merged) else merged
         }
-        return if (extras.isEmpty()) this else this + mergeExtraDubbings(this, extras)
+        return if (extras.isEmpty()) this else this + extras
     }
 
     override suspend fun getAnimeRecommendations(

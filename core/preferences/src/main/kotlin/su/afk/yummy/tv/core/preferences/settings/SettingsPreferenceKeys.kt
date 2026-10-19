@@ -21,6 +21,8 @@ internal object SettingsPreferenceKeys {
     val librarySortDirectionKey = stringPreferencesKey("library_sort_direction")
     val preferredPlayerKey = stringPreferencesKey("preferred_player")
     val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
+    val adaptiveVideoQualityEnabledKey =
+        booleanPreferencesKey("adaptive_video_quality_enabled")
     val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     val betaUpdatesEnabledKey = booleanPreferencesKey("beta_updates_enabled")
     val appLogRecordingEnabledKey = booleanPreferencesKey("app_log_recording_enabled")

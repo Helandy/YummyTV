@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.FormatListNumbered
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Notifications
@@ -27,7 +26,6 @@ internal fun buildMobileActions(
     details: AnimeDetails,
     onSubscriptionsSelected: () -> Unit,
     onSubscriptionsLockedSelected: () -> Unit,
-    onFullDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
     onSimilarSelected: () -> Unit,
@@ -67,14 +65,6 @@ internal fun buildMobileActions(
                 ),
             )
         }
-        add(
-            MobileDetailsAction(
-                DetailsButtonAction.FULL_DETAILS,
-                stringResource(R.string.details_full_details),
-                Icons.Filled.Info,
-                onFullDetailsSelected,
-            ),
-        )
         add(
             MobileDetailsAction(
                 DetailsButtonAction.TRAILERS,

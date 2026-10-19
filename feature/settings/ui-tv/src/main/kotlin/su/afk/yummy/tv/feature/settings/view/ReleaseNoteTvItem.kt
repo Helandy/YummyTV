@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.ReleaseNotesMarkdown
 import su.afk.yummy.tv.feature.settings.model.ReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.color
@@ -59,11 +60,15 @@ internal fun ReleaseNoteTvItem(
                 )
             }
         }
-        Text(
-            text = item.notes.ifBlank { stringResource(R.string.settings_release_notes_no_notes) },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        if (item.notes.isBlank()) {
+            Text(
+                text = stringResource(R.string.settings_release_notes_no_notes),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            ReleaseNotesMarkdown(markdown = item.notes)
+        }
     }
 }
 

@@ -14,6 +14,7 @@ import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeEpisodeSource
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activeQuality
+import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
@@ -104,6 +105,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
             ?: 0,
         qualityLabels = qualities.keys.toImmutableList(),
         activeQuality = activeQuality,
+        adaptiveQuality = adaptiveQualityActive(this),
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
         canChangePlayer = canChangePlayer,
         canChangeDubbing = canChangeDubbing,

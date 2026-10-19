@@ -48,6 +48,7 @@ class SettingsState {
             LibraryContinueWatchingCardSize.LARGE,
         val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
         val preferredVideoQuality: PreferredVideoQuality = PreferredVideoQuality.BEST,
+        val adaptiveVideoQualityEnabled: Boolean = false,
         val isPreviewChannelBrowsable: Boolean = false,
         val watchNextEnabled: Boolean = true,
         val previewCacheSize: Int = 100,
@@ -141,6 +142,8 @@ class SettingsState {
 
         /** Пользователь выбрал предпочитаемое качество видео. */
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
+
+        data object AdaptiveVideoQualityToggled : Event
 
         /** Пользователь выбрал размер буфера плеера. */
         data class PlayerBufferProfileSelected(val profile: PlayerBufferProfile) : Event

@@ -48,6 +48,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
 import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
+import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
@@ -330,6 +331,14 @@ internal fun MobileNativePlayer(
     )
 
     PlayerStallWatchdogEffect(player = player, onEvent = onEvent)
+
+    PlayerQualityAdaptationEffect(
+        player = player,
+        enabled = ui.adaptiveQuality,
+        qualities = ui.qualityLabels,
+        activeQuality = ui.activeQuality,
+        onEvent = onEvent,
+    )
 
     PlayerListenerEffect(
         player = player,
@@ -778,6 +787,8 @@ internal fun MobileNativePlayer(
             showStabilization = state.volumeStabilizationSupported,
             stabilizationEnabled = state.volumeStabilizationEnabled,
             onStabilizationChange = { onEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
+            adaptiveQuality = ui.adaptiveQuality,
+            onAdaptiveQualityChange = { onEvent(PlayerState.Event.AdaptiveQualityToggled(it)) },
             onDismiss = {
                 sidePanelOpen = false
                 overlay.show()

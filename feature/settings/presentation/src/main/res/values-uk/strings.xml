@@ -68,6 +68,8 @@
     <string name="settings_player_orientation_left_hint">Завжди альбомна орієнтація (ліворуч), навіть якщо поворот екрана заблокований у системі</string>
     <string name="settings_player_orientation_right">Праворуч</string>
     <string name="settings_player_orientation_right_hint">Завжди альбомна орієнтація (праворуч), навіть якщо поворот екрана заблокований у системі</string>
+    <string name="settings_adaptive_video_quality_title">Адаптивна якість</string>
+    <string name="settings_adaptive_video_quality_hint">Підлаштовується під пристрій і мережу: знижується при підвисаннях, повертається при покращенні. Бажана якість не використовується</string>
     <string name="settings_preferred_video_quality_title">Бажана якість</string>
     <string name="settings_preferred_video_quality_best">Найкраще</string>
     <string name="settings_preferred_video_quality_best_hint">Використовувати максимальну якість потоку</string>

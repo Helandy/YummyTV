@@ -43,12 +43,14 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     private val strings: StringProvider = mockk()
 
     private val preferredQuality = MutableStateFlow(PreferredVideoQuality.P720)
+    private val adaptiveQuality = MutableStateFlow(false)
 
     @Before
     fun setUp() {
         every { strings.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { strings.get(any<Int>(), *anyVararg()) } answers { "res${firstArg<Int>()}" }
         every { settingsStore.preferredVideoQuality } returns preferredQuality
+        every { settingsStore.adaptiveVideoQualityEnabled } returns adaptiveQuality
         coEvery { getWatchProgress(ANIME_ID, "3") } returns null
     }
 
@@ -83,6 +85,17 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
         val result = createHandler().resolve(state(KODIK_URL), null) as PlayerStreamResult.Stream
 
         assertNull(result.selectedQuality)
+    }
+
+    @Test
+    fun `adaptive quality starts at the best level up to the policy ceiling and ignores the preferred one`() = runTest {
+        adaptiveQuality.value = true
+        preferredQuality.value = PreferredVideoQuality.P360
+        coEvery { resolvePlayerStream(any()) } returns stream("360p", "720p", "1080p", "2160p")
+
+        val result = createHandler().resolve(state(KODIK_URL), null) as PlayerStreamResult.Stream
+
+        assertEquals("2160p", result.selectedQuality)
     }
 
     @Test

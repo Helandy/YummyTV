@@ -26,6 +26,10 @@
     <string name="player_download_resolve_error">Could not prepare this episode for download</string>
     <string name="player_download_enqueue_error">Could not queue download</string>
     <string name="player_server_error">Server error (%1$d)</string>
+    <string name="player_adaptive_quality_title">Adaptive quality</string>
+    <string name="player_adaptive_quality_current">Now: %1$s</string>
+    <string name="player_adaptive_quality_badge">A</string>
+    <string name="player_adaptive_quality_hint">Adapts to your network and device</string>
     <string name="player_quality_auto">auto</string>
     <string name="player_selected">Current</string>
     <string name="player_quality_title">Quality</string>
