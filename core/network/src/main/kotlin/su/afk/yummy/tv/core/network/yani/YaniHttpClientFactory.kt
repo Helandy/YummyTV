@@ -22,7 +22,6 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 
-private const val YANI_API_HOST = "api.yani.tv"
 private const val YANI_APPLICATION_HEADER = "X-Application"
 private const val YANI_LANGUAGE_HEADER = "Lang"
 private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
@@ -37,6 +36,7 @@ fun buildYaniHttpClient(
     yaniAuthPreferences: YaniAuthPreferences,
     okHttpClient: OkHttpClient,
     scope: CoroutineScope,
+    apiConfig: YaniApiConfig,
 ): HttpClient {
     val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, scope)
 
@@ -98,6 +98,8 @@ fun buildYaniHttpClient(
                                 YANI_AUTHORIZATION_PREFIX + headers.refreshToken,
                             )
                         }
+                        // Подмена адреса после проверки хоста выше: заголовки нужны только API yani.
+                        apiConfig.override?.let { request.url.host = it.host; request.url.port = it.port }
                     }
                 }
             },

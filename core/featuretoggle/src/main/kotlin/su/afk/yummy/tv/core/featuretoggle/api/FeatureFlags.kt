@@ -44,6 +44,12 @@ object FeatureFlags {
         defaultValue = "",
     )
 
+    /** Адрес API yani (https). Пустой или совпадающий со встроенным = остаётся встроенный. Подменяются хост и порт. */
+    val yaniApiBaseUrl = FeatureFlag.StringFlag(
+        key = "yani_api_base_url",
+        defaultValue = "",
+    )
+
     /** Доп. строка-сообщение на главном экране (не диалог). Пустой = не показывается. */
     val statusMessage = FeatureFlag.StringFlag(
         key = "status_message_text",

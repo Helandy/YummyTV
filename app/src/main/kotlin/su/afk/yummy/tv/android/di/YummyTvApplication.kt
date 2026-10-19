@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
+import su.afk.yummy.tv.core.network.yani.YaniApiConfig
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
@@ -63,6 +64,9 @@ class YummyTvApplication :
 
     @Inject
     lateinit var siteApiConfig: SiteApiConfig
+
+    @Inject
+    lateinit var yaniApiConfig: YaniApiConfig
 
     @Inject
     lateinit var onlineStatusCoordinator: OnlineStatusCoordinator
@@ -156,6 +160,7 @@ class YummyTvApplication :
             remoteBaseUrl = featureToggleProvider.getString(FeatureFlags.siteApiBaseUrl),
             remoteToken = featureToggleProvider.getString(FeatureFlags.siteApiToken),
         )
+        yaniApiConfig.apply(featureToggleProvider.getString(FeatureFlags.yaniApiBaseUrl))
     }
 
     /**
