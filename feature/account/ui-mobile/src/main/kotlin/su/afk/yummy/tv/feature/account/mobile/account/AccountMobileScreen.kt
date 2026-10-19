@@ -49,7 +49,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
-import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileQuickAction
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
@@ -141,7 +140,11 @@ fun AccountMobileScreen(
     ) {
         if (!state.isSessionResolved) {
             // Пока не пришёл первый снапшот сессии, не мигаем формой входа авторизованному пользователю.
-            AccountMobileLoadingIndicator(modifier = Modifier.fillMaxSize().statusBarsPadding())
+            AccountMobileLoadingIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            )
         } else if (!state.isSignedIn) {
             val quickActions = buildList {
                 add(
@@ -312,6 +315,7 @@ fun AccountMobileScreen(
                             MobileMessage(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 title = error,
+                                description = state.hubErrorDetails,
                                 icon = Icons.Filled.Warning,
                                 actionLabel = stringResource(CoreR.string.common_retry),
                                 onAction = { onEvent(AccountState.Event.RefreshHubSelected) },

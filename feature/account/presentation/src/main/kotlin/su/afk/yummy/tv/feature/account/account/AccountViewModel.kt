@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.error.toDisplayDetails
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
@@ -387,9 +388,9 @@ class AccountViewModel @Inject internal constructor(
         setState {
             copy(
                 expandedNotificationIds = if (expanding) {
-                    expandedNotificationIds.add(id)
+                    expandedNotificationIds.adding(id)
                 } else {
-                    expandedNotificationIds.remove(id)
+                    expandedNotificationIds.removing(id)
                 },
             )
         }
@@ -552,7 +553,7 @@ class AccountViewModel @Inject internal constructor(
         val state = currentState
         if (!sessionHandler.markHubLoadIfNeeded(state, force)) return
         viewModelScope.launch {
-            setState { copy(isStatsLoading = true, isNotificationsLoading = true, hubError = null) }
+            setState { copy(isStatsLoading = true, isNotificationsLoading = true, hubError = null, hubErrorDetails = null) }
             val result = hubHandler.loadHub(state.userId)
             setState {
                 var next = copy(isStatsLoading = false)
@@ -588,10 +589,12 @@ class AccountViewModel @Inject internal constructor(
             }
 
             is AccountNotificationsLoadResult.Failure -> {
+                val details = result.cause?.let { errorHandler.parse(it).toDisplayDetails() }
                 setState {
                     copy(
                         isNotificationsLoading = false,
                         hubError = result.error,
+                        hubErrorDetails = details,
                     )
                 }
             }

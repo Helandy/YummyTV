@@ -20,6 +20,7 @@ class ProfileEditState {
         val isSaving: Boolean = false,
         val isImageLoading: Boolean = false,
         val hasLoadError: Boolean = false,
+        val loadErrorDetails: String? = null,
         val nickname: String = "",
         val avatarUrl: String? = null,
         val bannerUrl: String? = null,

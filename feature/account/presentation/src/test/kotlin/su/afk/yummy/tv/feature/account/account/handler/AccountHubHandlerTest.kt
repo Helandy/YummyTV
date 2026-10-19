@@ -62,7 +62,10 @@ class AccountHubHandlerTest : BaseUnitTest() {
 
         val result = createHandler().loadNotifications()
 
-        assertEquals(AccountNotificationsLoadResult.Failure(AccountUiError.LOAD_NOTIFICATIONS_FAILED), result)
+        assertEquals(
+            AccountUiError.LOAD_NOTIFICATIONS_FAILED,
+            (result as AccountNotificationsLoadResult.Failure).error,
+        )
         coVerify(exactly = 0) { settingsStore.setYaniUnreadNotificationsCount(any()) }
     }
 

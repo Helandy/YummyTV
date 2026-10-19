@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonOff
@@ -28,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -56,7 +55,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import su.afk.yummy.tv.core.designsystem.R as CoreR
-import su.afk.yummy.tv.feature.account.common.utils.label
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,6 +98,7 @@ fun ProfileEditMobileScreen(
             state.isLoading -> AccountMobileLoadingIndicator()
             state.hasLoadError -> MobileMessage(
                 title = stringResource(R.string.profile_edit_load_error),
+                description = state.loadErrorDetails,
                 icon = Icons.Default.PersonOff,
                 actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(ProfileEditState.Event.RetrySelected) },
@@ -111,129 +110,129 @@ fun ProfileEditMobileScreen(
                     .fillMaxSize()
                     .imePadding(),
             ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                item(key = "media") {
-                    ProfileMediaSection(
-                        avatarUrl = state.pendingAvatarPreview ?: state.avatarUrl,
-                        bannerUrl = state.pendingBannerPreview ?: state.bannerUrl,
-                        enabled = !state.isImageLoading,
-                        onPick = { kind ->
-                            pendingImageKind = kind
-                            picker.launch(arrayOf("image/*", "application/octet-stream"))
-                        },
-                        onDelete = { deleteImageKind = it },
-                    )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    item(key = "media") {
+                        ProfileMediaSection(
+                            avatarUrl = state.pendingAvatarPreview ?: state.avatarUrl,
+                            bannerUrl = state.pendingBannerPreview ?: state.bannerUrl,
+                            enabled = !state.isImageLoading,
+                            onPick = { kind ->
+                                pendingImageKind = kind
+                                picker.launch(arrayOf("image/*", "application/octet-stream"))
+                            },
+                            onDelete = { deleteImageKind = it },
+                        )
+                    }
+                    item(key = "main") {
+                        ProfileMainSection(
+                            nickname = state.nickname,
+                            about = state.about,
+                            birthDate = state.birthDate,
+                            sex = state.sex,
+                            enabled = !state.isSaving,
+                            onAboutChanged = { onEvent(ProfileEditState.Event.AboutChanged(it)) },
+                            onBirthDateClick = { showDatePicker = true },
+                            onSexChanged = { onEvent(ProfileEditState.Event.SexChanged(it)) },
+                        )
+                    }
+                    item(key = "privacy") {
+                        ProfilePrivacySection(
+                            listPrivacy = state.listPrivacy,
+                            showShikimori = state.showShikimori,
+                            showTelegram = state.showTelegram,
+                            showVk = state.showVk,
+                            showDiscord = state.showDiscord,
+                            notifyTelegram = state.notifyTelegram,
+                            notifyVk = state.notifyVk,
+                            enabled = !state.isSaving,
+                            onListPrivacyChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.ListPrivacyChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onShowShikimoriChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.ShowShikimoriChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onShowTelegramChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.ShowTelegramChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onShowVkChanged = { onEvent(ProfileEditState.Event.ShowVkChanged(it)) },
+                            onShowDiscordChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.ShowDiscordChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onNotifyTelegramChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.NotifyTelegramChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onNotifyVkChanged = { onEvent(ProfileEditState.Event.NotifyVkChanged(it)) },
+                        )
+                    }
+                    item(key = "password") {
+                        ProfilePasswordSection(
+                            oldPassword = state.oldPassword,
+                            newPassword = state.newPassword,
+                            confirmPassword = state.confirmPassword,
+                            isSaving = state.isPasswordSaving,
+                            validationError = state.passwordValidationError,
+                            onOldPasswordChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.OldPasswordChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onNewPasswordChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.NewPasswordChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onConfirmPasswordChanged = {
+                                onEvent(
+                                    ProfileEditState.Event.ConfirmPasswordChanged(
+                                        it,
+                                    ),
+                                )
+                            },
+                            onSave = { onEvent(ProfileEditState.Event.ChangePasswordSelected) },
+                        )
+                    }
+                    item(key = "linked_accounts") {
+                        LinkedAccountsSection(
+                            linkedAccounts = state.linkedAccounts,
+                            unlinkingAccount = state.unlinkingAccount,
+                            onUnlink = { onEvent(ProfileEditState.Event.UnlinkAccountSelected(it)) },
+                        )
+                    }
                 }
-                item(key = "main") {
-                    ProfileMainSection(
-                        nickname = state.nickname,
-                        about = state.about,
-                        birthDate = state.birthDate,
-                        sex = state.sex,
-                        enabled = !state.isSaving,
-                        onAboutChanged = { onEvent(ProfileEditState.Event.AboutChanged(it)) },
-                        onBirthDateClick = { showDatePicker = true },
-                        onSexChanged = { onEvent(ProfileEditState.Event.SexChanged(it)) },
-                    )
-                }
-                item(key = "privacy") {
-                    ProfilePrivacySection(
-                        listPrivacy = state.listPrivacy,
-                        showShikimori = state.showShikimori,
-                        showTelegram = state.showTelegram,
-                        showVk = state.showVk,
-                        showDiscord = state.showDiscord,
-                        notifyTelegram = state.notifyTelegram,
-                        notifyVk = state.notifyVk,
-                        enabled = !state.isSaving,
-                        onListPrivacyChanged = {
-                            onEvent(
-                                ProfileEditState.Event.ListPrivacyChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onShowShikimoriChanged = {
-                            onEvent(
-                                ProfileEditState.Event.ShowShikimoriChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onShowTelegramChanged = {
-                            onEvent(
-                                ProfileEditState.Event.ShowTelegramChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onShowVkChanged = { onEvent(ProfileEditState.Event.ShowVkChanged(it)) },
-                        onShowDiscordChanged = {
-                            onEvent(
-                                ProfileEditState.Event.ShowDiscordChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onNotifyTelegramChanged = {
-                            onEvent(
-                                ProfileEditState.Event.NotifyTelegramChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onNotifyVkChanged = { onEvent(ProfileEditState.Event.NotifyVkChanged(it)) },
-                    )
-                }
-                item(key = "password") {
-                    ProfilePasswordSection(
-                        oldPassword = state.oldPassword,
-                        newPassword = state.newPassword,
-                        confirmPassword = state.confirmPassword,
-                        isSaving = state.isPasswordSaving,
-                        validationError = state.passwordValidationError,
-                        onOldPasswordChanged = {
-                            onEvent(
-                                ProfileEditState.Event.OldPasswordChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onNewPasswordChanged = {
-                            onEvent(
-                                ProfileEditState.Event.NewPasswordChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onConfirmPasswordChanged = {
-                            onEvent(
-                                ProfileEditState.Event.ConfirmPasswordChanged(
-                                    it,
-                                ),
-                            )
-                        },
-                        onSave = { onEvent(ProfileEditState.Event.ChangePasswordSelected) },
-                    )
-                }
-                item(key = "linked_accounts") {
-                    LinkedAccountsSection(
-                        linkedAccounts = state.linkedAccounts,
-                        unlinkingAccount = state.unlinkingAccount,
-                        onUnlink = { onEvent(ProfileEditState.Event.UnlinkAccountSelected(it)) },
-                    )
-                }
-            }
-            ProfileSaveButton(
-                visible = state.hasChanges,
-                isSaving = state.isSaving,
-                onClick = { onEvent(ProfileEditState.Event.SaveSelected) },
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
+                ProfileSaveButton(
+                    visible = state.hasChanges,
+                    isSaving = state.isSaving,
+                    onClick = { onEvent(ProfileEditState.Event.SaveSelected) },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
             }
         }
     }

@@ -47,6 +47,8 @@ class AccountState {
         val error: AccountUiError? = null,
         val errorMessage: String? = null,
         val hubError: AccountUiError? = null,
+        /** Техническая причина ошибки загрузки уведомлений (код ответа, исключение). */
+        val hubErrorDetails: String? = null,
         val localAuthServerState: LocalAuthServerState = LocalAuthServerState.Idle,
         /** Системный запрос разрешения на уведомления уже показывали хотя бы раз. */
         val notificationPermissionRequested: Boolean = false,

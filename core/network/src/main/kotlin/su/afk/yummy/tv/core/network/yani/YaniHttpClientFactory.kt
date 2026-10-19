@@ -19,7 +19,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
-import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 
@@ -103,16 +102,16 @@ fun buildYaniHttpClient(
                 }
             },
         )
-        if (BuildConfig.DEBUG) {
-            install(Logging) {
-                logger = SensitiveDataMaskingLogger(Logger.ANDROID)
-                level = LogLevel.BODY
-                sanitizeHeader { header ->
-                    header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
-                        header.equals(HttpHeaders.Cookie, ignoreCase = true) ||
-                        header.equals(HttpHeaders.SetCookie, ignoreCase = true) ||
-                        header.equals(YANI_APPLICATION_HEADER, ignoreCase = true)
-                }
+        // Логи включены и в release: пользователи присылают экспортированные логи для разбора.
+        // Секреты маскирует SensitiveDataMaskingLogger, заголовки авторизации скрыты sanitizeHeader.
+        install(Logging) {
+            logger = SensitiveDataMaskingLogger(Logger.ANDROID)
+            level = LogLevel.BODY
+            sanitizeHeader { header ->
+                header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
+                    header.equals(HttpHeaders.Cookie, ignoreCase = true) ||
+                    header.equals(HttpHeaders.SetCookie, ignoreCase = true) ||
+                    header.equals(YANI_APPLICATION_HEADER, ignoreCase = true)
             }
         }
     }

@@ -61,7 +61,7 @@ internal class AccountHubHandler @Inject constructor(
                 )
             },
             onFailure = {
-                AccountNotificationsLoadResult.Failure(AccountUiError.LOAD_NOTIFICATIONS_FAILED)
+                AccountNotificationsLoadResult.Failure(AccountUiError.LOAD_NOTIFICATIONS_FAILED, it)
             },
         )
 }
@@ -82,5 +82,5 @@ internal sealed interface AccountNotificationsLoadResult {
         val counts: List<NotificationCount>,
     ) : AccountNotificationsLoadResult
 
-    data class Failure(val error: AccountUiError) : AccountNotificationsLoadResult
+    data class Failure(val error: AccountUiError, val cause: Throwable? = null) : AccountNotificationsLoadResult
 }

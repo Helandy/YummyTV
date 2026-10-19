@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.error.toDisplayDetails
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.account.model.EditableProfile
@@ -91,10 +92,13 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     private fun load() = viewModelScope.launch {
-        setState { copy(isLoading = true, hasLoadError = false) }
+        setState { copy(isLoading = true, hasLoadError = false, loadErrorDetails = null) }
         runSuspendCatching { handler.load() }
             .onSuccess(::applyProfile)
-            .onFailure { setState { copy(isLoading = false, hasLoadError = true) } }
+            .onFailure {
+                val details = errorHandler.parse(it).toDisplayDetails()
+                setState { copy(isLoading = false, hasLoadError = true, loadErrorDetails = details) }
+            }
     }
 
     private fun saveProfile() = viewModelScope.launch {
