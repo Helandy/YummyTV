@@ -47,6 +47,11 @@ import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHa
 import su.afk.yummy.tv.feature.details.details.handler.DetailsScreenDataHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasResult
+import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
+import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideosResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsWatchTarget
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
@@ -74,6 +79,8 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val videoHandler: DetailsVideoHandler = mockk()
     private val subscriptionHandler: DetailsSubscriptionHandler = mockk()
     private val playerNavigationHandler: DetailsPlayerNavigationHandler = mockk()
+    private val extrasHandler: DetailsExtrasHandler = mockk()
+    private val userRating = MutableStateFlow<Int?>(null)
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
 
     private val session = MutableStateFlow(AccountSession(isAuthorized = false, userId = 0))
@@ -100,7 +107,9 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { screenDataHandler.detailsButtonOrder } returns flowOf(DetailsButtonAction.entries)
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())
-        every { screenDataHandler.observeUserRating(any()) } returns flowOf(null)
+        every { screenDataHandler.observeUserRating(any()) } returns userRating
+        coEvery { extrasHandler.load(any()) } returns DetailsExtrasResult(emptyList(), null)
+        coEvery { extrasHandler.loadRatingOverview(any()) } returns null
         every { screenDataHandler.observeAccountSession() } returns session
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.success(animeDetails(id = ANIME_ID, title = "Anime"))
         coEvery { screenDataHandler.refreshLibraryMetadata(any(), any(), any(), any()) } returns Unit
@@ -138,6 +147,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         videoHandler = videoHandler,
         subscriptionHandler = subscriptionHandler,
         playerNavigationHandler = playerNavigationHandler,
+        extrasHandler = extrasHandler,
         analytics = DetailsAnalytics(tracker),
         appLifecycleSettingsStore = appLifecycleSettingsStore,
     )
@@ -168,6 +178,48 @@ class DetailsViewModelTest : BaseUnitTest() {
         assertEquals("Anime", state.details?.title)
         assertTrue(state.videosState is VideosUiState.Content)
         assertEquals(DetailsButtonAction.entries, state.detailsButtonOrder)
+    }
+
+    @Test
+    fun `trailers and rating overview land in the state`() {
+        val trailer = AnimeTrailer(iframeUrl = "https://www.youtube.com/embed/abc")
+        val overview = DetailsRatingOverview(average = 8.0, votes = 3)
+        coEvery { extrasHandler.load(ANIME_ID) } returns DetailsExtrasResult(listOf(trailer), overview)
+
+        val state = createViewModel().currentState
+
+        assertEquals(listOf(trailer), state.trailers)
+        assertEquals(overview, state.ratingOverview)
+        assertFalse(state.isExtrasLoading)
+    }
+
+    @Test
+    fun `changed user rating refreshes the rating overview`() {
+        val refreshed = DetailsRatingOverview(average = 9.0, votes = 4)
+        coEvery { extrasHandler.loadRatingOverview(ANIME_ID) } returns refreshed
+        val vm = createViewModel()
+
+        userRating.value = 9
+
+        assertEquals(refreshed, vm.currentState.ratingOverview)
+        coVerify(exactly = 1) { extrasHandler.loadRatingOverview(ANIME_ID) }
+    }
+
+    @Test
+    fun `screenshot from the details row opens the gallery at its index`() {
+        val screenshots = listOf(
+            AnimeScreenshot(id = 1, episode = null, small = "s1", full = "f1"),
+            AnimeScreenshot(id = 2, episode = null, small = "s2", full = "f2"),
+        )
+        coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
+            Result.success(animeDetails(id = ANIME_ID, screenshots = screenshots))
+        every { imageViewNavigator(imageUrl = any(), imageUrls = any(), selectedIndex = any()) } returns navKey
+        val vm = createViewModel()
+
+        vm.setEvent(Event.ScreenshotSelected(1))
+
+        verify { imageViewNavigator(imageUrl = "f2", imageUrls = listOf("f1", "f2"), selectedIndex = 1) }
+        verify { nav.navigate(navKey) }
     }
 
     @Test

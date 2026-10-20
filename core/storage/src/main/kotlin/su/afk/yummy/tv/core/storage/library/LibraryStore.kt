@@ -28,8 +28,13 @@ internal class LibraryStore(private val dao: LibraryDao) : LibraryStorage {
                 posterFullsizeUrl = poster?.fullsize ?: entry.posterFullsizeUrl,
                 posterMegaUrl = poster?.mega ?: entry.posterMegaUrl,
                 year = year ?: entry.year,
-            )
+            ),
         )
+    }
+
+    override suspend fun setUserRating(animeId: Int, rating: Int?) {
+        val entry = dao.getByAnimeId(animeId) ?: return
+        if (entry.userRating != rating) dao.add(entry.copy(userRating = rating))
     }
 
     override suspend fun remove(animeId: Int) {
@@ -39,7 +44,7 @@ internal class LibraryStore(private val dao: LibraryDao) : LibraryStorage {
                 entry.copy(
                     listId = FAVORITE_ONLY_LIST_ID,
                     listUpdatedAt = System.currentTimeMillis(),
-                )
+                ),
             )
         } else {
             dao.delete(animeId)
@@ -79,7 +84,7 @@ internal class LibraryStore(private val dao: LibraryDao) : LibraryStorage {
                     year = year,
                     listId = FAVORITE_ONLY_LIST_ID,
                     isFavorite = true,
-                )
+                ),
             )
             return
         }
@@ -90,7 +95,7 @@ internal class LibraryStore(private val dao: LibraryDao) : LibraryStorage {
                 entry.copy(
                     isFavorite = false,
                     favoriteUpdatedAt = System.currentTimeMillis(),
-                )
+                ),
             )
         } else {
             dao.delete(animeId)

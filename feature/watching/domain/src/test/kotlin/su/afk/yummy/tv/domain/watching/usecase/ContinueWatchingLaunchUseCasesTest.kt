@@ -99,6 +99,15 @@ class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
     }
 
     @Test
+    fun `4K entry that stores the mirror video id still opens 4K`() = runTest {
+        coEvery { getAnimeVideos(ANIME_ID) } returns listOf(ep2, fourK)
+
+        val launch = resolve(fourKEntry(positionMs = 300_000L).copy(videoId = ep2.id), refresh = false)
+
+        assertEquals(fourK.iframeUrl, launch.video.iframeUrl)
+    }
+
+    @Test
     fun `server that moved ahead of a 4K entry wins`() = runTest {
         val ahead = ep2.copy(watchedEndTimeSeconds = 900, watchedDateSeconds = LOCAL_UPDATED_AT / 1000 + 60)
         coEvery { refreshAnimeVideos(ANIME_ID) } returns listOf(fourK, ahead)

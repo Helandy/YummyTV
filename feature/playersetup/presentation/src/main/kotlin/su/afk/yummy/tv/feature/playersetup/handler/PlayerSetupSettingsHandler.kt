@@ -33,12 +33,14 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
             )
         },
         combine(
+            store.adaptiveVideoQualityEnabled,
             store.preferredVideoQuality,
             store.playerOrientationMode,
             store.pictureInPictureEnabled,
             accountStore.yaniContentLanguage,
-        ) { quality, orientation, pip, language ->
+        ) { adaptive, quality, orientation, pip, language ->
             PlayerSetupState.State(
+                adaptiveVideoQualityEnabled = adaptive,
                 preferredVideoQuality = quality,
                 playerOrientationMode = orientation,
                 pictureInPictureEnabled = pip,
@@ -47,6 +49,7 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
         },
     ) { toggles, playback ->
         toggles.copy(
+            adaptiveVideoQualityEnabled = playback.adaptiveVideoQualityEnabled,
             preferredVideoQuality = playback.preferredVideoQuality,
             playerOrientationMode = playback.playerOrientationMode,
             pictureInPictureEnabled = playback.pictureInPictureEnabled,
@@ -69,6 +72,9 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
 
     suspend fun setContentLanguage(language: YaniContentLanguage) =
         accountStore.setYaniContentLanguage(language)
+
+    suspend fun setAdaptiveVideoQualityEnabled(enabled: Boolean) =
+        store.setAdaptiveVideoQualityEnabled(enabled)
 
     suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality) =
         store.setPreferredVideoQuality(quality)

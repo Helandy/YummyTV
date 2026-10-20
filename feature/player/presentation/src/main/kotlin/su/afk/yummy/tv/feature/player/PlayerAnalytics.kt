@@ -437,6 +437,8 @@ internal class PlayerAnalytics @Inject constructor(
         when (this) {
             PlayerNextEpisodeSource.Controls -> "controls"
             PlayerNextEpisodeSource.EndPrompt -> "end_prompt"
+            PlayerNextEpisodeSource.EpisodeEnd -> "episode_end"
+            PlayerNextEpisodeSource.UnavailableDialog -> "unavailable_dialog"
         }
 
     internal companion object {

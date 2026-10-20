@@ -104,10 +104,8 @@ data class DetailsWatchProgressIndex(
             val older = if (newer === b) a else b
             val isMirror = isServerMirrorOfExtraSource(
                 localEpisodeUrl = older.episodeUrl,
-                localDubbing = older.dubbing,
                 localPositionMs = older.positionMs,
                 serverEpisodeUrl = newer.episodeUrl,
-                serverDubbing = newer.dubbing,
                 serverPositionMs = newer.positionMs,
             )
             return if (isMirror) older.copy(updatedAt = newer.updatedAt) else newer

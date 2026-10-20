@@ -70,11 +70,18 @@ fun PlayerSetupMobileScreen(
             // Только три ключевые опции: остальное (язык, ориентация, PiP, таймлайн, выбор озвучки)
             // остаётся на умолчаниях и меняется в настройках.
             PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_main)) {
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_adaptive_quality_label),
+                    hint = stringResource(R.string.player_setup_adaptive_quality_hint),
+                    enabled = state.adaptiveVideoQualityEnabled,
+                    onClick = { onEvent(PlayerSetupState.Event.AdaptiveVideoQualityToggled) },
+                )
                 PlayerSetupMobileOptionRow(
                     label = stringResource(R.string.player_setup_quality_label),
                     value = state.preferredVideoQuality.setupLabel(),
                     hint = stringResource(R.string.player_setup_quality_hint),
                     onClick = { showQualityPicker = true },
+                    enabled = !state.adaptiveVideoQualityEnabled,
                 )
                 PlayerSetupMobileToggleRow(
                     label = stringResource(R.string.player_setup_auto_skip_label),

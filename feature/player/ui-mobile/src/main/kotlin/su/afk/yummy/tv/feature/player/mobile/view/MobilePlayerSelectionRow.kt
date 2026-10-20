@@ -20,9 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 
 @Composable
 internal fun MobilePlayerSelectionRow(
@@ -31,6 +33,9 @@ internal fun MobilePlayerSelectionRow(
     enabled: Boolean = true,
     /** Название строки акцентным цветом независимо от выбора — как в шторках скачивания. */
     accentLabel: Boolean = false,
+    /** Логотип слева (студии озвучки, балансеры); [logoFallbackIcon] — когда картинки нет. Без [logoFallbackIcon] логотип не рисуется. */
+    logoRes: Int? = null,
+    logoFallbackIcon: ImageVector? = null,
     metaContent: @Composable ColumnScope.(contentColor: Color) -> Unit = {},
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
@@ -69,6 +74,9 @@ internal fun MobilePlayerSelectionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (logoFallbackIcon != null) {
+            LogoBadge(logoRes = logoRes, size = 32.dp, fallbackIcon = logoFallbackIcon)
+        }
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(3.dp),

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.utils.formatCompactCount
 import su.afk.yummy.tv.feature.details.mobile.view.MobileDubbingMeta
@@ -97,6 +98,9 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (item.logoName != null) {
+            LogoBadge(logoRes = item.logoRes, size = 36.dp, fallbackIcon = item.logoFallbackIcon)
+        }
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),

@@ -26,6 +26,9 @@ interface LibraryStorage {
         year: Int?,
     )
 
+    /** Обновляет оценку у тайтла, уже лежащего в библиотеке; `null` — оценка снята. */
+    suspend fun setUserRating(animeId: Int, rating: Int?)
+
     suspend fun remove(animeId: Int)
 
     suspend fun delete(animeId: Int)

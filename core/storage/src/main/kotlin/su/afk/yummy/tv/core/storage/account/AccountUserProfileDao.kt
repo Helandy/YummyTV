@@ -228,6 +228,19 @@ abstract class AccountUserProfileDao {
 
     @Query(
         """
+        SELECT * FROM account_user_profile_summary_caches
+        WHERE nickname = :nickname COLLATE NOCASE AND language = :language
+        ORDER BY cachedAt DESC
+        LIMIT 1
+        """
+    )
+    abstract suspend fun getUserProfileSummaryCacheEntryByNickname(
+        nickname: String,
+        language: String,
+    ): AccountUserProfileSummaryCacheEntry?
+
+    @Query(
+        """
         SELECT * FROM account_user_profile_watch_types
         WHERE userId = :userId AND language = :language
         ORDER BY position
@@ -491,6 +504,19 @@ abstract class AccountUserProfileDao {
             entry = entry,
             watchTypes = getUserProfileWatchTypes(userId, language),
             watchHistory = getUserProfileWatchHistory(userId, language),
+        )
+    }
+
+    @Transaction
+    open suspend fun getUserProfileSummaryByNickname(
+        nickname: String,
+        language: String,
+    ): AccountUserProfileSummaryCache? {
+        val entry = getUserProfileSummaryCacheEntryByNickname(nickname, language) ?: return null
+        return AccountUserProfileSummaryCache(
+            entry = entry,
+            watchTypes = getUserProfileWatchTypes(entry.userId, language),
+            watchHistory = getUserProfileWatchHistory(entry.userId, language),
         )
     }
 

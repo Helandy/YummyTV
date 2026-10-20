@@ -18,6 +18,11 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeGenre
 import su.afk.yummy.tv.core.model.anime.AnimeRating
+import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
+import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.feature.details.details.model.DetailsListCount
+import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
@@ -120,6 +125,71 @@ class DetailsMobileScreenTest {
 
         scrollToText("Описание тестового аниме")
         composeRule.onNodeWithText("Описание тестового аниме").assertIsDisplayed()
+    }
+
+    @Test
+    fun screenshotInRowSendsScreenshotSelected() {
+        val screenshots = listOf(AnimeScreenshot(id = 1, episode = null, small = null, full = null))
+        setScreen(DetailsState.State(isLoading = false, details = details.copy(screenshots = screenshots)))
+
+        composeRule.onNode(hasTestTag("details_root") and hasScrollAction())
+            .performScrollToNode(hasTestTag("details_screenshots_row"))
+        composeRule.onNodeWithContentDescription(string(R.string.details_mobile_screenshot)).performClick()
+
+        assertTrue(DetailsState.Event.ScreenshotSelected(0) in events)
+    }
+
+    @Test
+    fun videoCardsOpenTrailersAndBloggerVideos() {
+        setScreen(
+            DetailsState.State(
+                isLoading = false,
+                details = details,
+                trailers = persistentListOf(AnimeTrailer(iframeUrl = "https://www.youtube.com/embed/abc")),
+                isExtrasLoading = false,
+            ),
+        )
+
+        composeRule.onNode(hasTestTag("details_root") and hasScrollAction())
+            .performScrollToNode(hasTestTag("details_trailers_card"))
+        composeRule.onNode(hasTestTag("details_trailers_card")).performClick()
+        composeRule.onNode(hasTestTag("details_blogger_videos_card")).performClick()
+
+        assertTrue(DetailsState.Event.TrailersSelected in events)
+        assertTrue(DetailsState.Event.BloggerVideosSelected in events)
+    }
+
+    @Test
+    fun ratingCardShowsListsAndOpensRatingScreen() {
+        setScreen(
+            DetailsState.State(
+                isLoading = false,
+                details = details,
+                ratingOverview = DetailsRatingOverview(
+                    average = 8.0,
+                    votes = 2,
+                    distribution = persistentListOf(0, 0, 0, 0, 0, 0, 0, 2, 0, 0),
+                    listCounts = persistentListOf(DetailsListCount(UserAnimeList.WATCHING, 7)),
+                ),
+            ),
+        )
+
+        composeRule.onNode(hasTestTag("details_root") and hasScrollAction())
+            .performScrollToNode(hasTestTag("details_rating_card"))
+        composeRule.onNodeWithText(string(R.string.details_library_list_watching), substring = true).assertIsDisplayed()
+        composeRule.onNode(hasTestTag("details_rating_card")).performClick()
+
+        assertTrue(DetailsState.Event.RatingScreenSelected in events)
+    }
+
+    @Test
+    fun loadingExtrasShowSkeletons() {
+        setScreen(DetailsState.State(isLoading = false, details = details, isExtrasLoading = true))
+
+        composeRule.onNode(hasTestTag("details_root") and hasScrollAction())
+            .performScrollToNode(hasTestTag("details_rating_skeleton"))
+        composeRule.onNode(hasTestTag("details_rating_skeleton")).assertIsDisplayed()
+        composeRule.onNode(hasTestTag("details_trailers_skeleton")).assertExists()
     }
 
     @Test

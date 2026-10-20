@@ -43,6 +43,7 @@
     <string name="account_profile_watch_type_movies">Movies</string>
     <string name="account_profile_list_duration_title">Duration by lists</string>
     <string name="account_profile_genres_title">Genres</string>
+    <string name="account_profile_genres_other">Other</string>
     <string name="account_profile_ratings_title">Rated titles (Average %1$s)</string>
     <string name="account_profile_stats_empty">No data yet</string>
     <string name="account_profile_duration_hours">%1$d h</string>
@@ -122,6 +123,8 @@
     <string name="account_mobile_or_divider">or</string>
         <string name="user_search_hint">Nickname</string>
     <string name="user_search_initial">Enter at least two characters</string>
+    <string name="friends_empty_title">No friends yet</string>
+    <string name="friends_empty_description">Find people by nickname and add them — they will show up here</string>
     <string name="user_search_empty">No users found</string>
     <string name="user_search_error">Could not load users</string>
     <string name="user_search_last_online">Last online: %1$s</string>

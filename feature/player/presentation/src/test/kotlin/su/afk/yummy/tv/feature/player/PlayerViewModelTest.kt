@@ -11,6 +11,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlinx.coroutines.test.runTest
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
@@ -35,6 +37,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerSourceStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.mapper.PlayerDestinationStateMapper
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
@@ -398,6 +401,54 @@ class PlayerViewModelTest : BaseUnitTest() {
         coVerify(exactly = 2) {
             sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
+    }
+
+    @Test
+    fun `next episode button without the episode asks with a dialog and stays on the episode`() = runTest {
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
+
+        val info = (effects.single() as PlayerState.Effect.ShowNextEpisodeUnavailable).info
+        assertEquals(2, info.episodeNumber)
+        assertTrue(info.options.isEmpty())
+        assertFalse(info.canSubscribe)
+        assertEquals(STREAM_URL, vm.currentState.streamUrl)
+        verify(exactly = 0) { analytics.eventNextEpisode(any(), any()) }
+    }
+
+    @Test
+    fun `episode end without the episode here asks with the same dialog`() = runTest {
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EpisodeEnd))
+
+        assertTrue(effects.single() is PlayerState.Effect.ShowNextEpisodeUnavailable)
+        assertEquals(STREAM_URL, vm.currentState.streamUrl)
+    }
+
+    @Test
+    fun `end prompt without the episode does not show the dialog`() = runTest {
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
+
+        assertTrue(effects.isEmpty())
+        verify(exactly = 1) { analytics.eventNextEpisode(any(), PlayerNextEpisodeSource.EndPrompt) }
+    }
+
+    @Test
+    fun `source picked in the dialog becomes the selection`() {
+        val vm = createViewModel()
+        val selection = PlayerSourceSelection(balancerIndex = 0, dubbingIndex = 0, episodeIndex = 0)
+
+        vm.setEvent(PlayerState.Event.NextEpisodeSourceSelected(selection))
+
+        assertEquals(selection, vm.currentState.sourceSelection)
+        verify(exactly = 1) { analytics.eventNextEpisode(any(), PlayerNextEpisodeSource.UnavailableDialog) }
     }
 
     private companion object {

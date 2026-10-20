@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
+import su.afk.yummy.tv.domain.library.usecase.SetLibraryUserRatingUseCase
 import javax.inject.Inject
 
 /** Loads and mutates a title's rating, keeping fetch/mutation side-effects out of the ViewModel. */
@@ -22,6 +23,7 @@ internal class RatingMutationHandler @Inject constructor(
     private val setAnimeRating: SetAnimeRatingUseCase,
     private val deleteAnimeRating: DeleteAnimeRatingUseCase,
     private val pendingMutationQueue: PendingMutationQueue,
+    private val setLibraryUserRating: SetLibraryUserRatingUseCase,
 ) {
     suspend fun load(animeId: Int): RatingLoadResult = coroutineScope {
         val ratingSummary = async { runSuspendCatching { getAnimeRatingSummary(animeId) } }
@@ -37,10 +39,23 @@ internal class RatingMutationHandler @Inject constructor(
     suspend fun setRating(animeId: Int, rating: Int): RatingMutationResult =
         runSuspendCatching { setAnimeRating(animeId, rating) }
             .toMutationResult(PendingMutation.SetRating(animeId, rating))
+            .alsoSyncLibrary(animeId, rating)
 
     suspend fun deleteRating(animeId: Int): RatingMutationResult =
         runSuspendCatching { deleteAnimeRating(animeId) }
             .toMutationResult(PendingMutation.DeleteRating(animeId))
+            .alsoSyncLibrary(animeId, rating = null)
+
+    /**
+     * Локальная библиотека иначе узнает об оценке только при следующей синхронизации списков —
+     * а по ней чужие списки показывают «У вас: ★N».
+     */
+    private suspend fun RatingMutationResult.alsoSyncLibrary(animeId: Int, rating: Int?): RatingMutationResult {
+        if (this == RatingMutationResult.Success) {
+            runSuspendCatching { setLibraryUserRating(animeId, rating) }
+        }
+        return this
+    }
 
     suspend fun refreshSummary(animeId: Int): AnimeRatingSummary? =
         runSuspendCatching { getAnimeRatingSummary(animeId) }.getOrNull()

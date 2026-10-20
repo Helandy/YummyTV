@@ -28,12 +28,18 @@
     <string name="details_reviews_count">Рецензии (%1$d)</string>
         <string name="details_mobile_empty">Тайтл не найден</string>
     <string name="details_watch">Смотреть</string>
+    <string name="details_watch_restart">Смотреть сначала</string>
+    <string name="details_watch_again">Смотреть снова</string>
     <string name="details_watch_not_found">Видео не найдено</string>
     <string name="details_loading_episodes">Загружаем серии…</string>
     <string name="details_continue_episode">Продолжить · Серия %1$s</string>
     <string name="details_mobile_add_library">В список</string>
     <string name="details_add_favorite">Любимые</string>
         <string name="details_mobile_sections">Разделы</string>
+        <string name="details_mobile_video_section">Видео</string>
+        <string name="details_mobile_blogger_videos_hint">Мнения и разборы</string>
+        <string name="details_mobile_trailers_hint">Официальные ролики</string>
+        <string name="details_mobile_rate_action">Оценить</string>
     <string name="details_full_description">Описание</string>
     <string name="details_episodes">Серии</string>
     <string name="details_episodes_empty">Серий пока нет</string>
@@ -220,4 +226,7 @@
     <string name="details_tv_unmark_episode_watched">Убрать отметку</string>
     <string name="details_trailer_player_error">Не удалось воспроизвести трейлер</string>
     <string name="details_trailer_open_external">Открыть во внешнем плеере</string>
+    <string name="details_mobile_titles_japanese">Японское</string>
+    <string name="details_mobile_titles_english">Английское</string>
+    <string name="details_mobile_titles_alternative">Альтернативное</string>
 </resources>

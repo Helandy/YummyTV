@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -96,10 +97,12 @@ fun PlayerTvScreen(
     var backToastText by remember { mutableStateOf<String?>(null) }
     var backToastJob by remember { mutableStateOf<Job?>(null) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
+    var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
     LaunchedEffect(effect) {
         effect.collect { eff ->
             when (eff) {
                 is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+                is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
             }
         }
     }
@@ -206,6 +209,8 @@ fun PlayerTvScreen(
                 restoreControlFocusTarget = pendingControlFocusTarget,
                 exitState = exitState,
                 tutorialBlocksPlayback = state.tvTutorialBlocksPlayback,
+                nextEpisodeUnavailable = nextEpisodeUnavailable,
+                onNextEpisodeUnavailableShown = { nextEpisodeUnavailable = null },
                 onControlFocusRestored = { pendingControlFocusTarget = null },
                 onDubbingSelected = { newIdx, currentPosMs ->
                     pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing

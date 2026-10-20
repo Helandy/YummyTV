@@ -23,10 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.catalog.presentation.R
 
 @Composable
 internal fun SelectableRow(
@@ -34,7 +32,6 @@ internal fun SelectableRow(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    showSelectedMark: Boolean = true,
     leadingIcon: ImageVector? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
@@ -79,11 +76,7 @@ internal fun SelectableRow(
             )
         }
         Text(
-            text = if (selected && showSelectedMark) {
-                stringResource(R.string.search_filter_selected, label)
-            } else {
-                label
-            },
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (selected || focused) FontWeight.SemiBold else FontWeight.Normal,
             color = contentColor,

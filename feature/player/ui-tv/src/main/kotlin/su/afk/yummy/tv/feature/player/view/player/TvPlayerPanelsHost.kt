@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
@@ -87,6 +88,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         selectedFocusRequester = focus.selectedBalancer,
         enabledItems = playback.balancerAvailability,
         accentLabel = true,
+        logoFor = ::balancerLogoRes,
         disabledItemMeta = stringResource(R.string.player_episode_unavailable),
         modifier = Modifier
             .align(Alignment.BottomStart)

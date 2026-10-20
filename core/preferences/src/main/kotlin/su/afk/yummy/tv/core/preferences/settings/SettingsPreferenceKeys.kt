@@ -88,7 +88,10 @@ internal object SettingsPreferenceKeys {
     val supportPromptDismissedKey = booleanPreferencesKey("support_prompt_dismissed")
     val supportPromptFirstInstallTimeMsKey =
         longPreferencesKey("support_prompt_first_install_time_ms")
-    val lastSeenAnnouncementIdKey = stringPreferencesKey("last_seen_announcement_id")
+    val communityPromptDismissedKey = booleanPreferencesKey("community_prompt_dismissed")
+    val communityPromptFirstUseTimeMsKey =
+        longPreferencesKey("community_prompt_first_use_time_ms")
+    val lastSeenAnnouncementIdKey =stringPreferencesKey("last_seen_announcement_id")
     val notificationPermissionRequestedKey =
         booleanPreferencesKey("notification_permission_requested")
     val previewChannelPromptAnsweredKey =

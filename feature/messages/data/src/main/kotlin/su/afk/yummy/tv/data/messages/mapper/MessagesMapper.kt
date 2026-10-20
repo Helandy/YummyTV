@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.messages.mapper
 
-import su.afk.yummy.tv.core.utils.network.toHttpsUrl
+import su.afk.yummy.tv.core.utils.network.toHttpsUrlOrNull
 import su.afk.yummy.tv.data.messages.dto.YaniDialogDto
 import su.afk.yummy.tv.data.messages.dto.YaniMessageAvatarDto
 import su.afk.yummy.tv.data.messages.dto.YaniMessageDto
@@ -48,8 +48,13 @@ internal fun YaniMessageDto.domain() = ChatMessage(
     },
 )
 
+/** Для пользователя без переписки yani отдаёт несуществующую заглушку `.../undefined.webp` — это не аватарка. */
 private fun YaniMessageAvatarDto?.bestUrl(): String? =
-    (this?.full ?: this?.big ?: this?.small)?.toHttpsUrl()
+    listOf(this?.full, this?.big, this?.small)
+        .mapNotNull { it.toHttpsUrlOrNull() }
+        .firstOrNull { MISSING_AVATAR_MARK !in it }
+
+private const val MISSING_AVATAR_MARK = "/undefined."
 
 internal fun YaniMessageHistoryEntryDto.domain() = MessageHistoryEntry(
     userId = userId,

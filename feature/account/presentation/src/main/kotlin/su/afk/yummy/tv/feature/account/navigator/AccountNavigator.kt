@@ -7,6 +7,7 @@ import javax.inject.Inject
 class AccountNavigator @Inject constructor() : IAccountNavigator {
     override fun getAccountDest(): NavKey = AccountDestination
     override fun getUserProfileDest(userId: Int): NavKey = UserProfileDestination(userId)
+    override fun getUserFriendsDest(userId: Int): NavKey = FriendsDestination(userId)
     override fun getUserProfileByNicknameDest(nickname: String): NavKey =
         UserProfileByNicknameDestination(nickname)
 

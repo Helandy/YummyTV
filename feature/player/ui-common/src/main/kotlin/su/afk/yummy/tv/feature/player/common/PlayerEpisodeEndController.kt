@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.common
 
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.model.PlayerEpisodeEndOutcome
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
@@ -33,7 +34,7 @@ class PlayerEpisodeEndController(
 ) {
     /** Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции. */
     fun onEpisodeEnd(positionMs: Long, durationMs: Long) {
-        val promptShown = endFlow.onEpisodeEnd(
+        val outcome = endFlow.onEpisodeEnd(
             positionMs = positionMs,
             durationMs = durationMs,
             completionTracker = completionTracker,
@@ -42,7 +43,14 @@ class PlayerEpisodeEndController(
             nextEpisodeDelaySeconds = nextEpisodeDelaySeconds,
             suppressPrompts = isPromptSuppressed(),
         )
-        if (promptShown) onPromptShown()
+        when (outcome) {
+            PlayerEpisodeEndOutcome.None -> Unit
+            PlayerEpisodeEndOutcome.PromptShown -> onPromptShown()
+            PlayerEpisodeEndOutcome.SourcesRequested -> {
+                onPromptShown()
+                onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EpisodeEnd))
+            }
+        }
     }
 
     /**

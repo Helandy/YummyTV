@@ -42,6 +42,7 @@
     <string name="account_profile_watch_type_movies">Фільми</string>
     <string name="account_profile_list_duration_title">Тривалість за списками</string>
     <string name="account_profile_genres_title">Жанри</string>
+    <string name="account_profile_genres_other">Інші</string>
     <string name="account_profile_ratings_title">Оцінені тайтли (Середня %1$s)</string>
     <string name="account_profile_stats_empty">Даних поки немає</string>
     <string name="account_profile_duration_hours">%1$d год</string>
@@ -125,6 +126,8 @@
     <string name="account_mobile_or_divider">або</string>
         <string name="user_search_hint">Нікнейм</string>
     <string name="user_search_initial">Введіть щонайменше два символи</string>
+    <string name="friends_empty_title">Друзів поки немає</string>
+    <string name="friends_empty_description">Знайдіть людей за ніком і додайте їх — вони з’являться тут</string>
     <string name="user_search_empty">Користувачів не знайдено</string>
     <string name="user_search_error">Не вдалося завантажити користувачів</string>
     <string name="user_search_last_online">Востаннє в мережі: %1$s</string>

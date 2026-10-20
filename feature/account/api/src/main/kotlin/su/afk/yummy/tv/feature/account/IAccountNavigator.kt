@@ -5,6 +5,9 @@ import androidx.navigation3.runtime.NavKey
 interface IAccountNavigator {
     fun getAccountDest(): NavKey
     fun getUserProfileDest(userId: Int): NavKey
+
+    /** Отдельный экран со списком друзей пользователя. */
+    fun getUserFriendsDest(userId: Int): NavKey
     fun getUserProfileByNicknameDest(nickname: String): NavKey
     fun getUserSearchDest(): NavKey
     fun getMySubscriptionsDest(): NavKey

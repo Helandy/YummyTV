@@ -15,7 +15,9 @@ import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatReleaseWeekdayTime
 import su.afk.yummy.tv.feature.details.utils.nextEpisodeNumber
+import su.afk.yummy.tv.feature.details.model.DetailsWatchRestart
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
+import su.afk.yummy.tv.feature.details.utils.resolveDetailsWatchRestart
 import java.util.Locale
 
 internal fun Int.formatViews(): String = when {
@@ -76,12 +78,22 @@ internal fun DetailsState.State.watchLabel(details: AnimeDetails): String {
             watchProgress = watchProgress,
         )
     }
+    val watchRestart = (videosState as? VideosUiState.Content)?.let { content ->
+        resolveDetailsWatchRestart(
+            animeId = details.id,
+            videos = content.videos,
+            watchProgress = watchProgress,
+            status = details.status,
+        )
+    }
     return when {
         isWatchLaunchPending || videosState is VideosUiState.Loading -> {
             stringResource(R.string.details_loading_episodes)
         }
 
         videosState is VideosUiState.Empty -> stringResource(R.string.details_watch_not_found)
+        watchRestart == DetailsWatchRestart.Restart -> stringResource(R.string.details_watch_restart)
+        watchRestart == DetailsWatchRestart.Again -> stringResource(R.string.details_watch_again)
         continueTarget != null && continueTarget.video.episode.isNotBlank() -> {
             stringResource(R.string.details_continue_episode, continueTarget.video.episode)
         }

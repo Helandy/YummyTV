@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.catalog.storage.mapper
 
+import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsCache
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsEntry
 import su.afk.yummy.tv.core.storage.search.SearchGenreEntry
@@ -127,5 +128,5 @@ internal fun SearchFilterOptionsCache.toSearchFilterOptions(): SearchFilterOptio
             .map { SearchGenre(id = it.genreId, title = it.title, groupId = it.groupId) },
         types = types
             .sortedBy { it.position }
-            .map { SearchAnimeType(id = it.typeId, title = it.title) },
+            .map { SearchAnimeType(id = it.typeId, title = it.title.toShortAnimeTypeName().orEmpty()) },
     )

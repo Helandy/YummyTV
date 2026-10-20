@@ -22,11 +22,12 @@ internal fun DetailsChip(
     label: String,
     icon: ImageVector? = null,
     textColor: Color? = null,
+    backgroundColor: Color? = null,
 ) {
     Row(
         modifier = Modifier
             .background(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.13f),
+                color = backgroundColor ?: MaterialTheme.colorScheme.onSurface.copy(alpha = 0.13f),
                 shape = RoundedCornerShape(5.dp),
             )
             .padding(horizontal = 7.dp, vertical = 4.dp),

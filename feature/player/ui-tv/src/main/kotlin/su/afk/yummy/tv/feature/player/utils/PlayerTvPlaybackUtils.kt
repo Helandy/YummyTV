@@ -23,6 +23,7 @@ internal fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlF
         PanelReturnFocusTarget.Balancer -> PlayerControlFocusTarget.Balancer
         PanelReturnFocusTarget.PlayerSettings -> PlayerControlFocusTarget.PlayerSettings
         PanelReturnFocusTarget.Alloha -> PlayerControlFocusTarget.Alloha
+        PanelReturnFocusTarget.NextEpisode -> PlayerControlFocusTarget.NextEpisode
     }
 
 internal fun Float.speedLabel(): String =

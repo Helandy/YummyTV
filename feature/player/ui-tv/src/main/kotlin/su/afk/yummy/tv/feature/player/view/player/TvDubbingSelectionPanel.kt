@@ -1,9 +1,12 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.common.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -29,6 +32,8 @@ internal fun TvDubbingSelectionPanel(
         selectedFocusRequester = selectedFocusRequester,
         enabledItems = playback.dubbingAvailability,
         accentLabel = true,
+        logoFor = ::dubbingLogoRes,
+        logoFallbackIcon = Icons.Filled.Mic,
         disabledItemMeta = stringResource(R.string.player_episode_unavailable),
         modifier = modifier,
         itemMetaContent = { idx, contentColor ->

@@ -47,13 +47,13 @@ internal fun TvPlayerEpisodeRow(
     balancerFocusRequester: FocusRequester? = null,
     playerSettingsFocusRequester: FocusRequester? = null,
     allohaFocusRequester: FocusRequester? = null,
+    nextEpisodeFocusRequester: FocusRequester? = null,
     showAllohaButton: Boolean = false,
     upFocusRequester: FocusRequester,
     onInteraction: () -> Unit,
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onRateTitle: () -> Unit,
-    onManageSubscriptions: () -> Unit,
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
@@ -192,49 +192,39 @@ internal fun TvPlayerEpisodeRow(
                 modifier = Modifier.size(20.dp),
             )
         }
-        val hasFinalEpisodeAction = finalEpisodeAction == PlayerFinalEpisodeAction.RateTitle ||
-                finalEpisodeAction == PlayerFinalEpisodeAction.ManageSubscriptions
-        if (hasNextEpisode || hasFinalEpisodeAction) {
+        val hasFinalEpisodeAction = finalEpisodeAction == PlayerFinalEpisodeAction.RateTitle
+        // Оценка стоит рядом со «следующей», а не вместо: кнопка видна всегда, а если серии нет,
+        // ViewModel объясняет это диалогом — как на мобилке.
+        if (!hasNextEpisode && hasFinalEpisodeAction) {
             Spacer(Modifier.width(8.dp))
-        }
-        if (hasNextEpisode) {
             TvControlButton(
-                onClick = onNextEpisode,
-                onFocused = onInteraction,
-                modifier = Modifier
-                    .focusProperties { up = upFocusRequester }
-                    .width(48.dp),
-                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
-            ) { color ->
-                Icon(
-                    imageVector = Icons.Filled.SkipNext,
-                    contentDescription = stringResource(R.string.player_next_episode),
-                    tint = color,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        } else if (hasFinalEpisodeAction) {
-            val onFinalEpisodeAction = when (finalEpisodeAction) {
-                PlayerFinalEpisodeAction.ManageSubscriptions -> onManageSubscriptions
-                else -> onRateTitle
-            }
-            TvControlButton(
-                onClick = onFinalEpisodeAction,
+                onClick = onRateTitle,
                 onFocused = onInteraction,
                 modifier = Modifier.focusProperties { up = upFocusRequester },
             ) { color ->
                 Text(
-                    text = stringResource(
-                        if (finalEpisodeAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
-                            R.string.player_manage_notifications
-                        } else {
-                            R.string.player_rate_title
-                        }
-                    ),
+                    text = stringResource(R.string.player_rate_title),
                     style = MaterialTheme.typography.labelLarge,
                     color = color,
                 )
             }
+        }
+        Spacer(Modifier.width(8.dp))
+        TvControlButton(
+            onClick = onNextEpisode,
+            onFocused = onInteraction,
+            focusRequester = nextEpisodeFocusRequester,
+            modifier = Modifier
+                .focusProperties { up = upFocusRequester }
+                .width(48.dp),
+            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
+        ) { color ->
+            Icon(
+                imageVector = Icons.Filled.SkipNext,
+                contentDescription = stringResource(R.string.player_next_episode),
+                tint = color,
+                modifier = Modifier.size(20.dp),
+            )
         }
     }
 }

@@ -77,7 +77,9 @@ import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.utils.label
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.model.DetailsWatchRestart
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
+import su.afk.yummy.tv.feature.details.utils.resolveDetailsWatchRestart
 import su.afk.yummy.tv.feature.details.utils.statusColor
 import su.afk.yummy.tv.feature.details.utils.statusIcon
 
@@ -119,9 +121,19 @@ internal fun DetailsButtonBar(
             watchProgress = watchProgress,
         )
     }
+    val watchRestart = (videosState as? VideosUiState.Content)?.let { content ->
+        resolveDetailsWatchRestart(
+            animeId = details.id,
+            videos = content.videos,
+            watchProgress = watchProgress,
+            status = details.status,
+        )
+    }
     val watchLabel = when {
         isWatchLoading -> stringResource(R.string.details_loading_episodes)
         videosState is VideosUiState.Empty -> stringResource(R.string.details_watch_not_found)
+        watchRestart == DetailsWatchRestart.Restart -> stringResource(R.string.details_watch_restart)
+        watchRestart == DetailsWatchRestart.Again -> stringResource(R.string.details_watch_again)
         continueTarget != null && continueTarget.video.episode.isNotBlank() ->
             stringResource(R.string.details_continue_episode, continueTarget.video.episode)
 

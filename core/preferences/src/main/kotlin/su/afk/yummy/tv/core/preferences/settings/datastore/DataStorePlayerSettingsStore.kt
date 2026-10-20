@@ -67,7 +67,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         store.enumFlow(preferredVideoQualityKey, PreferredVideoQuality.BEST)
 
     override val adaptiveVideoQualityEnabled: Flow<Boolean> =
-        store.boolean(adaptiveVideoQualityEnabledKey, false)
+        store.boolean(adaptiveVideoQualityEnabledKey, true)
 
     override val autoSkipOpeningsEndings: Flow<Boolean> =
         store.boolean(autoSkipOpeningsEndingsKey, false)

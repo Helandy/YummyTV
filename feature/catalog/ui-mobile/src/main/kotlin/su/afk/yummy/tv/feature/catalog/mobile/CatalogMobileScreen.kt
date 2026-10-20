@@ -36,7 +36,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
@@ -50,7 +49,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
-import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.catalog.CatalogState
 import su.afk.yummy.tv.feature.catalog.mobile.view.CATALOG_SKELETON_ITEMS
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileClearButton
@@ -60,6 +58,7 @@ import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileSearchHistory
 import su.afk.yummy.tv.feature.catalog.mobile.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.catalog.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -107,20 +106,6 @@ fun CatalogMobileScreen(
 
     BaseScreen(
         isScroll = false,
-        error = initialError?.let { ErrorItem(title = it, message = it) },
-        onRetry = {
-            onEvent(CatalogState.Event.RetrySelected)
-            results.retry()
-        },
-        errorContent = initialError?.let { message ->
-            { _, retry ->
-                MobileMessage(
-                    title = message,
-                    actionLabel = stringResource(CoreR.string.common_retry),
-                    onAction = retry,
-                )
-            }
-        },
         floatingActionButtonEnd = {
             RandomAnimeFloatingButton(
                 isLoading = state.isRandomAnimeLoading,
@@ -224,6 +209,20 @@ fun CatalogMobileScreen(
                         actionLabel = stringResource(R.string.search_mobile_reset_filters)
                             .takeIf { hasFilters },
                         onAction = { onEvent(CatalogState.Event.ResetFilters) }.takeIf { hasFilters },
+                        fillMaxSize = false,
+                    )
+                }
+            }
+            // Ошибка внутри сетки: экран корневой, строка поиска не должна пропадать
+            if (initialError != null) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "refresh_error") {
+                    MobileMessage(
+                        title = initialError,
+                        actionLabel = stringResource(CoreR.string.common_retry),
+                        onAction = {
+                            onEvent(CatalogState.Event.RetrySelected)
+                            results.retry()
+                        },
                         fillMaxSize = false,
                     )
                 }

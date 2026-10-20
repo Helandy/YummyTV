@@ -32,6 +32,10 @@ class DefaultLibraryRepository(
         store.add(item.toLibraryEntry())
     }
 
+    override suspend fun setUserRating(animeId: Int, rating: Int?) {
+        store.setUserRating(animeId, rating)
+    }
+
     override suspend fun remove(animeId: Int) {
         store.remove(animeId)
     }

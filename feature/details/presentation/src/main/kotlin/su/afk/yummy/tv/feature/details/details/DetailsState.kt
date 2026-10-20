@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.text.UiText
@@ -14,6 +15,7 @@ import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
+import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
@@ -31,6 +33,14 @@ class DetailsState {
         val libraryList: UserAnimeList? = null,
         /** Оценка пользователя (1..10); `null`, если тайтл не оценён. */
         val userRating: Int? = null,
+        /** Трейлеры тайтла; пусто, пока не загрузились или их нет. */
+        val trailers: ImmutableList<AnimeTrailer> = persistentListOf(),
+        /** Есть ли видео блогеров по тайтлу; карточка скрыта, когда их точно нет. */
+        val hasBloggerVideos: Boolean = true,
+        /** Сводка рейтинга и статистики списков; `null`, если показывать нечего. */
+        val ratingOverview: DetailsRatingOverview? = null,
+        /** Трейлеры и сводка рейтинга ещё грузятся — блоки показывают скелетоны. */
+        val isExtrasLoading: Boolean = true,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
         val pendingBalancerSelection: BalancerPickerState? = null,
         val pendingDubbingSelection: DubbingPickerState? = null,
@@ -99,6 +109,9 @@ class DetailsState {
 
         /** Пользователь открыл скриншоты. */
         data object ScreenshotsSelected : Event
+
+        /** Пользователь нажал на скриншот с указанным индексом в ленте деталей. */
+        data class ScreenshotSelected(val index: Int) : Event
 
         /** Пользователь открыл экран рейтинга. */
         data object RatingScreenSelected : Event

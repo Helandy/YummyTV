@@ -41,4 +41,9 @@
     <string name="home_preview_channel_prompt_message">Add the “New releases” row to the Android TV home screen so you can open fresh episodes without launching the app. You can also do this later in Settings.</string>
     <string name="home_preview_channel_prompt_accept">Add</string>
     <string name="home_preview_channel_prompt_dismiss">Not now</string>
+    <string name="home_community_prompt_title">Join our Telegram community!</string>
+    <string name="home_community_prompt_message">Get the latest news about updates, join the discussions and suggest your ideas to improve the app.</string>
+    <string name="home_community_prompt_later">Later</string>
+    <string name="home_community_prompt_join">Join</string>
+    <string name="home_community_prompt_scan">Point your phone camera at the QR code to open our Telegram channel</string>
 </resources>

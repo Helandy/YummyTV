@@ -31,7 +31,6 @@ import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentChildrenUseCase
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentsUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
-import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.comments.CommentsState.CommentUi
 import su.afk.yummy.tv.feature.comments.CommentsState.ComposerMode
 import su.afk.yummy.tv.feature.comments.handler.CommentsMutationHandler
@@ -41,6 +40,7 @@ import su.afk.yummy.tv.feature.comments.utils.findUi
 import su.afk.yummy.tv.feature.comments.utils.replaceComment
 import su.afk.yummy.tv.feature.comments.utils.updateVote
 import su.afk.yummy.tv.feature.comments.utils.withOverlays
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 
 private const val COMMENTS_PAGE_SIZE = 20
 
@@ -69,7 +69,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     private val target = CommentTarget(targetType, targetId)
 
     // В ленте комментариев пользователя важнее свежие, у тайтлов — лучшие.
-    private val defaultSort = if (targetType == CommentTargetType.USER) CommentSort.NEW else CommentSort.BEST
+    private val defaultSort = CommentSort.BEST
 
     override fun createInitialState() =
         CommentsState.State(sort = defaultSort, comments = createCommentsFlow(defaultSort))

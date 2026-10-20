@@ -64,6 +64,7 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSearchBar
 import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSkeleton
+import su.afk.yummy.tv.feature.home.mobile.view.HomeCommunityPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeQuickActionsSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
@@ -384,6 +385,13 @@ fun HomeMobileScreen(
     if (state.supportPromptVisible) {
         HomeSupportPromptDialog(
             onDismiss = { onEvent(HomeState.Event.SupportPromptDismissed) },
+        )
+    }
+
+    if (state.communityPromptVisible) {
+        HomeCommunityPromptDialog(
+            onLater = { onEvent(HomeState.Event.CommunityPromptDismissed) },
+            onJoin = { onEvent(HomeState.Event.CommunityPromptJoinClicked) },
         )
     }
 

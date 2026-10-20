@@ -1,11 +1,10 @@
 package su.afk.yummy.tv.feature.library.mobile.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,15 +21,14 @@ internal fun LibraryMobileDeleteButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(34.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.92f)),
+            .clip(CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         IconButton(onClick = onClick, modifier = Modifier.size(34.dp)) {
             Icon(
-                imageVector = Icons.Filled.Delete,
+                imageVector = Icons.Filled.Close,
                 contentDescription = stringResource(R.string.library_mobile_remove_content_description),
-                tint = MaterialTheme.colorScheme.onError,
+                tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(18.dp),
             )
         }

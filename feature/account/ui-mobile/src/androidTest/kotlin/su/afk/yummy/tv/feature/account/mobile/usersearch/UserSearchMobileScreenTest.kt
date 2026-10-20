@@ -88,7 +88,7 @@ class UserSearchMobileScreenTest {
         composeRule.onNodeWithText("ТестовыйЮзер").assertIsDisplayed()
         composeRule.onNodeWithText("ТестовыйЮзер").performClick()
 
-        assertTrue(UserSearchState.Event.UserSelected("ТестовыйЮзер") in events)
+        assertTrue(UserSearchState.Event.UserSelected("ТестовыйЮзер", 5) in events)
     }
 
     @Test

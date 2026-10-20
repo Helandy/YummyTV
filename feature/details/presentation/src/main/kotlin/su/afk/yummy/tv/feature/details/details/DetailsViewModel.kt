@@ -8,6 +8,8 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -30,6 +32,7 @@ import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
@@ -50,6 +53,8 @@ import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrlAt
+import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrls
 import su.afk.yummy.tv.feature.details.utils.animeSiteUrl
 import su.afk.yummy.tv.feature.details.utils.fullscreenUrl
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
@@ -74,6 +79,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val videoHandler: DetailsVideoHandler,
     private val subscriptionHandler: DetailsSubscriptionHandler,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
+    private val extrasHandler: DetailsExtrasHandler,
     private val analytics: DetailsAnalytics,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
 ) : BaseViewModel<DetailsState.State, DetailsState.Event, DetailsState.Effect>() {
@@ -141,6 +147,12 @@ class DetailsViewModel @AssistedInject internal constructor(
             .launchIn(viewModelScope)
         screenDataHandler.observeUserRating(animeId)
             .onEach { rating -> setState { copy(userRating = rating) } }
+            .launchIn(viewModelScope)
+        // Оценку меняют на экране рейтинга — по возврату голоса в карточке должны совпасть.
+        screenDataHandler.observeUserRating(animeId)
+            .distinctUntilChanged()
+            .drop(1)
+            .onEach { refreshRatingOverview() }
             .launchIn(viewModelScope)
         screenDataHandler.observeWatchProgress(animeId)
             .flowOn(Dispatchers.Default)
@@ -248,6 +260,11 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.ScreenshotsSelected ->
                 nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
+
+            is DetailsState.Event.ScreenshotSelected -> {
+                analytics.eventScreenshotsScreenshotSelected(animeId, event.index)
+                openScreenshot(event.index)
+            }
 
             DetailsState.Event.RatingScreenSelected ->
                 nav.navigate(detailsNavigator.getRatingDest(animeId))
@@ -412,6 +429,41 @@ class DetailsViewModel @AssistedInject internal constructor(
         viewModelScope.launch { loadDetails() }
         viewModelScope.launch { refreshLibraryState() }
         viewModelScope.launch { loadVideosIfCacheMissing() }
+        viewModelScope.launch { loadExtras() }
+    }
+
+    private suspend fun loadExtras() {
+        setState { copy(isExtrasLoading = true) }
+        val extras = extrasHandler.load(animeId)
+        setState {
+            copy(
+                trailers = extras.trailers.toImmutableList(),
+                hasBloggerVideos = extras.hasBloggerVideos,
+                ratingOverview = extras.ratingOverview,
+                isExtrasLoading = false,
+            )
+        }
+    }
+
+    private fun refreshRatingOverview() {
+        viewModelScope.launch {
+            val overview = extrasHandler.loadRatingOverview(animeId)
+            overview?.let { setState { copy(ratingOverview = it) } }
+        }
+    }
+
+    /** Галерея всех скриншотов, начиная с выбранного. */
+    private fun openScreenshot(index: Int) {
+        val screenshots = currentState.details?.screenshots ?: return
+        val urls = screenshots.galleryUrls()
+        val url = screenshots.galleryUrlAt(index) ?: return
+        nav.navigate(
+            imageViewNavigator(
+                imageUrl = url,
+                imageUrls = urls,
+                selectedIndex = urls.indexOf(url).coerceAtLeast(0),
+            ),
+        )
     }
 
     private suspend fun refreshLibraryState() {

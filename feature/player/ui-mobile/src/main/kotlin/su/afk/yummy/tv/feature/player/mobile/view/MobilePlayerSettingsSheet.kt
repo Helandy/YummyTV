@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,6 +30,8 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
+import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
+import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -117,6 +122,8 @@ internal fun MobilePlayerSettingsSheet(
                                         selected = index == selectedDubbingIndex,
                                         enabled = enabled,
                                         accentLabel = true,
+                                        logoRes = dubbingLogoRes(name),
+                                        logoFallbackIcon = Icons.Filled.Mic,
                                         metaContent = { contentColor ->
                                             if (enabled) {
                                                 MobilePlayerDubbingMeta(
@@ -151,6 +158,8 @@ internal fun MobilePlayerSettingsSheet(
                                         selected = index == selectedBalancerIndex,
                                         enabled = enabled,
                                         accentLabel = true,
+                                        logoRes = balancerLogoRes(name),
+                                        logoFallbackIcon = Icons.Filled.PlayCircle,
                                         metaContent = { contentColor ->
                                             if (!enabled) {
                                                 Text(

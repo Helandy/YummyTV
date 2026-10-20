@@ -419,8 +419,8 @@ class CommentsViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `user comments start with the newest`() {
-        assertEquals(CommentSort.NEW, createViewModel(CommentTargetType.USER).currentState.sort)
+    fun `user comments start with the best`() {
+        assertEquals(CommentSort.BEST, createViewModel(CommentTargetType.USER).currentState.sort)
     }
 
     @Test

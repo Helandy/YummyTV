@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.account.common.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import java.util.Locale
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
@@ -22,6 +21,7 @@ import su.afk.yummy.tv.domain.account.model.ratingsByValue
 import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 import su.afk.yummy.tv.feature.account.common.model.ProfileWatchSlice
 import su.afk.yummy.tv.feature.account.presentation.R
+import java.util.Locale
 
 fun UserStats.isEmpty(): Boolean =
     genres.isEmpty() && ratings.isEmpty() && lists.isEmpty() && types.isEmpty()
@@ -60,7 +60,7 @@ fun UserProfileSex.label(): String =
             UserProfileSex.MALE -> R.string.account_profile_sex_male
             UserProfileSex.FEMALE -> R.string.account_profile_sex_female
             UserProfileSex.UNKNOWN -> R.string.account_profile_unknown
-        }
+        },
     )
 
 fun UserProfileSummary.totalWatchSeconds(): Long =
@@ -159,7 +159,6 @@ val fallbackProfileColors = listOf(
     Color(0xFF4DD0E1),
 )
 
-const val MAX_PROFILE_GENRE_SLICES = 12
 const val SECONDS_IN_HOUR = 3600L
 
 /**

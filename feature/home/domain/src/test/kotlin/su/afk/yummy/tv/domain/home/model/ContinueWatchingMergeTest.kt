@@ -88,6 +88,24 @@ class ContinueWatchingMergeTest : BaseUnitTest() {
         assertEquals(listOf(remote), emptyList<HomeContinueWatchingItem>().merge(remote))
     }
 
+    @Test
+    fun `newer remote mirror of local 4K progress keeps the local 4K card`() {
+        val local = local(episode = "2", positionMs = 300_000L, durationMs = DURATION_MS)
+            .copy(playerName = "4K", episodeUrl = "source://anime4k/1")
+        val remote = remote(episode = "02", positionMs = 305_000L)
+
+        assertEquals(listOf(local), listOf(local).merge(remote))
+    }
+
+    @Test
+    fun `remote progress far ahead of local 4K progress wins`() {
+        val local = local(episode = "2", positionMs = 300_000L, durationMs = DURATION_MS)
+            .copy(playerName = "4K", episodeUrl = "source://anime4k/1")
+        val remote = remote(episode = "2", positionMs = 600_000L)
+
+        assertEquals(listOf(remote), listOf(local).merge(remote))
+    }
+
     private fun List<HomeContinueWatchingItem>.merge(
         remote: HomeContinueWatchingItem,
         suppressedAt: Map<Int, Long> = emptyMap(),

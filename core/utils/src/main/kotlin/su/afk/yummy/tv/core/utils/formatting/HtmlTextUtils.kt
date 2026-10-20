@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.core.utils.formatting
 
-private val HTML_TAG_REGEX = Regex("<[^>]+>")
+private val HTML_TAG_REGEX = Regex("<[^>]+>|<[a-zA-Z/][^>]*$")
 private val WHITESPACE_REGEX = Regex("\\s+")
 
-/** Removes HTML tags like `<b>`, replacing each with [replacement]. */
+/** Removes HTML tags like `<b>`, replacing each with [replacement]; also drops a tag cut off at the end by truncation. */
 fun String.stripHtmlTags(replacement: String = ""): String =
     replace(HTML_TAG_REGEX, replacement)
 

@@ -70,6 +70,7 @@ import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
@@ -90,6 +91,8 @@ internal fun TvExoPlayerView(
     restoreControlFocusTarget: PlayerControlFocusTarget?,
     exitState: TvPlayerExitState,
     tutorialBlocksPlayback: Boolean = false,
+    nextEpisodeUnavailable: PlayerNextEpisodeUnavailable? = null,
+    onNextEpisodeUnavailableShown: () -> Unit = {},
     onControlFocusRestored: () -> Unit,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit,
     onBalancerSelected: (balancerIndex: Int, currentPositionMs: Long) -> Unit,
@@ -107,6 +110,12 @@ internal fun TvExoPlayerView(
     var controllerVisible by remember { mutableStateOf(true) }
     val panels = rememberTvPlayerPanelsState()
     val prompts = rememberPlayerEndFlowState(episodeKey, streamUrl)
+    LaunchedEffect(nextEpisodeUnavailable) {
+        if (nextEpisodeUnavailable != null) {
+            prompts.nextEpisodeUnavailable = nextEpisodeUnavailable
+            onNextEpisodeUnavailableShown()
+        }
+    }
     val skipUi = rememberPlayerSkipUiState(episodeKey)
     val stepSeekToast = rememberPlayerStepSeekToastState(
         streamUrl = streamUrl,
@@ -263,6 +272,13 @@ internal fun TvExoPlayerView(
         onInteraction()
     }
 
+    /** Диалог «серии нет» закрыт без перехода — фокус обратно на кнопку «следующая». */
+    fun closeNextEpisodeUnavailable() {
+        prompts.nextEpisodeUnavailable = null
+        panels.pendingReturnFocusTarget = PanelReturnFocusTarget.NextEpisode
+        onInteraction()
+    }
+
     val skipper = rememberPlayerSegmentSkipper(
         player = player,
         skipUi = skipUi,
@@ -358,6 +374,7 @@ internal fun TvExoPlayerView(
 
     BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible || controllerVisible) {
         if (panels.isAnyOpen || prompts.anyVisible) {
+            if (prompts.nextEpisodeUnavailable != null) closeNextEpisodeUnavailable()
             prompts.dismissNextEpisode()
             prompts.finalEpisodeActionPrompt = null
             panels.close(
@@ -519,7 +536,6 @@ internal fun TvExoPlayerView(
                 onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
             },
             onRateTitle = episodeEnd::rateTitle,
-            onManageSubscriptions = episodeEnd::manageSubscriptions,
             onToggleQuality = {
                 togglePanel(TvPlayerPanel.Quality, PanelReturnFocusTarget.Quality)
             },
@@ -622,8 +638,13 @@ internal fun TvExoPlayerView(
             prompts = prompts,
             focus = focus,
             hasNextEpisode = playback.hasNextEpisode,
-            nextEpisodeDubbing = playback.nextEpisodeDubbing,
+            activeEpisode = playback.activeEpisode,
             onPlayNextEpisode = episodeEnd::playNextEpisode,
+            onSelectNextEpisodeSource = { option ->
+                prompts.nextEpisodeUnavailable = null
+                onPlayerEvent(PlayerState.Event.NextEpisodeSourceSelected(option.selection))
+            },
+            onCloseNextEpisodeUnavailable = ::closeNextEpisodeUnavailable,
             onWatchAgain = {
                 episodeEnd.watchAgain(seekController::restartFromBeginning)
                 onInteraction()

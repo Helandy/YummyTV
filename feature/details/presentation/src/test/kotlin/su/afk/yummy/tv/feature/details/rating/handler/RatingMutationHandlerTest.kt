@@ -17,6 +17,7 @@ import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
+import su.afk.yummy.tv.domain.library.usecase.SetLibraryUserRatingUseCase
 import java.io.IOException
 
 class RatingMutationHandlerTest : BaseUnitTest() {
@@ -27,6 +28,7 @@ class RatingMutationHandlerTest : BaseUnitTest() {
     private val setRating: SetAnimeRatingUseCase = mockk(relaxed = true)
     private val deleteRating: DeleteAnimeRatingUseCase = mockk(relaxed = true)
     private val pendingMutationQueue: PendingMutationQueue = mockk()
+    private val setLibraryUserRating: SetLibraryUserRatingUseCase = mockk(relaxed = true)
 
     @Test
     fun `parts of the rating screen load independently`() = runTest {
@@ -50,6 +52,8 @@ class RatingMutationHandlerTest : BaseUnitTest() {
         assertEquals(RatingMutationResult.Success, handler.deleteRating(ANIME_ID))
         coVerify { setRating(ANIME_ID, 9) }
         coVerify { deleteRating(ANIME_ID) }
+        coVerify { setLibraryUserRating(ANIME_ID, 9) }
+        coVerify { setLibraryUserRating(ANIME_ID, null) }
     }
 
     @Test
@@ -73,6 +77,7 @@ class RatingMutationHandlerTest : BaseUnitTest() {
         coEvery { pendingMutationQueue.enqueueOnNetworkFailure(any(), error) } returns false
 
         assertEquals(RatingMutationResult.Failure, createHandler().setRating(ANIME_ID, 9))
+        coVerify(exactly = 0) { setLibraryUserRating(any(), any()) }
     }
 
     @Test
@@ -89,6 +94,7 @@ class RatingMutationHandlerTest : BaseUnitTest() {
         setAnimeRating = setRating,
         deleteAnimeRating = deleteRating,
         pendingMutationQueue = pendingMutationQueue,
+        setLibraryUserRating = setLibraryUserRating,
     )
 
     private companion object {

@@ -12,7 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.feature.messages.mobile.utils.avatarInitial
@@ -26,17 +28,19 @@ internal fun DialogMobileAvatar(
     avatarUrl: String?,
     name: String,
     modifier: Modifier = Modifier,
+    size: Dp = 52.dp,
+    initialStyle: TextStyle = MaterialTheme.typography.titleLarge,
 ) {
     Box(
         modifier = modifier
-            .size(52.dp)
+            .size(size)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = name.avatarInitial(),
-            style = MaterialTheme.typography.titleLarge,
+            style = initialStyle,
             color = MaterialTheme.colorScheme.primary,
         )
         if (!avatarUrl.isNullOrBlank()) {

@@ -28,12 +28,18 @@
     <string name="details_reviews_count">Reviews (%1$d)</string>
         <string name="details_mobile_empty">Title not found</string>
     <string name="details_watch">Watch</string>
+    <string name="details_watch_restart">Watch from start</string>
+    <string name="details_watch_again">Watch again</string>
     <string name="details_watch_not_found">Video not found</string>
     <string name="details_loading_episodes">Loading episodes…</string>
     <string name="details_continue_episode">Continue · Episode %1$s</string>
     <string name="details_mobile_add_library">Add to list</string>
     <string name="details_add_favorite">Favorite</string>
         <string name="details_mobile_sections">Sections</string>
+        <string name="details_mobile_video_section">Video</string>
+        <string name="details_mobile_blogger_videos_hint">Opinions and breakdowns</string>
+        <string name="details_mobile_trailers_hint">Official clips</string>
+        <string name="details_mobile_rate_action">Rate</string>
     <string name="details_full_description">Description</string>
     <string name="details_episodes">Episodes</string>
     <string name="details_episodes_empty">No episodes yet</string>
@@ -208,4 +214,7 @@
     <string name="details_tv_unmark_episode_watched">Remove watched mark</string>
     <string name="details_trailer_player_error">Couldn\'t play the trailer</string>
     <string name="details_trailer_open_external">Open in browser</string>
+    <string name="details_mobile_titles_japanese">Japanese</string>
+    <string name="details_mobile_titles_english">English</string>
+    <string name="details_mobile_titles_alternative">Alternative</string>
 </resources>

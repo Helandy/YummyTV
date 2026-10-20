@@ -27,14 +27,10 @@ internal fun DetailsSecondaryActions(
     onSubscriptionsSelected: () -> Unit,
     onSubscriptionsLockedSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
-    onTrailersSelected: () -> Unit,
     onSimilarSelected: () -> Unit,
     onViewingOrderSelected: () -> Unit,
-    onScreenshotsSelected: () -> Unit,
-    onRatingScreenSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
-    onBloggerVideosSelected: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val actions = buildMobileActions(
@@ -43,14 +39,10 @@ internal fun DetailsSecondaryActions(
         onSubscriptionsSelected = onSubscriptionsSelected,
         onSubscriptionsLockedSelected = onSubscriptionsLockedSelected,
         onEpisodesSelected = onEpisodesSelected,
-        onTrailersSelected = onTrailersSelected,
         onSimilarSelected = onSimilarSelected,
         onViewingOrderSelected = onViewingOrderSelected,
-        onScreenshotsSelected = onScreenshotsSelected,
-        onRatingScreenSelected = onRatingScreenSelected,
         onCollectionsSelected = onCollectionsSelected,
         onReviewsSelected = onReviewsSelected,
-        onBloggerVideosSelected = onBloggerVideosSelected,
     )
     if (actions.isEmpty()) return
 
@@ -70,14 +62,14 @@ internal fun DetailsSecondaryActions(
                     action = action,
                     modifier = Modifier
                         .weight(1f)
-                        .height(58.dp),
+                        .height(56.dp),
                 )
             }
             if (actions.size % 2 != 0) {
                 Spacer(
                     modifier = Modifier
                         .weight(1f)
-                        .height(58.dp),
+                        .height(56.dp),
                 )
             }
         }

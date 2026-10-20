@@ -98,10 +98,17 @@ fun PlayerSetupTvScreen(
                 onEvent(PlayerSetupState.Event.ContentLanguageSelected(state.contentLanguage.next()))
             },
         )
+        PlayerSetupTvToggleRow(
+            label = stringResource(R.string.player_setup_adaptive_quality_label),
+            hint = stringResource(R.string.player_setup_adaptive_quality_hint),
+            enabled = state.adaptiveVideoQualityEnabled,
+            onClick = { onEvent(PlayerSetupState.Event.AdaptiveVideoQualityToggled) },
+        )
         PlayerSetupTvChoiceRow(
             label = stringResource(R.string.player_setup_quality_label),
             hint = stringResource(R.string.player_setup_quality_hint),
             value = state.preferredVideoQuality.setupLabel(),
+            enabled = !state.adaptiveVideoQualityEnabled,
             onCycle = {
                 onEvent(PlayerSetupState.Event.PreferredVideoQualitySelected(state.preferredVideoQuality.next()))
             },

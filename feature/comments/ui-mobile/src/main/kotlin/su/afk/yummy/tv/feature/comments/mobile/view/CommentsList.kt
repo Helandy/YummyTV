@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -35,6 +36,7 @@ internal fun CommentsList(
     pagingComments: LazyPagingItems<CommentsState.CommentUi>,
     appendState: LoadState,
     listState: LazyListState,
+    topInset: Dp,
     onEvent: (CommentsState.Event) -> Unit,
 ) {
     LazyColumn(
@@ -42,7 +44,7 @@ internal fun CommentsList(
         modifier = Modifier
             .mobileContentMaxWidth()
             .fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = topInset + 8.dp, bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         (appendState as? LoadState.Error)?.error?.let { error ->

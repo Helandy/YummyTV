@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Промпт конца серии: вторичное действие слева, основное справа. Подписи в одну строку: если
+ * Промпт конца серии: вторичное действие слева (если есть), основное справа. Подписи в одну строку: если
  * кнопки не помещаются рядом, основная уходит на следующую строку, а не рвёт слово.
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -29,10 +30,12 @@ import androidx.compose.ui.unit.dp
 internal fun MobilePlayerEndPrompt(
     title: String,
     primaryLabel: String,
-    secondaryLabel: String,
+    secondaryLabel: String?,
     onPrimary: () -> Unit,
     onSecondary: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Вторая строка под заголовком, как в диалоге со списком озвучек. */
+    subtitle: String? = null,
 ) {
     Column(
         modifier = modifier
@@ -43,22 +46,36 @@ internal fun MobilePlayerEndPrompt(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White,
-        )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.72f),
+                )
+            }
+        }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            OutlinedButton(
-                onClick = onSecondary,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.White,
-                ),
-            ) {
-                Text(secondaryLabel, maxLines = 1)
+            if (secondaryLabel != null) {
+                OutlinedButton(
+                    onClick = onSecondary,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                    ),
+                ) {
+                    Text(secondaryLabel, maxLines = 1)
+                }
             }
             Button(
                 onClick = onPrimary,

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.mobile.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,9 +22,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
+import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.domain.account.model.UserSearchItem
-import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.common.utils.formatProfileDate
+import su.afk.yummy.tv.feature.account.common.utils.isOnlineAt
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun UserSearchCard(
@@ -31,6 +35,8 @@ internal fun UserSearchCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val nowEpochSeconds = rememberNowEpochSeconds()
+    val isOnline = item.lastOnlineSeconds.isOnlineAt(nowEpochSeconds)
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -45,15 +51,26 @@ internal fun UserSearchCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            AsyncImage(
-                model = item.avatarUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop,
-            )
+            Box {
+                AsyncImage(
+                    model = item.avatarUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentScale = ContentScale.Crop,
+                )
+                if (item.lastOnlineSeconds > 0L) {
+                    AccountMobileOnlineDot(
+                        isOnline = isOnline,
+                        size = 14.dp,
+                        ring = 2.dp,
+                        ringColor = MaterialTheme.colorScheme.surfaceContainer,
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                    )
+                }
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.nickname,
@@ -63,12 +80,20 @@ internal fun UserSearchCard(
                 )
                 if (item.lastOnlineSeconds > 0L) {
                     Text(
-                        text = stringResource(
-                            R.string.user_search_last_online,
-                            item.lastOnlineSeconds.formatProfileDate(),
-                        ),
+                        text = if (isOnline) {
+                            stringResource(R.string.user_profile_online)
+                        } else {
+                            stringResource(
+                                R.string.user_search_last_online,
+                                item.lastOnlineSeconds.formatProfileDate(),
+                            )
+                        },
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isOnline) {
+                            YummySemanticColors.UserOnline
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                     )
                 }
             }

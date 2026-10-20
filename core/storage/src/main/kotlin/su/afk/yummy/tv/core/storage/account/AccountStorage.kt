@@ -127,6 +127,11 @@ interface AccountStorage {
         language: String,
     ): AccountUserProfileSummaryCache?
 
+    suspend fun getUserProfileSummaryByNickname(
+        nickname: String,
+        language: String,
+    ): AccountUserProfileSummaryCache?
+
     suspend fun saveUserProfileSummary(cache: AccountUserProfileSummaryCache)
 
     suspend fun deleteUserProfileSummary(userId: Int)

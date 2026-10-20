@@ -12,7 +12,6 @@
     <string name="search_mobile_filters_apply_with_count">Применить · %1$d</string>
     <string name="search_filters_reset">Сбросить</string>
     <string name="search_filters_loading">Загрузка фильтров…</string>
-    <string name="search_filter_selected">✓ %1$s</string>
     <string name="search_filter_selected_count">Выбрано: %1$d</string>
     <string name="search_filter_genre_screen_title">Жанры</string>
     <string name="search_filter_open_genres">Выбрать жанры (%1$d)</string>
@@ -34,11 +33,11 @@
     <string name="search_filter_season_spring">Весна</string>
     <string name="search_filter_season_summer">Лето</string>
     <string name="search_filter_season_fall">Осень</string>
-    <string name="search_filter_age_g">G (Для всех)</string>
-    <string name="search_filter_age_pg">PG (Для детей)</string>
-    <string name="search_filter_age_pg13">PG-13 (От 13)</string>
-    <string name="search_filter_age_r17">R-17+ (Насилие или нецензурная лексика)</string>
-    <string name="search_filter_age_r">R+ (Есть сцены легкой эротики)</string>
+    <string name="search_filter_age_g">G</string>
+    <string name="search_filter_age_pg">PG</string>
+    <string name="search_filter_age_pg13">PG-13</string>
+    <string name="search_filter_age_r17">R-17</string>
+    <string name="search_filter_age_r">R+</string>
     <string name="search_filter_sort_title">Название</string>
         <string name="search_filter_sort_rating">Рейтинг</string>
     <string name="search_mobile_filter_sort_rating_counters">Оценки</string>

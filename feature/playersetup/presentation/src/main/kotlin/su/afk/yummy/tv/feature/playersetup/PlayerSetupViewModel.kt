@@ -55,6 +55,10 @@ class PlayerSetupViewModel @Inject internal constructor(
                 settingsHandler.setPictureInPictureEnabled(!currentState.pictureInPictureEnabled)
             }
 
+            PlayerSetupState.Event.AdaptiveVideoQualityToggled -> launchWrite {
+                settingsHandler.setAdaptiveVideoQualityEnabled(!currentState.adaptiveVideoQualityEnabled)
+            }
+
             is PlayerSetupState.Event.ContentLanguageSelected -> launchWrite {
                 settingsHandler.setContentLanguage(event.language)
             }

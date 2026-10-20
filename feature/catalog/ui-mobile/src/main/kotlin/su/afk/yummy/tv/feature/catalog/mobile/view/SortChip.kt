@@ -37,7 +37,6 @@ internal fun SortChip(
         selected = selected,
         onClick = onClick,
         modifier = modifier,
-        showSelectedIcon = reversed == null,
         trailingIcon = if (selected && reversed != null) {
             {
                 Icon(

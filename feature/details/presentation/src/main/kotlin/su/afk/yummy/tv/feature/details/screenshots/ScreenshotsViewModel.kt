@@ -15,6 +15,8 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
+import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrlAt
+import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrls
 
 @HiltViewModel(assistedFactory = ScreenshotsViewModel.Factory::class)
 class ScreenshotsViewModel @AssistedInject internal constructor(
@@ -54,8 +56,8 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
 
     /** Просмотр всех скриншотов галереей, начиная с выбранного. */
     private fun openScreenshot(index: Int) {
-        val urls = currentState.screenshots.mapNotNull { it.full ?: it.small }
-        val url = currentState.screenshots.getOrNull(index)?.let { it.full ?: it.small } ?: return
+        val urls = currentState.screenshots.galleryUrls()
+        val url = currentState.screenshots.galleryUrlAt(index) ?: return
         nav.navigate(
             imageViewNavigator(
                 imageUrl = url,

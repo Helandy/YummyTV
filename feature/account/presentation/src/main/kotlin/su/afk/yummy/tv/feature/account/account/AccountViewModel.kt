@@ -265,6 +265,9 @@ class AccountViewModel @Inject internal constructor(
             AccountState.Event.UserSearchSelected ->
                 nav.navigate(accountNavigator.getUserSearchDest())
 
+            AccountState.Event.FriendsSelected ->
+                if (currentState.isSignedIn) nav.navigate(accountNavigator.getUserFriendsDest(currentState.userId))
+
             AccountState.Event.FaqSelected -> nav.navigate(faqNavigator.getFaqDest())
 
             AccountState.Event.SitePagesSelected -> nav.navigate(sitePagesNavigator.pages())

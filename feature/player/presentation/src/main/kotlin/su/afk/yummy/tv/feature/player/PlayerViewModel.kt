@@ -39,7 +39,9 @@ import su.afk.yummy.tv.feature.player.host.PlayerChangePlayerHint
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 import su.afk.yummy.tv.feature.player.mapper.PlayerDestinationStateMapper
+import su.afk.yummy.tv.feature.player.mapper.toPlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.navigator.PLAYER_CONTENT_KEY
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -329,9 +331,22 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.NextEpisode -> {
+                val nextInDubbing = sourceSelectionHandler.nextEpisode(currentState)
+                // С кнопки управления и в конце серии в другую озвучку молча не уходим:
+                // спрашиваем диалогом со списком источников.
+                val asksForSource = event.source == PlayerNextEpisodeSource.Controls ||
+                    event.source == PlayerNextEpisodeSource.EpisodeEnd
+                if (nextInDubbing == null && asksForSource) {
+                    setEffect(
+                        PlayerState.Effect.ShowNextEpisodeUnavailable(
+                            currentState.toPlayerNextEpisodeUnavailable(),
+                        ),
+                    )
+                    return
+                }
                 closeSourceSessions()
                 analytics.eventNextEpisode(currentState, event.source)
-                val nextState = sourceSelectionHandler.nextEpisode(currentState)
+                val nextState = nextInDubbing
                     ?: sourceSelectionHandler.nextEpisodeInOtherDubbing(currentState)
                 applySourceSelection(
                     nextState,
@@ -340,6 +355,19 @@ class PlayerViewModel @AssistedInject internal constructor(
                     refreshSourcesAlongsideStream = true,
                 )
                 nextState?.let(::saveContinueTarget)
+            }
+
+            is PlayerState.Event.NextEpisodeSourceSelected -> {
+                closeSourceSessions()
+                analytics.eventNextEpisode(currentState, PlayerNextEpisodeSource.UnavailableDialog)
+                val nextState = sourceSelectionHandler.nextEpisodeFromSource(currentState, event.selection)
+                applySourceSelection(
+                    nextState,
+                    sourceScopeChanged = true,
+                    resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
+                    refreshSourcesAlongsideStream = true,
+                )
+                saveContinueTarget(nextState)
             }
 
             is PlayerState.Event.EpisodeCompleted -> {

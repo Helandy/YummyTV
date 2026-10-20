@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
+import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -100,6 +101,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val hiddenIds = MutableStateFlow<Set<Int>>(emptySet())
     private val userId = MutableStateFlow(USER_ID)
     private val supportPrompt = MutableStateFlow(SupportPromptSnapshot(dismissed = true, firstEligibleTimeMs = 0L))
+    private val communityPrompt = MutableStateFlow(CommunityPromptSnapshot(dismissed = true, firstUseTimeMs = 0L))
     private val navKey: NavKey = mockk()
 
     private val appClock: AppClock = mockk()
@@ -117,6 +119,7 @@ class HomeViewModelTest : BaseUnitTest() {
         every { settingsStore.yaniUserId } returns userId
         every { settingsStore.yaniContentLanguage } returns emptyFlow()
         every { settingsStore.supportPromptSnapshot } returns supportPrompt
+        every { settingsStore.communityPromptSnapshot } returns communityPrompt
         every { settingsStore.lastSeenAnnouncementId } returns flowOf("")
         every { featureToggleUpdateObserver.currentActivationId } returns 1L
         every { featureToggleUpdateObserver.updates } returns flowOf()
@@ -403,6 +406,55 @@ class HomeViewModelTest : BaseUnitTest() {
         val vm = createViewModel()
 
         assertFalse(vm.currentState.supportPromptVisible)
+    }
+
+    @Test
+    fun `community prompt is shown once after five days and remembered`() {
+        communityPrompt.value = CommunityPromptSnapshot(dismissed = false, firstUseTimeMs = 0L)
+
+        val vm = createViewModel()
+
+        assertTrue(vm.currentState.communityPromptVisible)
+        coVerify(exactly = 1) { settingsStore.dismissCommunityPrompt() }
+        vm.setEvent(Event.CommunityPromptDismissed)
+        assertFalse(vm.currentState.communityPromptVisible)
+    }
+
+    @Test
+    fun `community prompt is not shown before five days or when dismissed`() {
+        communityPrompt.value = CommunityPromptSnapshot(
+            dismissed = false,
+            firstUseTimeMs = System.currentTimeMillis(),
+        )
+        assertFalse(createViewModel().currentState.communityPromptVisible)
+
+        communityPrompt.value = CommunityPromptSnapshot(dismissed = true, firstUseTimeMs = 0L)
+        assertFalse(createViewModel().currentState.communityPromptVisible)
+    }
+
+    @Test
+    fun `community prompt waits while the announcement is visible`() {
+        every { featureToggleProvider.getString(FeatureFlags.announcementId) } returns "7"
+        every { featureToggleProvider.getString(FeatureFlags.announcementMessage) } returns "Hello"
+        communityPrompt.value = CommunityPromptSnapshot(dismissed = false, firstUseTimeMs = 0L)
+
+        val vm = createViewModel()
+        assertFalse(vm.currentState.communityPromptVisible)
+
+        vm.setEvent(Event.AnnouncementDismissed)
+        assertTrue(vm.currentState.communityPromptVisible)
+    }
+
+    @Test
+    fun `joining the community opens telegram and closes the prompt`() = runTest {
+        communityPrompt.value = CommunityPromptSnapshot(dismissed = false, firstUseTimeMs = 0L)
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.CommunityPromptJoinClicked)
+
+        assertFalse(vm.currentState.communityPromptVisible)
+        assertEquals(Effect.OpenUri("https://t.me/etozhesandy_dev"), effects.single())
     }
 
     @Test

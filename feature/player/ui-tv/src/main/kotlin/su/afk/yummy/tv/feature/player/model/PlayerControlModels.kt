@@ -7,4 +7,5 @@ internal enum class PanelReturnFocusTarget {
     /** Боковое меню настроек справа: скорость, масштаб, субтитры и звук. */
     PlayerSettings,
     Alloha,
+    NextEpisode,
 }

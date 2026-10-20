@@ -10,10 +10,12 @@
     <string name="player_setup_auto_skip_hint">Skip when episode timings are available</string>
     <string name="player_setup_auto_play_label">Autoplay next episode</string>
     <string name="player_setup_auto_play_hint">Start the next episode after a countdown</string>
-    <string name="player_setup_suggest_next_label">Next episode suggestion</string>
+    <string name="player_setup_suggest_next_label">Suggest next episode</string>
     <string name="player_setup_suggest_next_hint">Show on Home after finishing the current episode</string>
     <string name="player_setup_ask_dubbing_label">Ask for voice-over before watching</string>
     <string name="player_setup_ask_dubbing_hint">Otherwise the most popular one starts right away</string>
+    <string name="player_setup_adaptive_quality_label">Adaptive quality</string>
+    <string name="player_setup_adaptive_quality_hint">Adjusts to your device and network. Turn off to choose the quality yourself</string>
     <string name="player_setup_quality_label">Video quality</string>
     <string name="player_setup_quality_hint">Falls back to the closest lower quality when unavailable</string>
     <string name="player_setup_quality_best">Best</string>

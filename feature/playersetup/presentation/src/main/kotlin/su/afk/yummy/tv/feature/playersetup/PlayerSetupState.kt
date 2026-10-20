@@ -17,6 +17,7 @@ class PlayerSetupState {
         val autoPlayNextEpisode: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val askDubbingOnWatch: Boolean = true,
+        val adaptiveVideoQualityEnabled: Boolean = true,
         val preferredVideoQuality: PreferredVideoQuality = PreferredVideoQuality.BEST,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val pictureInPictureEnabled: Boolean = true,
@@ -30,6 +31,7 @@ class PlayerSetupState {
         data object SuggestNextEpisodeOnWatchedToggled : Event
         data object AskDubbingOnWatchToggled : Event
         data object PictureInPictureToggled : Event
+        data object AdaptiveVideoQualityToggled : Event
         data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event

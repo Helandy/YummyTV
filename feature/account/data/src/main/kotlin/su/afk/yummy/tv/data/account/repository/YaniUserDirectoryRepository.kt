@@ -5,6 +5,8 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.account.AccountStorage
+import su.afk.yummy.tv.core.storage.account.isFresh
+import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.data.account.mapper.toFriendshipStatus
 import su.afk.yummy.tv.data.account.mapper.toUserSearchItem
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
@@ -29,15 +31,22 @@ class YaniUserDirectoryRepository(
 
     override suspend fun getProfileByNickname(nickname: String): UserProfileSummary =
         withContext(Dispatchers.IO) {
-            val profile = api.getUserProfileByNickname(nickname).response
             val language = settingsStore.currentLanguageCode()
-            val cache = profile.toUserProfileSummaryCache(
-                userId = profile.id,
-                language = language,
-                cachedAt = System.currentTimeMillis(),
+            offlineFirstCache(
+                read = { storage.getUserProfileSummaryByNickname(nickname, language) },
+                isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
+                toDomain = { it.toUserProfileSummary() },
+                fetchAndSave = {
+                    val profile = api.getUserProfileByNickname(nickname).response
+                    val cache = profile.toUserProfileSummaryCache(
+                        userId = profile.id,
+                        language = language,
+                        cachedAt = System.currentTimeMillis(),
+                    )
+                    storage.saveUserProfileSummary(cache)
+                    cache
+                },
             )
-            storage.saveUserProfileSummary(cache)
-            cache.toUserProfileSummary()
         }
 
     override suspend fun getFriendship(userId: Int, friendId: Int): FriendshipStatus =

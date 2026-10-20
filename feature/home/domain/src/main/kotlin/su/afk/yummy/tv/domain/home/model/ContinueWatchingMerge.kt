@@ -2,6 +2,7 @@ package su.afk.yummy.tv.domain.home.model
 
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
+import su.afk.yummy.tv.core.common.player.isServerMirrorOfExtraSource
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import kotlin.math.abs
@@ -65,11 +66,25 @@ private fun pickCard(
     suggestNextEpisode: Boolean,
 ): HomeContinueWatchingItem? {
     if (remote == null || remote.updatedAt <= (local?.updatedAt ?: Long.MIN_VALUE)) return local
+    if (local != null && remote.isMirrorOfExtraSource(local)) return local
     if (remote.isResumable()) return remote
     if (!remote.isWatched()) return local
     if (local != null && !remote.isNotBeforeEpisodeOf(local)) return local
     return if (suggestNextEpisode) remote.toNextEpisodeCard() else null
 }
+
+/**
+ * Серверная запись — зеркало локального прогресса 4K: сервер получает его под видео другого балансера
+ * и ставит дату новее. Без этой проверки «Продолжить» открыл бы балансер-двойник вместо 4K.
+ */
+private fun HomeContinueWatchingItem.isMirrorOfExtraSource(local: HomeContinueWatchingItem): Boolean =
+    episode.episodeGroupKey() == local.episode.episodeGroupKey() &&
+        isServerMirrorOfExtraSource(
+            localEpisodeUrl = local.episodeUrl,
+            localPositionMs = local.positionMs,
+            serverEpisodeUrl = episodeUrl,
+            serverPositionMs = positionMs,
+        )
 
 /** Карточка следующей серии с начала; номер не распознан — предлагать нечего, тайтл скрыт. */
 private fun HomeContinueWatchingItem.toNextEpisodeCard(): HomeContinueWatchingItem? {

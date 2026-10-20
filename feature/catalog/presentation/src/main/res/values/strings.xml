@@ -12,7 +12,6 @@
     <string name="search_mobile_filters_apply_with_count">Apply · %1$d</string>
     <string name="search_filters_reset">Reset</string>
     <string name="search_filters_loading">Loading filters…</string>
-    <string name="search_filter_selected">✓ %1$s</string>
     <string name="search_filter_selected_count">Selected: %1$d</string>
     <string name="search_filter_genre_screen_title">Genres</string>
     <string name="search_filter_open_genres">Choose genres (%1$d)</string>
@@ -34,11 +33,11 @@
     <string name="search_filter_season_spring">Spring</string>
     <string name="search_filter_season_summer">Summer</string>
     <string name="search_filter_season_fall">Fall</string>
-    <string name="search_filter_age_g">G (For everyone)</string>
-    <string name="search_filter_age_pg">PG (For children)</string>
-    <string name="search_filter_age_pg13">PG-13 (From 13)</string>
-    <string name="search_filter_age_r17">R-17+ (Violence or profanity)</string>
-    <string name="search_filter_age_r">R+ (Mild erotic scenes)</string>
+    <string name="search_filter_age_g">G</string>
+    <string name="search_filter_age_pg">PG</string>
+    <string name="search_filter_age_pg13">PG-13</string>
+    <string name="search_filter_age_r17">R-17</string>
+    <string name="search_filter_age_r">R+</string>
     <string name="search_filter_sort_title">Title</string>
         <string name="search_filter_sort_rating">Rating</string>
     <string name="search_mobile_filter_sort_rating_counters">Votes</string>

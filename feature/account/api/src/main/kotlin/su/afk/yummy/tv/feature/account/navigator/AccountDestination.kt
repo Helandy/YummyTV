@@ -13,6 +13,9 @@ data class UserProfileDestination(val userId: Int) : NavKey
 data class UserProfileByNicknameDestination(val nickname: String) : NavKey
 
 @Serializable
+data class FriendsDestination(val userId: Int) : NavKey
+
+@Serializable
 data object UserSearchDestination : NavKey
 
 @Serializable

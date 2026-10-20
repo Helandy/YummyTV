@@ -206,6 +206,12 @@ internal class AccountStorageStore(
     ): AccountUserProfileSummaryCache? =
         userProfileDao.getUserProfileSummary(userId, language)
 
+    override suspend fun getUserProfileSummaryByNickname(
+        nickname: String,
+        language: String,
+    ): AccountUserProfileSummaryCache? =
+        userProfileDao.getUserProfileSummaryByNickname(nickname, language)
+
     override suspend fun saveUserProfileSummary(cache: AccountUserProfileSummaryCache) {
         userProfileDao.replaceUserProfileSummary(cache)
     }

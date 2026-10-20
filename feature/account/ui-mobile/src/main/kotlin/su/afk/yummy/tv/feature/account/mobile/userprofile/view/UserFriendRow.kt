@@ -22,19 +22,16 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserFriend
-import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.feature.account.common.utils.isOnlineAt
-import su.afk.yummy.tv.feature.account.common.utils.label
 import su.afk.yummy.tv.feature.account.common.utils.lastOnlineLabel
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileOnlineDot
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileSurfacePanel
 import su.afk.yummy.tv.feature.account.presentation.R
 
-/** Друг в профиле: аватар с точкой статуса (зелёная/красная), ник, под ним пол и последний визит. */
+/** Друг в профиле: аватар с точкой статуса (зелёная/красная), ник и последний визит. */
 @Composable
 internal fun UserFriendRow(item: UserFriend, nowEpochSeconds: Long, onClick: () -> Unit) {
     val isOnline = item.lastOnlineSeconds.isOnlineAt(nowEpochSeconds)
-    val sexLabel = item.sex.takeIf { it != UserProfileSex.UNKNOWN }?.label()
     val lastOnline = item.lastOnlineSeconds.lastOnlineLabel(item.sex, nowEpochSeconds)
     AccountMobileSurfacePanel(
         modifier = Modifier
@@ -51,7 +48,7 @@ internal fun UserFriendRow(item: UserFriend, nowEpochSeconds: Long, onClick: () 
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                 )
@@ -73,15 +70,6 @@ internal fun UserFriendRow(item: UserFriend, nowEpochSeconds: Long, onClick: () 
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (sexLabel != null) {
-                    Text(
-                        text = sexLabel,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
                 if (lastOnline != null) {
                     Text(
                         text = lastOnline,

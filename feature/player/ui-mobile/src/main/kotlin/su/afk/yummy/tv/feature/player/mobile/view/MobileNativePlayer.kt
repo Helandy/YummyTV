@@ -71,11 +71,17 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackMenu
 import su.afk.yummy.tv.feature.player.common.rememberPlayerVolumeController
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
 import su.afk.yummy.tv.feature.player.common.toastIcon
+import su.afk.yummy.tv.feature.player.common.utils.hasOtherSource
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.common.utils.playerContentScale
 import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePrimaryLabel
+import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePromptSubtitle
 import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePromptTitle
 import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodePromptTitle
+import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodeUnavailablePrimaryLabel
+import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodeUnavailableSecondaryLabel
+import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodeUnavailableSubtitle
+import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodeUnavailableTitle
 import su.afk.yummy.tv.feature.player.common.utils.toProgressSource
 import su.afk.yummy.tv.feature.player.common.view.PlayerAutoSkipEffect
 import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
@@ -95,9 +101,9 @@ import su.afk.yummy.tv.feature.player.mobile.utils.toMobilePlayerKeyAction
 import su.afk.yummy.tv.feature.player.mobile.view.tutorial.MobilePlayerGestureTutorial
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.canPlayNext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
@@ -111,6 +117,8 @@ internal fun MobileNativePlayer(
     videoTransform: MobileVideoTransform,
     onVideoTransformChanged: (MobileVideoTransform) -> Unit,
     onEvent: (PlayerState.Event) -> Unit,
+    nextEpisodeUnavailable: PlayerNextEpisodeUnavailable? = null,
+    onNextEpisodeUnavailableShown: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
@@ -139,6 +147,12 @@ internal fun MobileNativePlayer(
     var sidePanelOpen by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
     val endFlow = rememberPlayerEndFlowState(ui.activeIframeUrl, streamUrl)
+    LaunchedEffect(nextEpisodeUnavailable) {
+        if (nextEpisodeUnavailable != null) {
+            endFlow.nextEpisodeUnavailable = nextEpisodeUnavailable
+            onNextEpisodeUnavailableShown()
+        }
+    }
     val skipUi = rememberPlayerSkipUiState(ui.activeIframeUrl)
     val currentUrl = ui.playbackUrl
     val playbackConfigKey = rememberPlayerPlaybackKey(state, currentUrl)
@@ -395,6 +409,7 @@ internal fun MobileNativePlayer(
     BackHandler(enabled = endFlow.anyVisible && !isInPictureInPictureMode) {
         endFlow.dismissNextEpisode()
         endFlow.finalEpisodeActionPrompt = null
+        endFlow.nextEpisodeUnavailable = null
         overlay.show()
     }
 
@@ -564,7 +579,6 @@ internal fun MobileNativePlayer(
             openingStartMs = ui.activeSkips.opening?.startMs?.takeIf { state.showOpeningOnTimeline },
             openingEndMs = ui.activeSkips.opening?.endMs?.takeIf { state.showOpeningOnTimeline },
             hasPrevEpisode = ui.hasPrevEpisode,
-            hasNextEpisode = ui.hasNextEpisode,
             onPlayPause = {
                 if (wantsPlay) player.pause() else player.play()
                 overlay.show()
@@ -717,16 +731,12 @@ internal fun MobileNativePlayer(
         }
 
         if (endFlow.nextEpisodePrompt.isVisible &&
-            ui.canPlayNext &&
+            ui.hasNextEpisode &&
             !isInPictureInPictureMode &&
             !tutorialBlocksPlayback
         ) {
             MobilePlayerEndPrompt(
-                title = playerNextEpisodePromptTitle(
-                    prompt = endFlow.nextEpisodePrompt,
-                    hasNextEpisode = ui.hasNextEpisode,
-                    nextEpisodeDubbing = ui.nextEpisodeDubbing,
-                ),
+                title = playerNextEpisodePromptTitle(endFlow.nextEpisodePrompt),
                 primaryLabel = stringResource(R.string.player_watch_next),
                 secondaryLabel = stringResource(R.string.player_watch_again),
                 onPrimary = episodeEnd::playNextEpisode,
@@ -739,7 +749,8 @@ internal fun MobileNativePlayer(
         if (finalAction != null && !isInPictureInPictureMode && !tutorialBlocksPlayback) {
             val managesSubscriptions = finalAction == PlayerFinalEpisodeAction.ManageSubscriptions
             MobilePlayerEndPrompt(
-                title = playerFinalEpisodePromptTitle(finalAction),
+                title = playerFinalEpisodePromptTitle(finalAction, ui.activeEpisode),
+                subtitle = playerFinalEpisodePromptSubtitle(finalAction),
                 primaryLabel = playerFinalEpisodePrimaryLabel(finalAction),
                 secondaryLabel = stringResource(R.string.player_watch_again),
                 onPrimary = {
@@ -750,6 +761,39 @@ internal fun MobileNativePlayer(
                     }
                 },
                 onSecondary = ::watchAgain,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
+
+        val unavailable = endFlow.nextEpisodeUnavailable
+        if (
+            unavailable != null &&
+            unavailable.hasOtherSource &&
+            !isInPictureInPictureMode &&
+            !tutorialBlocksPlayback
+        ) {
+            MobilePlayerNextEpisodeSourcesPrompt(
+                title = playerNextEpisodeUnavailableTitle(unavailable),
+                subtitle = playerNextEpisodeUnavailableSubtitle(unavailable),
+                options = unavailable.options,
+                onSelect = { option ->
+                    endFlow.nextEpisodeUnavailable = null
+                    onEvent(PlayerState.Event.NextEpisodeSourceSelected(option.selection))
+                },
+                onCancel = { endFlow.nextEpisodeUnavailable = null },
+                modifier = Modifier.align(Alignment.Center),
+            )
+        } else if (unavailable != null && !isInPictureInPictureMode && !tutorialBlocksPlayback) {
+            MobilePlayerEndPrompt(
+                title = playerNextEpisodeUnavailableTitle(unavailable),
+                subtitle = playerNextEpisodeUnavailableSubtitle(unavailable),
+                primaryLabel = playerNextEpisodeUnavailablePrimaryLabel(unavailable),
+                secondaryLabel = playerNextEpisodeUnavailableSecondaryLabel(unavailable),
+                onPrimary = {
+                    endFlow.nextEpisodeUnavailable = null
+                    if (unavailable.canSubscribe) episodeEnd.manageSubscriptions()
+                },
+                onSecondary = { endFlow.nextEpisodeUnavailable = null },
                 modifier = Modifier.align(Alignment.Center),
             )
         }

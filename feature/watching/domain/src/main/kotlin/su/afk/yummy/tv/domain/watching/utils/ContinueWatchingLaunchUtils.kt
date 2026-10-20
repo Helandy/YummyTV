@@ -129,10 +129,8 @@ private fun ServerContinueProgress.isMirrorOf(entry: HomeContinueWatchingItem): 
     video.episode.episodeGroupKey() == entry.episode.episodeGroupKey() &&
         isServerMirrorOfExtraSource(
             localEpisodeUrl = entry.episodeUrl,
-            localDubbing = entry.dubbing,
             localPositionMs = entry.positionMs,
             serverEpisodeUrl = video.iframeUrl,
-            serverDubbing = video.dubbing,
             serverPositionMs = positionMs,
         )
 

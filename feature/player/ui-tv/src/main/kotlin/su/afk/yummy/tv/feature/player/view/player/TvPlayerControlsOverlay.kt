@@ -53,7 +53,6 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onRateTitle: () -> Unit,
-    onManageSubscriptions: () -> Unit,
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
@@ -197,7 +196,6 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     onPrevEpisode = onPrevEpisode,
                     onNextEpisode = onNextEpisode,
                     onRateTitle = onRateTitle,
-                    onManageSubscriptions = onManageSubscriptions,
                     onToggleQuality = onToggleQuality,
                     onToggleDubbing = onToggleDubbing,
                     onToggleBalancer = onToggleBalancer,
@@ -205,6 +203,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     onTogglePlayerSettings = onTogglePlayerSettings,
                     allohaFocusRequester = focus.alloha,
                     showAllohaButton = showAllohaButton,
+                    nextEpisodeFocusRequester = focus.nextEpisodeControl,
                     onToggleAlloha = onToggleAlloha,
                 )
             }

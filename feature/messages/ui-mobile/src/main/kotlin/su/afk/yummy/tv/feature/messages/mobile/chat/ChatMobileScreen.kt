@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,14 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -57,6 +53,7 @@ import su.afk.yummy.tv.feature.messages.mobile.view.ChatManagementMobileDialogs
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatMessageMobileBubble
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatMobileActionsMenu
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatMobileComposer
+import su.afk.yummy.tv.feature.messages.mobile.view.DialogMobileAvatar
 import su.afk.yummy.tv.feature.messages.mobile.view.EditMessageMobileDialog
 import su.afk.yummy.tv.feature.messages.mobile.view.MessageHistoryMobileDialog
 import su.afk.yummy.tv.feature.messages.presentation.R
@@ -131,27 +128,25 @@ fun ChatMobileScreen(
     BaseScreen(
         isScroll = false,
         customTopBar = {
+            val title = state.peer?.nickname?.takeIf { it.isNotBlank() }
+                ?: state.fallbackNickname.takeIf { it.isNotBlank() }
+                ?: if (state.userId == 0) {
+                    stringResource(R.string.messages_global_chat)
+                } else {
+                    stringResource(R.string.messages_unknown_user, state.userId)
+                }
             MobileTopBar(
-                title = state.peer?.nickname?.takeIf { it.isNotBlank() }
-                    ?: state.fallbackNickname.takeIf { it.isNotBlank() }
-                    ?: if (state.userId == 0) {
-                        stringResource(R.string.messages_global_chat)
-                    } else {
-                        stringResource(R.string.messages_unknown_user, state.userId)
-                    },
+                title = title,
                 onBack = { onEvent(ChatState.Event.BackSelected) }.takeUnless { isInListDetailPane() },
+                titleLeading = {
+                    DialogMobileAvatar(
+                        avatarUrl = state.peer?.avatarUrl?.takeIf { it.isNotBlank() } ?: state.fallbackAvatarUrl,
+                        name = title,
+                        size = 34.dp,
+                        initialStyle = MaterialTheme.typography.titleSmall,
+                    )
+                },
                 actions = {
-                    (state.peer?.avatarUrl ?: state.fallbackAvatarUrl)
-                        ?.takeIf { it.isNotBlank() }
-                        ?.let { avatarUrl ->
-                            AsyncImage(
-                                model = avatarUrl,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape),
-                            )
-                        }
                     state.peer?.let { peer ->
                         ChatMobileActionsMenu(
                             isBanned = peer.isBanned,

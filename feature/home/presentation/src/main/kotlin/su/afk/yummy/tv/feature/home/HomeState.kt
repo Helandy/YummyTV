@@ -30,6 +30,8 @@ class HomeState {
         /** Тайтл, для которого сейчас резолвится запуск плеера из «Продолжить просмотр». */
         val launchingContinueWatchingAnimeId: Int? = null,
         val supportPromptVisible: Boolean = false,
+        /** Приглашение в Telegram-сообщество через несколько дней после первого использования. */
+        val communityPromptVisible: Boolean = false,
         val announcement: HomeAnnouncement? = null,
         /** Доп. строка-сообщение с сервера (не диалог). `null` — не показывается. */
         val statusMessage: String? = null,
@@ -89,6 +91,12 @@ class HomeState {
 
         /** Пользователь отказался от предложения поддержать проект. */
         data object SupportPromptDismissed : Event
+
+        /** Пользователь отложил приглашение в сообщество. */
+        data object CommunityPromptDismissed : Event
+
+        /** Пользователь нажал «Вступить» в приглашении в сообщество. */
+        data object CommunityPromptJoinClicked : Event
 
         /** Пользователь согласился добавить preview-канал на главный экран ТВ. */
         data object PreviewChannelPromptAccepted : Event

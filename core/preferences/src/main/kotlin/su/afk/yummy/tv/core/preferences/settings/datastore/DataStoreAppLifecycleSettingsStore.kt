@@ -2,10 +2,13 @@ package su.afk.yummy.tv.core.preferences.settings.datastore
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appLogRecordingEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.betaUpdatesEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communityPromptDismissedKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communityPromptFirstUseTimeMsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastSeenAnnouncementIdKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastStartedVersionCodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.notificationPermissionRequestedKey
@@ -32,6 +35,13 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
             dismissed = prefs[supportPromptDismissedKey] ?: false,
             firstEligibleTimeMs = prefs[supportPromptFirstInstallTimeMsKey]
                 ?: System.currentTimeMillis(),
+        )
+    }
+
+    override val communityPromptSnapshot: Flow<CommunityPromptSnapshot> = store.data.map { prefs ->
+        CommunityPromptSnapshot(
+            dismissed = prefs[communityPromptDismissedKey] ?: false,
+            firstUseTimeMs = prefs[communityPromptFirstUseTimeMsKey] ?: System.currentTimeMillis(),
         )
     }
 
@@ -62,6 +72,17 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override suspend fun dismissSupportPrompt() =
         store.setBoolean(supportPromptDismissedKey, true)
+
+    override suspend fun ensureCommunityPromptFirstUseInitialized() {
+        store.edit { prefs ->
+            if (prefs[communityPromptFirstUseTimeMsKey] == null) {
+                prefs[communityPromptFirstUseTimeMsKey] = System.currentTimeMillis()
+            }
+        }
+    }
+
+    override suspend fun dismissCommunityPrompt() =
+        store.setBoolean(communityPromptDismissedKey, true)
 
     override suspend fun markAnnouncementSeen(id: String) {
         store.edit { prefs -> prefs[lastSeenAnnouncementIdKey] = id }

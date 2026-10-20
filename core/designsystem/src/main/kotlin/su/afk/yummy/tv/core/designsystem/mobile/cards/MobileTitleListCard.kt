@@ -30,14 +30,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.components.FavoriteMarker
-import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
-import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.components.ListStatusChip
 import su.afk.yummy.tv.core.designsystem.components.ReleaseStatusChip
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
+import su.afk.yummy.tv.core.designsystem.components.UserRatingTag
 import su.afk.yummy.tv.core.designsystem.components.releaseCountdownText
 import su.afk.yummy.tv.core.designsystem.components.yearText
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
+import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryUserRatings
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 import su.afk.yummy.tv.core.designsystem.model.TitleListCardUi
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
@@ -45,7 +45,10 @@ import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 /**
  * Строка тайтла из пользовательского списка (библиотека, списки профиля): постер 2:3 с оценкой
  * сайта и капсулой оценки пользователя, справа — название, год, чипы статуса
- * выхода / любимых / списка, дата и отсчёт до серии. [trailingAction] встаёт в правый нижний угол.
+ * выхода / любимых / списка, дата и отсчёт до серии. [trailingAction] встаёт в правый верхний угол, дата — в правый нижний.
+ *
+ * В чужом списке ([showViewerMark]) оценка владельца уходит в ряд чипов, год — в угол постера, а свои список и оценка —
+ * в подписанную полосу под карточкой, чтобы не путать, чьё что.
  */
 @Composable
 fun MobileTitleListCard(
@@ -54,82 +57,96 @@ fun MobileTitleListCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     showYear: Boolean = true,
-    /** Плашка «в каком списке тайтл у меня» по нижней кромке постера — для чужих списков. */
-    showMyListStatus: Boolean = false,
+    /** Полоса «У вас: список ★оценка» под карточкой — для чужих списков. */
+    showViewerMark: Boolean = false,
     trailingAction: (@Composable () -> Unit)? = null,
 ) {
-    Row(
+    val viewerListStatus = if (showViewerMark) LocalLibraryListStatuses.current[item.animeId] else null
+    val viewerRating = if (showViewerMark) LocalLibraryUserRatings.current[item.animeId] else null
+    val ownerRating = item.userRating?.takeIf { it in 1..10 }
+    val year = item.yearText(showYear)
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(MobileTitleListCardHeight)
             .clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f))
             .clickablePointer()
             .clickable(onClick = onClick),
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .width(MobileTitleListPosterWidth)
-                .fillMaxHeight(),
+                .fillMaxWidth()
+                .height(MobileTitleListCardHeight),
         ) {
-            AsyncImage(
-                model = item.posterUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-            )
-            item.siteRating?.takeIf { it > 0.0 }?.let { rating ->
-                // Без звезды: звезда — у капсулы оценки пользователя внизу постера.
-                MobileRatingBadge(
-                    rating = rating,
-                    showStar = false,
+                    .width(MobileTitleListPosterWidth)
+                    .fillMaxHeight(),
+            ) {
+                AsyncImage(
+                    model = item.posterUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp),
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                 )
+                item.siteRating?.takeIf { it > 0.0 }?.let { rating ->
+                    // Без звезды: звезда — у капсулы оценки пользователя внизу постера.
+                    MobileRatingBadge(
+                        rating = rating,
+                        showStar = false,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp),
+                    )
+                }
+                // Своя оценка — капсулой на постере, как на ТВ и в деталке. Чужая — в ряду чипов.
+                ownerRating?.takeIf { !showViewerMark }?.let { rating ->
+                    UserRatingChip(
+                        rating = rating,
+                        textStyle = MaterialTheme.typography.labelLarge,
+                        iconSize = 14.dp,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(4.dp),
+                    )
+                }
+                // В чужом списке низ постера свободен: год уходит туда, как в каталоге, чтобы разгрузить ряд чипов.
+                // В своём слева капсула оценки, рядом на 96dp год не помещается.
+                item.year?.takeIf { showViewerMark && year != null }?.let { MobilePosterYear(it) }
             }
-            val myListStatus = if (showMyListStatus) LocalLibraryListStatuses.current[item.animeId] else null
-            // Оценка пользователя — капсулой на постере, как на ТВ и в деталке; над плашкой списка.
-            item.userRating?.takeIf { it in 1..10 }?.let { rating ->
-                UserRatingChip(
-                    rating = rating,
-                    textStyle = MaterialTheme.typography.labelLarge,
-                    iconSize = 14.dp,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(bottom = if (myListStatus != null) ListStatusBadgeHeight else 0.dp)
-                        .padding(4.dp),
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = item.title,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    trailingAction?.invoke()
+                }
+                TitleListCardChips(
+                    item = item,
+                    year = year?.takeIf { !showViewerMark },
+                    ownerRating = ownerRating?.takeIf { showViewerMark },
                 )
-            }
-            myListStatus?.let { status ->
-                ListStatusBadge(
-                    status = status,
-                    modifier = Modifier.align(Alignment.BottomStart),
-                )
-            }
-        }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            TitleListCardChips(item, year = item.yearText(showYear))
-            Spacer(modifier = Modifier.weight(1f))
-            Row(verticalAlignment = Alignment.Bottom) {
+                Spacer(modifier = Modifier.weight(1f))
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     item.dateText?.takeIf { it.isNotBlank() }?.let { date ->
@@ -144,6 +161,7 @@ fun MobileTitleListCard(
                     releaseCountdownText(item.nextEpisodeAtSeconds, nowEpochSeconds)?.let { text ->
                         Text(
                             text = text,
+                            modifier = Modifier.align(Alignment.Start),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
                             maxLines = 1,
@@ -151,17 +169,19 @@ fun MobileTitleListCard(
                         )
                     }
                 }
-                trailingAction?.invoke()
             }
+        }
+        if (viewerListStatus != null || viewerRating != null) {
+            MobileViewerMarkStrip(listStatus = viewerListStatus, rating = viewerRating)
         }
     }
 }
 
 @Composable
-private fun TitleListCardChips(item: TitleListCardUi, year: String?) {
+private fun TitleListCardChips(item: TitleListCardUi, year: String?, ownerRating: Int?) {
     // «Вышел» — состояние большинства тайтлов, подпись о нём только шумит.
     val releaseStatus = item.releaseStatus?.takeIf { it != AnimeReleaseStatus.RELEASED }
-    if (year == null && releaseStatus == null && !item.isFavorite && item.listStatus == null) return
+    if (year == null && releaseStatus == null && !item.isFavorite && item.listStatus == null && ownerRating == null) return
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -170,6 +190,7 @@ private fun TitleListCardChips(item: TitleListCardUi, year: String?) {
         releaseStatus?.let { ReleaseStatusChip(status = it) }
         if (item.isFavorite) FavoriteMarker()
         item.listStatus?.let { ListStatusChip(status = it) }
+        ownerRating?.let { UserRatingTag(rating = it) }
     }
 }
 

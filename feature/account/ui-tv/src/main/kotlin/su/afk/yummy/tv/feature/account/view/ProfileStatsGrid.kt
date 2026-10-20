@@ -38,7 +38,7 @@ import su.afk.yummy.tv.feature.account.account.model.ProfileStatsChartType
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsValueType
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.utils.genreCountSlices
+import su.afk.yummy.tv.feature.account.common.utils.genreCountSlices
 import su.afk.yummy.tv.feature.account.utils.listDurationSlices
 import su.afk.yummy.tv.feature.account.utils.ratingCountSlices
 import su.afk.yummy.tv.feature.account.utils.watchStatSlices
@@ -79,8 +79,9 @@ internal fun ProfileStatsGrid(
                 ProfileStatsPageModel(
                     title = stringResource(R.string.account_profile_genres_title),
                     icon = Icons.Filled.Category,
-                    slices = it.genreCountSlices(),
+                    slices = it.genreCountSlices(stringResource(R.string.account_profile_genres_other)),
                     valueType = ProfileStatsValueType.COUNT,
+                    legendColumns = 1,
                 )
             )
             add(

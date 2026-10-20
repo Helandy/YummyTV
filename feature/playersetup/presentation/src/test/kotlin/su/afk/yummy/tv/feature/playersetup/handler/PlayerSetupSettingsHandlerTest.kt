@@ -27,6 +27,7 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
     private val autoPlay = MutableStateFlow(true)
     private val suggestNext = MutableStateFlow(false)
     private val askDubbing = MutableStateFlow(true)
+    private val adaptive = MutableStateFlow(false)
     private val quality = MutableStateFlow(PreferredVideoQuality.P720)
     private val orientation = MutableStateFlow(PlayerOrientationMode.RIGHT)
     private val pip = MutableStateFlow(false)
@@ -39,6 +40,7 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
         every { store.autoPlayNextEpisode } returns autoPlay
         every { store.suggestNextEpisodeOnWatched } returns suggestNext
         every { store.askDubbingOnWatch } returns askDubbing
+        every { store.adaptiveVideoQualityEnabled } returns adaptive
         every { store.preferredVideoQuality } returns quality
         every { store.playerOrientationMode } returns orientation
         every { store.pictureInPictureEnabled } returns pip
@@ -56,6 +58,7 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
                 autoPlayNextEpisode = true,
                 suggestNextEpisodeOnWatched = false,
                 askDubbingOnWatch = true,
+                adaptiveVideoQualityEnabled = false,
                 preferredVideoQuality = PreferredVideoQuality.P720,
                 playerOrientationMode = PlayerOrientationMode.RIGHT,
                 pictureInPictureEnabled = false,

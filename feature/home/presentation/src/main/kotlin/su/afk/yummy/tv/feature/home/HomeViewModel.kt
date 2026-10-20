@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
+import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
@@ -57,6 +58,8 @@ import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
+import su.afk.yummy.tv.feature.home.utils.COMMUNITY_TELEGRAM_URL
+import su.afk.yummy.tv.feature.home.utils.communityPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
 import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
@@ -110,6 +113,11 @@ class HomeViewModel @Inject internal constructor(
     private var supportPromptTimerJob: Job? = null
     private var supportPromptDisplayedThisSession = false
 
+    private var communityPromptTimerJob: Job? = null
+
+    /** Срок приглашения в сообщество наступил и оно ещё не показано — ждёт свободного экрана. */
+    private var communityPromptDue = false
+
     /** Ответ на предложение preview-канала не пришёл из хранилища — до него не показываем. */
     private var previewChannelPromptAnswered = true
     private var previewChannelBrowsable = false
@@ -160,6 +168,7 @@ class HomeViewModel @Inject internal constructor(
         observeSupportPrompt()
         observeAnnouncement()
         observePreviewChannelPrompt()
+        observeCommunityPrompt()
         loadBloggerVideos()
         load()
         reloadOnContentLanguageChange()
@@ -231,6 +240,11 @@ class HomeViewModel @Inject internal constructor(
                 nav.navigate(bloggerVideosNavigator.video(event.video.id))
 
             HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
+            HomeState.Event.CommunityPromptDismissed -> hideCommunityPrompt()
+            HomeState.Event.CommunityPromptJoinClicked -> {
+                hideCommunityPrompt()
+                setEffect(HomeState.Effect.OpenUri(COMMUNITY_TELEGRAM_URL))
+            }
             HomeState.Event.PreviewChannelPromptAccepted -> answerPreviewChannelPrompt(accepted = true)
             HomeState.Event.PreviewChannelPromptDismissed -> answerPreviewChannelPrompt(accepted = false)
 
@@ -481,6 +495,58 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Следит за тем, когда приглашение в сообщество станет доступно к показу. */
+    private fun observeCommunityPrompt() {
+        viewModelScope.launch {
+            settingsStore.ensureCommunityPromptFirstUseInitialized()
+        }
+        settingsStore.communityPromptSnapshot
+            .onEach(::applyCommunityPromptSnapshot)
+            .launchIn(viewModelScope)
+    }
+
+    /** Помечает приглашение готовым к показу сразу либо заводит таймер до срока из [snapshot]. */
+    private fun applyCommunityPromptSnapshot(snapshot: CommunityPromptSnapshot) {
+        communityPromptTimerJob?.cancel()
+        if (snapshot.dismissed) {
+            communityPromptDue = false
+            return
+        }
+        val remainingMs = snapshot.communityPromptRemainingMs(nowMs = System.currentTimeMillis())
+        if (remainingMs <= 0L) {
+            communityPromptDue = true
+            updateCommunityPrompt()
+        } else {
+            communityPromptTimerJob = viewModelScope.launch {
+                delay(remainingMs.milliseconds)
+                communityPromptDue = true
+                updateCommunityPrompt()
+            }
+        }
+    }
+
+    /** Показывает приглашение один раз, когда оно созрело и поверх главной нет других диалогов. */
+    private fun updateCommunityPrompt() {
+        if (!communityPromptDue || currentState.communityPromptVisible) return
+        if (currentState.supportPromptVisible ||
+            currentState.announcement != null ||
+            currentState.previewChannelPromptVisible
+        ) {
+            return
+        }
+        communityPromptDue = false
+        setState { copy(communityPromptVisible = true) }
+        viewModelScope.launch {
+            settingsStore.dismissCommunityPrompt()
+        }
+    }
+
+    /** Закрывает приглашение; показанным оно уже помечено при появлении. */
+    private fun hideCommunityPrompt() {
+        setState { copy(communityPromptVisible = false) }
+        updatePreviewChannelPrompt()
+    }
+
     /** Следит за ответом пользователя и статусом preview-канала; только на телевизоре. */
     private fun observePreviewChannelPrompt() {
         if (!tvIntegration.isSupported) return
@@ -503,11 +569,14 @@ class HomeViewModel @Inject internal constructor(
             answered = previewChannelPromptAnswered,
             browsable = previewChannelBrowsable,
             hasContinueWatching = currentState.continueWatching.isNotEmpty(),
-            otherDialogVisible = currentState.supportPromptVisible || currentState.announcement != null,
+            otherDialogVisible = currentState.supportPromptVisible ||
+                currentState.communityPromptVisible ||
+                currentState.announcement != null,
         )
         if (visible != currentState.previewChannelPromptVisible) {
             setState { copy(previewChannelPromptVisible = visible) }
         }
+        updateCommunityPrompt()
     }
 
     /** Запоминает ответ; при согласии открывает системный запрос на добавление канала. */

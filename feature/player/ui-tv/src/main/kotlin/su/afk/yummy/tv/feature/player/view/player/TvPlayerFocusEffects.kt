@@ -48,6 +48,7 @@ internal fun TvPlayerFocusEffects(
         panels.activePanel,
         prompts.nextEpisodePrompt.isVisible,
         prompts.finalEpisodeActionPrompt,
+        prompts.nextEpisodeUnavailable,
         recoveryHintVisible,
         tutorialActive,
         restoreControlFocusTarget,
@@ -57,6 +58,8 @@ internal fun TvPlayerFocusEffects(
         // случайно уводит фокус на панель управления под ним.
         if (tutorialActive) {
             // no-op
+        } else if (prompts.nextEpisodeUnavailable != null) {
+            requestFocusUntilTimeout(focus.nextEpisodeUnavailable)
         } else if (prompts.nextEpisodePrompt.isVisible) {
             requestFocusUntilTimeout(focus.nextEpisode)
         } else if (prompts.finalEpisodeActionPrompt != null) {

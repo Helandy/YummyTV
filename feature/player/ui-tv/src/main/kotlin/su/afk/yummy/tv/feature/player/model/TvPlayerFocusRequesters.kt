@@ -21,6 +21,8 @@ internal class TvPlayerFocusRequesters {
     val skip = FocusRequester()
     val stay = FocusRequester()
     val nextEpisode = FocusRequester()
+    val nextEpisodeControl = FocusRequester()
+    val nextEpisodeUnavailable = FocusRequester()
     val finalEpisodeAction = FocusRequester()
 
     fun control(target: PlayerControlFocusTarget): FocusRequester =
@@ -30,6 +32,7 @@ internal class TvPlayerFocusRequesters {
             PlayerControlFocusTarget.Balancer -> balancer
             PlayerControlFocusTarget.PlayerSettings -> playerSettings
             PlayerControlFocusTarget.Alloha -> alloha
+            PlayerControlFocusTarget.NextEpisode -> nextEpisodeControl
         }
 
     fun requestControl(target: PlayerControlFocusTarget): Boolean =

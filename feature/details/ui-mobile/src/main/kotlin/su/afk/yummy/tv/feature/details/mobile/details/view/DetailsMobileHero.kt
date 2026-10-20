@@ -194,7 +194,7 @@ internal fun DetailsMobileHero(
                         .clip(CircleShape)
                         .clickable(onClick = onInfoClick),
                 )
-                ageRating?.let { DetailsChip(label = it) }
+                ageRating?.let { DetailsChip(label = it, textColor = Color.White, backgroundColor = Color.Black) }
             }
             DetailsMetaChips(details)
             details.episodes?.formatNextEpisodeRelease()?.let { nextEpisode ->

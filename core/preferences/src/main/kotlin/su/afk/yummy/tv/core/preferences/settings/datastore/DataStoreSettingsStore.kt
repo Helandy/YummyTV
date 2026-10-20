@@ -112,7 +112,7 @@ internal class DataStoreSettingsStore @Inject constructor(
                 preferredVideoQualityKey,
                 PreferredVideoQuality.BEST,
             ),
-            adaptiveVideoQualityEnabled = prefs[adaptiveVideoQualityEnabledKey] ?: false,
+            adaptiveVideoQualityEnabled = prefs[adaptiveVideoQualityEnabledKey] ?: true,
             watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
             previewCacheSize = (prefs[previewCacheSizeKey] ?: 100).coerceIn(50, 500),
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,

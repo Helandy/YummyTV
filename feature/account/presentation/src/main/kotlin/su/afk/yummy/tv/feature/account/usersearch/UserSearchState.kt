@@ -19,7 +19,7 @@ class UserSearchState {
         data object BackSelected : Event
         data class QueryChanged(val query: String) : Event
         data object SearchSubmitted : Event
-        data class UserSelected(val nickname: String) : Event
+        data class UserSelected(val nickname: String, val userId: Int = 0) : Event
     }
 
     sealed interface Effect : UiEffect

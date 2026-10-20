@@ -7,4 +7,6 @@ internal enum class PlayerControlFocusTarget {
     /** Боковое меню настроек справа: скорость, масштаб, субтитры и звук. */
     PlayerSettings,
     Alloha,
+    /** Кнопка «следующая серия» в нижнем ряду. */
+    NextEpisode,
 }

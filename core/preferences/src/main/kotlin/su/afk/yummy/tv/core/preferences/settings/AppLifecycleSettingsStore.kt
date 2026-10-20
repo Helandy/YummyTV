@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.preferences.settings
 
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 
 /** Разовые/lifecycle-флаги приложения: watch-next, support-prompt, объявления, версия установки. */
@@ -16,6 +17,9 @@ interface AppLifecycleSettingsStore {
 
     val supportPromptSnapshot: Flow<SupportPromptSnapshot>
 
+    /** Окно приглашения в сообщество: время первого использования и отметка, что оно уже показано. */
+    val communityPromptSnapshot: Flow<CommunityPromptSnapshot>
+
     /** Идентификатор последнего объявления, которое пользователь закрыл кнопкой ОК. */
     val lastSeenAnnouncementId: Flow<String>
 
@@ -30,6 +34,10 @@ interface AppLifecycleSettingsStore {
     suspend fun setAppLogRecordingEnabled(enabled: Boolean)
     suspend fun ensureSupportPromptInstallTimeInitialized()
     suspend fun dismissSupportPrompt()
+
+    /** Фиксирует время первого использования, если оно ещё не записано; позже не перезаписывается. */
+    suspend fun ensureCommunityPromptFirstUseInitialized()
+    suspend fun dismissCommunityPrompt()
 
     /** Помечает объявление [id] как просмотренное, чтобы больше его не показывать. */
     suspend fun markAnnouncementSeen(id: String)

@@ -1,7 +1,10 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.details.details.model.DubbingOption
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
@@ -22,6 +25,9 @@ internal fun DubbingDialog(
                 MobilePickerItem(
                     key = option.item.name,
                     title = option.item.name,
+                    logoName = option.item.name,
+                    logoRes = dubbingLogoRes(option.item.name),
+                    logoFallbackIcon = Icons.Filled.Mic,
                     subtitle = option.item.supportedBalancers,
                     views = option.item.views,
                     episodeCount = option.item.episodeCount,

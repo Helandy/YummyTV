@@ -35,8 +35,10 @@ class UserSearchViewModel @Inject constructor(
             UserSearchState.Event.SearchSubmitted -> submitSearch()
             is UserSearchState.Event.UserSelected -> {
                 val nickname = event.nickname.trim()
-                if (nickname.isNotEmpty()) {
-                    nav.navigate(accountNavigator.getUserProfileByNicknameDest(nickname))
+                when {
+                    event.userId > 0 -> nav.navigate(accountNavigator.getUserProfileDest(event.userId))
+                    nickname.isNotEmpty() ->
+                        nav.navigate(accountNavigator.getUserProfileByNicknameDest(nickname))
                 }
             }
         }

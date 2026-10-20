@@ -39,7 +39,6 @@ internal fun SortRow(
         selected = selected,
         onClick = onClick,
         modifier = modifier,
-        showSelectedMark = reversed == null,
         trailingIcon = if (selected && reversed != null) {
             {
                 Icon(

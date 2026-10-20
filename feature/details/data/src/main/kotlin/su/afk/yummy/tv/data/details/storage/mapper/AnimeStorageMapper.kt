@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.details.storage.mapper
 
+import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -213,7 +214,7 @@ internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
         ageRating = source.ageRating,
         views = source.views,
         status = source.status,
-        type = source.type,
+        type = source.type.toShortAnimeTypeName(),
         episodes = source.toEpisodesOrNull(),
         otherTitles = otherTitles.map { it.title },
         creators = creators.map { AnimePerson(id = it.itemId, title = it.title) },
@@ -357,7 +358,7 @@ internal fun AnimeRecommendationsCache.toAnimeRecommendations(): List<AnimeRecom
                     mega = it.posterMegaUrl,
                 ),
                 rating = it.rating,
-                type = it.type,
+                type = it.type.toShortAnimeTypeName(),
                 year = it.year,
             )
         }
@@ -475,7 +476,7 @@ private fun AnimeViewingOrderEntry.toAnimeViewingOrderItem(): AnimeViewingOrderI
         animeId = relatedAnimeId,
         title = title,
         relation = relation,
-        type = type,
+        type = type.toShortAnimeTypeName(),
         episodesCount = episodesCount,
         poster = posterOrNull(
             small = posterSmallUrl,

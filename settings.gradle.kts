@@ -206,6 +206,16 @@ if (file("source/anime4k").isDirectory) {
     include(":source:anime4k:data")
 }
 
+if (file("source/aniboom").isDirectory) {
+    include(":source:aniboom:domain")
+    include(":source:aniboom:data")
+}
+
+if (file("source/anistar").isDirectory) {
+    include(":source:anistar:domain")
+    include(":source:anistar:data")
+}
+
 if (file("source/anilibria").isDirectory) {
     include(":source:anilibria:domain")
     include(":source:anilibria:data")

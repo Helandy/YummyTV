@@ -36,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -45,7 +46,11 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsInfoSheet
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileSkeleton
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRatingOverviewCard
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRatingOverviewSkeleton
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsScreenshotsRow
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsVideoSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.SubscriptionsSignInSheet
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -130,7 +135,7 @@ fun DetailsMobileScreen(
                 .testTag("details_root")
                 .navigationBarsPadding(),
             contentPadding = PaddingValues(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item(key = "hero") {
                 DetailsMobileHero(
@@ -154,14 +159,10 @@ fun DetailsMobileScreen(
                         onEvent(DetailsState.Event.SubscriptionsSignInPromptSelected)
                     },
                     onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
-                    onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
                     onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
                     onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
-                    onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
-                    onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
                     onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
                     onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
-                    onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
@@ -173,6 +174,40 @@ fun DetailsMobileScreen(
                     onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
+            }
+            if (details.screenshots.isNotEmpty()) {
+                item(key = "screenshots") {
+                    DetailsScreenshotsRow(
+                        screenshots = details.screenshots,
+                        onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
+                    )
+                }
+            }
+            item(key = "video") {
+                DetailsVideoSection(
+                    trailers = state.trailers,
+                    bloggerVideosImageModel = details.poster.bestUrl(),
+                    isTrailersLoading = state.isExtrasLoading,
+                    hasBloggerVideos = state.hasBloggerVideos,
+                    onTrailersClick = { onEvent(DetailsState.Event.TrailersSelected) },
+                    onBloggerVideosClick = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
+            val ratingOverview = state.ratingOverview
+            if (ratingOverview != null) {
+                item(key = "rating") {
+                    DetailsRatingOverviewCard(
+                        overview = ratingOverview,
+                        userRating = state.userRating,
+                        onClick = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+            } else if (state.isExtrasLoading) {
+                item(key = "rating") {
+                    DetailsRatingOverviewSkeleton(modifier = Modifier.padding(horizontal = 16.dp))
+                }
             }
             item(key = "comments") {
                 FilledTonalButton(

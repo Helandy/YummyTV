@@ -39,6 +39,7 @@ import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryListStatusesUseCase
+import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryUserRatingsUseCase
 import su.afk.yummy.tv.feature.main.MainState.Effect
 import su.afk.yummy.tv.feature.main.MainState.Event
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
@@ -99,6 +100,7 @@ class MainViewModelTest : BaseUnitTest() {
         networkConnectivityMonitor = networkConnectivityMonitor,
         interfaceModePreferences = mockk(relaxed = true),
         observeLibraryListStatuses = ObserveLibraryListStatusesUseCase(libraryRepository),
+        observeLibraryUserRatings = ObserveLibraryUserRatingsUseCase(libraryRepository),
     )
 
     private fun snapshot(nickname: String, unread: Int) = MainSettingsSnapshot(

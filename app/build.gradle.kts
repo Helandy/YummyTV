@@ -77,6 +77,10 @@ androidComponents {
 dependencies {
     // Необязательный источник «4K»: нет каталога source/anime4k, нет и зависимости.
     findProject(":source:anime4k:data")?.let { implementation(it) }
+    // Необязательный источник «AniBoom»: нет каталога source/aniboom, нет и зависимости.
+    findProject(":source:aniboom:data")?.let { implementation(it) }
+    // Необязательный источник «AniStar»: нет каталога source/anistar, нет и зависимости.
+    findProject(":source:anistar:data")?.let { implementation(it) }
     // Необязательный источник «AniLibria»: нет каталога source/anilibria, нет и зависимости.
     findProject(":source:anilibria:data")?.let { implementation(it) }
     implementation(project(":core:analytics"))

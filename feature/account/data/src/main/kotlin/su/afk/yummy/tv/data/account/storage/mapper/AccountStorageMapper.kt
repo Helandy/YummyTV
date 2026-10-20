@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.account.storage.mapper
 
-import su.afk.yummy.tv.data.account.utils.toWideBannerUrl
+import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
+import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
@@ -22,13 +23,14 @@ import su.afk.yummy.tv.core.storage.account.AccountUserReviewsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCache
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
 import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeListStateDto
+import su.afk.yummy.tv.data.account.utils.fromLinksJson
+import su.afk.yummy.tv.data.account.utils.toWideBannerUrl
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.model.NotificationCount
-import su.afk.yummy.tv.data.account.utils.fromLinksJson
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
@@ -198,7 +200,7 @@ internal fun AccountUserReviewsPageCache.toUserReviews(): List<UserReviewSummary
             animeId = it.animeId,
             animeTitle = it.animeTitle,
             animePosterUrl = it.animePosterUrl,
-            textPreview = it.textPreview,
+            textPreview = it.textPreview.htmlToPlainText(),
             rating = it.rating,
             likes = it.likes,
             dislikes = it.dislikes,
@@ -224,7 +226,7 @@ internal fun AccountNotificationCountsCache.toNotificationCounts(): List<Notific
 
 internal fun Int?.toNotificationAnimeEntry(
     slug: String,
-    cachedAt: Long
+    cachedAt: Long,
 ): AccountNotificationAnimeEntry =
     AccountNotificationAnimeEntry(
         slug = slug,
@@ -235,7 +237,9 @@ internal fun Int?.toNotificationAnimeEntry(
 internal fun AccountUserStatsCache.toUserStats(): UserStats =
     UserStats(
         genres = genres.map { UserGenreStat(id = it.genreId, title = it.title, count = it.count) },
-        ratings = ratings.map { UserRatingStat(rating = it.rating, count = it.count) },
+        ratings = ratings
+            .filter { it.rating > 0 }
+            .map { UserRatingStat(rating = it.rating, count = it.count) },
         lists = lists.map {
             UserListWatchStat(
                 id = it.listId,
@@ -247,7 +251,7 @@ internal fun AccountUserStatsCache.toUserStats(): UserStats =
         types = types.map {
             UserAnimeTypeStat(
                 id = it.typeId,
-                title = it.title,
+                title = it.title.toShortAnimeTypeName().orEmpty(),
                 shortName = it.shortName,
                 count = it.count,
             )
@@ -269,7 +273,7 @@ internal fun AccountUserProfileSummaryCache.toUserProfileSummary(): UserProfileS
             UserWatchTypeStat(
                 id = it.typeId,
                 alias = it.alias,
-                title = it.title,
+                title = it.title.toShortAnimeTypeName().orEmpty(),
                 shortName = it.shortName,
                 spentSeconds = it.spentSeconds,
             )

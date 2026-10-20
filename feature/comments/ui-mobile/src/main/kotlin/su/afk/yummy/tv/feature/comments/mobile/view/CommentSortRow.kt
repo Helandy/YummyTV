@@ -24,6 +24,9 @@ import su.afk.yummy.tv.feature.comments.utils.labelRes
 /** Порядок вкладок сортировки комментариев в UI (Новые/Лучшие/Старые). */
 internal val commentSortOrder = listOf(CommentSort.NEW, CommentSort.BEST, CommentSort.OLD)
 
+/** Высота шапки вместе с внешними отступами: список резервирует её сверху, чтобы шапка не перекрывала первый элемент. */
+internal val CommentSortRowHeight = 52.dp
+
 @Composable
 internal fun CommentSortRow(
     selected: CommentSort,

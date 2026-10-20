@@ -51,6 +51,7 @@ import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerBalancerSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerDubbingSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerMessage
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerSkipToast
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -83,10 +84,12 @@ fun PlayerMobileScreen(
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
+    var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
     LaunchedEffect(effect) {
         effect.collect { eff ->
             when (eff) {
                 is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+                is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
             }
         }
     }
@@ -171,6 +174,8 @@ fun PlayerMobileScreen(
                     )
                 },
                 onEvent = onEvent,
+                nextEpisodeUnavailable = nextEpisodeUnavailable,
+                onNextEpisodeUnavailableShown = { nextEpisodeUnavailable = null },
             )
 
             else -> Box(

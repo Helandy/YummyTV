@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -64,6 +67,9 @@ internal fun TvPlayerSelectionPanel(
     disabledItemMeta: String? = null,
     /** Названия пунктов вне фокуса — акцентным цветом (озвучки и балансеры). */
     accentLabel: Boolean = false,
+    /** Логотип слева от названия (студии озвучки, балансеры); без него пункты рисуются как раньше. */
+    logoFor: ((String) -> Int?)? = null,
+    logoFallbackIcon: ImageVector = Icons.Filled.PlayCircle,
     itemMeta: @Composable (index: Int) -> String? = { null },
     itemMetaContent: @Composable (index: Int, contentColor: Color) -> Unit = { index, contentColor ->
         val meta = itemMeta(index)
@@ -143,6 +149,9 @@ internal fun TvPlayerSelectionPanel(
                         selected = selected,
                         enabled = enabled,
                         accentLabel = accentLabel,
+                        logoName = if (logoFor != null) label else null,
+                        logoRes = logoFor?.invoke(label),
+                        logoFallbackIcon = logoFallbackIcon,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
                         onExitDown = if (idx == lastEnabledIndex) onExitDown else null,
                         onClick = { onItemSelected(idx) },
@@ -169,6 +178,9 @@ internal fun PlayerSelectionItem(
     swatchColor: Color? = null,
     /** Иконка варианта слева (скорость, масштаб); красится в цвет содержимого строки. */
     icon: ImageVector? = null,
+    logoName: String? = null,
+    logoRes: Int? = null,
+    logoFallbackIcon: ImageVector = Icons.Filled.PlayCircle,
     onExitDown: (() -> Unit)?,
     onClick: () -> Unit,
 ) {
@@ -254,6 +266,9 @@ internal fun PlayerSelectionItem(
                         .background(swatchColor)
                         .border(1.dp, Color.Black.copy(alpha = 0.4f), CircleShape),
                 )
+            }
+            if (logoName != null) {
+                LogoBadge(logoRes = logoRes, size = 32.dp, fallbackIcon = logoFallbackIcon)
             }
             if (icon != null) {
                 Icon(

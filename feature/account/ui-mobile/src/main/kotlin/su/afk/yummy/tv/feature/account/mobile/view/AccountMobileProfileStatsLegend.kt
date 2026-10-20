@@ -3,14 +3,16 @@ package su.afk.yummy.tv.feature.account.mobile.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,7 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.PersistentList
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
-import su.afk.yummy.tv.feature.account.mobile.account.utils.PROFILE_STATS_LEGEND_MAX_ROWS
 import su.afk.yummy.tv.feature.account.mobile.account.utils.valueLabel
 import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
@@ -30,11 +31,18 @@ internal fun AccountMobileProfileStatsLegend(
     columns: Int,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    val rows = remember(slices, columns) { slices.chunked(columns) }
+    // Шесть рядов при 8dp не помещаются в высоту кольца.
+    val rowSpacing = if (rows.size > 5) 4.dp else 8.dp
+    LazyColumn(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+        verticalArrangement = if (rows.size > LEGEND_FIT_ROWS) {
+            Arrangement.spacedBy(rowSpacing)
+        } else {
+            Arrangement.spacedBy(rowSpacing, Alignment.CenterVertically)
+        },
     ) {
-        slices.take(columns * PROFILE_STATS_LEGEND_MAX_ROWS).chunked(columns).forEach { row ->
+        items(rows, key = { row -> row.first().title }) { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -50,6 +58,9 @@ internal fun AccountMobileProfileStatsLegend(
         }
     }
 }
+
+/** Рядов легенды, которые помещаются в высоту кольца без прокрутки. */
+private const val LEGEND_FIT_ROWS = 6
 
 @Composable
 private fun AccountMobileProfileStatsLegendItem(

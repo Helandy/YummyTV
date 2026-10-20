@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.utils.formatting.toGroupedCount
 import su.afk.yummy.tv.core.utils.formatting.formatRating
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
-import su.afk.yummy.tv.feature.details.mobile.rating.utils.weightedAverage
+import su.afk.yummy.tv.feature.details.utils.weightedAverage
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable

@@ -343,6 +343,7 @@ class AccountViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.WatchLaterSelected)
         vm.setEvent(Event.MessagesSelected)
         vm.setEvent(Event.UserSearchSelected)
+        vm.setEvent(Event.FriendsSelected)
         vm.setEvent(Event.FaqSelected)
         vm.setEvent(Event.SitePagesSelected)
         vm.setEvent(Event.SettingsSelected)
@@ -351,7 +352,7 @@ class AccountViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.PasswordResetSelected)
         vm.setEvent(Event.RegistrationSelected)
 
-        verify(exactly = 11) { nav.navigate(any()) }
+        verify(exactly = 12) { nav.navigate(any()) }
     }
 
     @Test
@@ -360,6 +361,7 @@ class AccountViewModelTest : BaseUnitTest() {
         val vm = createViewModel()
 
         vm.setEvent(Event.MessagesSelected)
+        vm.setEvent(Event.FriendsSelected)
         vm.setEvent(Event.MySubscriptionsSelected)
         vm.setEvent(Event.ProfileEditSelected)
 

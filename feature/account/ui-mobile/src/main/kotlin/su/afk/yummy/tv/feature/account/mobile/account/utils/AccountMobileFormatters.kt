@@ -17,7 +17,6 @@ import java.util.Locale
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateTimeSeconds
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedShortDateSeconds
 import su.afk.yummy.tv.core.utils.formatting.formatLocalizedDateSeconds
-import su.afk.yummy.tv.feature.account.common.utils.MAX_PROFILE_GENRE_SLICES
 import su.afk.yummy.tv.feature.account.common.utils.fallbackProfileColors
 import su.afk.yummy.tv.feature.account.common.utils.listProfileColor
 import su.afk.yummy.tv.feature.account.common.utils.profileRatingColor
@@ -46,19 +45,6 @@ internal fun UserStats.listDurationSlices(): PersistentList<ProfileStatSlice> =
                 title = item.title,
                 value = item.seconds,
                 color = item.listProfileColor(index),
-            )
-        }.toPersistentList()
-
-internal fun UserStats.genreCountSlices(): PersistentList<ProfileStatSlice> =
-    genres
-        .filter { it.count > 0 }
-        .sortedByDescending { it.count }
-        .take(MAX_PROFILE_GENRE_SLICES)
-        .mapIndexed { index, item ->
-            ProfileStatSlice(
-                title = item.title,
-                value = item.count.toLong(),
-                color = fallbackProfileColors[index % fallbackProfileColors.size],
             )
         }.toPersistentList()
 

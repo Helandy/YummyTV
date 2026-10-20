@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.common.anime.isOngoingAnimeStatus
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
 import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
@@ -11,6 +12,7 @@ import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
 import su.afk.yummy.tv.feature.details.mapper.toPlayerVideoSource
 import su.afk.yummy.tv.feature.details.model.DetailsContinueTarget
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.model.DetailsWatchRestart
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
 
@@ -37,6 +39,26 @@ fun resolveDetailsContinueTarget(
     } ?: return null
 
     return DetailsContinueTarget(video = targetVideo)
+}
+
+/**
+ * Последняя просмотренная серия закончена и следующей в списке нет — досмотрено всё доступное.
+ * Возвращает null, если смотреть есть что (или прогресса нет).
+ */
+fun resolveDetailsWatchRestart(
+    animeId: Int,
+    videos: List<AnimeVideo>,
+    watchProgress: DetailsWatchProgressIndex,
+    status: String?,
+): DetailsWatchRestart? {
+    val latestEntry = watchProgress.latestMeaningful(animeId) ?: return null
+    if (latestEntry.isContinueWatchingProgress()) return null
+    val videoSources = videos.map { it.toPlayerVideoSource() }
+    if (videoSources.isEmpty() || videoSources.selectNextEpisodeAfter(latestEntry) != null) return null
+    val knownEpisode = videoSources.findProgressVideo(latestEntry) != null ||
+        !latestEntry.episode.isPlaceholderEpisode()
+    if (!knownEpisode) return null
+    return if (status.isOngoingAnimeStatus()) DetailsWatchRestart.Again else DetailsWatchRestart.Restart
 }
 
 private fun List<PlayerVideoSource>.selectNextEpisodeAfter(

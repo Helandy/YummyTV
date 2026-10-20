@@ -27,8 +27,8 @@ internal fun UserAnimeListRow(
         item = card,
         nowEpochSeconds = nowEpochSeconds,
         showYear = showYear,
-        // В своём профиле список и так понятен из фильтра, в чужом — показываем, где тайтл у меня.
-        showMyListStatus = !isOwnProfile,
+        // В чужом профиле свои список и оценка — отдельной полосой, чтобы не путать с владельцем.
+        showViewerMark = !isOwnProfile,
         onClick = onClick,
         modifier = Modifier.padding(horizontal = 16.dp),
     )

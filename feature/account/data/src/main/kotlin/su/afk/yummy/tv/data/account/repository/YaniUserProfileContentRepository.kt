@@ -32,7 +32,7 @@ class YaniUserProfileContentRepository(
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { accountStorage.getUserFriends(userId, languageCode, limit, offset) },
-                isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
+                isFresh = { it.isFresh(ACCOUNT_FRIENDS_TTL_MS) },
                 toDomain = { it.toUserFriends() },
                 fetchAndSave = {
                     val cache = api.getUserFriends(userId, limit, offset).toUserFriendsPageCache(

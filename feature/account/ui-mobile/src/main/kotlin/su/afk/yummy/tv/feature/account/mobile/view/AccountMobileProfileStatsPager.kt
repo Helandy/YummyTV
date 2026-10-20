@@ -29,12 +29,13 @@ import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsChartType
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
-import su.afk.yummy.tv.feature.account.mobile.account.utils.genreCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.listDurationSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.ratingCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.watchStatSlices
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.common.utils.averageRatingLabel
+import su.afk.yummy.tv.feature.account.common.utils.genreAllSlices
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 internal fun AccountMobileProfileStatsPager(
@@ -65,8 +66,10 @@ internal fun AccountMobileProfileStatsPager(
                 AccountMobileProfileStatsPageModel(
                     title = stringResource(R.string.account_profile_genres_title),
                     icon = Icons.Filled.Category,
-                    slices = it.genreCountSlices(),
+                    slices = it.genreAllSlices(stringResource(R.string.account_profile_genres_other))
+                        .toPersistentList(),
                     valueType = AccountMobileProfileStatsValueType.COUNT,
+                    legendColumns = 1,
                 )
             )
             add(

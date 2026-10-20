@@ -35,12 +35,12 @@ import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.ObserveSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.SearchUseCase
-import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.catalog.mapper.toLastSearchSnapshot
 import su.afk.yummy.tv.feature.catalog.mapper.toSearchFilters
 import su.afk.yummy.tv.feature.catalog.utils.normalizedYears
 import su.afk.yummy.tv.feature.catalog.utils.toggle
 import su.afk.yummy.tv.feature.catalog.utils.toggleSingle
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -69,6 +69,7 @@ class CatalogViewModel @Inject internal constructor(
 
     private companion object {
         val DEBOUNCE = 800.milliseconds
+        const val MIN_QUERY_LENGTH = 2
         const val PAGE_SIZE = 20
     }
 
@@ -317,7 +318,9 @@ class CatalogViewModel @Inject internal constructor(
         setState { copy(draftFilters = draftFilters.update()) }
     }
 
-    private fun setSearchResults(query: String, filters: SearchFilters) {
+    private fun setSearchResults(rawQuery: String, filters: SearchFilters) {
+        // Сервер отвечает 400 на запрос короче двух символов — не отправляем его.
+        val query = rawQuery.takeIf { it.length >= MIN_QUERY_LENGTH }.orEmpty()
         persistLastSearchIfEnabled(query, filters)
         val pagingFlow = Pager(
             config = PagingConfig(

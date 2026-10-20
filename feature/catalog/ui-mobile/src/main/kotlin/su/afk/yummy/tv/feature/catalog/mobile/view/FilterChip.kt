@@ -1,22 +1,14 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -35,7 +28,8 @@ internal fun FilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    showSelectedIcon: Boolean = true,
+    horizontalPadding: Dp = 14.dp,
+    centered: Boolean = false,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     val shape = CircleShape
@@ -73,30 +67,16 @@ internal fun FilterChip(
             .border(width = 1.dp, color = borderColor, shape = shape)
             .background(backgroundColor, shape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
+            .padding(horizontal = horizontalPadding, vertical = 9.dp),
+        horizontalArrangement = if (centered) Arrangement.Center else Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AnimatedVisibility(
-            visible = selected && showSelectedIcon,
-            enter = expandHorizontally(tween(CHIP_ANIMATION_MILLIS)) +
-                    fadeIn(tween(CHIP_ANIMATION_MILLIS)),
-            exit = shrinkHorizontally(tween(CHIP_ANIMATION_MILLIS)) +
-                    fadeOut(tween(CHIP_ANIMATION_MILLIS)),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier
-                    .padding(end = 5.dp)
-                    .size(15.dp),
-            )
-        }
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = contentColor,
+            maxLines = 1,
         )
         if (trailingIcon != null) {
             CompositionLocalProvider(LocalContentColor provides contentColor) {

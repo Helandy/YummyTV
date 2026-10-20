@@ -158,7 +158,7 @@ fun UserSearchMobileScreen(
                             onClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
-                                onEvent(UserSearchState.Event.UserSelected(item.nickname))
+                                onEvent(UserSearchState.Event.UserSelected(item.nickname, item.id))
                             },
                         )
                     }

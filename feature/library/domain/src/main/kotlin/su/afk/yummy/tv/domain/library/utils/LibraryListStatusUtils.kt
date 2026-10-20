@@ -22,3 +22,11 @@ fun List<LibraryItem>.toCardListStatuses(): Map<Int, CardListStatus> = buildMap 
         put(item.animeId, status)
     }
 }
+
+/** Карта `animeId → оценка пользователя` для элементов библиотеки с оценкой 1..10. */
+fun List<LibraryItem>.toUserRatings(): Map<Int, Int> = buildMap {
+    for (item in this@toUserRatings) {
+        val rating = item.userRating?.takeIf { it in 1..10 } ?: continue
+        put(item.animeId, rating)
+    }
+}

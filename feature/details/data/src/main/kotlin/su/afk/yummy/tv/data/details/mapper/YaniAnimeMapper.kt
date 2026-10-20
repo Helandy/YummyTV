@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.details.mapper
 
+import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import su.afk.yummy.tv.core.common.episode.normalizedEpisodeNumber
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
@@ -34,7 +35,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         ageRating = source.minAge.toShortAgeRating(),
         views = source.views,
         status = source.animeStatus?.title.knownText(),
-        type = source.type?.name.knownText() ?: source.type?.shortname.knownText(),
+        type = (source.type?.name.knownText() ?: source.type?.shortname.knownText()).toShortAnimeTypeName(),
         episodes = source.episodes?.toAnimeEpisodes(),
         otherTitles = source.otherTitles.filter { it.isNotBlank() },
         creators = source.creators.mapNotNull { it.toPerson() },
@@ -118,7 +119,7 @@ private fun YaniViewingOrderItemDto.toViewingOrderItem(
         animeId = id,
         title = safeTitle,
         relation = data?.text.knownText(),
-        type = type?.name.knownText() ?: type?.shortname.knownText(),
+        type = (type?.name.knownText() ?: type?.shortname.knownText()).toShortAnimeTypeName(),
         // API не отдаёт количество серий для элементов viewing_order — только код типа
         // (TV/OVA/фильм и т.д.). Для текущего тайтла берём реальное число серий из
         // основного ответа; для остальных элементов честно оставляем null.

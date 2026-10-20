@@ -47,6 +47,12 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
             )
         }
 
+    /** Серия N+1 из источника, выбранного в диалоге «серии нет». */
+    fun nextEpisodeFromSource(
+        state: PlayerState.State,
+        selection: PlayerSourceSelection,
+    ): PlayerState.State = state.withEpisodeSelection(selection)
+
     fun selectDubbing(
         state: PlayerState.State,
         index: Int,

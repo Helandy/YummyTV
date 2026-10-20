@@ -41,4 +41,9 @@
     <string name="home_preview_channel_prompt_message">Добавьте ряд «Новинки» на главный экран Android TV, чтобы открывать свежие серии, не запуская приложение. Это можно сделать и позже в настройках.</string>
     <string name="home_preview_channel_prompt_accept">Добавить</string>
     <string name="home_preview_channel_prompt_dismiss">Не сейчас</string>
+    <string name="home_community_prompt_title">Присоединяйтесь к нашему сообществу в Telegram!</string>
+    <string name="home_community_prompt_message">Узнавайте самые последние новости об обновлениях, участвуйте в их обсуждениях и предлагайте свои идеи по улучшению приложения.</string>
+    <string name="home_community_prompt_later">Позже</string>
+    <string name="home_community_prompt_join">Вступить</string>
+    <string name="home_community_prompt_scan">Наведите камеру телефона на QR-код, чтобы открыть наш Telegram-канал</string>
 </resources>

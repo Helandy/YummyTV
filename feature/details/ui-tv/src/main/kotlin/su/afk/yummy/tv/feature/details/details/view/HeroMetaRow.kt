@@ -17,9 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.common.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.utils.formatViews
 
@@ -28,11 +30,11 @@ internal fun HeroMetaRow(details: AnimeDetails) {
     val items = buildList {
         details.year?.let { add(it.toString()) }
         details.type?.let { add(it) }
-        details.status?.let { add(it) }
-        details.ageRating?.let { add(it) }
     }
+    val status = details.status?.takeIf { it.isNotBlank() }
+    val ageRating = details.ageRating
     val viewsLabel = details.views?.formatViews()
-    if (items.isEmpty() && viewsLabel == null) return
+    if (items.isEmpty() && status == null && ageRating == null && viewsLabel == null) return
     val chipColor = MaterialTheme.colorScheme.onSurface
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         items.forEach { label ->
@@ -43,6 +45,29 @@ internal fun HeroMetaRow(details: AnimeDetails) {
                 color = chipColor.copy(alpha = 0.85f),
                 modifier = Modifier
                     .background(chipColor.copy(alpha = 0.12f), RoundedCornerShape(3.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp),
+            )
+        }
+        status?.let { label ->
+            val statusColor = if (label.isReleasedAnimeStatus()) chipColor else MaterialTheme.colorScheme.primary
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = if (label.isReleasedAnimeStatus()) statusColor.copy(alpha = 0.85f) else statusColor,
+                modifier = Modifier
+                    .background(chipColor.copy(alpha = 0.12f), RoundedCornerShape(3.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp),
+            )
+        }
+        ageRating?.let { label ->
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                modifier = Modifier
+                    .background(Color.Black, RoundedCornerShape(3.dp))
                     .padding(horizontal = 5.dp, vertical = 2.dp),
             )
         }

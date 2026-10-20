@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
+import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
@@ -32,7 +33,7 @@ class PlayerState {
         val streamQualityMap: LinkedHashMap<String, String>? = null,
         val selectedQuality: String? = null,
         /** Адаптивное качество включено в настройках (общее с экраном настроек). */
-        val adaptiveQualityEnabled: Boolean = false,
+        val adaptiveQualityEnabled: Boolean = true,
         /** Серия, в которой пользователь выбрал качество вручную: адаптация в ней не вмешивается. */
         val manualQualityEpisode: String? = null,
         /**
@@ -115,6 +116,9 @@ class PlayerState {
         data class NextEpisode(
             val source: PlayerNextEpisodeSource = PlayerNextEpisodeSource.Controls,
         ) : Event
+
+        /** В диалоге «серии нет» выбран источник, где следующая серия есть. */
+        data class NextEpisodeSourceSelected(val selection: PlayerSourceSelection) : Event
 
         /** Воспроизведение эпизода дошло до завершения с текущей позицией и длительностью. */
         data class EpisodeCompleted(
@@ -244,5 +248,8 @@ class PlayerState {
     sealed interface Effect : UiEffect {
         /** Короткое сообщение поверх плеера, например о смене озвучки или балансера. */
         data class ShowToast(val message: String) : Effect
+
+        /** Кнопка «следующая серия», а в активной озвучке её нет — объяснить и предложить другой источник. */
+        data class ShowNextEpisodeUnavailable(val info: PlayerNextEpisodeUnavailable) : Effect
     }
 }

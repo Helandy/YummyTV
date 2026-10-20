@@ -35,7 +35,6 @@ internal fun MobilePlayerOverlay(
     openingStartMs: Long?,
     openingEndMs: Long?,
     hasPrevEpisode: Boolean,
-    hasNextEpisode: Boolean,
     onPlayPause: () -> Unit,
     onSeekChange: (Float) -> Unit,
     onSeekFinished: () -> Unit,
@@ -114,7 +113,6 @@ internal fun MobilePlayerOverlay(
                 MobilePlayerActionButton(
                     icon = Icons.Filled.SkipNext,
                     contentDescription = stringResource(R.string.player_mobile_next_episode),
-                    enabled = hasNextEpisode,
                     onClick = onNextEpisode,
                 )
             }

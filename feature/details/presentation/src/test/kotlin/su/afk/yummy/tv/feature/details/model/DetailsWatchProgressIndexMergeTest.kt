@@ -32,7 +32,9 @@ class DetailsWatchProgressIndexMergeTest : BaseUnitTest() {
     @Test
     fun `server mirror of a 4K entry does not displace it`() {
         val merged = DetailsWatchProgressIndex.merge(
-            ANIME_ID, listOf(local4k), listOf(serverVideo(positionSeconds = 98)),
+            ANIME_ID,
+            listOf(local4k),
+            listOf(serverVideo(positionSeconds = 98)),
         )
 
         val entry = merged.latestMeaningful(ANIME_ID)!!
@@ -43,19 +45,23 @@ class DetailsWatchProgressIndexMergeTest : BaseUnitTest() {
     @Test
     fun `server entry that moved ahead wins`() {
         val merged = DetailsWatchProgressIndex.merge(
-            ANIME_ID, listOf(local4k), listOf(serverVideo(positionSeconds = 600)),
+            ANIME_ID,
+            listOf(local4k),
+            listOf(serverVideo(positionSeconds = 600)),
         )
 
         assertEquals("Aksor", merged.latestMeaningful(ANIME_ID)!!.playerName)
     }
 
     @Test
-    fun `other dubbing newer on the server wins`() {
+    fun `server mirror with another dubbing does not displace 4K`() {
         val merged = DetailsWatchProgressIndex.merge(
-            ANIME_ID, listOf(local4k), listOf(serverVideo(dubbing = "Shiza", positionSeconds = 98)),
+            ANIME_ID,
+            listOf(local4k),
+            listOf(serverVideo(dubbing = "Shiza", positionSeconds = 98)),
         )
 
-        assertEquals("Aksor", merged.latestMeaningful(ANIME_ID)!!.playerName)
+        assertEquals("4K", merged.latestMeaningful(ANIME_ID)!!.playerName)
     }
 
     private companion object {

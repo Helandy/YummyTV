@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PersonSearch
@@ -143,7 +144,7 @@ fun AccountMobileScreen(
             AccountMobileLoadingIndicator(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
+                    .statusBarsPadding(),
             )
         } else if (!state.isSignedIn) {
             val quickActions = buildList {
@@ -238,10 +239,10 @@ fun AccountMobileScreen(
                 )
                 add(
                     AccountMobileQuickAction(
-                        key = "user_search",
-                        title = stringResource(R.string.account_user_search),
-                        icon = Icons.Filled.PersonSearch,
-                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
+                        key = "friends",
+                        title = stringResource(R.string.account_profile_social_friends),
+                        icon = Icons.Filled.Groups,
+                        onClick = { onEvent(AccountState.Event.FriendsSelected) },
                     ),
                 )
                 add(
@@ -251,6 +252,14 @@ fun AccountMobileScreen(
                         icon = Icons.Filled.Settings,
                         onClick = { onEvent(AccountState.Event.SettingsSelected) },
                         focusRequester = bottomBarUpFocusRequester,
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
+                        key = "user_search",
+                        title = stringResource(R.string.account_user_search),
+                        icon = Icons.Filled.PersonSearch,
+                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
                     ),
                 )
                 add(

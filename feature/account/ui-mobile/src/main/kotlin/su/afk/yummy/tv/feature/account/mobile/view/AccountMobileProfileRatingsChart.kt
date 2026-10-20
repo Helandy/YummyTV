@@ -70,7 +70,7 @@ private fun RatingBar(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = slice.value.toCompactCountLabel(),
+                    text = if (hasValue) slice.value.toCompactCountLabel() else "",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = if (hasValue) {

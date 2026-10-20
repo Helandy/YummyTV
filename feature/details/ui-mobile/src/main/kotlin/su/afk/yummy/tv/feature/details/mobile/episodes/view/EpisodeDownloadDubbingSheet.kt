@@ -2,12 +2,14 @@ package su.afk.yummy.tv.feature.details.mobile.episodes.view
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
@@ -51,6 +53,9 @@ internal fun EpisodeDownloadDubbingSheet(
                     MobilePickerItem(
                         key = option.title,
                         title = option.title,
+                        logoName = option.title,
+                        logoRes = dubbingLogoRes(option.title),
+                        logoFallbackIcon = Icons.Filled.Mic,
                         subtitle = option.subtitle,
                         views = option.views,
                         episodeCount = option.episodeCount,

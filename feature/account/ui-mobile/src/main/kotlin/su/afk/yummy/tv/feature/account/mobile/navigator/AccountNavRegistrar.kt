@@ -27,6 +27,9 @@ import su.afk.yummy.tv.feature.account.navigator.RegistrationDestination
 import su.afk.yummy.tv.feature.account.navigator.UserProfileByNicknameDestination
 import su.afk.yummy.tv.feature.account.navigator.UserProfileDestination
 import su.afk.yummy.tv.feature.account.navigator.UserSearchDestination
+import su.afk.yummy.tv.feature.account.friends.FriendsViewModel
+import su.afk.yummy.tv.feature.account.mobile.friends.FriendsMobileScreen
+import su.afk.yummy.tv.feature.account.navigator.FriendsDestination
 import su.afk.yummy.tv.feature.account.passwordreset.PasswordResetViewModel
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditViewModel
 import su.afk.yummy.tv.feature.account.registration.RegistrationViewModel
@@ -69,6 +72,15 @@ class AccountNavRegistrar @Inject constructor() : IMobileAccountEntry {
                 val viewModel = hiltViewModel<MySubscriptionsViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     MySubscriptionsMobileScreen(state, effect, onEvent)
+                }
+            }
+            entry<FriendsDestination> { dest ->
+                val viewModel = hiltViewModel<FriendsViewModel, FriendsViewModel.Factory>(
+                    key = "mobile-friends-${dest.userId}",
+                    creationCallback = { factory -> factory.create(dest.userId) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    FriendsMobileScreen(state, effect, onEvent)
                 }
             }
             entry<UserSearchDestination> {

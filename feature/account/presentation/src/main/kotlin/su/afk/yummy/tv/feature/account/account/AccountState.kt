@@ -115,6 +115,9 @@ class AccountState {
 
         data object UserSearchSelected : Event
 
+        /** Переход к списку своих друзей. */
+        data object FriendsSelected : Event
+
         /** Переход к FAQ из быстрых действий аккаунта. */
         data object FaqSelected : Event
 

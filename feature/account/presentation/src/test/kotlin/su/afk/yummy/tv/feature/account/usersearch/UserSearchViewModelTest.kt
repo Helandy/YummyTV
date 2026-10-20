@@ -29,6 +29,7 @@ class UserSearchViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { accountNavigator.getUserProfileByNicknameDest(any()) } returns profileKey
+        every { accountNavigator.getUserProfileDest(any()) } returns profileKey
     }
 
     private fun createViewModel() = UserSearchViewModel(
@@ -108,6 +109,15 @@ class UserSearchViewModelTest : BaseUnitTest() {
         createViewModel().setEvent(UserSearchState.Event.UserSelected(" sandy "))
 
         verify(exactly = 1) { accountNavigator.getUserProfileByNicknameDest("sandy") }
+        verify(exactly = 1) { nav.navigate(profileKey) }
+    }
+
+    @Test
+    fun `selecting a user with known id opens the profile by id`() {
+        createViewModel().setEvent(UserSearchState.Event.UserSelected("sandy", 42))
+
+        verify(exactly = 1) { accountNavigator.getUserProfileDest(42) }
+        verify(exactly = 0) { accountNavigator.getUserProfileByNicknameDest(any()) }
         verify(exactly = 1) { nav.navigate(profileKey) }
     }
 

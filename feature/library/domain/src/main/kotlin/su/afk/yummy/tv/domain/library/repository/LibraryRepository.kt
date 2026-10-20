@@ -10,6 +10,7 @@ interface LibraryRepository {
     fun observeIsInLibrary(animeId: Int): Flow<Boolean>
     fun observeIsFavorite(animeId: Int): Flow<Boolean>
     suspend fun add(item: LibraryItem)
+    suspend fun setUserRating(animeId: Int, rating: Int?)
     suspend fun remove(animeId: Int)
     suspend fun delete(animeId: Int)
     suspend fun setFavorite(
