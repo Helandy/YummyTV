@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.faq.FaqState
 import su.afk.yummy.tv.feature.faq.mobile.view.FaqExpandableItem
@@ -103,7 +104,15 @@ fun FaqMobileScreen(
             item(key = "feedback") {
                 FaqFeedbackButton(
                     text = stringResource(R.string.faq_feedback_button),
+                    iconDescription = stringResource(R.string.faq_open_repository),
                     onClick = { context.openExternalUri(repositoryUrl) },
+                )
+            }
+            item(key = "community_telegram") {
+                FaqFeedbackButton(
+                    text = stringResource(R.string.faq_community_telegram_button),
+                    iconDescription = stringResource(R.string.faq_open_telegram),
+                    onClick = { context.openExternalUri(COMMUNITY_TELEGRAM_URL) },
                 )
             }
         }

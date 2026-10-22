@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -58,7 +59,6 @@ import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
-import su.afk.yummy.tv.feature.home.utils.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.feature.home.utils.communityPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes

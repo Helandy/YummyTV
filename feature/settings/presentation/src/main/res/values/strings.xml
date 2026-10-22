@@ -202,7 +202,8 @@
     <string name="settings_version_label">Version</string>
     <string name="settings_session_storage_label">Session storage</string>
     <string name="settings_session_storage_fallback">Fallback (Keystore unavailable)</string>
-    <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
+    <string name="settings_feedback_label">GitHub — questions and bugs</string>
+    <string name="settings_community_telegram_label">Telegram community</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
     <string name="settings_video_export_directory">MP4 export folder</string>
     <string name="settings_video_export_directory_not_selected">Not selected</string>

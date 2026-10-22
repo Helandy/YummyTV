@@ -63,8 +63,6 @@ internal fun SupportPromptSnapshot.supportPromptRemainingMs(nowMs: Long): Long =
 
 private val COMMUNITY_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(5)
 
-const val COMMUNITY_TELEGRAM_URL = "https://t.me/etozhesandy_dev"
-
 /** Сколько ещё ждать до приглашения в сообщество: 5 дней с первого использования. */
 internal fun CommunityPromptSnapshot.communityPromptRemainingMs(nowMs: Long): Long =
     COMMUNITY_PROMPT_DELAY_MS - (nowMs - firstUseTimeMs)

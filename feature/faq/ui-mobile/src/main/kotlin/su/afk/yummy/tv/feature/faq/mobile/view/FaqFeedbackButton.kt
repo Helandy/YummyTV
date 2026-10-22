@@ -9,13 +9,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.faq.presentation.R
 
 @Composable
 internal fun FaqFeedbackButton(
     text: String,
+    iconDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -28,7 +27,7 @@ internal fun FaqFeedbackButton(
         Text(text = text, modifier = Modifier.weight(1f))
         Icon(
             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-            contentDescription = stringResource(R.string.faq_open_repository),
+            contentDescription = iconDescription,
         )
     }
 }

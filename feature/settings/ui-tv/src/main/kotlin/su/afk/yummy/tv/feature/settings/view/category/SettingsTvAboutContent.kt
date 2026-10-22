@@ -12,6 +12,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_HANDLE
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.core.utils.system.copyToClipboard
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.settings.BuildConfig
@@ -87,6 +89,13 @@ internal fun SettingsTvAboutContent(
         hint = repositoryUrl,
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
         onClick = { context.openExternalUri(repositoryUrl) },
+    )
+    SettingsDivider()
+    AboutRow(
+        label = stringResource(R.string.settings_community_telegram_label),
+        hint = COMMUNITY_TELEGRAM_HANDLE,
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        onClick = { context.openExternalUri(COMMUNITY_TELEGRAM_URL) },
     )
 
     if (showReleaseNotes) {

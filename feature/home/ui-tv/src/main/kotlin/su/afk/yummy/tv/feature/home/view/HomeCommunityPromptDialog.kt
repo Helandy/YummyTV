@@ -20,7 +20,7 @@ import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.designsystem.components.QrCode
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusableButton
 import su.afk.yummy.tv.feature.home.presentation.R
-import su.afk.yummy.tv.feature.home.utils.COMMUNITY_TELEGRAM_URL
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 
 /** Приглашение в Telegram-сообщество: на ТВ вместо кнопки перехода показан QR-код для телефона. */
 @Composable

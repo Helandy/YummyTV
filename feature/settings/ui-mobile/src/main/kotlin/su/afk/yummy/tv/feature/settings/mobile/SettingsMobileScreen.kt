@@ -27,6 +27,8 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_HANDLE
+import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.core.utils.system.copyToClipboard
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -153,6 +155,11 @@ fun SettingsMobileScreen(
                         label = stringResource(R.string.settings_feedback_label),
                         hint = repositoryUrl,
                         onClick = { context.openExternalUri(repositoryUrl) },
+                    )
+                    SettingsMobileAboutRow(
+                        label = stringResource(R.string.settings_community_telegram_label),
+                        hint = COMMUNITY_TELEGRAM_HANDLE,
+                        onClick = { context.openExternalUri(COMMUNITY_TELEGRAM_URL) },
                     )
                 }
             }
