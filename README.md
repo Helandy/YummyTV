@@ -37,9 +37,14 @@
 
 ---
 
+> [!TIP]
+> 💬 Комьюнити приложения в Telegram: [@etozhesandy_dev](https://t.me/etozhesandy_dev) — новости,
+> обновления и обсуждение.
 
 > [!IMPORTANT]
-> В поиске работы [@Etozhesandy](https://t.me/Etozhesandy) (Android, compose, kotlin). Не пишите туда с вопросами по программе - для этого есть Issues
+> 💼 В поиске работы: [@Etozhesandy](https://t.me/Etozhesandy) (Android, Compose, Kotlin).
+> С вопросами по программе туда не пишите — для этого есть
+> [Issues](https://github.com/Helandy/YummyTV/issues).
 
 ## Что это
 
@@ -169,7 +174,8 @@
 
 Встроенный плеер на **Media3 / ExoPlayer** поддерживает:
 
-- выбор качества, озвучки и балансера (Kodik, Aksor, Alloha, CVH, VK, Rutube, Sibnet, Zedfilm);
+- выбор качества, озвучки и балансера (Kodik, Aksor, Alloha, CVH, VK, Rutube, Sibnet, Zedfilm,
+  Aniboom, Anistar, AniLibria, 4K);
 - скорость, масштаб и зум, автопропуск опенинга/эндинга;
 - переход между сериями и автовоспроизведение следующей;
 - жесты на мобильных (яркость, громкость, перемотка, зум) и управление мышью на TV;

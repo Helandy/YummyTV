@@ -37,6 +37,15 @@
 
 ---
 
+> [!TIP]
+> 💬 App community on Telegram: [@etozhesandy_dev](https://t.me/etozhesandy_dev) — news, updates,
+> and discussion.
+
+> [!IMPORTANT]
+> 💼 Open to work: [@Etozhesandy](https://t.me/Etozhesandy) (Android, Compose, Kotlin).
+> Please don't message there with app questions — use
+> [Issues](https://github.com/Helandy/YummyTV/issues) instead.
+
 ## What is YummyTV?
 
 **YummyTV** is a native Android app for watching anime from YummyAnime. The project includes two
@@ -169,7 +178,7 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
 The built-in player is based on **Media3 / ExoPlayer** and supports:
 
 - quality, voice-over, and balancer selection (Kodik, Aksor, Alloha, CVH, VK, Rutube, Sibnet,
-  Zedfilm);
+  Zedfilm, Aniboom, Anistar, AniLibria, 4K);
 - playback speed, scale and zoom, and automatic opening/ending skip;
 - previous/next episode navigation and auto-play of the next episode;
 - mobile gestures (brightness, volume, seeking, zoom) and mouse control on TV;
