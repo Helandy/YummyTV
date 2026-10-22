@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.feature.main
 
+import su.afk.yummy.tv.core.common.coroutines.AppClock
+import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
+import su.afk.yummy.tv.core.model.seasonal.seasonalAnnouncementKey
+import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -43,6 +47,7 @@ class MainViewModel @Inject internal constructor(
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val observeLibraryListStatuses: ObserveLibraryListStatusesUseCase,
     private val observeLibraryUserRatings: ObserveLibraryUserRatingsUseCase,
+    private val appClock: AppClock,
 ) : BaseViewModel<MainState.State, MainState.Event, MainState.Effect>() {
 
     override fun createInitialState() = MainState.State()
@@ -53,6 +58,11 @@ class MainViewModel @Inject internal constructor(
                 root = event.root,
                 reselectPopToRoot = event.popToRootOnReselect,
             )
+
+            is MainState.Event.SeasonalPromptAnswered -> viewModelScope.launch {
+                if (event.disable) settingsStore.setSeasonalDecorationsEnabled(false)
+                settingsStore.setSeasonalAnnouncedKey(seasonalAnnouncementKey(appClock.nowMillis()))
+            }
         }
     }
 
@@ -103,10 +113,18 @@ class MainViewModel @Inject internal constructor(
             settingsStore.yaniApplicationTokenState.distinctUntilChanged()
         settingsStore.mainSettingsSnapshot
             .onEach { snapshot ->
+                val nowMillis = appClock.nowMillis()
+                val seasonalPrompt = seasonalThemeAt(nowMillis).takeIf { theme ->
+                    theme != SeasonalTheme.NONE &&
+                        snapshot.seasonalDecorationsEnabled &&
+                        snapshot.seasonalAnnouncedKey != seasonalAnnouncementKey(nowMillis)
+                }
                 setState {
                     copy(
+                        seasonalPrompt = seasonalPrompt,
                         appTheme = snapshot.appTheme,
                         backgroundStyle = snapshot.backgroundStyle,
+                        seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
                         yaniNickname = snapshot.yaniNickname,

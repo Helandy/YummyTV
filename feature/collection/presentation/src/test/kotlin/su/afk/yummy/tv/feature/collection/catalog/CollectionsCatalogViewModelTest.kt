@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -22,6 +24,7 @@ import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
+import su.afk.yummy.tv.domain.collection.model.CollectionSort
 import su.afk.yummy.tv.domain.collection.model.CreateCollectionRequest
 import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
@@ -69,6 +72,32 @@ class CollectionsCatalogViewModelTest : BaseUnitTest() {
 
         assertFalse(state.isCreateDialogVisible)
         assertTrue(state.isCreatePublic)
+    }
+
+    @Test
+    fun `starts with newest sort`() {
+        assertEquals(CollectionSort.NEW, createViewModel().currentState.sort)
+    }
+
+    @Test
+    fun `selecting another sort updates state and replaces the paging flow`() {
+        val vm = createViewModel()
+        val initialItems = vm.currentState.items
+
+        vm.setEvent(Event.SortSelected(CollectionSort.BEST))
+
+        assertEquals(CollectionSort.BEST, vm.currentState.sort)
+        assertNotSame(initialItems, vm.currentState.items)
+    }
+
+    @Test
+    fun `selecting the current sort keeps the paging flow`() {
+        val vm = createViewModel()
+        val initialItems = vm.currentState.items
+
+        vm.setEvent(Event.SortSelected(CollectionSort.NEW))
+
+        assertSame(initialItems, vm.currentState.items)
     }
 
     @Test

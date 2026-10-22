@@ -13,6 +13,14 @@ fun CommentSort.labelRes(): Int = when (this) {
     CommentSort.BEST -> R.string.comments_sort_best
 }
 
+/** Подпись сортировки в выпадающем списке («Сначала новые»). */
+@StringRes
+fun CommentSort.dropdownLabelRes(): Int = when (this) {
+    CommentSort.NEW -> R.string.comments_sort_new_first
+    CommentSort.OLD -> R.string.comments_sort_old_first
+    CommentSort.BEST -> R.string.comments_sort_best_first
+}
+
 /** Подпись причины жалобы на комментарий. */
 @StringRes
 fun CommentReportReason.labelRes(): Int = when (this) {

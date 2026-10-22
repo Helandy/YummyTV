@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.anistar.data.mapper
 
+import su.afk.yummy.tv.core.model.anime.utils.originalAnimeTitle
+import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarLookupRequestDto
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarTitleResponseDto
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarLookup
@@ -11,7 +13,8 @@ internal object AnistarMapper {
     fun toRequest(lookup: AnistarLookup): AnistarLookupRequestDto = AnistarLookupRequestDto(
         malId = lookup.malId,
         title = lookup.title,
-        otherTitles = lookup.otherTitles.map(String::trim).filter(String::isNotEmpty).distinct().take(MAX_OTHER_TITLES),
+        originalTitle = originalAnimeTitle(lookup.otherTitles),
+        otherTitles = prioritizeAnimeTitles(lookup.title, lookup.otherTitles, MAX_OTHER_TITLES),
         year = lookup.year,
         type = lookup.type,
         episodes = lookup.episodes,

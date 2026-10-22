@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -29,6 +30,7 @@ class CatalogState {
         val isLoadingFilterOptions: Boolean = false,
         val isRandomAnimeLoading: Boolean = false,
         val showTitleYear: Boolean = false,
+        val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
         /**
          * Другая фича попросила фокус в поле поиска. Это состояние, а не эффект: запрос приходит
          * до того, как экран начнёт собирать эффекты, и снимается событием [Event.SearchFocusHandled].

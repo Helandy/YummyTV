@@ -57,4 +57,9 @@
     <string name="core_release_status_announcement">Announced</string>
     <string name="core_title_card_favorite">Favorite</string>
     <string name="core_title_card_viewer_mark">You:</string>
+    <string name="seasonal_prompt_title">Seasonal decorations</string>
+    <string name="seasonal_prompt_halloween">The app is decorated for Halloween: cobwebs, pumpkins and ghosts. Don\'t need it? Turn it off — you can bring it back in Settings → Appearance → Seasonal decorations.</string>
+    <string name="seasonal_prompt_new_year">The app is decorated for New Year: a garland, snow and Santa hats. Don\'t need it? Turn it off — you can bring it back in Settings → Appearance → Seasonal decorations.</string>
+    <string name="seasonal_prompt_disable">Turn off</string>
+    <string name="seasonal_prompt_keep">Keep</string>
 </resources>

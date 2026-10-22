@@ -4,6 +4,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -13,6 +15,7 @@ import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.model.UpdateCollectionRequest
@@ -22,6 +25,7 @@ import su.afk.yummy.tv.domain.collection.usecase.RemoveCollectionVoteUseCase
 import su.afk.yummy.tv.domain.collection.usecase.UpdateCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.VoteCollectionUseCase
 import su.afk.yummy.tv.feature.collection.presentation.R
+import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 
@@ -33,6 +37,7 @@ class CollectionViewModel @AssistedInject internal constructor(
     private val nav: INavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val commentsNavigator: ICommentsNavigator,
+    private val accountNavigator: IAccountNavigator,
     private val getCollection: GetCollectionUseCase,
     private val getAccountSession: GetAccountSessionUseCase,
     private val voteCollection: VoteCollectionUseCase,
@@ -40,6 +45,7 @@ class CollectionViewModel @AssistedInject internal constructor(
     private val updateCollection: UpdateCollectionUseCase,
     private val deleteCollection: DeleteCollectionUseCase,
     private val stringProvider: StringProvider,
+    private val appearanceSettingsStore: AppearanceSettingsStore,
     private val analytics: CollectionAnalytics,
 ) : BaseViewModel<CollectionState.State, CollectionState.Event, CollectionState.Effect>() {
 
@@ -52,6 +58,9 @@ class CollectionViewModel @AssistedInject internal constructor(
 
     init {
         analytics.eventScreenOpened(collectionId)
+        appearanceSettingsStore.titleCardLayout
+            .onEach { layout -> setState { copy(titleCardLayout = layout) } }
+            .launchIn(viewModelScope)
         load()
     }
 
@@ -83,8 +92,17 @@ class CollectionViewModel @AssistedInject internal constructor(
             CollectionState.Event.DeleteDismissed -> dismissDeleteDialog()
             CollectionState.Event.DeleteConfirmed -> delete()
             CollectionState.Event.CommentsSelected -> nav.navigate(
-                commentsNavigator.getCommentsDest(CommentTargetType.COLLECTION, collectionId)
+                commentsNavigator.getCommentsDest(
+                    CommentTargetType.COLLECTION,
+                    collectionId,
+                    currentState.collection?.commentsCount,
+                )
             )
+
+            CollectionState.Event.AuthorSelected -> currentState.collection
+                ?.ownerId
+                ?.takeIf { it > 0 }
+                ?.let { nav.navigate(accountNavigator.getUserProfileDest(it)) }
 
             is CollectionState.Event.GridScrolled -> setState {
                 copy(

@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalFullscreenLoader
 
 /**
  * Полноэкранный лоадер, блокирующий ввод: показывается, пока идёт запрос перед переходом на
@@ -32,7 +32,7 @@ fun MobileBlockingLoading(modifier: Modifier = Modifier) {
                 .background(Color.Black.copy(alpha = 0.55f)),
             contentAlignment = Alignment.Center,
         ) {
-            YummyLoadingIndicator()
+            SeasonalFullscreenLoader()
         }
     }
 }

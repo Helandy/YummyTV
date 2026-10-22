@@ -67,39 +67,23 @@ class AniboomRepositoryImplTest : BaseUnitTest() {
     }
 
     @Test
+    fun `playlist failure keeps the stream without qualities`() = runTest {
+        val html = requireNotNull(javaClass.getResourceAsStream("/aniboom-embed.html")).readBytes().decodeToString()
+        coEvery { api.getEmbed(any(), any()) } returns html
+        coEvery { api.getPlaylist(any()) } throws IOException("down")
+
+        val streams = createRepository().getStreams(AniboomTarget("0BzM07Pq71J", 1, 16))
+
+        assertEquals("https://poppy.ya-ligh123.site/lk/lk8qW4J5Mmo/master.m3u8", streams?.hlsUrl)
+        assertEquals(emptyMap<String, String>(), streams?.qualities)
+    }
+
+    @Test
     fun `embed without a link is an error`() = runTest {
         coEvery { api.getEmbed(any(), any()) } returns "<html>no params</html>"
 
         assertThrows(IOException::class.java) {
             kotlinx.coroutines.runBlocking { createRepository().getStreams(AniboomTarget("0BzM07Pq71J", 1, 16)) }
         }
-    }
-
-    @Test
-    fun `episode check is true for an embed and false for 404 and is cached`() = runTest {
-        val stub = AniboomTarget("0BzM07Pq71J", 5, 30)
-        val real = AniboomTarget("0BzM07Pq71J", 4, 30)
-        coEvery { api.getEmbed("https://aniboom.one/embed/0BzM07Pq71J?episode=5&translation=30&episodes=1", "https://animego.me/") } returns null
-        coEvery { api.getEmbed("https://aniboom.one/embed/0BzM07Pq71J?episode=4&translation=30&episodes=1", "https://animego.me/") } returns "<html/>"
-        val repository = createRepository()
-
-        assertEquals(false, repository.hasEpisode(stub))
-        assertEquals(true, repository.hasEpisode(real))
-        repository.hasEpisode(stub)
-        repository.hasEpisode(real)
-
-        coVerify(exactly = 2) { api.getEmbed(any(), any()) }
-    }
-
-    @Test
-    fun `episode check failure is thrown and not cached`() = runTest {
-        val target = AniboomTarget("0BzM07Pq71J", 5, 30)
-        coEvery { api.getEmbed(any(), any()) } throws IOException("down")
-        val repository = createRepository()
-
-        assertThrows(IOException::class.java) { kotlinx.coroutines.runBlocking { repository.hasEpisode(target) } }
-
-        coEvery { api.getEmbed(any(), any()) } returns "<html/>"
-        assertEquals(true, repository.hasEpisode(target))
     }
 }

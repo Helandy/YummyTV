@@ -61,7 +61,7 @@ class ReviewDetailsViewModelTest : BaseUnitTest() {
         every { strings.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { settingsStore.yaniUserId } returns userId
         every { accountNavigator.getUserProfileDest(any()) } returns navKey
-        every { commentsNavigator.getCommentsDest(any(), any()) } returns navKey
+        every { commentsNavigator.getCommentsDest(any(), any(), any()) } returns navKey
         every { detailsNavigator.getDetailsDest(any()) } returns navKey
         coEvery { repository.getReview(REVIEW_ID) } returns reviewDetails(REVIEW_ID, authorId = OWNER_ID)
     }
@@ -188,7 +188,7 @@ class ReviewDetailsViewModelTest : BaseUnitTest() {
 
         verify(exactly = 1) { accountNavigator.getUserProfileDest(3) }
         verify(exactly = 1) { detailsNavigator.getDetailsDest(4) }
-        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.REVIEW, REVIEW_ID) }
+        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.REVIEW, REVIEW_ID, any()) }
         verify(exactly = 3) { nav.navigate(navKey) }
     }
 

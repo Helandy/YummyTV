@@ -50,7 +50,7 @@ class AniLibriaExtraSourceTest : BaseUnitTest() {
 
     @Test
     fun `videos are built per episode with source urls and skips`() = runTest {
-        coEvery { repository.findRelease(52991, listOf("Фрирен", "Frieren")) } returns release
+        coEvery { repository.findRelease(52991, listOf("Фрирен", "Frieren"), null) } returns release
         val videos = videoRepository().videos(details(52991))
         assertEquals(listOf("1", "2"), videos.map { it.episode })
         assertEquals("source://anilibria/9542/1", videos[0].iframeUrl)
@@ -64,7 +64,7 @@ class AniLibriaExtraSourceTest : BaseUnitTest() {
     @Test
     fun `no mal id or no release gives no videos`() = runTest {
         assertTrue(videoRepository().videos(details(null)).isEmpty())
-        coEvery { repository.findRelease(1, any()) } returns null
+        coEvery { repository.findRelease(1, any(), any()) } returns null
         assertTrue(videoRepository().videos(details(1)).isEmpty())
     }
 

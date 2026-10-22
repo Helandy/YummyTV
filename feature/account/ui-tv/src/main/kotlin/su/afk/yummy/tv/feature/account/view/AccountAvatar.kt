@@ -2,6 +2,7 @@
 
 package su.afk.yummy.tv.feature.account.view
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalAvatarHat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ internal fun AccountAvatar(avatarUrl: String, nickname: String) {
     Box(
         modifier = Modifier
             .size(92.dp)
+            .seasonalAvatarHat()
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
             .border(

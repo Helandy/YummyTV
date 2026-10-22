@@ -21,9 +21,11 @@ import su.afk.yummy.tv.data.home.R
 import su.afk.yummy.tv.data.home.dto.YaniAnimeDto
 import su.afk.yummy.tv.data.home.dto.YaniCollectionDto
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
+import su.afk.yummy.tv.data.home.dto.YaniPosterDto
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeCollectionPreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
@@ -253,8 +255,21 @@ private fun List<YaniCollectionDto>.toCollectionEntries(
             year = null,
             actionType = HOME_FEED_ACTION_COLLECTION,
             actionId = id,
+            collectionPosterUrls = item.posterPreviews
+                .mapNotNull { it.standardUrl() }
+                .distinct()
+                .take(COLLECTION_COLLAGE_POSTER_COUNT)
+                .joinToString(COLLECTION_POSTER_URLS_SEPARATOR),
+            collectionLikes = item.likes?.likes?.coerceAtLeast(0),
+            collectionViews = item.views.coerceAtLeast(0),
         )
     }
+
+private fun YaniPosterDto.standardUrl(): String? =
+    (big ?: medium ?: fullsize ?: small)?.toHttpsUrl()
+
+private const val COLLECTION_COLLAGE_POSTER_COUNT = 3
+private const val COLLECTION_POSTER_URLS_SEPARATOR = "\n"
 
 private fun HomeFeedItemEntry.toHomeFeedItem(): HomeFeedItem =
     HomeFeedItem(
@@ -270,6 +285,11 @@ private fun HomeFeedItemEntry.toHomeFeedItem(): HomeFeedItem =
         ),
         rating = rating?.takeIf { it > 0.0 },
         year = year?.takeIf { it > 0 },
+        collection = HomeCollectionPreview(
+            posterUrls = collectionPosterUrls.split(COLLECTION_POSTER_URLS_SEPARATOR).filter(String::isNotBlank),
+            likes = collectionLikes,
+            views = collectionViews,
+        ).takeIf { actionType == HOME_FEED_ACTION_COLLECTION },
         action = when (actionType) {
             HOME_FEED_ACTION_COLLECTION -> HomeFeedItemAction.OpenCollection(actionId)
             HOME_FEED_ACTION_VIDEO -> HomeFeedItemAction.OpenVideo(actionId)

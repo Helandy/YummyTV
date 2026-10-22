@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:account:api"))
     implementation(project(":feature:comments:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:collection:api"))
@@ -15,9 +16,11 @@ dependencies {
     api(project(":feature:collection:domain"))
 
     implementation(project(":core:analytics"))
+    implementation(project(":core:deeplink:api"))
     implementation(project(":core:error:api"))
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:details:api"))
 

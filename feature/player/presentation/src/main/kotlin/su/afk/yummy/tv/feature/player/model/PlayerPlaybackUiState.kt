@@ -36,6 +36,10 @@ data class PlayerPlaybackUiState(
     val activeQuality: String?,
     /** Качеством управляет адаптивный режим: включён в настройках и в серии не выбрано вручную. */
     val adaptiveQuality: Boolean,
+    /** Выше этой высоты адаптивный режим качество не поднимает. */
+    val adaptiveCeilingHeight: Int,
+    /** Метка потока, выше которой адаптация не поднимается (лимит, показываемый пользователю). */
+    val adaptiveLimitLabel: String?,
     /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
     val playbackUrl: String,
     val canChangePlayer: Boolean,

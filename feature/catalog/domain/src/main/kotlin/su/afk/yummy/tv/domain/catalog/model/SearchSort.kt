@@ -7,10 +7,11 @@ enum class SearchSort(val apiValue: String, val defaultForward: Boolean) {
     VIEWS("views", false),
     TOP("top", true),
     ID("id", false),
+    YEAR("year", false),
     ;
 
     companion object {
         /** Сортировки для выбора в UI, в порядке сайта. */
-        val options: List<SearchSort> = listOf(TOP, RATING, ID, TITLE, VIEWS, RATING_COUNTERS)
+        val options: List<SearchSort> = listOf(TOP, RATING, ID, TITLE, VIEWS, RATING_COUNTERS, YEAR)
     }
 }

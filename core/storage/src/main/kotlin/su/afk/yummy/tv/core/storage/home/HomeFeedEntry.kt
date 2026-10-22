@@ -51,4 +51,8 @@ data class HomeFeedItemEntry(
     val playerName: String = "",
     val dubbing: String = "",
     val screenshotUrl: String = "",
+    /** Постеры коллекции, склеенные через `\n` (Room-колонка без конвертера); пусто у остальных айтемов. */
+    val collectionPosterUrls: String = "",
+    val collectionLikes: Int? = null,
+    val collectionViews: Int? = null,
 )

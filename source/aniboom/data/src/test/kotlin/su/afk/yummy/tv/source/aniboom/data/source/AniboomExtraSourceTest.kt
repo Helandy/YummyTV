@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.source.aniboom.data.source
 
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -17,9 +16,7 @@ import su.afk.yummy.tv.source.aniboom.domain.model.AniboomLookup
 import su.afk.yummy.tv.source.aniboom.domain.model.AniboomStreams
 import su.afk.yummy.tv.source.aniboom.domain.model.AniboomTitle
 import su.afk.yummy.tv.source.aniboom.domain.repository.AniboomRepository
-import su.afk.yummy.tv.source.aniboom.domain.model.AniboomTarget
 import su.afk.yummy.tv.source.aniboom.domain.usecase.FindAniboomTitleUseCase
-import su.afk.yummy.tv.source.aniboom.domain.usecase.GetAniboomEpisodeCountsUseCase
 import su.afk.yummy.tv.source.aniboom.domain.usecase.ResolveAniboomStreamsUseCase
 import java.io.IOException
 
@@ -30,24 +27,23 @@ class AniboomExtraSourceTest : BaseUnitTest() {
         override val notFound = "nf-text"
     }
 
-    private fun details(malId: Int?, total: Int? = 28) = AnimeDetails(
+    private fun details(malId: Int?) = AnimeDetails(
         id = 1, animeUrl = "u", title = "Фрирен", description = "", poster = null,
         rating = AnimeRating(null, null, null, null, null), genres = emptyList(), year = 2023, ageRating = null,
-        views = null, status = null, type = "tv", episodes = AnimeEpisodes(total, 12, null, null), otherTitles = listOf("Frieren"),
+        views = null, status = null, type = "tv", episodes = AnimeEpisodes(28, 12, null, null), otherTitles = listOf("Frieren"),
         creators = emptyList(), studios = emptyList(), viewingOrder = emptyList(), screenshots = emptyList(), malId = malId,
     )
 
     private val title = AniboomTitle("0BzM07Pq71J", 2, listOf(AniboomDubbing("JAM CLUB", 16), AniboomDubbing("Dream Cast", 30)))
 
     private fun videoRepository() =
-        AniboomExtraVideoRepository(FindAniboomTitleUseCase(repository), GetAniboomEpisodeCountsUseCase(repository))
+        AniboomExtraVideoRepository(FindAniboomTitleUseCase(repository))
 
     private fun streamRepository() = AniboomExtraStreamRepository(ResolveAniboomStreamsUseCase(repository), messages)
 
     @Test
     fun `videos are built per dubbing and episode and lookup carries the app data`() = runTest {
         coEvery { repository.findTitle(AniboomLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28)) } returns title
-        coEvery { repository.hasEpisode(any()) } returns true
 
         val videos = videoRepository().videos(details(52991))
 
@@ -93,39 +89,5 @@ class AniboomExtraSourceTest : BaseUnitTest() {
     fun `only aniboom urls are supported`() {
         assertTrue(streamRepository().supports("source://aniboom/0BzM07Pq71J/1/16"))
         assertEquals(false, streamRepository().supports("source://anime4k/1/1/1/x"))
-    }
-
-    @Test
-    fun `stub episode is not offered for the dubbing that has no video for it`() = runTest {
-        coEvery { repository.findTitle(any()) } returns title
-        coEvery { repository.hasEpisode(AniboomTarget("0BzM07Pq71J", 2, 16)) } returns false
-        coEvery { repository.hasEpisode(AniboomTarget("0BzM07Pq71J", 2, 30)) } returns true
-
-        val videos = videoRepository().videos(details(52991, total = 12))
-
-        assertEquals(
-            listOf("JAM CLUB" to "1", "Dream Cast" to "1", "Dream Cast" to "2"),
-            videos.map { it.dubbing to it.episode },
-        )
-    }
-
-    @Test
-    fun `finished title is not probed and keeps every episode`() = runTest {
-        coEvery { repository.findTitle(any()) } returns title
-
-        val videos = videoRepository().videos(details(52991, total = 2))
-
-        assertEquals(4, videos.size)
-        coVerify(exactly = 0) { repository.hasEpisode(any()) }
-    }
-
-    @Test
-    fun `unknown total is probed like an ongoing title`() = runTest {
-        coEvery { repository.findTitle(any()) } returns title
-        coEvery { repository.hasEpisode(any()) } returns false
-
-        val videos = videoRepository().videos(details(52991, total = null))
-
-        assertEquals(listOf("1", "1"), videos.map { it.episode })
     }
 }

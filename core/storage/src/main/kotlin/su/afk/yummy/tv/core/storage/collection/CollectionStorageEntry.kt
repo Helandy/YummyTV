@@ -26,6 +26,11 @@ data class CollectionDetailEntry(
     val ownerId: Int = 0,
     @ColumnInfo(defaultValue = "0")
     val isPublic: Boolean = false,
+    @ColumnInfo(defaultValue = "''")
+    val ownerNickname: String = "",
+    val ownerAvatarUrl: String? = null,
+    @ColumnInfo(defaultValue = "0")
+    val commentsCount: Int = 0,
 )
 
 @Entity(
@@ -44,6 +49,8 @@ data class CollectionAnimeItemEntry(
     val position: Int,
     val animeId: Int,
     val title: String,
+    @ColumnInfo(defaultValue = "''")
+    val description: String = "",
     val posterUrl: String? = null,
     val rating: Double? = null,
     val year: Int? = null,
@@ -81,4 +88,7 @@ data class CollectionCatalogItemEntry(
     val description: String,
     val posterUrl: String? = null,
     val likes: Int = 0,
+    /** Первые постеры коллекции, склеенные через `\n` (Room-колонка без конвертера). */
+    val posterUrls: String = "",
+    val views: Int = 0,
 )

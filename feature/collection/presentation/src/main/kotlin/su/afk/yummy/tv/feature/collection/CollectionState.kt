@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.collection
 
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -23,6 +24,7 @@ class CollectionState {
         val isUpdating: Boolean = false,
         val isDeleteDialogVisible: Boolean = false,
         val isDeleting: Boolean = false,
+        val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
     ) : UiState {
         val isOwner: Boolean
             get() = currentUserId > 0 && collection?.ownerId == currentUserId
@@ -52,6 +54,9 @@ class CollectionState {
         data object DeleteDismissed : Event
         data object DeleteConfirmed : Event
         data object CommentsSelected : Event
+
+        /** Пользователь нажал на автора коллекции. */
+        data object AuthorSelected : Event
 
         /** Сетка коллекции прокрутилась к указанной позиции и смещению. */
         data class GridScrolled(val index: Int, val offset: Int) : Event

@@ -15,6 +15,7 @@ class AnistarMapperTest {
         val request = AnistarMapper.toRequest(lookup)
 
         assertEquals(20, request.otherTitles.size)
+        assertEquals("Naruto", request.originalTitle)
         assertEquals("Naruto", request.otherTitles.first())
         assertEquals(2007, request.year)
     }

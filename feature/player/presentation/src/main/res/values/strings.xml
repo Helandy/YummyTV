@@ -28,10 +28,10 @@
     <string name="player_server_error">Server error (%1$d)</string>
     <string name="player_adaptive_quality_title">Adaptive quality</string>
     <string name="player_adaptive_quality_current">Now: %1$s</string>
+    <string name="player_adaptive_quality_current_limit">Now: %1$s · limit: %2$s</string>
     <string name="player_adaptive_quality_badge">A</string>
     <string name="player_adaptive_quality_hint">Adapts to your network and device</string>
     <string name="player_quality_auto">auto</string>
-    <string name="player_selected">Current</string>
     <string name="player_quality_title">Quality</string>
     <string name="player_dubbing_title">Dubbing</string>
         <string name="player_speed_title">Speed</string>
@@ -42,7 +42,7 @@
     <string name="player_track_fallback">Track %1$d</string>
     <string name="player_quality_meta">Video stream</string>
     <string name="player_dubbing_meta">Dubbing track</string>
-    <string name="player_balancer_meta">Playback balancer</string>
+    <string name="player_balancer_meta">Balancer</string>
     <string name="player_episode_unavailable">This episode is unavailable</string>
     <string name="player_resize_fit">Original size</string>
     <string name="player_resize_zoom">Zoom</string>

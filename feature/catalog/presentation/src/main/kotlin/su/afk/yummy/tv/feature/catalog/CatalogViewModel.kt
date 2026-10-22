@@ -81,6 +81,9 @@ class CatalogViewModel @Inject internal constructor(
         appearanceSettingsStore.showCatalogTitleYear
             .onEach { showTitleYear -> setState { copy(showTitleYear = showTitleYear) } }
             .launchIn(viewModelScope)
+        appearanceSettingsStore.titleCardLayout
+            .onEach { layout -> setState { copy(titleCardLayout = layout) } }
+            .launchIn(viewModelScope)
         observeSearchHistory()
             .onEach { history -> setState { copy(searchHistory = history.toImmutableList()) } }
             .launchIn(viewModelScope)

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main
 
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalPrompt
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -16,6 +17,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.dialog.ConfirmDialogHost
+import su.afk.yummy.tv.core.designsystem.seasonal.LocalSeasonalDecorationsEnabled
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.BackStackHost
@@ -65,10 +67,17 @@ class TvMainGraph @Inject constructor(
                 isTelevision = true,
             ) {
                 ConfirmDialogHost(isTelevision = true)
+                SeasonalPrompt(
+                    theme = state.seasonalPrompt,
+                    isTelevision = true,
+                    ready = showMainMenu,
+                    onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
+                )
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalSeasonalDecorationsEnabled provides state.seasonalDecorationsEnabled,
                     LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,
                 ) {
@@ -81,6 +90,7 @@ class TvMainGraph @Inject constructor(
                         applyTopSafeDrawingInset = currentDestination !is PlayerDestination,
                         onEvent = onEvent,
                         toastMessage = toast.message,
+                        showSeasonalOverlay = currentDestination !is PlayerDestination,
                     ) {
                         AppNavHost(
                             navManager = navManager,

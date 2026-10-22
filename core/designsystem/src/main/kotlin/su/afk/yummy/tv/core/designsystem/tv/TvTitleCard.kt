@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.tv
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -78,6 +79,7 @@ fun TvTitleCard(
                     .fillMaxWidth()
                     // Высота от фактической ширины: в гриде ячейка может быть уже или шире cardWidth.
                     .aspectRatio(TITLE_POSTER_ASPECT_RATIO)
+                    .seasonalCardDecor(animeId ?: posterUrl.hashCode())
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {

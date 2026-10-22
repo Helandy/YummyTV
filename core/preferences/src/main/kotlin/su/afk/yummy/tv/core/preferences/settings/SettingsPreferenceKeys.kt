@@ -10,10 +10,12 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 internal object SettingsPreferenceKeys {
     val posterQualityKey = stringPreferencesKey("poster_quality")
     val posterCardSizeKey = stringPreferencesKey("poster_card_size")
+    val titleCardLayoutKey = stringPreferencesKey("title_card_layout")
     val showCatalogTitleYearKey = booleanPreferencesKey("show_top_title_year")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
+    val seasonalDecorationsEnabledKey = booleanPreferencesKey("seasonal_decorations_enabled")
+    val seasonalAnnouncedKey = stringPreferencesKey("seasonal_announced_key")
     val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
-    val newEpisodesHideWatchedKey = booleanPreferencesKey("new_episodes_hide_watched")
     val showLibraryTitleYearKey = booleanPreferencesKey("show_library_title_year")
     val libraryContinueWatchingCardSizeKey =
         stringPreferencesKey("library_continue_watching_card_size")
@@ -70,7 +72,6 @@ internal object SettingsPreferenceKeys {
     val subtitleTextColorKey = stringPreferencesKey("subtitle_text_color")
     val subtitleBackgroundKey = stringPreferencesKey("subtitle_background")
     val subtitleOffsetKey = intPreferencesKey("subtitle_offset_percent")
-    val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
     val libraryTabOrderKey = stringPreferencesKey("library_tab_order")
     val hiddenRecommendationIdsKey = stringSetPreferencesKey("hidden_recommendation_ids")
     val appThemeKey = stringPreferencesKey("app_theme")

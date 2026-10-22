@@ -48,6 +48,13 @@ internal class AniboomApi @Inject constructor(
         return response.bodyAsText()
     }
 
+    /** Мастер-плейлист HLS. Заголовков нет намеренно: CDN отвечает 400 на запрос с `Referer`/`Origin`. */
+    suspend fun getPlaylist(url: String): String {
+        val response = client.get(url)
+        if (!response.status.isSuccess()) throw IOException("Aniboom playlist: HTTP ${response.status.value}")
+        return response.bodyAsText()
+    }
+
     private fun HttpRequestBuilder.sign(method: String, url: String, body: ByteArray) {
         signSiteRequest(signers, method, url, body)
     }

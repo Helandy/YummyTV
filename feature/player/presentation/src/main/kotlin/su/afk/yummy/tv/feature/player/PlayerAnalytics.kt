@@ -16,6 +16,7 @@ import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.formatPlaybackTimecode
+import su.afk.yummy.tv.feature.player.utils.isNetworkResolveFailure
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.streamHost
 import javax.inject.Inject
@@ -297,7 +298,8 @@ internal class PlayerAnalytics @Inject constructor(
         )
         // Серия/озвучка недоступна на источнике (kodik_blocked / unavailable) — это состояние
         // контента, а не сбой приложения. Шлём обычное аналитическое событие, а не non-fatal.
-        if (reason in UNAVAILABLE_REASONS) {
+        // Сетевой сбой на стороне пользователя (нет соединения с хостом) — тоже не баг приложения.
+        if (reason in UNAVAILABLE_REASONS || isNetworkResolveFailure(throwable, errorMessage)) {
             tracker.track(
                 EVENT_STREAM_RESOLVE_FAILED,
                 sourceParams(source) +

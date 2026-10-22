@@ -7,9 +7,6 @@ import kotlinx.serialization.Serializable
 data object SettingsDestination : NavKey
 
 @Serializable
-data object SettingsDetailsButtonOrderDestination : NavKey
-
-@Serializable
 data object SettingsLibraryTabOrderDestination : NavKey
 
 /** Категории мобильных настроек: у каждой свой экран, чтобы не листать один длинный список. */

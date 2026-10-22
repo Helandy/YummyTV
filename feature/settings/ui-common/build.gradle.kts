@@ -13,4 +13,5 @@ dependencies {
     implementation(project(":feature:settings:presentation"))
 
     implementation(libs.bundles.compose.core)
+    implementation(libs.androidx.material.icons.extended)
 }

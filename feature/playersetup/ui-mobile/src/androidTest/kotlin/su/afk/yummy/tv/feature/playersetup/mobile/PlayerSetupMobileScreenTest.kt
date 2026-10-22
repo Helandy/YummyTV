@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
 import su.afk.yummy.tv.feature.playersetup.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 
 class PlayerSetupMobileScreenTest {
     @get:Rule
@@ -48,7 +48,7 @@ class PlayerSetupMobileScreenTest {
         setScreen()
 
         composeRule.onNodeWithText(string(R.string.player_setup_title)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.player_setup_mobile_subtitle)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.player_setup_subtitle)).assertIsDisplayed()
     }
 
     @Test

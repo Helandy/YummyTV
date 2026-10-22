@@ -6,6 +6,6 @@ import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import javax.inject.Inject
 
 class CommentsNavigator @Inject constructor() : ICommentsNavigator {
-    override fun getCommentsDest(targetType: CommentTargetType, targetId: Int): NavKey =
-        CommentsDestination(targetType.name, targetId)
+    override fun getCommentsDest(targetType: CommentTargetType, targetId: Int, totalCount: Int?): NavKey =
+        CommentsDestination(targetType.name, targetId, totalCount)
 }

@@ -11,10 +11,4 @@ interface AniboomRepository {
 
     /** Поток серии из эмбеда AniBoom; `null`, если такой серии или озвучки там нет. Сбой сети уходит исключением. */
     suspend fun getStreams(target: AniboomTarget): AniboomStreams?
-
-    /**
-     * Есть ли у серии видео в эмбеде AniBoom: у серии-заглушки («Эпизод выйдет…») эмбед отвечает 404.
-     * Сбой сети уходит исключением.
-     */
-    suspend fun hasEpisode(target: AniboomTarget): Boolean
 }

@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalFullscreenLoader
 
 @Composable
 fun TvLoadingScreen(
@@ -21,6 +21,6 @@ fun TvLoadingScreen(
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
-        YummyLoadingIndicator(modifier = Modifier.size(48.dp))
+        SeasonalFullscreenLoader(modifier = Modifier.size(48.dp))
     }
 }

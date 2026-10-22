@@ -9,6 +9,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +42,9 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
+import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
+import su.afk.yummy.tv.core.designsystem.dimensions.currentTvHomeFeedCardDimensions
+import su.afk.yummy.tv.core.designsystem.tv.TvCollectionCard
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.feature.home.utils.newEpisodeBadge
 import su.afk.yummy.tv.feature.home.utils.newEpisodeSubtitle
@@ -251,6 +257,37 @@ internal fun HomeSection(
                             rememberFocusedItem(index)
                         }
                     }
+                }
+                val collection = item.collection
+                if (collection != null) {
+                    val cardWidth = currentTvHomeFeedCardDimensions().width * 2
+                    TvCollectionCard(
+                        title = item.title,
+                        posterUrls = collection.posterUrls,
+                        onClick = {
+                            rememberFocusedItem(index)
+                            onItemSelected(rowKey, item)
+                        },
+                        onFocused = { wrappedOnFocused(item.id, null) },
+                        badge = {
+                            CollectionStatBadges(
+                                likes = collection.likes,
+                                views = collection.views,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp),
+                            )
+                        },
+                        modifier = Modifier
+                            .width(cardWidth)
+                            .focusRequester(focusRequesterForItem(index))
+                            .focusProperties {
+                                if (index == 0) mainMenuFocusRequester?.let { left = it }
+                                upFocusRequester?.let { up = it }
+                                downFocusRequester?.let { down = it }
+                            },
+                    )
+                    return@itemsIndexed
                 }
                 HomeFeedCard(
                     modifier = Modifier.focusRequester(focusRequesterForItem(index)),

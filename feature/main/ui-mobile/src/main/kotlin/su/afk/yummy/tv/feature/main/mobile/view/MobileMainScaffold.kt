@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalOverlay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -39,6 +40,7 @@ internal fun <T> MobileMainScaffold(
     showRail: Boolean,
     onDestinationSelected: (T) -> Unit,
     toastMessage: String?,
+    showSeasonalOverlay: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
@@ -100,6 +102,7 @@ internal fun <T> MobileMainScaffold(
                     .background(MaterialTheme.colorScheme.background),
             ) {
                 content()
+                if (showSeasonalOverlay) SeasonalOverlay()
                 GlobalToastOverlay(
                     text = toastMessage,
                     modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),

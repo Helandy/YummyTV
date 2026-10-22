@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.designsystem.tv
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalPanelDecor
+import androidx.compose.foundation.layout.Box
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
@@ -29,7 +31,7 @@ fun TvOverlayAppear(
         exit = ExitTransition.None,
         modifier = modifier,
     ) {
-        content()
+        Box(Modifier.seasonalPanelDecor()) { content() }
     }
 }
 

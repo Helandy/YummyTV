@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
  * моменту обычно пересоздаётся.
  */
 @Composable
-internal fun rememberAnimationsEnabled(): Boolean {
+fun rememberAnimationsEnabled(): Boolean {
     val contentResolver = LocalContext.current.contentResolver
     return remember(contentResolver) {
         Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f

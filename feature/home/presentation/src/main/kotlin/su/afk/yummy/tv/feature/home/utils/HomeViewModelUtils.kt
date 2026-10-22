@@ -29,20 +29,18 @@ internal fun HomeFeed.withoutScheduleSection(): HomeFeed =
 
 /**
  * Добавляет в начало ленты секцию недавно вышедших серий тайтлов из [libraryAnimeIds]; без
- * совпадений секцию не добавляет. Серии из [watchedEpisodes] при [hideWatched] убираются из
- * секции, иначе остаются с пометкой на карточке.
+ * совпадений секцию не добавляет. Серии из [watchedEpisodes] убираются из секции.
  */
 internal fun HomeFeed.withMyNewEpisodes(
     recentlyAired: List<HomeFeedItem>,
     libraryAnimeIds: Set<Int>,
     watchedEpisodes: Map<Int, Set<Int>>,
-    hideWatched: Boolean,
     title: String,
 ): HomeFeed {
     val items = recentlyAired
         .filter { it.id in libraryAnimeIds }
         .map { item -> item.copy(isWatched = item.isEpisodeWatched(watchedEpisodes)) }
-        .filterNot { hideWatched && it.isWatched }
+        .filterNot { it.isWatched }
     if (items.isEmpty()) return this
     val section = HomeFeedSection(HomeFeedSectionType.MY_NEW_EPISODES, title, items)
     return copy(sections = listOf(section) + sections)
@@ -61,9 +59,9 @@ private val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
 internal fun SupportPromptSnapshot.supportPromptRemainingMs(nowMs: Long): Long =
     SUPPORT_PROMPT_DELAY_MS - (nowMs - firstEligibleTimeMs)
 
-private val COMMUNITY_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(5)
+private val COMMUNITY_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(2)
 
-/** Сколько ещё ждать до приглашения в сообщество: 5 дней с первого использования. */
+/** Сколько ещё ждать до приглашения в сообщество: 2 дня с первого использования. */
 internal fun CommunityPromptSnapshot.communityPromptRemainingMs(nowMs: Long): Long =
     COMMUNITY_PROMPT_DELAY_MS - (nowMs - firstUseTimeMs)
 

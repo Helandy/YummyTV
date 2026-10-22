@@ -20,6 +20,7 @@ import su.afk.yummy.tv.data.collection.dto.YaniCollectionVoteResponseDto
 import su.afk.yummy.tv.data.collection.dto.YaniCreateCollectionBodyDto
 import su.afk.yummy.tv.data.collection.dto.YaniCreateCollectionResponseDto
 import su.afk.yummy.tv.data.collection.dto.YaniUpdateCollectionBodyDto
+import su.afk.yummy.tv.domain.collection.model.CollectionSort
 
 class YaniCollectionApi(
     private val clientProvider: YaniHttpClientProvider,
@@ -27,10 +28,15 @@ class YaniCollectionApi(
     suspend fun getCollection(id: Int): YaniCollectionDetailResponseDto =
         clientProvider.get().get("$YANI_BASE_URL/collection/$id").body()
 
-    suspend fun getCollections(limit: Int, offset: Int): YaniCollectionListResponseDto =
+    suspend fun getCollections(
+        limit: Int,
+        offset: Int,
+        sort: CollectionSort,
+    ): YaniCollectionListResponseDto =
         clientProvider.get().get("$YANI_BASE_URL/collection") {
             parameter("limit", limit)
             parameter("offset", offset)
+            parameter("sort", sort.apiValue)
         }.body()
 
     suspend fun createCollection(

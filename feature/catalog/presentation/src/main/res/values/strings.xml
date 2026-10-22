@@ -43,6 +43,7 @@
     <string name="search_mobile_filter_sort_rating_counters">Votes</string>
     <string name="search_filter_sort_views">Views</string>
     <string name="search_filter_sort_top">Top</string>
+    <string name="search_filter_sort_year">Year</string>
     <string name="search_mobile_filter_sort_id">New</string>
     <string name="search_placeholder">Search anime…</string>
     <string name="search_empty">Nothing found</string>

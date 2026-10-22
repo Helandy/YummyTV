@@ -86,7 +86,11 @@ class PostDetailsViewModel @AssistedInject constructor(
             )
 
             PostDetailsState.Event.CommentsSelected -> nav.navigate(
-                commentsNavigator.getCommentsDest(CommentTargetType.POST, postId)
+                commentsNavigator.getCommentsDest(
+                    CommentTargetType.POST,
+                    postId,
+                    currentState.details?.comments,
+                )
             )
 
             is PostDetailsState.Event.ImageSelected -> openImage(event.url)

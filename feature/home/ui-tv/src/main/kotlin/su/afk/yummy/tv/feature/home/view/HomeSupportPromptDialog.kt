@@ -5,6 +5,7 @@ package su.afk.yummy.tv.feature.home.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import su.afk.yummy.tv.core.designsystem.components.GithubStarIcon
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusableButton
 import su.afk.yummy.tv.feature.home.presentation.R
 
@@ -32,9 +34,10 @@ internal fun HomeSupportPromptDialog(
                 modifier = Modifier.padding(28.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
+                GithubStarIcon(Modifier.size(72.dp))
                 Text(
                     text = stringResource(R.string.home_support_prompt_title),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(

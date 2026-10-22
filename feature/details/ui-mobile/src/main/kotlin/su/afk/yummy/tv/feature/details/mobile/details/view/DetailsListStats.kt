@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.utils.formatting.toGroupedCount
 import su.afk.yummy.tv.feature.details.details.model.DetailsListCount
 import su.afk.yummy.tv.feature.details.mobile.details.utils.label
 import su.afk.yummy.tv.feature.details.utils.statusColor
+import su.afk.yummy.tv.feature.details.utils.statusIcon
 
 /** Одна шкала долей списков и легенда под ней: цвет, название, число. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -34,12 +35,12 @@ internal fun DetailsListStats(
     modifier: Modifier = Modifier,
 ) {
     if (listCounts.isEmpty()) return
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(10.dp)
-                .clip(RoundedCornerShape(5.dp)),
+                .height(14.dp)
+                .clip(RoundedCornerShape(7.dp)),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             listCounts.forEach { item ->
@@ -53,17 +54,18 @@ internal fun DetailsListStats(
         }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             listCounts.forEach { item ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .background(item.list.statusColor(), CircleShape),
+                    Icon(
+                        imageVector = item.list.statusIcon(),
+                        contentDescription = null,
+                        tint = item.list.statusColor(),
+                        modifier = Modifier.size(20.dp),
                     )
                     Text(
                         text = item.list.label(),

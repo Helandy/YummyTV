@@ -6,9 +6,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
+import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
+import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 import javax.inject.Inject
 
 /** Держит глобальные настройки плеера и одноразовые обучения в состоянии экрана. */
@@ -36,6 +38,9 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(advancedPlayerVolumeEnabled) { copy(advancedPlayerVolumeEnabled = it) }
             host.bind(volumeStabilizationEnabled) { copy(volumeStabilizationEnabled = it) }
             host.bind(adaptiveVideoQualityEnabled) { copy(adaptiveQualityEnabled = it) }
+            host.bind(preferredVideoQuality) {
+                copy(adaptiveCeilingHeight = it.height ?: QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT)
+            }
             host.bind(playerSubtitleStyle) { copy(subtitleStyle = it) }
             host.bind(playerPlaybackSpeed) { copy(selectedSpeed = it) }
         }
@@ -70,6 +75,14 @@ internal class PlayerPreferencesBinder @Inject constructor(
             )
         }
         host.scope.launch { settings.saveAdaptiveVideoQualityEnabled(enabled) }
+    }
+
+    /** Лимит адаптации из плеера общий с настройками: «Предпочитаемое качество» — он же потолок. */
+    fun setAdaptiveLimit(host: PlayerStateHost, quality: PreferredVideoQuality) {
+        host.update {
+            copy(adaptiveCeilingHeight = quality.height ?: QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT)
+        }
+        host.scope.launch { settings.savePreferredVideoQuality(quality) }
     }
 
     fun dismissMobileGestureTutorial(host: PlayerStateHost) {

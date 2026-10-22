@@ -19,6 +19,7 @@ import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetail
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetailCache
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionSort
 import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.model.CollectionVoteResult
@@ -47,16 +48,20 @@ class YaniCollectionDetailRepository(
             )
         }
 
-    override suspend fun getCollections(limit: Int, offset: Int): CollectionSummaryPage =
+    override suspend fun getCollections(
+        limit: Int,
+        offset: Int,
+        sort: CollectionSort,
+    ): CollectionSummaryPage =
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
-            val pageKey = catalogPageKey(languageCode, limit, offset)
+            val pageKey = catalogPageKey(languageCode, sort, limit, offset)
             offlineFirstCache(
                 read = { collectionStorage.getCatalogPage(pageKey) },
                 isFresh = { it.isFresh(COLLECTION_CATALOG_TTL_MS) },
                 toDomain = { it.toCollectionSummaryPage() },
                 fetchAndSave = {
-                    val response = api.getCollections(limit, offset).response
+                    val response = api.getCollections(limit, offset, sort).response
                     val cache = response.toCollectionCatalogPageCache(
                         pageKey = pageKey,
                         language = languageCode,
@@ -167,8 +172,8 @@ class YaniCollectionDetailRepository(
         return cache
     }
 
-    private fun catalogPageKey(language: String, limit: Int, offset: Int): String =
-        "$language:$limit:$offset"
+    private fun catalogPageKey(language: String, sort: CollectionSort, limit: Int, offset: Int): String =
+        "$language:${sort.apiValue}:$limit:$offset"
 
     private suspend fun invalidateCollectionLists() {
         collectionStorage.invalidateCatalog()

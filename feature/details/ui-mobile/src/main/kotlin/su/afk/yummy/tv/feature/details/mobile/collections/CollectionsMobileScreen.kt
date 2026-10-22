@@ -1,10 +1,12 @@
 package su.afk.yummy.tv.feature.details.mobile.collections
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -13,9 +15,10 @@ import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
-import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -74,11 +77,21 @@ fun CollectionsMobileScreen(
             MobilePosterGrid(
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.navigationBarsPadding(),
+                minCellWidth = 300.dp,
             ) {
                 items(state.collections, key = { lazyKey("collection", it.id) }) { item ->
-                    MobilePosterCard(
+                    MobileCollectionCard(
                         title = item.title,
-                        posterUrl = item.poster?.mega ?: item.poster?.fullsize ?: item.posterUrl,
+                        posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },
+                        badge = {
+                            CollectionStatBadges(
+                                likes = item.likes,
+                                views = item.views,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp),
+                            )
+                        },
                         onClick = { onEvent(CollectionsState.Event.CollectionSelected(item.id)) },
                     )
                 }

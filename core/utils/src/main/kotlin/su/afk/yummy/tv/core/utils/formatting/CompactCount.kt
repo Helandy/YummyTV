@@ -14,9 +14,8 @@ fun Long.toCompactCount(): String = when {
     else -> toString()
 }
 
-/** Число без дробной части, если она нулевая, иначе с одним знаком: `2`, `1.1`. */
-fun Float.toCompactDecimal(): String =
-    if (this % 1f == 0f) toInt().toString() else String.format(Locale.US, "%.1f", this)
+/** Число без дробной части, если она нулевая, иначе с одним знаком: `2`, `1.1`. Округление до десятых даёт `2`, а не `2.0` и для 1.97. */
+fun Float.toCompactDecimal(): String = String.format(Locale.US, "%.1f", this).removeSuffix(".0")
 
 /** Полное число с разделителем разрядов-запятой: 12345 -> "12,345". */
 fun Int.toGroupedCount(): String = String.format(Locale.US, "%,d", this)

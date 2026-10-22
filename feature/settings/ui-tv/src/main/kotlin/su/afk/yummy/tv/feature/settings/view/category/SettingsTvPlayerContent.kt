@@ -53,7 +53,7 @@ internal fun SettingsTvPlayerContent(
         valueText = qualities[qualityIndex].label(),
         value = qualityIndex,
         valueRange = 0..qualities.lastIndex,
-        enabled = !state.adaptiveVideoQualityEnabled,
+        enabled = true,
         onValueChange = {
             onEvent(
                 SettingsState.Event.PreferredVideoQualitySelected(qualities[it]),
@@ -124,7 +124,8 @@ internal fun SettingsTvPlayerContent(
         )
     }
     if (state.tvPlayerControlsTutorialDismissed) {
-        SettingsDivider()
+        SettingsBlockGap()
+        SettingsSectionTitle(text = stringResource(R.string.settings_mobile_section_player_advanced))
         DetailsButtonOrderResetRow(
             label = stringResource(R.string.settings_tv_controls_tutorial_reset),
             hint = stringResource(R.string.settings_tv_controls_tutorial_reset_hint),

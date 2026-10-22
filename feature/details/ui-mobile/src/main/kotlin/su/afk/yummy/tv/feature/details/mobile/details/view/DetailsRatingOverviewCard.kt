@@ -1,18 +1,14 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +19,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.UserRatingLabeledChip
 import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.utils.formatting.formatRating
@@ -41,79 +38,56 @@ internal fun DetailsRatingOverviewCard(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        MobileSectionHeader(title = stringResource(R.string.details_rating_button))
-        Card(
-            onClick = onClick,
+        MobileSectionHeader(
+            title = stringResource(R.string.details_rating_button),
+            trailingActionLabel = if (userRating == null) stringResource(R.string.details_mobile_rate_action) else null,
+            onTrailingActionClick = onClick,
+            trailingContent = userRating?.let { rating -> {
+                UserRatingLabeledChip(
+                    rating = rating,
+                    label = stringResource(R.string.details_your_rating, "").trim(),
+                    onClick = onClick,
+                )
+            } },
+        )
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("details_rating_card"),
-            shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                .testTag("details_rating_card")
+                .clickable(onClick = onClick),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    if (overview.votes > 0) {
-                        DetailsRatingAverage(
-                            average = overview.average,
-                            votes = overview.votes,
-                            modifier = Modifier.weight(1f),
-                        )
-                        DetailsRatingHistogram(
-                            distribution = overview.distribution,
-                            modifier = Modifier.weight(1f),
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(R.string.details_mobile_rating_not_set),
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = userRating?.let { stringResource(R.string.details_your_rating, it.toString()) }
-                            ?: stringResource(R.string.details_mobile_rate_action),
+                if (overview.votes > 0) {
+                    DetailsRatingAverage(
+                        average = overview.average,
+                        votes = overview.votes,
                         modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (userRating != null) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
                     )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    DetailsRatingHistogram(
+                        distribution = overview.distribution,
+                        modifier = Modifier.weight(1f),
                     )
-                }
-                if (overview.listCounts.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = stringResource(R.string.details_mobile_list_stats),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        DetailsListStats(listCounts = overview.listCounts)
-                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.details_mobile_rating_not_set),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
+        }
+        if (overview.listCounts.isNotEmpty()) {
+            MobileSectionHeader(
+                title = stringResource(R.string.details_mobile_list_stats),
+                modifier = Modifier.padding(top = 6.dp),
+            )
+            DetailsListStats(listCounts = overview.listCounts)
         }
     }
 }

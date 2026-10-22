@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
 /**
@@ -68,7 +69,9 @@ val TvFocusedGridBringIntoViewSpec: BringIntoViewSpec =
  * Для вертикальных TV-гридов: сфокусированный ряд всегда встаёт к верхней кромке, а контент
  * прокручивается под ним (как у Netflix). Пивот — ровно [rowSpacing] от кромки: низ предыдущего
  * ряда оказывается на самой кромке и не виден, а место под скейл фокуса (1.04 ≈ 7dp) остаётся.
- * [rowSpacing] должен совпадать с `verticalArrangement` грида.
+ * [rowSpacing] должен совпадать с `verticalArrangement` грида. Если у грида есть `contentPadding` сверху,
+ * он смещает ряд вниз от пивота — передайте его в [topContentPadding], иначе из-за кромки торчит низ
+ * предыдущего ряда (заметно на цветных плашках статуса списка у постера).
  *
  * `skipIfFullyVisible = false`: со skip спек пересчитывается каждый кадр анимации
  * (`ContentInViewNode.afterFrame`) и паркует ряд впритык к нижней кромке — фокус снова «ездит» по
@@ -82,8 +85,11 @@ val TvFocusedGridBringIntoViewSpec: BringIntoViewSpec =
  * [tvLazyGridRowFocusNavigation], шапку грида над первым рядом — [tvWholeItemBringIntoView].
  */
 @Composable
-fun rememberTvTopAnchoredGridBringIntoViewSpec(rowSpacing: Dp): BringIntoViewSpec {
-    val pivotOffsetPx = with(LocalDensity.current) { rowSpacing.toPx() }
+fun rememberTvTopAnchoredGridBringIntoViewSpec(
+    rowSpacing: Dp,
+    topContentPadding: Dp = 0.dp,
+): BringIntoViewSpec {
+    val pivotOffsetPx = with(LocalDensity.current) { (rowSpacing - topContentPadding).coerceAtLeast(0.dp).toPx() }
     return remember(pivotOffsetPx) {
         TvPivotBringIntoViewSpec(
             skipIfFullyVisible = false,
@@ -107,6 +113,14 @@ val TvCenteredGridBringIntoViewSpec: BringIntoViewSpec =
  */
 val TvCenteredCarouselBringIntoViewSpec: BringIntoViewSpec =
     TvPivotBringIntoViewSpec(skipIfFullyVisible = false, centered = true)
+
+/**
+ * Добавка к `verticalArrangement` грида с верхним якорем: ряд встаёт на [rowSpacing] от кромки (рамке
+ * фокуса и скейлу хватает места), а низ предыдущего ряда уходит за экран и не торчит — у карточек
+ * с плашкой статуса он иначе виден цветной полоской. Грид должен сам использовать
+ * `TvCardSpacing.Vertical + TvTopAnchoredExtraRowGap` между рядами.
+ */
+val TvTopAnchoredExtraRowGap = 2.dp
 
 internal const val FocusedItemPivotFraction = 0.12f
 

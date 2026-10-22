@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -54,9 +55,11 @@ internal fun DetailsPrimaryActions(
     ) {
         Button(
             onClick = onWatchSelected,
+            enabled = !state.isWatchDataLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
+                .seasonalButtonDecor()
                 .testTag("watch_button"),
         ) {
             Icon(Icons.Filled.PlayArrow, contentDescription = null)

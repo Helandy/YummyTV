@@ -1,5 +1,11 @@
 package su.afk.yummy.tv.core.storage.anime
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.core.common.episode.normalizedEpisodeNumber
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.serverWatchProgressOf
+
 internal class AnimeStorageStore(private val dao: AnimeStorageDao) : AnimeStorage {
 
     override suspend fun getDetails(animeId: Int, language: String): AnimeDetailsCache? =
@@ -28,6 +34,11 @@ internal class AnimeStorageStore(private val dao: AnimeStorageDao) : AnimeStorag
         dao.replaceVideos(cache)
     }
 
+    override fun observeServerWatchProgress(language: String): Flow<List<AnimeWatchProgress>> =
+        dao.observeWatchedVideoEntries(language).map { entries ->
+            entries.mapNotNull { it.toServerWatchProgress() }
+        }
+
     override suspend fun getRecommendations(
         animeId: Int,
         language: String,
@@ -46,3 +57,16 @@ internal class AnimeStorageStore(private val dao: AnimeStorageDao) : AnimeStorag
         dao.replaceTrailers(cache)
     }
 }
+
+private fun AnimeVideoEntry.toServerWatchProgress(): AnimeWatchProgress? =
+    serverWatchProgressOf(
+        animeId = animeId,
+        episode = episode.normalizedEpisodeNumber(),
+        videoId = videoId,
+        episodeUrl = iframeUrl,
+        watchedEndTimeSeconds = watchedEndTimeSeconds,
+        watchedDateSeconds = watchedDateSeconds,
+        durationSeconds = durationSeconds,
+        playerName = player,
+        dubbing = dubbing,
+    )

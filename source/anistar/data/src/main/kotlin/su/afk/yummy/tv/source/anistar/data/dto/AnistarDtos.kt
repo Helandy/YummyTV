@@ -10,6 +10,8 @@ data class AnistarLookupRequestDto(
     val year: Int? = null,
     val type: String? = null,
     val episodes: Int? = null,
+    /** Первое латинское название (оригинал/ромадзи): сервер ставит его первым при сверке. */
+    val originalTitle: String? = null,
 )
 
 @Serializable

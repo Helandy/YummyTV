@@ -25,7 +25,7 @@
     <string name="details_blogger_videos">Video reviews</string>
     <string name="details_mobile_blogger_videos">Video reviews</string>
     <string name="details_reviews">Reviews</string>
-    <string name="details_reviews_count">Reviews (%1$d)</string>
+    <string name="details_reviews_count">Reviews</string>
         <string name="details_mobile_empty">Title not found</string>
     <string name="details_watch">Watch</string>
     <string name="details_watch_restart">Watch from start</string>
@@ -54,7 +54,9 @@
     <string name="details_viewing_order">Order</string>
     <string name="details_rating_button">Rating</string>
     <string name="details_collections_button">Collections</string>
+    <string name="details_mobile_show_collections">Show collections</string>
     <string name="details_mobile_show_comments">Show comments</string>
+    <string name="details_mobile_universe_show_all">Show all</string>
     <string name="details_screenshots_title">Screenshots</string>
     <string name="details_kinopoisk_rating">KP %1$s</string>
     <string name="details_shikimori_rating">Shikimori %1$s</string>
@@ -139,6 +141,7 @@
     <string name="details_mobile_screenshot">Screenshot</string>
     <string name="details_trailer_number">Trailer %1$d</string>
     <string name="details_mobile_other_titles">Other titles</string>
+    <string name="details_mobile_title_copied">Title copied</string>
     <string name="details_mobile_studios">Studios</string>
     <string name="details_full_genres">Genres</string>
     <string name="details_mobile_creators">Creators</string>
@@ -157,7 +160,7 @@
     <string name="details_list_stat_item">%1$s %2$s</string>
     <string name="details_mobile_title_universe">Title universe</string>
     <string name="details_related_anime">Related anime</string>
-    <string name="details_related_anime_count">Related anime (%1$d)</string>
+    <string name="details_related_anime_count">Related anime</string>
     <string name="details_related_empty">No related anime found</string>
     <string name="details_relation_studio">Studio</string>
     <string name="details_relation_director">Director</string>
@@ -169,6 +172,7 @@
     <string name="details_mobile_remove_watch_later">Remove from watch later</string>
     <string name="details_mobile_unmark_episode_watched">Remove watched mark</string>
     <string name="details_comments">Comments</string>
+    <string name="details_comments_count">Comments (%1$s)</string>
     <string name="details_screenshots_empty">No screenshots found</string>
     <string name="details_previous">Previous</string>
     <string name="details_next">Next</string>
@@ -217,4 +221,8 @@
     <string name="details_mobile_titles_japanese">Japanese</string>
     <string name="details_mobile_titles_english">English</string>
     <string name="details_mobile_titles_alternative">Alternative</string>
+    <string name="details_mobile_episodes_hint">Pick an episode and dub</string>
+    <string name="details_mobile_subscriptions_hint">New-episode alerts</string>
+    <string name="details_mobile_subscriptions_locked_hint">Sign in to subscribe</string>
+    <string name="details_mobile_recommended_title">Similar titles</string>
 </resources>

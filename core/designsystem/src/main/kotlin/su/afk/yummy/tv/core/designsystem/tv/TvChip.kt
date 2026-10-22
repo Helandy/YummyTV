@@ -17,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,7 +62,7 @@ fun TvChip(
                 shape = ChipShape,
                 interactionSource = interactionSource,
                 focusedScale = 1.06f,
-                focusedBorderColor = if (selected) Color.Transparent else MaterialTheme.colorScheme.primary,
+                focusedBorderColor = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary,
             )
             .padding(horizontal = 20.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(7.dp),

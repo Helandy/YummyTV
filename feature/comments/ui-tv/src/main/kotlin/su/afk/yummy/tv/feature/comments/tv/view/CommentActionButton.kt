@@ -28,6 +28,7 @@ internal fun CommentActionButton(
     enabled: Boolean = true,
     selected: Boolean = false,
     accentColor: Color? = null,
+    showLabel: Boolean = true,
 ) {
     val shape = RoundedCornerShape(8.dp)
     val contentColor = when {
@@ -52,15 +53,17 @@ internal fun CommentActionButton(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
+                contentDescription = label.takeUnless { showLabel },
                 tint = contentColor,
                 modifier = Modifier.size(18.dp),
             )
-            Text(
-                text = label,
-                color = contentColor,
-                style = MaterialTheme.typography.labelLarge,
-            )
+            if (showLabel) {
+                Text(
+                    text = label,
+                    color = contentColor,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
     }
 }

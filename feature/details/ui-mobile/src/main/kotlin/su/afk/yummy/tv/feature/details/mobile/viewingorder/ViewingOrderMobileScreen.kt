@@ -3,10 +3,8 @@ package su.afk.yummy.tv.feature.details.mobile.viewingorder
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -63,7 +61,7 @@ fun ViewingOrderMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_viewing_order),
+                title = stringResource(R.string.details_mobile_title_universe),
                 onBack = { onEvent(ViewingOrderState.Event.BackSelected) },
             )
         },
@@ -77,12 +75,6 @@ fun ViewingOrderMobileScreen(
             empty = state.items.isEmpty() && !state.isLoading,
         ) {
             MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        text = stringResource(R.string.details_mobile_title_universe),
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                }
                 itemsIndexed(state.items, key = { index, item -> lazyKey("viewingorder", "${item.animeId}:$index", index) }) { index, item ->
                     ViewingOrderMobileCard(
                         index = index + 1,

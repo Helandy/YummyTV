@@ -17,4 +17,6 @@ data class HomeFeedItem(
     val airedAtSeconds: Long? = null,
     /** Серия [episodeNumber] уже отмечена просмотренной локально. */
     val isWatched: Boolean = false,
+    /** Заполнено только у коллекций. */
+    val collection: HomeCollectionPreview? = null,
 )

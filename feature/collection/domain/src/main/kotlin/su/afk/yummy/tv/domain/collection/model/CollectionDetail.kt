@@ -3,6 +3,9 @@ package su.afk.yummy.tv.domain.collection.model
 data class CollectionDetail(
     val id: Int,
     val ownerId: Int,
+    val ownerNickname: String = "",
+    val ownerAvatarUrl: String? = null,
+    val commentsCount: Int = 0,
     val title: String,
     val description: String,
     val isPublic: Boolean,

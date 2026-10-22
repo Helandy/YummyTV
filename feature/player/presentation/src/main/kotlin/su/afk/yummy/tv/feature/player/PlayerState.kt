@@ -16,6 +16,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
+import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 
 class PlayerState {
     data class State(
@@ -34,6 +35,8 @@ class PlayerState {
         val selectedQuality: String? = null,
         /** Адаптивное качество включено в настройках (общее с экраном настроек). */
         val adaptiveQualityEnabled: Boolean = true,
+        /** Потолок высоты для адаптивного режима: выбранное в настройках качество, «Лучшее» — без лимита. */
+        val adaptiveCeilingHeight: Int = QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
         /** Серия, в которой пользователь выбрал качество вручную: адаптация в ней не вмешивается. */
         val manualQualityEpisode: String? = null,
         /**
@@ -166,6 +169,12 @@ class PlayerState {
          * общая. Включение возвращает адаптацию и в серии, где качество выбрали вручную.
          */
         data class AdaptiveQualityToggled(val enabled: Boolean) : Event
+
+        /**
+         * Пользователь сдвинул ползунок качества при включённой адаптивности: это новый лимит
+         * (общий с «Предпочитаемым качеством»), адаптация остаётся включённой.
+         */
+        data class AdaptiveQualityLimitSelected(val quality: String, val currentPosMs: Long) : Event
 
         /** Пользователь включил или выключил стабилизацию громкости в боковой панели плеера. */
         data class VolumeStabilizationToggled(val enabled: Boolean) : Event

@@ -34,6 +34,10 @@
     <string name="comments_sort_new">Новые</string>
     <string name="comments_sort_old">Старые</string>
     <string name="comments_sort_best">Лучшие</string>
+    <string name="comments_total">%s всего</string>
+    <string name="comments_sort_new_first">Сначала новые</string>
+    <string name="comments_sort_old_first">Сначала старые</string>
+    <string name="comments_sort_best_first">Сначала популярные</string>
     <string name="comments_report_spam">Спам</string>
     <string name="comments_report_insult">Оскорбления</string>
         <string name="comments_report_flood">Флуд</string>

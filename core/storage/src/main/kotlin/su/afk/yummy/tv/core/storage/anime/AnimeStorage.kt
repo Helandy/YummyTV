@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.core.storage.anime
 
+import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+
 /** Абстракция над локальным кэшем деталей тайтла — позволяет подменять реализацию в тестах. */
 interface AnimeStorage {
 
@@ -17,6 +20,9 @@ interface AnimeStorage {
     suspend fun getVideos(animeId: Int, language: String): AnimeVideosCache?
 
     suspend fun saveVideos(cache: AnimeVideosCache)
+
+    /** Серверный прогресс по всем тайтлам из кэша видео (`/videos` → `watched`), с обновлениями. */
+    fun observeServerWatchProgress(language: String): Flow<List<AnimeWatchProgress>>
 
     suspend fun getRecommendations(
         animeId: Int,

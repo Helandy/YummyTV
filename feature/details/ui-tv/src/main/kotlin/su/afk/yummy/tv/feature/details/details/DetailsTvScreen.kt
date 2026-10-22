@@ -14,14 +14,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
-import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
-import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
 import su.afk.yummy.tv.feature.details.details.view.DetailsTvSkeleton
 import su.afk.yummy.tv.feature.details.details.view.LibraryListPickerOverlay
@@ -29,12 +27,13 @@ import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 import su.afk.yummy.tv.feature.details.view.common.DubbingPickerOverlay
+import java.io.IOException
 
 @Preview(
     name = "Default",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
-    showBackground = true
+    showBackground = true,
 )
 @Composable
 private fun DetailsTvScreenDefaultPreview() = ScreenPreviewTheme {
@@ -46,7 +45,7 @@ private fun DetailsTvScreenDefaultPreview() = ScreenPreviewTheme {
     name = "Loading",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
-    showBackground = true
+    showBackground = true,
 )
 private fun DetailsTvScreenLoadingPreview() = ScreenPreviewTheme {
     DetailsTvScreen(DetailsState.State(isLoading = true), emptyFlow()) {}
@@ -56,13 +55,13 @@ private fun DetailsTvScreenLoadingPreview() = ScreenPreviewTheme {
     name = "Error",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
-    showBackground = true
+    showBackground = true,
 )
 @Composable
 private fun DetailsTvScreenErrorPreview() = ScreenPreviewTheme {
     DetailsTvScreen(
         DetailsState.State(isLoading = false, error = UiText.Failure(IOException())),
-        emptyFlow()
+        emptyFlow(),
     ) {}
 }
 
@@ -74,7 +73,7 @@ fun DetailsTvScreen(
     effect: Flow<DetailsState.Effect>,
     onEvent: (DetailsState.Event) -> Unit,
 
-    ) {
+) {
     var restoreButtonFocusRequest by remember { mutableIntStateOf(0) }
     fun restoreButtonFocus() {
         restoreButtonFocusRequest += 1
@@ -119,34 +118,37 @@ fun DetailsTvScreen(
                     onRetry = { onEvent(DetailsState.Event.RetrySelected) },
                 )
 
-                DetailsScreenState.Content -> if (details != null) DetailsBody(
-                    details = details,
-                    videosState = state.videosState,
-                    isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
-                    watchProgress = state.watchProgress,
-                    isInLibrary = state.isInLibrary,
-                    isFavorite = state.isFavorite,
-                    libraryList = state.libraryList,
-                    userRating = state.userRating,
-                    canSubscribe = state.isSignedIn,
-                    detailsButtonOrder = state.detailsButtonOrder,
-                    restoreButtonFocusRequest = restoreButtonFocusRequest,
-                    onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
-                    onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
-                    onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
-                    onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
-                    onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
-                    onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
-                    onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
-                    onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
-                    onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
-                    onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
-                    onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
-                    onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
-                    onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
-                    onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
-                    onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
-                )
+                DetailsScreenState.Content -> if (details != null) {
+                    DetailsBody(
+                        state = state,
+                        details = details,
+                        videosState = state.videosState,
+                        isWatchLoading = state.isWatchLaunchPending || state.isWatchDataLoading,
+                        watchProgress = state.watchProgress,
+                        isInLibrary = state.isInLibrary,
+                        isFavorite = state.isFavorite,
+                        libraryList = state.libraryList,
+                        userRating = state.userRating,
+                        canSubscribe = state.isSignedIn,
+                        restoreButtonFocusRequest = restoreButtonFocusRequest,
+                        onEvent = onEvent,
+                        onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
+                        onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                        onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                        onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
+                        onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
+                        onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
+                        onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
+                        onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
+                        onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
+                        onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
+                        onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                        onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                        onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
+                        onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                        onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                    )
+                }
             }
         }
 

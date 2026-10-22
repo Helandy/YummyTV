@@ -42,6 +42,8 @@ internal fun CatalogTvHeaderRow(
     filterButtonFocusRequester: FocusRequester,
     randomButtonFocusRequester: FocusRequester,
     mainMenuFocusRequester: FocusRequester?,
+    /** Куда уходит фокус по «вниз» из строки поиска и кнопок; [FocusRequester.Default], пока результатов нет. */
+    downFocusRequester: FocusRequester,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
     onOpenFilters: () -> Unit,
@@ -82,6 +84,7 @@ internal fun CatalogTvHeaderRow(
                 .focusProperties {
                     mainMenuFocusRequester?.let { left = it }
                     right = searchRightTarget
+                    down = downFocusRequester
                 }
                 .onFocusChanged { if (!it.isFocused) searchEditing = false }
                 .onPreviewKeyEvent { event ->
@@ -90,6 +93,15 @@ internal fun CatalogTvHeaderRow(
                         Key.DirectionRight -> {
                             runCatching { searchRightTarget.requestFocus() }
                             true
+                        }
+
+                        Key.DirectionDown -> {
+                            // Текстовое поле само съедает «вниз», поэтому переводим фокус на результаты вручную
+                            if (searchEditing || downFocusRequester == FocusRequester.Default) {
+                                false
+                            } else {
+                                runCatching { downFocusRequester.requestFocus() }.isSuccess
+                            }
                         }
 
                         Key.DirectionCenter,
@@ -131,6 +143,7 @@ internal fun CatalogTvHeaderRow(
                     .focusProperties {
                         left = searchFieldFocusRequester
                         right = filterButtonFocusRequester
+                        down = downFocusRequester
                     },
             )
         }
@@ -142,6 +155,7 @@ internal fun CatalogTvHeaderRow(
                 .focusProperties {
                     left = if (hasQuery) clearButtonFocusRequester else searchFieldFocusRequester
                     right = randomButtonFocusRequester
+                    down = downFocusRequester
                 },
         )
         RandomAnimeButton(
@@ -149,7 +163,10 @@ internal fun CatalogTvHeaderRow(
             onClick = onRandomAnimeSelected,
             modifier = Modifier
                 .focusRequester(randomButtonFocusRequester)
-                .focusProperties { left = filterButtonFocusRequester },
+                .focusProperties {
+                    left = filterButtonFocusRequester
+                    down = downFocusRequester
+                },
         )
     }
 }

@@ -27,6 +27,7 @@ fun MobileSectionHeader(
     trailing: String? = null,
     trailingActionLabel: String? = null,
     onTrailingActionClick: (() -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -59,11 +60,12 @@ fun MobileSectionHeader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        trailingContent?.invoke()
         if (!trailingActionLabel.isNullOrBlank() && onTrailingActionClick != null) {
             TextButton(onClick = onTrailingActionClick) {
                 Text(
                     text = trailingActionLabel,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
         }

@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -114,9 +115,15 @@ fun CommentsMobileScreen(
             }
         }
     }
+    // Сброс наверх — только при смене сортировки: при возврате с другого экрана (профиль автора)
+    // эффект запускается заново, и без этой проверки позиция прокрутки терялась бы.
+    var scrolledSort by rememberSaveable { mutableStateOf(state.sort) }
     LaunchedEffect(state.sort) {
-        sortRowVisible = true
-        listState.scrollToItem(0)
+        if (scrolledSort != state.sort) {
+            scrolledSort = state.sort
+            sortRowVisible = true
+            listState.scrollToItem(0)
+        }
     }
     LaunchedEffect(visibleComments) {
         onEvent(CommentsState.Event.VisibleCommentsChanged(visibleComments))
@@ -178,6 +185,7 @@ fun CommentsMobileScreen(
                 CommentSortOverlay(
                     visible = sortRowVisible,
                     selected = state.sort,
+                    totalCount = state.totalCount,
                     onSelected = { tabsState.selectPage(commentSortOrder.indexOf(it)) },
                     modifier = Modifier.align(Alignment.TopCenter),
                 )

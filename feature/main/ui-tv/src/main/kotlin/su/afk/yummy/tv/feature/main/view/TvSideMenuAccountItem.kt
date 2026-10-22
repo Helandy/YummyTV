@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.main.view
 
+import androidx.compose.ui.unit.Dp
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalAvatarHat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -54,6 +56,7 @@ internal fun TvSideMenuAccountItem(
     onFocused: () -> Unit,
     onMoveToContent: (force: Boolean) -> Unit,
     onClick: () -> Unit,
+    itemHeight: Dp = TvSideMenuItemHeight,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -71,7 +74,7 @@ internal fun TvSideMenuAccountItem(
     Row(
         modifier = Modifier
             .focusRequester(focusRequester)
-            .height(TvSideMenuItemHeight)
+            .height(itemHeight)
             .width(TvSideMenuExpandedWidth - TvSideMenuHorizontalPadding - TvSideMenuHorizontalPadding)
             .focusProperties {
                 this.canFocus = canFocus
@@ -96,6 +99,7 @@ internal fun TvSideMenuAccountItem(
                     modifier = Modifier
                         .size(28.dp)
                         .align(Alignment.Center)
+                        .seasonalAvatarHat()
                         .clip(CircleShape),
                 )
             } else {

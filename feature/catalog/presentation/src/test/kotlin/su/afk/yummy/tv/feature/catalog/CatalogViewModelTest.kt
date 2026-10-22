@@ -16,6 +16,7 @@ import org.junit.Test
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.settings.LastSearchSnapshot
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
@@ -49,6 +50,7 @@ class CatalogViewModelTest : BaseUnitTest() {
     private val saveLastSearch = MutableStateFlow(false)
     private val lastSnapshot = MutableStateFlow(LastSearchSnapshot())
     private val showTitleYear = MutableStateFlow(false)
+    private val titleCardLayout = MutableStateFlow(TitleCardLayout.TILE)
     private val detailsKey: NavKey = mockk()
     private val searchOpener = CatalogSearchOpener(nav)
     private val historyRepository: SearchHistoryRepository = mockk()
@@ -79,7 +81,10 @@ class CatalogViewModelTest : BaseUnitTest() {
         analytics = analytics,
         searchSettings = searchSettings,
         accountSettingsStore = mockk<YaniAccountSettingsStore> { every { yaniContentLanguage } returns emptyFlow() },
-        appearanceSettingsStore = mockk<AppearanceSettingsStore> { every { showCatalogTitleYear } returns showTitleYear },
+        appearanceSettingsStore = mockk<AppearanceSettingsStore> {
+            every { showCatalogTitleYear } returns showTitleYear
+            every { titleCardLayout } returns this@CatalogViewModelTest.titleCardLayout
+        },
         searchOpener = searchOpener,
         observeSearchHistory = ObserveSearchHistoryUseCase(historyRepository),
         addSearchHistoryQuery = AddSearchHistoryQueryUseCase(historyRepository),
@@ -104,6 +109,16 @@ class CatalogViewModelTest : BaseUnitTest() {
         showTitleYear.value = true
 
         assertTrue(vm.currentState.showTitleYear)
+    }
+
+    @Test
+    fun `title card layout follows the appearance setting`() {
+        val vm = createViewModel()
+        assertEquals(TitleCardLayout.TILE, vm.currentState.titleCardLayout)
+
+        titleCardLayout.value = TitleCardLayout.ROW
+
+        assertEquals(TitleCardLayout.ROW, vm.currentState.titleCardLayout)
     }
 
     @Test
@@ -357,7 +372,7 @@ class CatalogViewModelTest : BaseUnitTest() {
 
     @Test
     fun `random anime opens its details`() {
-        coEvery { repository.getRandomAnime() } returns SearchItem(9, "Random", null, null, null)
+        coEvery { repository.getRandomAnime() } returns SearchItem(id = 9, title = "Random", posterUrl = null, rating = null, year = null)
         val vm = createViewModel()
 
         vm.setEvent(Event.RandomAnimeSelected)

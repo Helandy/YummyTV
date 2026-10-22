@@ -28,6 +28,9 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
             title = title,
             description = description,
             isPublic = isPublic,
+            ownerNickname = owner?.nickname.orEmpty(),
+            ownerAvatarUrl = (owner?.avatars?.big ?: owner?.avatars?.small)?.toHttpsUrl(),
+            commentsCount = commentsCount.coerceAtLeast(0),
             views = views,
             posterUrl = posterPreviews.firstOrNull()?.toUrl(),
             likes = likes?.likes?.coerceAtLeast(0) ?: 0,
@@ -45,6 +48,7 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
                 position = index,
                 animeId = animeId,
                 title = item.title,
+                description = item.description,
                 posterUrl = item.poster?.toUrl(),
                 rating = item.rating?.average?.takeIf { it > 0.0 },
                 year = item.year?.takeIf { it > 0 },
@@ -59,6 +63,9 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
         title = entry.title,
         description = entry.description,
         isPublic = entry.isPublic,
+        ownerNickname = entry.ownerNickname,
+        ownerAvatarUrl = entry.ownerAvatarUrl,
+        commentsCount = entry.commentsCount,
         views = entry.views,
         posterUrl = entry.posterUrl,
         likesCount = entry.likes,
@@ -72,6 +79,7 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
                 CollectionAnimeItem(
                     id = it.animeId,
                     title = it.title,
+                    description = it.description,
                     posterUrl = it.posterUrl,
                     rating = it.rating,
                     year = it.year,
@@ -109,9 +117,22 @@ internal fun List<YaniCollectionDetailDto>.toCollectionCatalogPageCache(
                 description = item.description,
                 posterUrl = item.posterPreviews.firstOrNull()?.toUrl(),
                 likes = item.likes?.likes?.coerceAtLeast(0) ?: 0,
+                views = item.views.coerceAtLeast(0),
+                posterUrls = item.catalogPosterUrls().joinToString(POSTER_URLS_SEPARATOR),
             )
         },
     )
+
+/** Постеры из `poster_previews`, а если их меньше [CATALOG_POSTER_COUNT] — добираем постерами `animes`. */
+private fun YaniCollectionDetailDto.catalogPosterUrls(): List<String> =
+    (posterPreviews.asSequence() + animes.asSequence().mapNotNull { it.poster })
+        .mapNotNull { it.toUrl() }
+        .distinct()
+        .take(CATALOG_POSTER_COUNT)
+        .toList()
+
+private const val CATALOG_POSTER_COUNT = 3
+private const val POSTER_URLS_SEPARATOR = "\n"
 
 private fun YaniCollectionPosterDto.toUrl(): String? =
     (big ?: medium ?: fullsize ?: small)?.toHttpsUrl()
@@ -126,6 +147,8 @@ internal fun CollectionCatalogPageCache.toCollectionSummaryPage(): CollectionSum
                 description = it.description,
                 posterUrl = it.posterUrl,
                 likesCount = it.likes,
+                viewsCount = it.views,
+                posterUrls = it.posterUrls.split(POSTER_URLS_SEPARATOR).filter(String::isNotBlank),
             )
         }
         .let { summaries ->

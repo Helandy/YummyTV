@@ -48,6 +48,7 @@ private const val COMMENTS_PAGE_SIZE = 20
 class CommentsViewModel @AssistedInject internal constructor(
     @Assisted private val targetType: CommentTargetType,
     @Assisted private val targetId: Int,
+    @Assisted private val initialTotalCount: Int?,
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
@@ -63,7 +64,7 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(targetType: CommentTargetType, targetId: Int): CommentsViewModel
+        fun create(targetType: CommentTargetType, targetId: Int, totalCount: Int?): CommentsViewModel
     }
 
     private val target = CommentTarget(targetType, targetId)
@@ -72,7 +73,11 @@ class CommentsViewModel @AssistedInject internal constructor(
     private val defaultSort = CommentSort.BEST
 
     override fun createInitialState() =
-        CommentsState.State(sort = defaultSort, comments = createCommentsFlow(defaultSort))
+        CommentsState.State(
+            sort = defaultSort,
+            comments = createCommentsFlow(defaultSort),
+            totalCount = initialTotalCount,
+        )
 
     private var visibleComments: Map<Int, CommentUi> = emptyMap()
 
@@ -247,6 +252,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                             isMutating = false,
                             composerText = "",
                             composerMode = ComposerMode.New,
+                            totalCount = totalCount?.plus(1),
                             prependedComments = if (sort == CommentSort.OLD) {
                                 prependedComments
                             } else {
@@ -267,6 +273,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                     ),
                 ).onSuccess { created ->
                     analytics.eventReplyCreated(target, created.id)
+                    setState { copy(totalCount = totalCount?.plus(1)) }
                     resetComposer(isMutating = false)
                     loadChildren(mode.parentCommentId, append = false, forceVisible = true)
                 }.onFailure { showMutationError(it) }
@@ -340,6 +347,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                                 isMutating = false,
                                 pendingDelete = null,
                                 deletedCommentIds = deletedCommentIds + comment.id,
+                                totalCount = totalCount?.minus(1)?.coerceAtLeast(0),
                                 prependedComments = prependedComments.filterNot {
                                     it.comment.id == comment.id
                                 }.toImmutableList(),

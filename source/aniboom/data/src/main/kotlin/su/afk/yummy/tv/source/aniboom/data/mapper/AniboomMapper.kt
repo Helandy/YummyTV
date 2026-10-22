@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.aniboom.data.mapper
 
+import su.afk.yummy.tv.core.model.anime.utils.originalAnimeTitle
+import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
 import su.afk.yummy.tv.source.aniboom.data.dto.AniboomLookupRequestDto
 import su.afk.yummy.tv.source.aniboom.data.dto.AniboomTitleResponseDto
 import su.afk.yummy.tv.source.aniboom.domain.model.AniboomDubbing
@@ -12,7 +14,8 @@ internal object AniboomMapper {
     fun toRequest(lookup: AniboomLookup): AniboomLookupRequestDto = AniboomLookupRequestDto(
         malId = lookup.malId,
         title = lookup.title,
-        otherTitles = lookup.otherTitles.map(String::trim).filter(String::isNotEmpty).distinct().take(MAX_OTHER_TITLES),
+        originalTitle = originalAnimeTitle(lookup.otherTitles),
+        otherTitles = prioritizeAnimeTitles(lookup.title, lookup.otherTitles, MAX_OTHER_TITLES),
         year = lookup.year,
         type = lookup.type,
         episodes = lookup.episodes,

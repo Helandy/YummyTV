@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.common.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
@@ -23,7 +24,8 @@ internal fun DetailsMetaChips(details: AnimeDetails) {
         details.type?.takeIf { it.isNotBlank() }?.let { add(it) }
     }
     val status = details.status?.takeIf { it.isNotBlank() }
-    if (chips.isEmpty() && details.views == null && status == null) return
+    val ageRating = details.ageRating?.takeIf { it.isNotBlank() }
+    if (chips.isEmpty() && details.views == null && status == null && ageRating == null) return
 
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
@@ -44,6 +46,9 @@ internal fun DetailsMetaChips(details: AnimeDetails) {
                 label = views.formatViews(),
                 icon = Icons.Filled.Visibility,
             )
+        }
+        ageRating?.let {
+            DetailsChip(label = it, textColor = Color.White, backgroundColor = Color.Black)
         }
     }
 }

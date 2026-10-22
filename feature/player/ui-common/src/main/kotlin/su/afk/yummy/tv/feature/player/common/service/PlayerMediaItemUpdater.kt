@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.common.service
 
 import androidx.media3.common.Player
+import su.afk.yummy.tv.domain.player.utils.maxVideoHeightOrNull
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
 
 enum class PlayerAudioTrackPolicy {
@@ -71,6 +72,7 @@ class PlayerMediaItemUpdater {
             isLocalFile = config.isLocalFile,
             silentReconnectEnabled = config.silentReconnectEnabled,
         )
+        player.applyVideoHeightCap(config.url.maxVideoHeightOrNull())
         val resume = config.playbackPositionMs.takeIf { it > 0L } ?: config.resumeFromMs
         val currentUri = player.currentMediaItem?.localConfiguration?.uri?.toString()
         if (currentUri != config.url || playbackKey != config.playbackKey) {
@@ -87,4 +89,12 @@ class PlayerMediaItemUpdater {
             mediaItemKey = config.mediaItemKey
         }
     }
+}
+
+/** Потолок высоты из ссылки (`withMaxVideoHeight`); без него возвращает лимит по умолчанию, чтобы он не перешёл на следующий поток. */
+private fun Player.applyVideoHeightCap(height: Int?) {
+    val current = trackSelectionParameters
+    val maxHeight = height ?: Int.MAX_VALUE
+    if (current.maxVideoHeight == maxHeight) return
+    trackSelectionParameters = current.buildUpon().setMaxVideoSize(Int.MAX_VALUE, maxHeight).build()
 }

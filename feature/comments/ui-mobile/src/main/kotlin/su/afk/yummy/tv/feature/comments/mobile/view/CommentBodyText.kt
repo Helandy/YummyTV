@@ -36,7 +36,7 @@ internal fun CommentBodyText(text: String) {
             when (part) {
                 is CommentTextPart.Plain -> Text(
                     text = part.text.stripBbCode(),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
@@ -48,7 +48,7 @@ internal fun CommentBodyText(text: String) {
                         } else {
                             stringResource(R.string.comments_spoiler_hidden, part.title)
                         },
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -59,7 +59,7 @@ internal fun CommentBodyText(text: String) {
                     if (visible) {
                         Text(
                             text = part.text.stripBbCode(),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }

@@ -68,7 +68,11 @@ class BloggerVideoDetailsViewModel @AssistedInject constructor(
 
             is BloggerVideoDetailsState.Event.VoteSelected -> vote(event.vote)
             BloggerVideoDetailsState.Event.CommentsSelected -> nav.navigate(
-                commentsNavigator.getCommentsDest(CommentTargetType.BLOG_VIDEO, videoId)
+                commentsNavigator.getCommentsDest(
+                    CommentTargetType.BLOG_VIDEO,
+                    videoId,
+                    currentState.video?.commentsCount,
+                )
             )
         }
     }

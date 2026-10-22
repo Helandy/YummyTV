@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.domain.home.repository
 
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
@@ -16,6 +17,12 @@ interface HomeFeedRepository {
 
     /** Вся локальная история прогресса, по записи на серию, без фильтров «Продолжить просмотр». */
     fun observeWatchHistory(): Flow<List<HomeContinueWatchingItem>>
+
+    /**
+     * Серверный прогресс (`watched` из `/videos`) тайтлов, чьи детали уже открывали: тот же источник,
+     * что у списка серий. Тайтлов без кэша здесь нет.
+     */
+    fun observeServerWatchProgress(): Flow<List<AnimeWatchProgress>>
 
     /** Ручные удаления из «Продолжить просмотр»: id тайтла → момент удаления (мс). */
     fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>>

@@ -350,6 +350,8 @@ private fun AccountCollectionItemEntry.toCollectionSummary(): AnimeCollectionSum
         posterUrl = posterUrl ?: poster?.standardUrl,
         poster = poster,
         views = views,
+        likes = likes,
+        posterUrls = posterUrls.split(COLLECTION_POSTER_URLS_SEPARATOR).filter(String::isNotBlank),
     )
 }
 

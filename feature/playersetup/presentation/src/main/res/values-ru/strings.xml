@@ -1,8 +1,6 @@
 <resources>
     <string name="player_setup_title">Настройки приложения</string>
     <string name="player_setup_subtitle">Выберите, как вам удобнее. Всё можно изменить позже в настройках.</string>
-    <string name="player_setup_mobile_subtitle">Выберите главное. Остальное останется по умолчанию — его можно изменить в настройках.</string>
-    <string name="player_setup_mobile_section_main">Главное</string>
     <string name="player_setup_mobile_more_settings">Остальное — в настройках</string>
     <string name="player_setup_opening_timeline_label">Показывать опенинг на таймлайне</string>
     <string name="player_setup_opening_timeline_hint">Участок опенинга подсвечивается на полосе прогресса</string>
@@ -15,7 +13,7 @@
     <string name="player_setup_ask_dubbing_label">Спрашивать озвучку перед просмотром</string>
     <string name="player_setup_ask_dubbing_hint">Иначе сразу включится самая популярная</string>
     <string name="player_setup_adaptive_quality_label">Адаптивное качество</string>
-    <string name="player_setup_adaptive_quality_hint">Подстраивается под устройство и сеть. Выключите, чтобы выбрать качество самостоятельно</string>
+    <string name="player_setup_adaptive_quality_hint">Подстраивается под устройство и сеть, но не поднимается выше выбранного ниже качества</string>
     <string name="player_setup_quality_label">Качество видео</string>
     <string name="player_setup_quality_hint">Если качества нет, будет выбрано ближайшее ниже</string>
     <string name="player_setup_quality_best">Лучшее</string>
@@ -25,4 +23,18 @@
     <string name="player_setup_language_english">English</string>
     <string name="player_setup_language_ukrainian">Українська</string>
     <string name="player_setup_mobile_quality_best_hint">Использовать максимальное качество потока</string>
-    </resources>
+        <string name="player_setup_mobile_section_timings">Опенинги и эндинги</string>
+    <string name="player_setup_mobile_section_episodes">Серии</string>
+    <string name="player_setup_mobile_section_playback">Воспроизведение</string>
+    <string name="player_setup_mobile_orientation_label">Ориентация плеера</string>
+    <string name="player_setup_mobile_orientation_hint">Системная следует автоповороту; влево и вправо — всегда альбомная</string>
+    <string name="player_setup_mobile_orientation_system">Системная</string>
+    <string name="player_setup_mobile_orientation_left">Влево</string>
+    <string name="player_setup_mobile_orientation_right">Вправо</string>
+    <string name="player_setup_mobile_pip_label">Плавающий режим (PiP)</string>
+    <string name="player_setup_mobile_pip_hint">Включать при выходе из приложения во время воспроизведения</string>
+    <string name="player_setup_mobile_section_general">Общее</string>
+    <string name="player_setup_mobile_orientation_system_hint">Следовать системной настройке поворота экрана</string>
+    <string name="player_setup_mobile_orientation_left_hint">Всегда альбомная ориентация (влево), даже если поворот экрана заблокирован в системе</string>
+    <string name="player_setup_mobile_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
+</resources>

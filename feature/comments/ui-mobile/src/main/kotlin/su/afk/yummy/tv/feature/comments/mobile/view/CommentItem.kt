@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,11 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
-import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
+import su.afk.yummy.tv.core.utils.formatting.formatCommentDateTime
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.presentation.R
+
+/** Компенсирует внутренний отступ [InlineTextAction], чтобы текст действий был вровень с текстом комментария. */
+private val ActionStartOffset = (-6).dp
 
 @Composable
 internal fun CommentItem(
@@ -63,7 +66,7 @@ internal fun CommentItem(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .clickable(enabled = comment.author.id > 0) {
                         onAuthorSelected(comment.author.id)
@@ -81,7 +84,7 @@ internal fun CommentItem(
                 ) {
                     Text(
                         text = comment.author.name.ifBlank { stringResource(R.string.comments_unknown_author) },
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -96,14 +99,13 @@ internal fun CommentItem(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = comment.createdAtEpochSeconds.formatRelativeDateTime(LocalNowMillis.current()),
-                        style = MaterialTheme.typography.labelSmall,
+                        text = comment.createdAtEpochSeconds.formatCommentDateTime(),
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.68f),
                     )
                     Spacer(Modifier.width(2.dp))
                     CommentMenu(
                         canEdit = canEdit,
-                        onReply = { onReply(comment.id) },
                         onEdit = { onEdit(comment.id) },
                         onDelete = { onDelete(comment.id) },
                         onReport = { onReport(comment.id) },
@@ -115,7 +117,7 @@ internal fun CommentItem(
                 if (comment.deletedAtEpochSeconds != null) {
                     Text(
                         text = stringResource(R.string.comments_deleted),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
                     )
                 } else {
@@ -123,38 +125,40 @@ internal fun CommentItem(
                 }
                 CommentActionsRow(
                     modifier = Modifier.fillMaxWidth(),
-                ) {
-                    VoteButton(
-                        selected = comment.vote == CommentVote.LIKE,
-                        count = comment.likes,
-                        isLike = true,
-                        onClick = { onVote(comment.id, CommentVote.LIKE) },
-                    )
-                    VoteButton(
-                        selected = comment.vote == CommentVote.DISLIKE,
-                        count = comment.dislikes,
-                        isLike = false,
-                        onClick = { onVote(comment.id, CommentVote.DISLIKE) },
-                    )
-                    InlineTextAction(
-                        text = stringResource(R.string.comments_reply),
-                        icon = Icons.AutoMirrored.Filled.Reply,
-                        onClick = { onReply(comment.id) },
-                    )
-                    if (comment.childrenCount > 0) {
+                    start = {
                         InlineTextAction(
-                            text = if (childrenVisible) {
-                                stringResource(R.string.comments_hide_replies)
-                            } else {
-                                stringResource(
-                                    R.string.comments_show_replies,
-                                    comment.childrenCount
-                                )
-                            },
-                            icon = if (childrenVisible) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                            onClick = { onToggleChildren(comment.id) },
+                            text = stringResource(R.string.comments_reply),
+                            icon = Icons.AutoMirrored.Filled.Reply,
+                            onClick = { onReply(comment.id) },
+                            modifier = Modifier.offset(x = ActionStartOffset),
                         )
-                    }
+                    },
+                    end = {
+                        VoteButton(
+                            selected = comment.vote == CommentVote.LIKE,
+                            count = comment.likes,
+                            isLike = true,
+                            onClick = { onVote(comment.id, CommentVote.LIKE) },
+                        )
+                        VoteButton(
+                            selected = comment.vote == CommentVote.DISLIKE,
+                            count = comment.dislikes,
+                            isLike = false,
+                            onClick = { onVote(comment.id, CommentVote.DISLIKE) },
+                        )
+                    },
+                )
+                if (comment.childrenCount > 0) {
+                    InlineTextAction(
+                        text = if (childrenVisible) {
+                            stringResource(R.string.comments_hide_replies)
+                        } else {
+                            stringResource(R.string.comments_show_replies, comment.childrenCount)
+                        },
+                        icon = if (childrenVisible) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        onClick = { onToggleChildren(comment.id) },
+                        modifier = Modifier.offset(x = ActionStartOffset),
+                    )
                 }
             }
         }

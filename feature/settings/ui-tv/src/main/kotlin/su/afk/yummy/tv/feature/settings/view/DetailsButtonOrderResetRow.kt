@@ -23,20 +23,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.label
 
 @Composable
 internal fun DetailsButtonOrderResetRow(
+    label: String,
+    hint: String,
     onReset: () -> Unit,
     modifier: Modifier = Modifier,
-    label: String = stringResource(R.string.settings_details_buttons_reset),
-    hint: String = stringResource(R.string.settings_details_buttons_reset_hint),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()

@@ -31,8 +31,8 @@ internal fun DetailsVideoSection(
     onBloggerVideosClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Пока extras грузятся, карточка блогеров не показывается: иначе она бы мигнула и пропала.
-    val showBloggerVideos = hasBloggerVideos && !isTrailersLoading
+    // Наличие видео блогеров известно из деталей сразу, ждать загрузку extras не нужно.
+    val showBloggerVideos = hasBloggerVideos
     if (trailers.isEmpty() && !isTrailersLoading && !showBloggerVideos) return
 
     Column(

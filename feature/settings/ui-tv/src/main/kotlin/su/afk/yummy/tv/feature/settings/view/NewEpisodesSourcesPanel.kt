@@ -12,7 +12,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
+import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /**
@@ -38,6 +40,8 @@ internal fun NewEpisodesSourcesPanel(
                     },
                     enabled = source in selected,
                     onClick = { onToggle(source) },
+                    icon = source.icon(),
+                    iconColor = source.color(),
                     modifier = Modifier
                         .then(
                             if (index == 0 && contentFocusRequester != null) {

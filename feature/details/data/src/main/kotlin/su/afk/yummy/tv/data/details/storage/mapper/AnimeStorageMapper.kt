@@ -83,6 +83,12 @@ internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
             episodesNextDateEpochSeconds = source.episodes?.nextDate?.takeIf { it > 0 },
             episodesPrevDateEpochSeconds = source.episodes?.prevDate?.takeIf { it > 0 },
             reviewsCount = source.reviewsCount,
+            commentsCount = source.commentsCount,
+            parentCommentsCount = source.parentCommentsCount,
+            postsCount = source.postsCount,
+            listsCount = source.listsCount,
+            trailersCount = source.trailersCount,
+            bloggerVideosCount = source.partnerVideosCount,
             malId = source.remoteIds?.myAnimeListId?.takeIf { it > 0 },
             cachedAt = cachedAt,
         ),
@@ -231,6 +237,12 @@ internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
             )
         },
         reviewsCount = source.reviewsCount,
+        commentsCount = source.commentsCount,
+        parentCommentsCount = source.parentCommentsCount,
+        postsCount = source.postsCount,
+        listsCount = source.listsCount,
+        trailersCount = source.trailersCount,
+        bloggerVideosCount = source.bloggerVideosCount,
         malId = source.malId,
     )
 }

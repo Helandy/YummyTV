@@ -16,6 +16,8 @@ internal fun SettingsTvApiContent(
         token = state.yaniApplicationToken,
         upFocusRequester = tabFocusRequester,
         contentFocusRequester = tabContentFocusRequester,
+        canReset = state.isYaniApplicationTokenCustom,
         onTokenChanged = { onEvent(SettingsState.Event.YaniApplicationTokenChanged(it)) },
+        onReset = { onEvent(SettingsState.Event.YaniApplicationTokenChanged("")) },
     )
 }

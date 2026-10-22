@@ -142,6 +142,38 @@ class CvhExtractorTest : BaseUnitTest() {
     }
 
     @Test
+    fun `ladder includes 1440p and 4k with 4k as the url`() = runTest {
+        stubPlaylist(playlist(item("vk1", "AnilibriaTV")))
+        stubVideo(
+            """{"sources":{
+                "mpegFullHdUrl":"https://vh.okcdn.ru/f.mp4?s=1",
+                "mpeg2kUrl":"https://vh.okcdn.ru/2k.mp4?s=1",
+                "mpeg4kUrl":"https://vh.okcdn.ru/4k.mp4?s=1"
+            }}""",
+        )
+
+        val result = extract() as PlayerStreamResolveResult.Stream
+
+        assertEquals(listOf("1080p", "1440p", "2160p"), result.qualities!!.keys.toList())
+        assertEquals("https://vh.okcdn.ru/4k.mp4?s=1", result.url)
+    }
+
+    @Test
+    fun `qhd key wins over 2k so 1440p is not duplicated`() = runTest {
+        stubPlaylist(playlist(item("vk1", "AnilibriaTV")))
+        stubVideo(
+            """{"sources":{
+                "mpegQhdUrl":"https://vh.okcdn.ru/qhd.mp4?s=1",
+                "mpeg2kUrl":"https://vh.okcdn.ru/2k.mp4?s=1"
+            }}""",
+        )
+
+        val result = extract() as PlayerStreamResolveResult.Stream
+
+        assertEquals(mapOf("1440p" to "https://vh.okcdn.ru/qhd.mp4?s=1"), result.qualities)
+    }
+
+    @Test
     fun `requests go to the playlist and video endpoints with api headers`() = runTest {
         stubPlaylist(playlist(item("vk1", "AnilibriaTV")))
         stubVideo("""{"sources":{"mpegLowUrl":"https://vh.okcdn.ru/l.mp4"}}""")

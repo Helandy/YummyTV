@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.update.view
 
 import android.content.res.Configuration
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -117,7 +116,6 @@ private fun AvailableContent(
     status: UpdateState.State.Status.Available,
     onEvent: (UpdateState.Event) -> Unit,
 ) {
-    val autoUpdateSupported = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.O }
     val configuration = LocalConfiguration.current
     val isTelevision = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
             Configuration.UI_MODE_TYPE_TELEVISION
@@ -135,14 +133,8 @@ private fun AvailableContent(
     val updateFocused by updateInteractionSource.collectIsFocusedAsState()
     val scope = rememberCoroutineScope()
     var changelogFocused by remember { mutableStateOf(false) }
-    LaunchedEffect(autoUpdateSupported) {
-        runCatching {
-            if (autoUpdateSupported) {
-                updateFocus.requestFocus()
-            } else {
-                closeFocus.requestFocus()
-            }
-        }
+    LaunchedEffect(Unit) {
+        runCatching { updateFocus.requestFocus() }
     }
 
     Column {
@@ -179,11 +171,6 @@ private fun AvailableContent(
         if (status.required) {
             Spacer(Modifier.height(16.dp))
             RequiredUpdateBanner()
-        }
-
-        if (!autoUpdateSupported) {
-            Spacer(Modifier.height(16.dp))
-            UnsupportedAutoUpdateBanner()
         }
 
         if (status.changelog.isNotBlank()) {
@@ -284,29 +271,27 @@ private fun AvailableContent(
                 }
             }
 
-            if (autoUpdateSupported) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(updateFocus)
-                        .background(updateButtonBackground, buttonShape)
-                        .tvFocusableClick(
-                            onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) },
-                            shape = buttonShape,
-                            interactionSource = updateInteractionSource,
-                            focusedScale = 1f,
-                        )
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.update_install),
-                        color = updateButtonContentColor,
-                        style = MaterialTheme.typography.labelLarge,
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(updateFocus)
+                    .background(updateButtonBackground, buttonShape)
+                    .tvFocusableClick(
+                        onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) },
+                        shape = buttonShape,
+                        interactionSource = updateInteractionSource,
+                        focusedScale = 1f,
                     )
-                }
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.update_install),
+                    color = updateButtonContentColor,
+                    style = MaterialTheme.typography.labelLarge,
+                )
             }
-        }
+    }
 
         Spacer(Modifier.height(16.dp))
         ManualUpdateHint(isTelevision = isTelevision)
@@ -346,25 +331,6 @@ private fun RequiredUpdateBanner() {
     ) {
         Text(
             text = stringResource(R.string.update_required_message),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onErrorContainer,
-        )
-    }
-}
-
-@Composable
-private fun UnsupportedAutoUpdateBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.errorContainer,
-                shape = RoundedCornerShape(8.dp),
-            )
-            .padding(12.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.update_auto_update_unsupported),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onErrorContainer,
         )

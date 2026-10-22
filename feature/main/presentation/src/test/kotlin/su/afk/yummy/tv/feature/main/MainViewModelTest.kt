@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main
 
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -101,6 +102,10 @@ class MainViewModelTest : BaseUnitTest() {
         interfaceModePreferences = mockk(relaxed = true),
         observeLibraryListStatuses = ObserveLibraryListStatusesUseCase(libraryRepository),
         observeLibraryUserRatings = ObserveLibraryUserRatingsUseCase(libraryRepository),
+        appClock = object : AppClock {
+            // Середина июня 2025: вне праздничных периодов.
+            override fun nowMillis() = 1_750_000_000_000L
+        },
     )
 
     private fun snapshot(nickname: String, unread: Int) = MainSettingsSnapshot(

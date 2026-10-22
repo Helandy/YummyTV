@@ -27,6 +27,8 @@ internal fun MobilePlayerPlaybackSection(
     selectedQuality: String?,
     onQualitySelected: (String) -> Unit,
     adaptiveQuality: Boolean,
+    adaptiveLimitQuality: String?,
+    onAdaptiveLimitSelected: (String) -> Unit,
     onAdaptiveQualityChange: (Boolean) -> Unit,
     selectedSpeed: Float,
     onSpeedSelected: (Float) -> Unit,
@@ -35,7 +37,10 @@ internal fun MobilePlayerPlaybackSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         if (qualities.isNotEmpty()) {
-            val qualityIndex = qualities.indexOf(selectedQuality).coerceAtLeast(0)
+            val currentIndex = qualities.indexOf(selectedQuality).coerceAtLeast(0)
+            // При адаптации ползунок показывает и двигает лимит, а не текущее качество.
+            val limitIndex = qualities.indexOf(adaptiveLimitQuality).coerceAtLeast(0)
+            val qualityIndex = if (adaptiveQuality) limitIndex else currentIndex
             MobilePlayerSettingsSection(
                 title = stringResource(R.string.player_quality_title),
                 icon = Icons.Filled.HighQuality,
@@ -57,8 +62,9 @@ internal fun MobilePlayerPlaybackSection(
                             Text(
                                 text = if (adaptiveQuality) {
                                     stringResource(
-                                        R.string.player_adaptive_quality_current,
-                                        qualities.getOrNull(qualityIndex).orEmpty(),
+                                        R.string.player_adaptive_quality_current_limit,
+                                        qualities.getOrNull(currentIndex).orEmpty(),
+                                        qualities.getOrNull(limitIndex).orEmpty(),
                                     )
                                 } else {
                                     stringResource(R.string.player_adaptive_quality_hint)
@@ -78,10 +84,15 @@ internal fun MobilePlayerPlaybackSection(
                     value = qualityIndex,
                     valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
                     valueLabel = { index -> qualities[index] },
-                    onValueCommitted = { index -> onQualitySelected(qualities[index]) },
+                    onValueCommitted = { index ->
+                        if (adaptiveQuality) {
+                            onAdaptiveLimitSelected(qualities[index])
+                        } else {
+                            onQualitySelected(qualities[index])
+                        }
+                    },
                     tickLabels = qualities,
-                    // Качеством рулит адаптация: чтобы выбрать вручную, её нужно выключить.
-                    enabled = !adaptiveQuality,
+                    enabled = true,
                     // Выбранное качество уже подсвечено в подписях под треком.
                     showValueLabel = false,
                 )

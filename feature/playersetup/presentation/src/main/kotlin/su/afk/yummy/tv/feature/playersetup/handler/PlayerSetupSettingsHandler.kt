@@ -2,10 +2,13 @@ package su.afk.yummy.tv.feature.playersetup.handler
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.model.settings.choosePosterQuality
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
 import javax.inject.Inject
@@ -14,7 +17,22 @@ import javax.inject.Inject
 internal class PlayerSetupSettingsHandler @Inject constructor(
     private val store: PlayerSettingsStore,
     private val accountStore: YaniAccountSettingsStore,
+    private val appearanceStore: AppearanceSettingsStore,
+    private val imageFormatSupport: ImageFormatSupport,
 ) {
+
+    /**
+     * Проверяет, что устройство реально декодирует AVIF/WebP, и сохраняет подходящее качество
+     * постеров. Если качество уже сохранено (выбор пользователя), ничего не меняет.
+     */
+    suspend fun detectPosterQualityIfNeeded() {
+        if (appearanceStore.isPosterQualityStored()) return
+        val quality = choosePosterQuality(
+            avifSupported = imageFormatSupport.isAvifSupported(),
+            webpSupported = imageFormatSupport.isWebpSupported(),
+        )
+        appearanceStore.initPosterQualityIfAbsent(quality)
+    }
 
     fun observe(): Flow<PlayerSetupState.State> = combine(
         combine(

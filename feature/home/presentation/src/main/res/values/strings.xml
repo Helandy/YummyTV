@@ -29,6 +29,7 @@
     <string name="home_support_prompt_title">Like the app? Support the author by rating the repository on GitHub</string>
     <string name="home_support_prompt_message">It is free and takes less than a minute</string>
     <string name="home_support_prompt_ok">Okay</string>
+    <string name="home_support_prompt_url" translatable="false">https://github.com/Helandy/YummyTV</string>
     <string name="home_announcement_ok">OK</string>
     <string name="home_new_episode_badge">Ep. %1$d</string>
     <string name="home_new_episode_badge_watched">Ep. %1$d ✓</string>

@@ -63,4 +63,9 @@
     <string name="core_release_status_announcement">Анонс</string>
     <string name="core_title_card_favorite">В любимых</string>
     <string name="core_title_card_viewer_mark">У вас:</string>
+    <string name="seasonal_prompt_title">Праздничное оформление</string>
+    <string name="seasonal_prompt_halloween">Приложение украшено к Хэллоуину: паутина, тыквы, привидения. Если оформление не нужно, отключите его — включить обратно можно в Настройки → Внешний вид → «Праздничное оформление».</string>
+    <string name="seasonal_prompt_new_year">Приложение украшено к Новому году: гирлянда, снег и шапки Деда Мороза. Если оформление не нужно, отключите его — включить обратно можно в Настройки → Внешний вид → «Праздничное оформление».</string>
+    <string name="seasonal_prompt_disable">Отключить</string>
+    <string name="seasonal_prompt_keep">Оставить</string>
 </resources>

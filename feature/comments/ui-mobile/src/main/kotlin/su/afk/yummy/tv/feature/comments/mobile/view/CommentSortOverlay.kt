@@ -17,6 +17,7 @@ import su.afk.yummy.tv.domain.comments.model.CommentSort
 internal fun CommentSortOverlay(
     visible: Boolean,
     selected: CommentSort,
+    totalCount: Int?,
     onSelected: (CommentSort) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -28,6 +29,7 @@ internal fun CommentSortOverlay(
     ) {
         CommentSortRow(
             selected = selected,
+            totalCount = totalCount,
             onSelected = onSelected,
             modifier = Modifier
                 .fillMaxWidth()

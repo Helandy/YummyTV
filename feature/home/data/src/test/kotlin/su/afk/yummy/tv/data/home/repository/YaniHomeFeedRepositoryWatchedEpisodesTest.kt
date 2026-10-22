@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
@@ -27,6 +28,7 @@ class YaniHomeFeedRepositoryWatchedEpisodesTest : BaseUnitTest() {
     private val settingsStore: YaniAccountSettingsStore = mockk()
     private val playerSettingsStore: PlayerSettingsStore = mockk()
     private val watchProgressStore: WatchProgressStorage = mockk()
+    private val animeStorage: AnimeStorage = mockk()
     private val analyticsTracker: AnalyticsTracker = mockk(relaxed = true)
     private val watched = mutableListOf<WatchProgressEntry>()
 
@@ -75,6 +77,7 @@ class YaniHomeFeedRepositoryWatchedEpisodesTest : BaseUnitTest() {
         settingsStore = settingsStore,
         playerSettingsStore = playerSettingsStore,
         watchProgressStore = watchProgressStore,
+        animeStorage = animeStorage,
         analyticsTracker = analyticsTracker,
     )
 

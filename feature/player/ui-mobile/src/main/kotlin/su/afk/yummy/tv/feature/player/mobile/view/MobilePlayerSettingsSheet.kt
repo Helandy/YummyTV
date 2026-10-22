@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
+import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
@@ -159,7 +160,7 @@ internal fun MobilePlayerSettingsSheet(
                                         enabled = enabled,
                                         accentLabel = true,
                                         logoRes = balancerLogoRes(name),
-                                        logoFallbackIcon = Icons.Filled.PlayCircle,
+                                        logoFallbackIcon = balancerFallbackIcon(name),
                                         metaContent = { contentColor ->
                                             if (!enabled) {
                                                 Text(

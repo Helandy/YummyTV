@@ -8,6 +8,10 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.common.utils.detailsText
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
@@ -17,10 +21,6 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.common.utils.detailsText
-import su.afk.yummy.tv.feature.settings.common.utils.hint
-import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
 
 @Composable
 internal fun SettingsMobilePlayerContent(
@@ -49,7 +49,7 @@ internal fun SettingsMobilePlayerContent(
                 valueLabel = { videoQualitySliderEntries[it].label() },
                 value = videoQualityIndex,
                 valueRange = 0..videoQualitySliderEntries.lastIndex,
-                enabled = !state.adaptiveVideoQualityEnabled,
+                enabled = true,
                 onValueCommitted = {
                     onEvent(
                         SettingsState.Event.PreferredVideoQualitySelected(
@@ -95,17 +95,7 @@ internal fun SettingsMobilePlayerContent(
                 onClick = { onPickerRequested(SettingsMobilePicker.PLAYER_ORIENTATION) },
             )
         }
-        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {
-            SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_picture_in_picture_label),
-                hint = if (state.pictureInPictureEnabled) {
-                    stringResource(R.string.settings_picture_in_picture_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
-                enabled = state.pictureInPictureEnabled,
-                onClick = { onEvent(SettingsState.Event.PictureInPictureToggled) },
-            )
+        SettingsMobileSection(title = stringResource(R.string.settings_tv_section_sound)) {
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_advanced_volume_label),
                 hint = if (state.advancedPlayerVolumeEnabled) {
@@ -128,6 +118,18 @@ internal fun SettingsMobilePlayerContent(
                     onClick = { onEvent(SettingsState.Event.VolumeStabilizationToggled) },
                 )
             }
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_picture_in_picture_label),
+                hint = if (state.pictureInPictureEnabled) {
+                    stringResource(R.string.settings_picture_in_picture_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.pictureInPictureEnabled,
+                onClick = { onEvent(SettingsState.Event.PictureInPictureToggled) },
+            )
             SettingsMobileActionRow(
                 label = stringResource(R.string.settings_player_gesture_tutorial_reset),
                 hint = if (state.mobilePlayerGestureTutorialDismissed) {

@@ -9,6 +9,7 @@ internal fun YaniSearchItemDto.toSearchItem(): SearchItem? {
     return SearchItem(
         id = id,
         title = title,
+        description = description,
         posterUrl = poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
         rating = rating?.average?.takeIf { it > 0.0 },
         year = year,

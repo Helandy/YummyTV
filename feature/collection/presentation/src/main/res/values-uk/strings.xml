@@ -9,7 +9,6 @@
     <string name="collection_update_error">Не вдалося змінити колекцію</string>
     <string name="collection_delete_error">Не вдалося видалити колекцію</string>
     <string name="collection_comments">Коментарі</string>
-    <string name="collection_reactions_title">Оцініть колекцію</string>
     <string name="collection_mobile_title">Колекція</string>
     <string name="collection_catalog_title">Колекції</string>
         <string name="collection_create_dialog_title">Нова колекція</string>
@@ -23,4 +22,10 @@
     <string name="collection_delete_dialog_title">Видалити колекцію?</string>
     <string name="collection_delete_dialog_message">Колекцію буде видалено без можливості відновлення.</string>
     <string name="collection_catalog_tv_empty">Колекцій поки немає</string>
+    <string name="collection_sort_new">Нові</string>
+    <string name="collection_sort_best">Популярні</string>
+    <string name="collection_sort_old">Старі</string>
+    <string name="collection_description_more">Показати повністю</string>
+    <string name="collection_description_mobile_more">Докладніше</string>
+    <string name="collection_description_less">Згорнути</string>
 </resources>

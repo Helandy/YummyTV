@@ -4,30 +4,39 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
-import su.afk.yummy.tv.domain.bloggers.usecase.GetAnimeBloggerVideosUseCase
 import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
 import su.afk.yummy.tv.feature.details.mapper.detailsRatingOverview
+import su.afk.yummy.tv.feature.details.utils.collectionsBadge
 import javax.inject.Inject
 
-/** Грузит второстепенные блоки деталей: трейлеры, наличие видео блогеров, сводку рейтинга и статистику списков. */
+/**
+ * Грузит второстепенные блоки деталей: трейлеры, сводку рейтинга, статистику списков и число коллекций.
+ * Счётчики трейлеров и видео блогеров приходят в самих деталях, отдельных запросов за ними нет.
+ */
 internal class DetailsExtrasHandler @Inject constructor(
     private val getAnimeTrailers: GetAnimeTrailersUseCase,
-    private val getAnimeBloggerVideos: GetAnimeBloggerVideosUseCase,
     private val getAnimeRatingSummary: GetAnimeRatingSummaryUseCase,
     private val getAnimeListStats: GetAnimeListStatsUseCase,
+    private val getAnimeCollections: GetAnimeCollectionsUseCase,
 ) {
-    suspend fun load(animeId: Int): DetailsExtrasResult = coroutineScope {
-        val trailers = async { runSuspendCatching { getAnimeTrailers(animeId) } }
-        val bloggerVideos = async { runSuspendCatching { getAnimeBloggerVideos(animeId, limit = 1) } }
+    /** [trailersCount] — счётчик из деталей: при нуле запрос трейлеров пропускается, `null` — счётчик неизвестен. */
+    suspend fun load(animeId: Int, trailersCount: Int?): DetailsExtrasResult = coroutineScope {
+        val trailers = async {
+            if (trailersCount == 0) Result.success(emptyList()) else runSuspendCatching { getAnimeTrailers(animeId) }
+        }
         val overview = async { loadRatingOverview(animeId) }
+        val collections = async { runSuspendCatching { getAnimeCollections(animeId, limit = COLLECTIONS_PAGE_LIMIT) } }
+        val loadedCollections = collections.await().getOrNull()
         DetailsExtrasResult(
             trailers = trailers.await().getOrDefault(emptyList()),
-            // Сбой запроса не прячет карточку: скрываем только когда видео точно нет.
-            hasBloggerVideos = bloggerVideos.await().getOrNull()?.isNotEmpty() ?: true,
             ratingOverview = overview.await(),
+            collectionsBadge = loadedCollections?.let { collectionsBadge(it.size, COLLECTIONS_PAGE_LIMIT) },
+            collections = loadedCollections.orEmpty().distinctBy { it.id },
         )
     }
 
@@ -46,5 +55,10 @@ internal class DetailsExtrasHandler @Inject constructor(
 internal data class DetailsExtrasResult(
     val trailers: List<AnimeTrailer>,
     val ratingOverview: DetailsRatingOverview?,
-    val hasBloggerVideos: Boolean = true,
+    /** Бэйдж числа коллекций; `null`, если их нет или список не загрузился. */
+    val collectionsBadge: String? = null,
+    /** Коллекции с тайтлом из того же запроса, что и бэйдж, — для ленты в деталях. */
+    val collections: List<AnimeCollectionSummary> = emptyList(),
 )
+
+private const val COLLECTIONS_PAGE_LIMIT = 20

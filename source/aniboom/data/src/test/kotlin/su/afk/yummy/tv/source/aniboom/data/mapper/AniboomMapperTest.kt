@@ -18,6 +18,7 @@ class AniboomMapperTest : BaseUnitTest() {
         val request = AniboomMapper.toRequest(lookup)
 
         assertEquals(20, request.otherTitles.size)
+        assertEquals("Frieren", request.originalTitle)
         assertEquals(listOf("Frieren", "Sousou no Frieren"), request.otherTitles.take(2))
         assertEquals(28, request.episodes)
     }

@@ -12,6 +12,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.toSubtitlePercentText
 
@@ -22,7 +23,10 @@ internal fun SettingsMobileSubtitlesContent(
     onPickerRequested: (SettingsMobilePicker) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        SettingsMobileSection(subtitle = stringResource(R.string.settings_subtitle_style_alloha_hint)) {
+        SettingsMobileSection(
+            title = stringResource(R.string.settings_subtitle_style_title),
+            subtitle = stringResource(R.string.settings_subtitle_style_alloha_hint),
+        ) {
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_subtitle_size_title),
                 valueLabel = { it.toSubtitlePercentText() },
@@ -54,6 +58,7 @@ internal fun SettingsMobileSubtitlesContent(
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_subtitle_color_title),
                 value = state.subtitleStyle.textColor.label(),
+                valueColor = state.subtitleStyle.textColor.color,
                 onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_COLOR) },
             )
             SettingsMobileOptionRow(

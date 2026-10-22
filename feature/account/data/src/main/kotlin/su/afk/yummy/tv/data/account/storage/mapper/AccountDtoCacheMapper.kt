@@ -159,9 +159,22 @@ internal fun List<YaniCollectionSummaryDto>.toCollectionsPageCache(
                 posterFullsizeUrl = poster?.fullsize?.toHttpsUrl(),
                 posterMegaUrl = poster?.mega?.toHttpsUrl(),
                 views = item.views,
+                likes = item.likes?.likes?.coerceAtLeast(0),
+                posterUrls = item.collagePosterUrls().joinToString(COLLECTION_POSTER_URLS_SEPARATOR),
             )
         },
     )
+
+/** Постеры из `poster_previews`, а если их меньше [COLLECTION_COLLAGE_POSTER_COUNT] — добираем постерами `animes`. */
+private fun YaniCollectionSummaryDto.collagePosterUrls(): List<String> =
+    (posterPreviews.asSequence() + animes.asSequence().mapNotNull { it.poster })
+        .mapNotNull { it.standardUrl() }
+        .distinct()
+        .take(COLLECTION_COLLAGE_POSTER_COUNT)
+        .toList()
+
+internal const val COLLECTION_POSTER_URLS_SEPARATOR = "\n"
+private const val COLLECTION_COLLAGE_POSTER_COUNT = 3
 
 internal fun List<YaniVideoSubscriptionDto>.toVideoSubscriptionsCache(
     userId: Int,

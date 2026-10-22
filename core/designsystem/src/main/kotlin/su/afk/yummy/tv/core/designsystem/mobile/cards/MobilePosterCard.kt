@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 import su.afk.yummy.tv.core.designsystem.mobile.input.onSecondaryClick
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -74,7 +75,8 @@ fun MobilePosterCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
+                    .aspectRatio(TITLE_POSTER_ASPECT_RATIO)
+                    .seasonalCardDecor(animeId ?: posterUrl.hashCode()),
             ) {
                 AsyncImage(
                     model = posterUrl,

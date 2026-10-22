@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.main
 
 import su.afk.yummy.tv.core.model.anime.CardListStatus
+import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -15,6 +16,9 @@ class MainState {
     data class State(
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
+        val seasonalDecorationsEnabled: Boolean = true,
+        /** Праздничная тема, включившаяся автоматически, о которой пользователю ещё не сообщили. */
+        val seasonalPrompt: SeasonalTheme? = null,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val yaniNickname: String = "",
@@ -36,6 +40,9 @@ class MainState {
          * [popToRootOnReselect] — сбросить стек вкладки при повторном выборе текущей.
          */
         data class RootSelected(val root: RootTab, val popToRootOnReselect: Boolean) : Event()
+
+        /** Пользователь ответил на диалог о праздничном оформлении; [disable] — отключить его. */
+        data class SeasonalPromptAnswered(val disable: Boolean) : Event()
     }
 
     sealed class Effect : UiEffect {

@@ -16,6 +16,9 @@ object ConfirmDialogCenter {
     @Volatile
     internal var hostAttached = false
 
+    /** Есть ли на экране [ConfirmDialogHost]; без него [ask] сразу отвечает `false`. */
+    val isHostAttached: Boolean get() = hostAttached
+
     suspend fun ask(title: String, message: String, confirmText: String, dismissText: String): Boolean {
         if (!hostAttached) return false
         val request = ConfirmDialogRequest(title, message, confirmText, dismissText)

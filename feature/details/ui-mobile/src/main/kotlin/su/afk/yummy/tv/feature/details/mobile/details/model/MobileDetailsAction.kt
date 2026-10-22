@@ -6,6 +6,7 @@ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 internal data class MobileDetailsAction(
     val action: DetailsButtonAction,
     val label: String,
+    val subtitle: String,
     val icon: ImageVector,
     val onClick: () -> Unit,
 )

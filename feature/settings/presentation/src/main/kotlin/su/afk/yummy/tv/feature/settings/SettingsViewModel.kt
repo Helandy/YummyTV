@@ -28,10 +28,8 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
-import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
-import su.afk.yummy.tv.feature.settings.utils.moved
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
 import javax.inject.Inject
 import javax.inject.Named
@@ -71,10 +69,11 @@ class SettingsViewModel @Inject internal constructor(
                         backgroundStyle = snapshot.backgroundStyle,
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
+                        titleCardLayout = snapshot.titleCardLayout,
                         showCatalogTitleYear = snapshot.showCatalogTitleYear,
                         newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
+                        seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         newEpisodesSources = snapshot.newEpisodesSources,
-                        newEpisodesHideWatched = snapshot.newEpisodesHideWatched,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
                         preferredPlayer = snapshot.preferredPlayer,
@@ -103,7 +102,6 @@ class SettingsViewModel @Inject internal constructor(
                         videoDownloadWifiOnly = snapshot.videoDownloadWifiOnly,
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
-                        detailsButtonOrder = snapshot.detailsButtonOrder.toImmutableList(),
                         libraryTabOrder = snapshot.libraryTabOrder.toImmutableList(),
                     )
                 }
@@ -205,6 +203,15 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setPosterCardSize(event.size)
             }
 
+            is SettingsState.Event.TitleCardLayoutSelected -> viewModelScope.launch {
+                analytics.eventTitleCardLayoutSelected(event.layout)
+                settingsStore.setTitleCardLayout(event.layout)
+            }
+
+            SettingsState.Event.SeasonalDecorationsToggled -> viewModelScope.launch {
+                settingsStore.setSeasonalDecorationsEnabled(!currentState.seasonalDecorationsEnabled)
+            }
+
             SettingsState.Event.NewEpisodesSectionToggled -> viewModelScope.launch {
                 settingsStore.setNewEpisodesSectionEnabled(!currentState.newEpisodesSectionEnabled)
             }
@@ -214,10 +221,6 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setNewEpisodesSources(
                     if (event.source in current) current - event.source else current + event.source,
                 )
-            }
-
-            SettingsState.Event.NewEpisodesHideWatchedToggled -> viewModelScope.launch {
-                settingsStore.setNewEpisodesHideWatched(!currentState.newEpisodesHideWatched)
             }
 
             SettingsState.Event.ShowCatalogTitleYearToggled -> viewModelScope.launch {
@@ -385,21 +388,6 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setYaniContentLanguage(event.language)
             }
 
-            is SettingsState.Event.DetailsButtonMoved -> viewModelScope.launch {
-                analytics.eventDetailsButtonMoved(event.action, event.direction)
-                settingsStore.setDetailsButtonOrder(
-                    currentState.detailsButtonOrder.moved(event.action, event.direction),
-                )
-            }
-
-            SettingsState.Event.DetailsButtonOrderScreenOpened -> {
-                analytics.eventDetailsButtonOrderScreenOpened()
-            }
-
-            SettingsState.Event.DetailsButtonOrderSelected -> {
-                nav.navigate(SettingsDetailsButtonOrderDestination)
-            }
-
             is SettingsState.Event.LibraryTabMoved -> viewModelScope.launch {
                 analytics.eventLibraryTabMoved(event.tab, event.direction)
                 settingsStore.setLibraryTabOrder(
@@ -426,11 +414,6 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.LoginOnTvSelected -> {
                 nav.navigate(accountNavigator.getLocalAuthDest())
-            }
-
-            SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {
-                analytics.eventDetailsButtonOrderReset()
-                settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder)
             }
 
             SettingsState.Event.VideoExportDirectorySelected -> {

@@ -37,7 +37,8 @@ internal class AniLibriaApi @Inject constructor(
 
     private companion object {
         const val BASE = "https://aniliberty.top/api/v1"
-        const val SEARCH_FIELDS = "id,mal.id,is_blocked_by_geo,is_blocked_by_copyrights"
+        const val SEARCH_FIELDS = "id,mal.id,name.main,name.english,name.alternative,year," +
+            "is_blocked_by_geo,is_blocked_by_copyrights"
         const val RELEASE_FIELDS = "id,mal.id,is_blocked_by_geo,is_blocked_by_copyrights," +
             "episodes.ordinal,episodes.name,episodes.duration,episodes.opening," +
             "episodes.hls_480,episodes.hls_720,episodes.hls_1080"

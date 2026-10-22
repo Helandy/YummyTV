@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredExtraRowGap
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -37,7 +38,10 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.designsystem.tv.TvTitleRowCard
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
+
+private val GridTopContentPadding = 8.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -56,6 +60,7 @@ internal fun CatalogResultsGrid(
     gridFallbackFocusRequester: FocusRequester,
     onItemSelected: (SearchItem) -> Unit,
     showTitleYear: Boolean,
+    isRowLayout: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val cardWidth = currentTvTitleCardDimensions().width
@@ -64,14 +69,20 @@ internal fun CatalogResultsGrid(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
-        val gridColumnCount = tvPosterGridColumns(
-            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
-            cardWidth = cardWidth,
-            spacing = horizontalSpacing,
-        )
-                .coerceAtLeast(1)
+        // Построчные карточки — одна колонка на всю ширину.
+        val gridColumnCount = if (isRowLayout) {
+            1
+        } else {
+            tvPosterGridColumns(
+                availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+                cardWidth = cardWidth,
+                spacing = horizontalSpacing,
+            ).coerceAtLeast(1)
+        }
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(
+                rowSpacing = TvCardSpacing.Vertical,
+            ),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -79,11 +90,11 @@ internal fun CatalogResultsGrid(
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
                     end = TvScreenPadding.Horizontal,
-                    top = 8.dp,
+                    top = GridTopContentPadding,
                     bottom = TvScreenPadding.Vertical,
                 ),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
-                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredExtraRowGap),
                 modifier = Modifier
                     .fillMaxSize()
                     .focusRequester(gridFocusRequester)
@@ -113,40 +124,55 @@ internal fun CatalogResultsGrid(
                     }
                     val stableOnFocused =
                         remember(item.id, index) { { onLastFocusedIndexChanged(index) } }
-                    TvTitleCard(
-                        title = item.title,
-                        posterUrl = item.posterUrl,
-                        animeId = item.id,
-                        onClick = stableOnClick,
-                        onFocused = stableOnFocused,
-                        modifier = Modifier
-                            .focusRequester(focusRequesters[index])
-                            .tvWholeItemBringIntoView()
-                            .tvLazyGridRowFocusNavigation(
-                                index = index,
-                                columnCount = gridColumnCount,
-                                itemCount = itemCount,
-                                gridState = gridState,
-                                scope = scope,
-                                focusRequesterAt = focusRequesters::getOrNull,
-                            )
-                            .focusProperties {
-                                if (index % gridColumnCount == 0) {
-                                    mainMenuFocusRequester?.let { left = it }
+                    val cardModifier = Modifier
+                        .focusRequester(focusRequesters[index])
+                        .tvWholeItemBringIntoView()
+                        .tvLazyGridRowFocusNavigation(
+                            index = index,
+                            columnCount = gridColumnCount,
+                            itemCount = itemCount,
+                            gridState = gridState,
+                            scope = scope,
+                            focusRequesterAt = focusRequesters::getOrNull,
+                        )
+                        .focusProperties {
+                            if (index % gridColumnCount == 0) {
+                                mainMenuFocusRequester?.let { left = it }
+                            }
+                        }
+                        .onFocusChanged { state ->
+                            if (state.hasFocus) {
+                                if (!isRestoringFocus) {
+                                    onLastFocusedIndexChanged(index)
                                 }
                             }
-                            .onFocusChanged { state ->
-                                if (state.hasFocus) {
-                                    if (!isRestoringFocus) {
-                                        onLastFocusedIndexChanged(index)
-                                    }
-                                }
+                        }
+                    if (isRowLayout) {
+                        TvTitleRowCard(
+                            title = item.title,
+                            posterUrl = item.posterUrl,
+                            description = item.description,
+                            year = item.year,
+                            rating = item.rating,
+                            animeId = item.id,
+                            onClick = stableOnClick,
+                            onFocused = stableOnFocused,
+                            modifier = cardModifier,
+                        )
+                    } else {
+                        TvTitleCard(
+                            title = item.title,
+                            posterUrl = item.posterUrl,
+                            animeId = item.id,
+                            onClick = stableOnClick,
+                            onFocused = stableOnFocused,
+                            modifier = cardModifier,
+                            posterOverlay = {
+                                item.rating?.let { TvPosterRating(it) }
+                                item.year?.takeIf { showTitleYear }?.let { TvPosterYear(it) }
                             },
-                        posterOverlay = {
-                            item.rating?.let { TvPosterRating(it) }
-                            item.year?.takeIf { showTitleYear }?.let { TvPosterYear(it) }
-                        },
-                    )
+                        )
+                    }
                 }
                 if (isLoading && itemCount > 0) {
                     item {

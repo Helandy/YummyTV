@@ -87,7 +87,7 @@ internal fun DetailsState.State.watchLabel(details: AnimeDetails): String {
         )
     }
     return when {
-        isWatchLaunchPending || videosState is VideosUiState.Loading -> {
+        isWatchLaunchPending || isWatchDataLoading -> {
             stringResource(R.string.details_loading_episodes)
         }
 

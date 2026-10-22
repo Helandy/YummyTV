@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -33,7 +32,6 @@ class DetailsScreenDataHandler @Inject constructor(
 
     /** Озвучка 4K, в которой тайтл смотрели раньше. */
     fun anime4kDubbing(animeId: Int): Flow<String?> = settingsStore.anime4kDubbing(animeId)
-    val detailsButtonOrder: Flow<List<DetailsButtonAction>> = settingsStore.detailsButtonOrder
 
     /** Спрашивать озвучку при нажатии "Смотреть", вместо автовыбора самой популярной. */
     val askDubbingOnWatch: Flow<Boolean> = settingsStore.askDubbingOnWatch

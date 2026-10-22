@@ -8,6 +8,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
@@ -82,6 +83,7 @@ fun CatalogTvScreen(
         filters = state.filters,
         isSearchActive = state.isSearchActive,
         showTitleYear = state.showTitleYear,
+        isRowLayout = state.titleCardLayout == TitleCardLayout.ROW,
         isSearchPending = state.isSearchPending,
         draftFilters = state.draftFilters,
         filterOptions = state.filterOptions,

@@ -5,18 +5,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.PosterCardSize
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.icon
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
+import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileIconChoice
+import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileIconChoiceRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.common.utils.hint
-import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 
 @Composable
 internal fun SettingsMobileAppearanceContent(
@@ -25,7 +31,7 @@ internal fun SettingsMobileAppearanceContent(
     onPickerRequested: (SettingsMobilePicker) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        SettingsMobileSection {
+        SettingsMobileSection(title = stringResource(R.string.settings_section_general_appearance)) {
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_tab_theme),
                 value = state.appTheme.label(),
@@ -38,19 +44,31 @@ internal fun SettingsMobileAppearanceContent(
                 hint = state.backgroundStyle.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.BACKGROUND) },
             )
-            SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_mobile_poster_size),
-                value = state.posterCardSize.label(),
-                hint = state.posterCardSize.hint(),
-                onClick = { onPickerRequested(SettingsMobilePicker.POSTER_SIZE) },
-            )
-            SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_library_continue_watching_card_size_title),
-                value = state.libraryContinueWatchingCardSize.label(),
-                hint = state.libraryContinueWatchingCardSize.hint(),
-                onClick = {
-                    onPickerRequested(SettingsMobilePicker.LIBRARY_CONTINUE_WATCHING_SIZE)
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_seasonal_decorations),
+                hint = if (state.seasonalDecorationsEnabled) {
+                    stringResource(R.string.settings_seasonal_decorations_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
                 },
+                enabled = state.seasonalDecorationsEnabled,
+                onClick = { onEvent(SettingsState.Event.SeasonalDecorationsToggled) },
+            )
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_section_posters)) {
+            SettingsMobileIconChoiceRow(
+                label = stringResource(R.string.settings_mobile_poster_size),
+                hint = state.posterCardSize.hint(),
+                choices = PosterCardSize.entries.map { SettingsMobileIconChoice(it, it.icon(), it.label()) },
+                selected = state.posterCardSize,
+                onSelected = { onEvent(SettingsState.Event.PosterCardSizeSelected(it)) },
+            )
+            SettingsMobileIconChoiceRow(
+                label = stringResource(R.string.settings_title_card_layout_title),
+                hint = state.titleCardLayout.hint(),
+                choices = TitleCardLayout.entries.map { SettingsMobileIconChoice(it, it.icon(), it.label()) },
+                selected = state.titleCardLayout,
+                onSelected = { onEvent(SettingsState.Event.TitleCardLayoutSelected(it)) },
             )
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_poster_quality_title),
@@ -80,17 +98,19 @@ internal fun SettingsMobileAppearanceContent(
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_library)) {
+            SettingsMobileIconChoiceRow(
+                label = stringResource(R.string.settings_library_continue_watching_card_size_title),
+                hint = state.libraryContinueWatchingCardSize.hint(),
+                choices = LibraryContinueWatchingCardSize.entries.map {
+                    SettingsMobileIconChoice(it, it.icon(), it.label())
+                },
+                selected = state.libraryContinueWatchingCardSize,
+                onSelected = { onEvent(SettingsState.Event.LibraryContinueWatchingCardSizeSelected(it)) },
+            )
             SettingsMobileNavigationRow(
                 label = stringResource(R.string.settings_library_tabs_order),
                 hint = stringResource(R.string.settings_library_tabs_order_hint),
                 onClick = { onEvent(SettingsState.Event.LibraryTabOrderSelected) },
-            )
-        }
-        SettingsMobileSection(title = stringResource(R.string.settings_tab_details)) {
-            SettingsMobileNavigationRow(
-                label = stringResource(R.string.settings_details_buttons_order),
-                hint = stringResource(R.string.settings_details_buttons_order_hint),
-                onClick = { onEvent(SettingsState.Event.DetailsButtonOrderSelected) },
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_section_new_episodes)) {
@@ -110,16 +130,6 @@ internal fun SettingsMobileAppearanceContent(
                     label = stringResource(R.string.settings_new_episodes_sources_title),
                     value = state.newEpisodesSources.newEpisodesSourcesValue(),
                     onClick = { onPickerRequested(SettingsMobilePicker.NEW_EPISODES_SOURCES) },
-                )
-                SettingsMobileToggleRow(
-                    label = stringResource(R.string.settings_new_episodes_hide_watched),
-                    hint = if (state.newEpisodesHideWatched) {
-                        stringResource(R.string.settings_new_episodes_hide_watched_enabled)
-                    } else {
-                        stringResource(R.string.settings_disabled)
-                    },
-                    enabled = state.newEpisodesHideWatched,
-                    onClick = { onEvent(SettingsState.Event.NewEpisodesHideWatchedToggled) },
                 )
             }
         }

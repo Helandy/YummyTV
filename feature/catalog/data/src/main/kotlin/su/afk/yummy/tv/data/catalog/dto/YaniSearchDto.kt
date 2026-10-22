@@ -12,6 +12,7 @@ data class YaniSearchResponseDto(
 data class YaniSearchItemDto(
     @SerialName("anime_id") val animeId: Int? = null,
     val title: String = "",
+    val description: String = "",
     val poster: YaniSearchPosterDto? = null,
     val rating: YaniSearchRatingDto? = null,
     val year: Int? = null,

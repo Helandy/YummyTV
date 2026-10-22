@@ -22,7 +22,7 @@ internal class AniLibriaExtraVideoRepository @Inject constructor(
 
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val malId = details.malId ?: return emptyList()
-        val release = findRelease(malId, listOf(details.title) + details.otherTitles) ?: return emptyList()
+        val release = findRelease(malId, listOf(details.title) + details.otherTitles, details.year) ?: return emptyList()
 
         return release.episodes.map { episode ->
             val url = AniLibriaTarget(release.id, episode.ordinal).toSourceUrl()

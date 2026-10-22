@@ -8,4 +8,7 @@ data class MainSettingsSnapshot(
     val yaniNickname: String,
     val yaniAvatarUrl: String,
     val yaniUnreadNotificationsCount: Int,
+    val seasonalDecorationsEnabled: Boolean = true,
+    /** Ключ праздничного периода, о котором пользователю уже сообщили (см. `seasonalAnnouncementKey`). */
+    val seasonalAnnouncedKey: String = "",
 )

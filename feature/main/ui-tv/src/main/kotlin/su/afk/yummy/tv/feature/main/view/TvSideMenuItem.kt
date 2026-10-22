@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.view
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,6 +48,7 @@ internal fun TvSideMenuItem(
     canFocus: Boolean,
     onFocused: () -> Unit,
     onMoveToContent: (force: Boolean) -> Unit,
+    itemHeight: Dp = TvSideMenuItemHeight,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -64,7 +66,7 @@ internal fun TvSideMenuItem(
     Row(
         modifier = Modifier
             .focusRequester(focusRequester)
-            .height(TvSideMenuItemHeight)
+            .height(itemHeight)
             .width(TvSideMenuExpandedWidth - TvSideMenuHorizontalPadding - TvSideMenuHorizontalPadding)
             .focusProperties {
                 this.canFocus = canFocus

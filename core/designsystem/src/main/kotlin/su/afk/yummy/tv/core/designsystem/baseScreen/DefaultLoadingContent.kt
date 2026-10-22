@@ -7,7 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalFullscreenLoader
 
 @Composable
 internal fun DefaultLoadingContent() {
@@ -17,6 +17,6 @@ internal fun DefaultLoadingContent() {
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
-        YummyLoadingIndicator()
+        SeasonalFullscreenLoader()
     }
 }

@@ -37,11 +37,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredExtraRowGap
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -56,6 +56,7 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun CollectionGridPane(
@@ -66,6 +67,7 @@ internal fun CollectionGridPane(
     isMutationLoading: Boolean,
     error: String?,
     firstVisibleItemIndex: Int,
+    isRowLayout: Boolean,
     firstVisibleItemScrollOffset: Int,
     onAnimeSelected: (Int) -> Unit,
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
@@ -106,6 +108,7 @@ internal fun CollectionGridPane(
                 isOwner = isOwner,
                 isMutationLoading = isMutationLoading,
                 firstVisibleItemIndex = firstVisibleItemIndex,
+                isRowLayout = isRowLayout,
                 firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
                 onAnimeSelected = onAnimeSelected,
                 onScrollPositionChanged = onScrollPositionChanged,
@@ -126,6 +129,7 @@ private fun CollectionGrid(
     isOwner: Boolean,
     isMutationLoading: Boolean,
     firstVisibleItemIndex: Int,
+    isRowLayout: Boolean,
     firstVisibleItemScrollOffset: Int,
     onAnimeSelected: (Int) -> Unit,
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
@@ -157,6 +161,9 @@ private fun CollectionGrid(
     // сбрасывается при смене коллекции — при первом входе фокус на заголовке
     var firstEntry by rememberSaveable(collection.id) { mutableStateOf(true) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
+    // Комментарии открываются поверх: на возврате фокус должен снова встать на их кнопку, а не на заголовок.
+    val commentsFocusRequester = remember { FocusRequester() }
+    var returnToComments by rememberSaveable(collection.id) { mutableStateOf(false) }
 
     fun rememberFocusedAnime(index: Int) {
         firstEntry = false
@@ -171,7 +178,9 @@ private fun CollectionGrid(
     }
 
     fun gridFallbackFocusRequester(): FocusRequester =
-        if (firstEntry) {
+        if (returnToComments) {
+            commentsFocusRequester
+        } else if (firstEntry) {
             headerFocusRequester
         } else {
             focusRequesters.getOrNull(restoreTargetIndex()) ?: headerFocusRequester
@@ -204,6 +213,11 @@ private fun CollectionGrid(
     fun requestHeaderFocus() {
         restoreFocusJob?.cancel()
         isRestoringFocus = false
+        if (returnToComments) {
+            returnToComments = false
+            runCatching { commentsFocusRequester.requestFocus() }
+            return
+        }
         runCatching { headerFocusRequester.requestFocus() }
     }
 
@@ -219,11 +233,16 @@ private fun CollectionGrid(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
-        val gridColumnCount = tvPosterGridColumns(
-            availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
-            cardWidth = cardWidth,
-            spacing = horizontalSpacing,
-        )
+        // Построчные карточки — одна колонка на всю ширину.
+        val gridColumnCount = if (isRowLayout) {
+            1
+        } else {
+            tvPosterGridColumns(
+                availableWidth = maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal,
+                cardWidth = cardWidth,
+                spacing = horizontalSpacing,
+            )
+        }
 
         val gridStartExtent = rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
 
@@ -258,7 +277,7 @@ private fun CollectionGrid(
                     top = TvScreenPadding.Vertical,
                     bottom = TvScreenPadding.Vertical,
                 ),
-                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredExtraRowGap),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -270,7 +289,11 @@ private fun CollectionGrid(
                         onVote = onVote,
                         onEdit = onEdit,
                         onDelete = onDelete,
-                        onComments = onComments,
+                        onComments = {
+                            returnToComments = true
+                            onComments()
+                        },
+                        commentsFocusRequester = commentsFocusRequester,
                         titleFocusRequester = headerFocusRequester,
                         downFocusRequester = focusRequesters.firstOrNull(),
                         modifier = gridStartExtent.measure,
@@ -314,6 +337,7 @@ private fun CollectionGrid(
                                 }
                             },
                         item = anime,
+                        isRowLayout = isRowLayout,
                         onClick = stableOnClick,
                         onFocused = stableOnFocused,
                     )

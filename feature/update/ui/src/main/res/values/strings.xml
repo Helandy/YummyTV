@@ -8,7 +8,6 @@
     <string name="update_changelog_title">What is new:</string>
     <string name="update_later">Not now</string>
     <string name="update_install">Update</string>
-    <string name="update_auto_update_unsupported">Your device does not support auto-update. Install the new version manually.</string>
     <string name="update_manual_hint">Or you can manually download the APK from %1$s</string>
     <string name="update_manual_open_releases">Open GitHub Releases</string>
     <string name="update_manual_release_url">https://github.com/Helandy/YummyTV/releases/latest</string>

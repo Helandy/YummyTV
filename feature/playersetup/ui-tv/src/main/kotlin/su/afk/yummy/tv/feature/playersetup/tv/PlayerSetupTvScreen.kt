@@ -108,7 +108,6 @@ fun PlayerSetupTvScreen(
             label = stringResource(R.string.player_setup_quality_label),
             hint = stringResource(R.string.player_setup_quality_hint),
             value = state.preferredVideoQuality.setupLabel(),
-            enabled = !state.adaptiveVideoQualityEnabled,
             onCycle = {
                 onEvent(PlayerSetupState.Event.PreferredVideoQualitySelected(state.preferredVideoQuality.next()))
             },

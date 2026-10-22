@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.view
 
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalOverlay
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
@@ -50,6 +51,7 @@ fun TvMainScaffold(
     applyTopSafeDrawingInset: Boolean = true,
     onEvent: (MainState.Event) -> Unit = {},
     toastMessage: String? = null,
+    showSeasonalOverlay: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val focusController = rememberTvMainFocusController(showMainMenu)
@@ -194,6 +196,7 @@ fun TvMainScaffold(
                 }
             }
 
+            if (showSeasonalOverlay) SeasonalOverlay()
             GlobalToastOverlay(text = toastMessage)
 
             if (showMainMenu) {

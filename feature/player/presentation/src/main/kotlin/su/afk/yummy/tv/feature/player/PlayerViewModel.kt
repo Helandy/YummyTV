@@ -51,7 +51,12 @@ import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeQuality
+import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
+import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
+import su.afk.yummy.tv.feature.player.utils.preferredQualityForLabel
+import su.afk.yummy.tv.feature.player.utils.qualityHeight
+import su.afk.yummy.tv.feature.player.utils.streamQualities
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.artworkSource
@@ -456,6 +461,18 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             is PlayerState.Event.SubtitleStyleChanged ->
                 preferences.saveSubtitleStyle(host, event.settings)
+
+            is PlayerState.Event.AdaptiveQualityLimitSelected -> {
+                val limit = preferredQualityForLabel(event.quality) ?: return
+                preferences.setAdaptiveLimit(host, limit)
+                // Текущее качество выше нового лимита: понижаем сразу, а не при следующей оценке.
+                val ceiling = limit.height ?: QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT
+                val active = activeQuality(currentState)
+                val target = adaptiveLimitLabel(streamQualities(currentState).keys, ceiling)
+                if (target != null && (active?.qualityHeight() ?: 0) > ceiling) {
+                    onEvent(PlayerState.Event.QualitySelected(target, event.currentPosMs, auto = true))
+                }
+            }
 
             is PlayerState.Event.AdaptiveQualityToggled ->
                 preferences.setAdaptiveQuality(host, event.enabled)

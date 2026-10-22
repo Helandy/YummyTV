@@ -31,20 +31,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.core.designsystem.R
-import su.afk.yummy.tv.feature.details.presentation.R as DetailsR
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatNextEpisodeRelease
+import su.afk.yummy.tv.feature.details.presentation.R as DetailsR
 
 @Composable
 internal fun DetailsMobileHero(
@@ -168,7 +168,6 @@ internal fun DetailsMobileHero(
                 overflow = TextOverflow.Ellipsis,
             )
             val originalTitle = details.otherTitles.firstOrNull { it.isNotBlank() }
-            val ageRating = details.ageRating?.takeIf { it.isNotBlank() }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -194,7 +193,6 @@ internal fun DetailsMobileHero(
                         .clip(CircleShape)
                         .clickable(onClick = onInfoClick),
                 )
-                ageRating?.let { DetailsChip(label = it, textColor = Color.White, backgroundColor = Color.Black) }
             }
             DetailsMetaChips(details)
             details.episodes?.formatNextEpisodeRelease()?.let { nextEpisode ->

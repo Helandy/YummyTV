@@ -50,6 +50,7 @@ import su.afk.yummy.tv.feature.details.utils.bestUrl
 @Composable
 internal fun DetailsHero(
     details: AnimeDetails,
+    modifier: Modifier = Modifier,
     downFocusRequester: FocusRequester,
     isInLibrary: Boolean,
     isFavorite: Boolean,
@@ -59,8 +60,9 @@ internal fun DetailsHero(
     isWatchLoading: Boolean,
     watchProgress: DetailsWatchProgressIndex,
     canSubscribe: Boolean,
-    detailsButtonOrder: List<DetailsButtonAction>,
     restoreButtonFocusRequest: Int,
+    hiddenActions: Set<DetailsButtonAction>,
+    focusOnResume: Boolean,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFavoriteToggle: () -> Unit,
@@ -105,7 +107,7 @@ internal fun DetailsHero(
     val infoShiftPx = with(density) { HERO_APPEAR_SHIFT.toPx() }
 
     BoxWithConstraints(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
@@ -122,7 +124,6 @@ internal fun DetailsHero(
         val titleMaxLines = 3
         val descriptionMaxLines = 3
         val posterWidth = if (isCompactHeight) 260.dp else 300.dp
-        val buttonBarHeight = if (isCompactHeight) 132.dp else 150.dp
 
         Row(
             modifier = Modifier
@@ -198,8 +199,9 @@ internal fun DetailsHero(
                     isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
                     canSubscribe = canSubscribe,
-                    buttonOrder = detailsButtonOrder,
                     restoreFocusRequest = restoreButtonFocusRequest,
+                    hiddenActions = hiddenActions,
+                    focusOnResume = focusOnResume,
                     firstFocusRequester = downFocusRequester,
                     onWatchSelected = onWatchSelected,
                     onLibraryToggle = onLibraryToggle,
@@ -217,7 +219,6 @@ internal fun DetailsHero(
                     onReviewsSelected = onReviewsSelected,
                     onBloggerVideosSelected = onBloggerVideosSelected,
                     modifier = Modifier.padding(top = 8.dp),
-                    height = buttonBarHeight,
                 )
             }
 

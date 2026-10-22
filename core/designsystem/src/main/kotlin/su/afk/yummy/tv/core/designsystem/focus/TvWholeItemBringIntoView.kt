@@ -52,3 +52,29 @@ private class WholeItemBringIntoViewResponder : BringIntoViewResponder {
     // Сам элемент ничего не скроллит — скроллит родительский грид по прямоугольнику выше.
     override suspend fun bringChildIntoView(localRect: () -> Rect?) = Unit
 }
+
+/**
+ * Шапка грида над первым рядом: фокус на её элементах всегда возвращает грид к началу, чтобы шапка
+ * была видна целиком (а не уезжала на пивот верхнего якоря). Подходит только шапке, которая
+ * помещается в экран.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+fun Modifier.tvGridHeaderBringIntoView(): Modifier = composed {
+    val responder = remember { GridHeaderBringIntoViewResponder() }
+    onSizeChanged { responder.size = it }.bringIntoViewResponder(responder)
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+private class GridHeaderBringIntoViewResponder : BringIntoViewResponder {
+    var size: IntSize = IntSize.Zero
+
+    override fun calculateRectForParent(localRect: Rect): Rect {
+        if (size == IntSize.Zero) return localRect
+        // Верх прямоугольника заведомо выше начала контента: грид прокручивается до упора вверх.
+        return Rect(0f, -HEADER_REVEAL_OVERSHOOT_PX, size.width.toFloat(), size.height.toFloat())
+    }
+
+    override suspend fun bringChildIntoView(localRect: () -> Rect?) = Unit
+}
+
+private const val HEADER_REVEAL_OVERSHOOT_PX = 100_000f

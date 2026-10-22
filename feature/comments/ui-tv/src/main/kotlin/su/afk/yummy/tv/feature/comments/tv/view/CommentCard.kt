@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,14 +37,12 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
-import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
-import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
+import su.afk.yummy.tv.core.utils.formatting.formatCommentDateTime
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 internal fun CommentCard(
     item: CommentsState.CommentUi,
     currentUserId: Int,
@@ -97,7 +93,7 @@ internal fun CommentCard(
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    text = comment.createdAtEpochSeconds.formatRelativeDateTime(LocalNowMillis.current()),
+                    text = comment.createdAtEpochSeconds.formatCommentDateTime(),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -113,10 +109,28 @@ internal fun CommentCard(
                 CommentBodyText(comment.text, nextFocusRequester = likeFocusRequester)
             }
 
-            FlowRow(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (comment.childrenCount > 0 || item.children.isNotEmpty()) {
+                    CommentActionButton(
+                        label = if (item.childrenVisible) {
+                            stringResource(R.string.comments_hide_replies)
+                        } else {
+                            stringResource(R.string.comments_show_replies, comment.childrenCount)
+                        },
+                        icon = if (item.childrenVisible) {
+                            Icons.Filled.ExpandLess
+                        } else {
+                            Icons.Filled.ExpandMore
+                        },
+                        enabled = !item.childrenLoading,
+                        onClick = { onToggleChildren(comment.id) },
+                    )
+                }
+                Spacer(Modifier.weight(1f))
                 if (comment.deletedAtEpochSeconds == null) {
                     CommentActionButton(
                         label = comment.likes.toString(),
@@ -135,24 +149,6 @@ internal fun CommentCard(
                         enabled = !isMutating,
                         onClick = { onVote(comment.id, CommentVote.DISLIKE) },
                     )
-                }
-                if (comment.childrenCount > 0 || item.children.isNotEmpty()) {
-                    CommentActionButton(
-                        label = if (item.childrenVisible) {
-                            stringResource(R.string.comments_hide_replies)
-                        } else {
-                            stringResource(R.string.comments_show_replies, comment.childrenCount)
-                        },
-                        icon = if (item.childrenVisible) {
-                            Icons.Filled.ExpandLess
-                        } else {
-                            Icons.Filled.ExpandMore
-                        },
-                        enabled = !item.childrenLoading,
-                        onClick = { onToggleChildren(comment.id) },
-                    )
-                }
-                if (comment.deletedAtEpochSeconds == null) {
                     if (canEdit) {
                         CommentActionButton(
                             label = stringResource(CoreR.string.common_delete),
@@ -165,6 +161,7 @@ internal fun CommentCard(
                     CommentActionButton(
                         label = stringResource(R.string.comments_report),
                         icon = Icons.Filled.Flag,
+                        showLabel = false,
                         enabled = !isMutating,
                         modifier = Modifier.focusRequester(reportFocusRequester),
                         onClick = { onReport(comment.id, reportFocusRequester) },

@@ -26,7 +26,7 @@ internal fun SettingsMobileStorageContent(
     val context = LocalContext.current
 
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        SettingsMobileSection {
+        SettingsMobileSection(title = stringResource(R.string.settings_poster_cache_size_title)) {
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_mobile_preview_cache),
                 valueLabel = { it.toPreviewCacheSizeText() },
@@ -38,6 +38,20 @@ internal fun SettingsMobileStorageContent(
                     onEvent(SettingsState.Event.PreviewCacheSizeSelected(it))
                 },
             )
+            SettingsMobileOptionRow(
+                label = stringResource(R.string.settings_cache_storage_title),
+                value = Formatter.formatShortFileSize(
+                    context,
+                    state.cacheStorageTotalBytes,
+                ),
+                hint = stringResource(R.string.settings_cache_storage_button_hint),
+                onClick = {
+                    onEvent(SettingsState.Event.CacheStorageRefreshRequested)
+                    onCacheStorageRequested()
+                },
+            )
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_section_downloads)) {
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_video_export_directory),
                 value = state.videoExportDirectoryName
@@ -66,18 +80,6 @@ internal fun SettingsMobileStorageContent(
                 },
                 enabled = state.videoExportAutoEnabled,
                 onClick = { onEvent(SettingsState.Event.VideoExportAutoToggled) },
-            )
-            SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_cache_storage_title),
-                value = Formatter.formatShortFileSize(
-                    context,
-                    state.cacheStorageTotalBytes,
-                ),
-                hint = stringResource(R.string.settings_cache_storage_button_hint),
-                onClick = {
-                    onEvent(SettingsState.Event.CacheStorageRefreshRequested)
-                    onCacheStorageRequested()
-                },
             )
         }
     }

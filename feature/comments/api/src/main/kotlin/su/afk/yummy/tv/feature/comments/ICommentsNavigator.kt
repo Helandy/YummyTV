@@ -4,8 +4,9 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.model.comments.CommentTargetType
 
 interface ICommentsNavigator {
-    fun getCommentsDest(targetType: CommentTargetType, targetId: Int): NavKey
+    /** [totalCount] — число комментариев (с ответами), если оно уже известно вызывающему экрану. */
+    fun getCommentsDest(targetType: CommentTargetType, targetId: Int, totalCount: Int? = null): NavKey
 
-    fun getAnimeCommentsDest(animeId: Int): NavKey =
-        getCommentsDest(CommentTargetType.ANIME, animeId)
+    fun getAnimeCommentsDest(animeId: Int, totalCount: Int? = null): NavKey =
+        getCommentsDest(CommentTargetType.ANIME, animeId, totalCount)
 }

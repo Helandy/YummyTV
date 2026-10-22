@@ -71,6 +71,7 @@ class CommentsViewModelTest : BaseUnitTest() {
     private fun createViewModel(targetType: CommentTargetType = CommentTargetType.POST) = CommentsViewModel(
         targetType = targetType,
         targetId = TARGET_ID,
+        initialTotalCount = null,
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,

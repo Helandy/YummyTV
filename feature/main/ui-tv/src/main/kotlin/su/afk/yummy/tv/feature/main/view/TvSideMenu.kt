@@ -1,5 +1,10 @@
 package su.afk.yummy.tv.feature.main.view
 
+import su.afk.yummy.tv.feature.main.utils.tvSideMenuMetrics
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalSideMenuDecor
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -91,6 +96,7 @@ internal fun TvSideMenu(
         label = "TvSideMenuWidth",
     )
     val backgroundColor = MaterialTheme.colorScheme.background
+    val metrics = tvSideMenuMetrics(LocalConfiguration.current.screenHeightDp.dp)
 
     LaunchedEffect(selectedRoot, expanded) {
         val selectedIndex = focusedIndexFor(selectedRoot)
@@ -106,6 +112,10 @@ internal fun TvSideMenu(
             .fillMaxHeight()
             .clipToBounds()
             .background(backgroundColor)
+            .seasonalSideMenuDecor {
+                ((menuWidth - TvSideMenuCollapsedWidth) / (TvSideMenuExpandedWidth - TvSideMenuCollapsedWidth))
+                    .coerceIn(0f, 1f)
+            }
             .onFocusChanged {
                 val gainedFocus = it.hasFocus && !expanded
                 onExpandedChange(it.hasFocus)
@@ -158,61 +168,69 @@ internal fun TvSideMenu(
             }
             .padding(
                 horizontal = TvSideMenuHorizontalPadding,
-                vertical = TvSideMenuVerticalPadding,
+                vertical = metrics.verticalPadding,
             ),
-        verticalArrangement = Arrangement.spacedBy(TvSideMenuItemSpacing),
     ) {
-        TvSideMenuAccountItem(
-            label = accountLabel?.ifBlank { null } ?: stringResource(CoreR.string.common_sign_in),
-            signedIn = !accountLabel.isNullOrBlank(),
-            avatarUrl = accountAvatarUrl,
-            unreadNotificationsCount = unreadNotificationsCount,
-            expanded = expanded,
-            selected = selectedRoot == RootTab.ACCOUNT,
-            focusRequester = rootFocusRequesters.getValue(RootTab.ACCOUNT),
-            downFocusRequester = rowFocusRequesters.getOrNull(1),
-            rightFocusRequester = rightFocusRequesterForRoot(RootTab.ACCOUNT),
-            canFocus = canFocus,
-            onFocused = {
-                focusedIndex = 0
-            },
-            onMoveToContent = { _ ->
-                enterRootContent(RootTab.ACCOUNT)
-            },
-            onClick = {
-                enterRootContent(RootTab.ACCOUNT)
-            },
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        menuItems.forEachIndexed { index, item ->
-            val isSelected = item.destination == selectedRoot
-            val rowIndex = index + 1
-            TvSideMenuItem(
-                label = stringResource(item.titleRes),
-                icon = item.icon,
-                selected = isSelected,
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(metrics.itemSpacing),
+        ) {
+            TvSideMenuAccountItem(
+                label = accountLabel?.ifBlank { null } ?: stringResource(CoreR.string.common_sign_in),
+                signedIn = !accountLabel.isNullOrBlank(),
+                avatarUrl = accountAvatarUrl,
+                unreadNotificationsCount = unreadNotificationsCount,
                 expanded = expanded,
-                onActivated = {
-                    enterRootContent(item.destination)
-                },
-                focusRequester = rootFocusRequesters.getValue(item.destination),
-                upFocusRequester = rowFocusRequesters.getOrNull(rowIndex - 1),
-                downFocusRequester = rowFocusRequesters.getOrNull(rowIndex + 1),
-                rightFocusRequester = rightFocusRequesterForRoot(item.destination),
+                selected = selectedRoot == RootTab.ACCOUNT,
+                focusRequester = rootFocusRequesters.getValue(RootTab.ACCOUNT),
+                downFocusRequester = rowFocusRequesters.getOrNull(1),
+                rightFocusRequester = rightFocusRequesterForRoot(RootTab.ACCOUNT),
                 canFocus = canFocus,
                 onFocused = {
-                    focusedIndex = rowIndex
+                    focusedIndex = 0
                 },
                 onMoveToContent = { _ ->
-                    enterRootContent(item.destination)
+                    enterRootContent(RootTab.ACCOUNT)
                 },
+                onClick = {
+                    enterRootContent(RootTab.ACCOUNT)
+                },
+                itemHeight = metrics.itemHeight,
             )
+
+            Spacer(modifier = Modifier.height(metrics.accountGap))
+
+            menuItems.forEachIndexed { index, item ->
+                val isSelected = item.destination == selectedRoot
+                val rowIndex = index + 1
+                TvSideMenuItem(
+                    label = stringResource(item.titleRes),
+                    icon = item.icon,
+                    selected = isSelected,
+                    expanded = expanded,
+                    onActivated = {
+                        enterRootContent(item.destination)
+                    },
+                    focusRequester = rootFocusRequesters.getValue(item.destination),
+                    upFocusRequester = rowFocusRequesters.getOrNull(rowIndex - 1),
+                    downFocusRequester = rowFocusRequesters.getOrNull(rowIndex + 1),
+                    rightFocusRequester = rightFocusRequesterForRoot(item.destination),
+                    canFocus = canFocus,
+                    onFocused = {
+                        focusedIndex = rowIndex
+                    },
+                    onMoveToContent = { _ ->
+                        enterRootContent(item.destination)
+                    },
+                    itemHeight = metrics.itemHeight,
+                )
+            }
+
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-
+        Spacer(modifier = Modifier.height(metrics.itemSpacing))
         TvSideMenuItem(
             label = stringResource(R.string.main_settings_content_description),
             icon = Icons.Default.Settings,
@@ -231,6 +249,7 @@ internal fun TvSideMenu(
             onMoveToContent = { _ ->
                 enterRootContent(RootTab.SETTINGS)
             },
+            itemHeight = metrics.itemHeight,
         )
     }
 }

@@ -21,42 +21,42 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.navigation.root.RootTab
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
+import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
-import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.animeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState.Event
+import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsScreenDataHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
-import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasHandler
-import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasResult
-import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
-import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
-import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideosResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsWatchTarget
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
+import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
+import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 
 class DetailsViewModelTest : BaseUnitTest() {
@@ -71,6 +71,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val commentsNavigator: ICommentsNavigator = mockk()
     private val reviewsNavigator: IReviewsNavigator = mockk()
+    private val collectionNavigator: ICollectionNavigator = mockk()
     private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
     private val imageViewNavigator: IImageViewNavigator = mockk()
     private val stringProvider: StringProvider = mockk()
@@ -104,11 +105,10 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { screenDataHandler.yaniUserId } returns flowOf(0)
         every { screenDataHandler.anime4kDubbing(any()) } returns flowOf(null)
         every { screenDataHandler.askDubbingOnWatch } returns flowOf(false)
-        every { screenDataHandler.detailsButtonOrder } returns flowOf(DetailsButtonAction.entries)
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())
         every { screenDataHandler.observeUserRating(any()) } returns userRating
-        coEvery { extrasHandler.load(any()) } returns DetailsExtrasResult(emptyList(), null)
+        coEvery { extrasHandler.load(any(), any()) } returns DetailsExtrasResult(emptyList(), null)
         coEvery { extrasHandler.loadRatingOverview(any()) } returns null
         every { screenDataHandler.observeAccountSession() } returns session
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.success(animeDetails(id = ANIME_ID, title = "Anime"))
@@ -126,8 +126,9 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { detailsNavigator.getSimilarDest(any()) } returns navKey
         every { detailsNavigator.getRatingDest(any()) } returns navKey
         every { detailsNavigator.getSubscriptionsDest(any()) } returns navKey
-        every { commentsNavigator.getAnimeCommentsDest(any()) } returns navKey
+        every { commentsNavigator.getAnimeCommentsDest(any(), any()) } returns navKey
         every { reviewsNavigator.list(any()) } returns navKey
+        every { collectionNavigator.getCollectionDest(any()) } returns navKey
         every { bloggerVideosNavigator.anime(any()) } returns navKey
     }
 
@@ -139,6 +140,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         detailsNavigator = detailsNavigator,
         commentsNavigator = commentsNavigator,
         reviewsNavigator = reviewsNavigator,
+        collectionNavigator = collectionNavigator,
         bloggerVideosNavigator = bloggerVideosNavigator,
         imageViewNavigator = imageViewNavigator,
         stringProvider = stringProvider,
@@ -177,20 +179,39 @@ class DetailsViewModelTest : BaseUnitTest() {
         assertFalse(state.isLoading)
         assertEquals("Anime", state.details?.title)
         assertTrue(state.videosState is VideosUiState.Content)
-        assertEquals(DetailsButtonAction.entries, state.detailsButtonOrder)
+        assertFalse(state.isWatchDataLoading)
+    }
+
+    @Test
+    fun `watch data counts as loading until the videos arrive`() {
+        assertTrue(DetailsState.State(videosState = VideosUiState.NotLoaded).isWatchDataLoading)
+        assertTrue(DetailsState.State(videosState = VideosUiState.Loading).isWatchDataLoading)
+        assertTrue(
+            DetailsState.State(videosState = VideosUiState.Empty, isProgressRefreshing = true).isWatchDataLoading,
+        )
+        assertFalse(DetailsState.State(videosState = VideosUiState.Empty).isWatchDataLoading)
     }
 
     @Test
     fun `trailers and rating overview land in the state`() {
         val trailer = AnimeTrailer(iframeUrl = "https://www.youtube.com/embed/abc")
         val overview = DetailsRatingOverview(average = 8.0, votes = 3)
-        coEvery { extrasHandler.load(ANIME_ID) } returns DetailsExtrasResult(listOf(trailer), overview)
+        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(listOf(trailer), overview)
 
         val state = createViewModel().currentState
 
         assertEquals(listOf(trailer), state.trailers)
         assertEquals(overview, state.ratingOverview)
         assertFalse(state.isExtrasLoading)
+    }
+
+    @Test
+    fun `collections badge lands in the state`() {
+        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(emptyList(), null, collectionsBadge = "20+")
+
+        val state = createViewModel().currentState
+
+        assertEquals("20+", state.collectionsBadge)
     }
 
     @Test

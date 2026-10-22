@@ -18,7 +18,6 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -29,6 +28,7 @@ import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -55,11 +55,9 @@ import su.afk.yummy.tv.domain.videodownload.usecase.SetVideoDownloadWifiOnlyUseC
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.SettingsState.Effect
 import su.afk.yummy.tv.feature.settings.SettingsState.Event
-import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
-import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 
 class SettingsViewModelTest : BaseUnitTest() {
 
@@ -124,7 +122,6 @@ class SettingsViewModelTest : BaseUnitTest() {
 
     private fun snapshot(
         autoPlay: Boolean = false,
-        order: List<DetailsButtonAction> = DetailsButtonAction.entries,
     ) = SettingsSnapshot(
         appTheme = AppTheme.entries.first(),
         backgroundStyle = BackgroundStyle.entries.first(),
@@ -133,7 +130,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         showCatalogTitleYear = false,
         newEpisodesSectionEnabled = true,
         newEpisodesSources = NewEpisodesSource.DEFAULT,
-        newEpisodesHideWatched = false,
         showLibraryTitleYear = false,
         libraryContinueWatchingCardSize = LibraryContinueWatchingCardSize.entries.first(),
         preferredPlayer = PreferredPlayer.entries.first(),
@@ -159,7 +155,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         videoExportAutoEnabled = false,
         yaniApplicationToken = "token",
         contentLanguage = YaniContentLanguage.entries.first(),
-        detailsButtonOrder = order,
     )
 
     @Test
@@ -167,7 +162,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         val state = createViewModel().currentState
 
         assertEquals("token", state.yaniApplicationToken)
-        assertEquals(DetailsButtonAction.entries, state.detailsButtonOrder)
         assertFalse(state.isFallbackSessionStorage.xor(storageMode.value == TokenStorageMode.FALLBACK))
         assertTrue(state.isPreviewChannelBrowsable)
         assertEquals(AppInterfaceMode.MOBILE, state.interfaceMode)
@@ -259,10 +253,12 @@ class SettingsViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.AppThemeSelected(AppTheme.entries.last()))
         vm.setEvent(Event.PreferredPlayerSelected(PreferredPlayer.entries.last()))
         vm.setEvent(Event.AutoSkipDelayChanged(7))
+        vm.setEvent(Event.TitleCardLayoutSelected(TitleCardLayout.ROW))
 
         coVerify(exactly = 1) { settingsStore.setAppTheme(AppTheme.entries.last()) }
         coVerify(exactly = 1) { settingsStore.setPreferredPlayer(PreferredPlayer.entries.last()) }
         coVerify(exactly = 1) { settingsStore.setAutoSkipDelaySeconds(7) }
+        coVerify(exactly = 1) { settingsStore.setTitleCardLayout(TitleCardLayout.ROW) }
     }
 
     @Test
@@ -273,26 +269,6 @@ class SettingsViewModelTest : BaseUnitTest() {
 
         assertEquals("new", vm.currentState.yaniApplicationToken)
         coVerify(exactly = 1) { settingsStore.setYaniApplicationToken("new") }
-    }
-
-    @Test
-    fun `details button is moved within the saved order`() {
-        val vm = createViewModel()
-        val order = DetailsButtonAction.entries
-        val second = order[1]
-
-        vm.setEvent(Event.DetailsButtonMoved(second, DetailsButtonMoveDirection.UP))
-
-        coVerify(exactly = 1) {
-            settingsStore.setDetailsButtonOrder(match { it.first() == second })
-        }
-    }
-
-    @Test
-    fun `details button order can be reset to the default`() {
-        createViewModel().setEvent(Event.DetailsButtonOrderReset)
-
-        coVerify(exactly = 1) { settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder) }
     }
 
     @Test
@@ -368,12 +344,10 @@ class SettingsViewModelTest : BaseUnitTest() {
     fun `navigation events open their destinations`() {
         val vm = createViewModel()
 
-        vm.setEvent(Event.DetailsButtonOrderSelected)
         vm.setEvent(Event.CategorySelected(SettingsCategory.entries.first()))
         vm.setEvent(Event.LoginOnTvSelected)
         vm.setEvent(Event.BackSelected)
 
-        verify(exactly = 1) { nav.navigate(SettingsDetailsButtonOrderDestination) }
         verify(exactly = 1) { nav.navigate(SettingsCategoryDestination(SettingsCategory.entries.first())) }
         verify(exactly = 1) { accountNavigator.getLocalAuthDest() }
         verify(exactly = 1) { nav.back() }

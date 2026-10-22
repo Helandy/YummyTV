@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.components
 
+import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -9,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import su.afk.yummy.tv.core.designsystem.seasonal.PumpkinLoader
+import su.afk.yummy.tv.core.designsystem.seasonal.rememberSeasonalTheme
 
 /**
  * Indeterminate circular loader used across the app; change the look of every spinner here.
@@ -23,7 +26,9 @@ fun YummyLoadingIndicator(
     color: Color = Color.Unspecified,
     strokeWidth: Dp = Dp.Unspecified,
 ) {
-    if (strokeWidth == Dp.Unspecified) {
+    if (strokeWidth == Dp.Unspecified && rememberSeasonalTheme() == SeasonalTheme.HALLOWEEN) {
+        PumpkinLoader(modifier)
+    } else if (strokeWidth == Dp.Unspecified) {
         CircularWavyProgressIndicator(
             modifier = modifier,
             color = color.takeOrElse { WavyProgressIndicatorDefaults.indicatorColor },

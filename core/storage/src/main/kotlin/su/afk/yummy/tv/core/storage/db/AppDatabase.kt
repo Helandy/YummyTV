@@ -159,7 +159,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         WatchLaterEntry::class,
         PendingMutationEntry::class,
     ],
-    version = 59,
+    version = 67,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {

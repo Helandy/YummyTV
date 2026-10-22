@@ -178,7 +178,7 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
 The built-in player is based on **Media3 / ExoPlayer** and supports:
 
 - quality, voice-over, and balancer selection (Kodik, Aksor, Alloha, CVH, VK, Rutube, Sibnet,
-  Zedfilm, Aniboom, Anistar, AniLibria, 4K);
+  Zedfilm, Aniboom, Anistar, Amedia, AniLibria, 4K);
 - playback speed, scale and zoom, and automatic opening/ending skip;
 - previous/next episode navigation and auto-play of the next episode;
 - mobile gestures (brightness, volume, seeking, zoom) and mouse control on TV;
@@ -187,7 +187,7 @@ The built-in player is based on **Media3 / ExoPlayer** and supports:
 ### Settings and integrations
 
 - 🎨 App themes and background mode (light / dark / system).
-- 🧩 Details button order, card sizes, poster quality, and content language.
+- 🧩 Card sizes, poster quality, and content language.
 - 🏡 TV Home (Preview Channel, Watch Next), FAQ, and GitHub Releases updates.
 
 ---

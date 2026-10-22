@@ -34,6 +34,10 @@
     <string name="comments_sort_new">Нові</string>
     <string name="comments_sort_old">Старі</string>
     <string name="comments_sort_best">Кращі</string>
+    <string name="comments_total">%s усього</string>
+    <string name="comments_sort_new_first">Спочатку нові</string>
+    <string name="comments_sort_old_first">Спочатку старі</string>
+    <string name="comments_sort_best_first">Спочатку популярні</string>
     <string name="comments_report_spam">Спам</string>
     <string name="comments_report_insult">Образи</string>
         <string name="comments_report_flood">Флуд</string>

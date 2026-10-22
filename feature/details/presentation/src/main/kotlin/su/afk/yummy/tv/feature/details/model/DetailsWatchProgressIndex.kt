@@ -1,11 +1,12 @@
 package su.afk.yummy.tv.feature.details.model
 
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
-import su.afk.yummy.tv.core.common.player.isServerMirrorOfExtraSource
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
+import su.afk.yummy.tv.core.model.anime.mergeEpisodeProgress
+import su.afk.yummy.tv.core.model.anime.toServerWatchProgress
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 
 data class DetailsWatchProgressIndex(
@@ -70,54 +71,13 @@ data class DetailsWatchProgressIndex(
             animeId: Int,
             localEntries: List<AnimeWatchProgress>,
             videos: List<AnimeVideo>,
-        ): DetailsWatchProgressIndex {
-            val result = linkedMapOf<String, AnimeWatchProgress>()
-            (videos.mapNotNull { it.toServerProgress(animeId) } + localEntries)
-                .forEach { entry ->
-                    val key = entry.mergeKey()
-                    val current = result[key]
-                    result[key] = if (current == null) entry else newerOf(current, entry)
-                }
-            return DetailsWatchProgressIndex(result.values.toList())
-        }
-
-        private fun AnimeVideo.toServerProgress(animeId: Int): AnimeWatchProgress? {
-            val positionSeconds = watchedEndTimeSeconds?.takeIf { it >= 0 } ?: return null
-            val dateSeconds = watchedDateSeconds?.takeIf { it > 0L } ?: return null
-            val durationMs = durationSeconds?.takeIf { it > 0 }?.times(1_000L) ?: return null
-            return AnimeWatchProgress(
-                animeId = animeId,
-                episode = episode,
-                videoId = id,
-                episodeUrl = iframeUrl,
-                positionMs = positionSeconds * 1_000L,
-                durationMs = durationMs,
-                updatedAt = dateSeconds * 1_000L,
-                playerName = player,
-                dubbing = dubbing,
+        ): DetailsWatchProgressIndex =
+            DetailsWatchProgressIndex(
+                mergeEpisodeProgress(
+                    serverEntries = videos.mapNotNull { it.toServerWatchProgress(animeId) },
+                    localEntries = localEntries,
+                ),
             )
-        }
-
-        /** Свежая запись побеждает, кроме серверного «зеркала» локального прогресса 4K. */
-        private fun newerOf(a: AnimeWatchProgress, b: AnimeWatchProgress): AnimeWatchProgress {
-            val newer = if (b.updatedAt > a.updatedAt) b else a
-            val older = if (newer === b) a else b
-            val isMirror = isServerMirrorOfExtraSource(
-                localEpisodeUrl = older.episodeUrl,
-                localPositionMs = older.positionMs,
-                serverEpisodeUrl = newer.episodeUrl,
-                serverPositionMs = newer.positionMs,
-            )
-            return if (isMirror) older.copy(updatedAt = newer.updatedAt) else newer
-        }
-
-        private fun AnimeWatchProgress.mergeKey(): String =
-            when {
-                animeId > 0 && episode.isNotBlank() -> "$animeId:episode:${episode.episodeGroupKey()}"
-                videoId > 0 -> "video:$videoId"
-                episodeUrl.isNotBlank() -> "url:$episodeUrl"
-                else -> "entry:${hashCode()}"
-            }
     }
 }
 

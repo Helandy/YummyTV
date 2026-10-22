@@ -56,7 +56,7 @@ class BloggerVideoDetailsViewModelTest : BaseUnitTest() {
         every { strings.get(R.string.bloggers_auth_required) } returns "auth required"
         every { settingsStore.yaniUserId } returns userId
         every { navigator.blogger(any()) } returns navKey
-        every { commentsNavigator.getCommentsDest(any(), any()) } returns navKey
+        every { commentsNavigator.getCommentsDest(any(), any(), any()) } returns navKey
         coEvery { repository.getVideo(VIDEO_ID) } returns video()
     }
 
@@ -179,7 +179,7 @@ class BloggerVideoDetailsViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.CommentsSelected)
 
         verify(exactly = 1) { navigator.blogger(7) }
-        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.BLOG_VIDEO, VIDEO_ID) }
+        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.BLOG_VIDEO, VIDEO_ID, any()) }
         verify(exactly = 2) { nav.navigate(navKey) }
     }
 

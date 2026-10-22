@@ -43,11 +43,21 @@ data class YaniCollectionDetailDto(
     val likes: YaniCollectionLikesDto? = null,
     val animes: List<YaniCollectionAnimeDto> = emptyList(),
     @SerialName("poster_previews") val posterPreviews: List<YaniCollectionPosterDto> = emptyList(),
+    @SerialName("comments_count") val commentsCount: Int = 0,
 )
 
 @Serializable
 data class YaniCollectionOwnerDto(
     val id: Int? = null,
+    val nickname: String = "",
+    val avatars: YaniCollectionOwnerAvatarsDto? = null,
+)
+
+@Serializable
+data class YaniCollectionOwnerAvatarsDto(
+    val small: String? = null,
+    val big: String? = null,
+    val full: String? = null,
 )
 
 @Serializable
@@ -89,6 +99,7 @@ data class YaniCollectionVotePayloadDto(
 data class YaniCollectionAnimeDto(
     @SerialName("anime_id") val animeId: Int? = null,
     val title: String = "",
+    val description: String = "",
     val poster: YaniCollectionPosterDto? = null,
     val rating: YaniCollectionRatingDto? = null,
     val year: Int? = null,

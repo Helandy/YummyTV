@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.home.utils
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.home.model.HomeFeed
@@ -19,7 +18,6 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
             recentlyAired = listOf(airedItem(1), airedItem(2)),
             libraryAnimeIds = setOf(2),
             watchedEpisodes = emptyMap(),
-            hideWatched = false,
             title = TITLE,
         )
 
@@ -32,7 +30,6 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
             recentlyAired = listOf(airedItem(1)),
             libraryAnimeIds = setOf(1),
             watchedEpisodes = emptyMap(),
-            hideWatched = false,
             title = TITLE,
         )
 
@@ -49,7 +46,6 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
             recentlyAired = listOf(airedItem(1)),
             libraryAnimeIds = setOf(999),
             watchedEpisodes = emptyMap(),
-            hideWatched = false,
             title = TITLE,
         )
 
@@ -57,16 +53,16 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
     }
 
     @Test
-    fun `a watched episode is marked on the card`() {
-        val feed = feed().withMyNewEpisodes(
+    fun `a watched episode leaves the section`() {
+        val original = feed()
+        val result = original.withMyNewEpisodes(
             recentlyAired = listOf(airedItem(1, episodeNumber = 3)),
             libraryAnimeIds = setOf(1),
             watchedEpisodes = mapOf(1 to setOf(1, 2, 3)),
-            hideWatched = false,
             title = TITLE,
         )
 
-        assertTrue(feed.sections.first().items.single().isWatched)
+        assertEquals(original, result)
     }
 
     @Test
@@ -75,7 +71,6 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
             recentlyAired = listOf(airedItem(1, episodeNumber = 3)),
             libraryAnimeIds = setOf(1),
             watchedEpisodes = mapOf(1 to setOf(1, 2)),
-            hideWatched = false,
             title = TITLE,
         )
 
@@ -88,7 +83,6 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
             recentlyAired = listOf(airedItem(1, episodeNumber = null)),
             libraryAnimeIds = setOf(1),
             watchedEpisodes = mapOf(1 to setOf(1, 2, 3)),
-            hideWatched = false,
             title = TITLE,
         )
 
@@ -96,12 +90,11 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
     }
 
     @Test
-    fun `a watched title is dropped when hiding is on`() {
+    fun `a watched title is dropped`() {
         val feed = feed().withMyNewEpisodes(
             recentlyAired = listOf(airedItem(1, episodeNumber = 3), airedItem(2, episodeNumber = 1)),
             libraryAnimeIds = setOf(1, 2),
             watchedEpisodes = mapOf(1 to setOf(3)),
-            hideWatched = true,
             title = TITLE,
         )
 
@@ -109,14 +102,13 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
     }
 
     @Test
-    fun `the section disappears when every title is watched and hiding is on`() {
+    fun `the section disappears when every title is watched`() {
         val original = feed()
 
         val result = original.withMyNewEpisodes(
             recentlyAired = listOf(airedItem(1, episodeNumber = 3)),
             libraryAnimeIds = setOf(1),
             watchedEpisodes = mapOf(1 to setOf(3)),
-            hideWatched = true,
             title = TITLE,
         )
 
@@ -124,12 +116,11 @@ class HomeViewModelUtilsTest : BaseUnitTest() {
     }
 
     @Test
-    fun `hiding keeps titles whose new episode is still unwatched`() {
+    fun `titles whose new episode is still unwatched stay`() {
         val feed = feed().withMyNewEpisodes(
             recentlyAired = listOf(airedItem(1, episodeNumber = 3)),
             libraryAnimeIds = setOf(1),
             watchedEpisodes = mapOf(1 to setOf(1, 2)),
-            hideWatched = true,
             title = TITLE,
         )
 

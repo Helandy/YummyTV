@@ -35,16 +35,8 @@ internal class ApkInstallerImpl @Inject constructor(
 ) : ApkInstallRepository {
 
     override suspend fun install(apkFile: File) = withContext(Dispatchers.IO) {
-        if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-            !context.packageManager.canRequestPackageInstalls()
-        ) {
-            context.startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                    Uri.parse("package:${context.packageName}"),
-                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-            )
+        if (!canInstallPackages()) {
+            context.startActivity(unknownSourcesSettingsIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             throw UpdatePermissionRequiredException(
                 context.getString(R.string.update_install_unknown_sources_required),
             )
@@ -63,6 +55,22 @@ internal class ApkInstallerImpl @Inject constructor(
             session.commitAndAwaitResult(sessionId)
         }
     }
+
+    /** С API 26 разрешение выдаётся приложению, до него — глобальный переключатель «Неизвестные источники». */
+    private fun canInstallPackages(): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.packageManager.canRequestPackageInstalls()
+        } else {
+            @Suppress("DEPRECATION")
+            Settings.Secure.getInt(context.contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS, 0) == 1
+        }
+
+    private fun unknownSourcesSettingsIntent(): Intent =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
+        } else {
+            Intent(Settings.ACTION_SECURITY_SETTINGS)
+        }
 
     private suspend fun PackageInstaller.Session.commitAndAwaitResult(sessionId: Int) {
         suspendCancellableCoroutine { continuation ->

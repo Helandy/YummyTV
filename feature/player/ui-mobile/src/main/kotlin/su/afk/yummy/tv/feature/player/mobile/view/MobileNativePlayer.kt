@@ -351,6 +351,7 @@ internal fun MobileNativePlayer(
         enabled = ui.adaptiveQuality,
         qualities = ui.qualityLabels,
         activeQuality = ui.activeQuality,
+        ceilingHeight = ui.adaptiveCeilingHeight,
         onEvent = onEvent,
     )
 
@@ -832,6 +833,15 @@ internal fun MobileNativePlayer(
             stabilizationEnabled = state.volumeStabilizationEnabled,
             onStabilizationChange = { onEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
             adaptiveQuality = ui.adaptiveQuality,
+            adaptiveLimitQuality = ui.adaptiveLimitLabel,
+            onAdaptiveLimitSelected = { quality ->
+                onEvent(
+                    PlayerState.Event.AdaptiveQualityLimitSelected(
+                        quality,
+                        player.currentPosition.coerceAtLeast(0),
+                    ),
+                )
+            },
             onAdaptiveQualityChange = { onEvent(PlayerState.Event.AdaptiveQualityToggled(it)) },
             onDismiss = {
                 sidePanelOpen = false

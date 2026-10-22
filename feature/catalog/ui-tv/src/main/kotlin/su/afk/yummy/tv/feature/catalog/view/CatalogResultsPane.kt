@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.Job
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -36,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.skeleton.TvPosterGridSkeleton
+import su.afk.yummy.tv.core.designsystem.skeleton.TvTitleRowListSkeleton
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
@@ -43,6 +43,7 @@ import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
 import su.afk.yummy.tv.feature.catalog.presentation.R
 import su.afk.yummy.tv.feature.catalog.utils.focusStateKey
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun CatalogResultsPane(
@@ -51,6 +52,7 @@ internal fun CatalogResultsPane(
     filters: SearchFilters,
     isSearchActive: Boolean,
     showTitleYear: Boolean,
+    isRowLayout: Boolean,
     isSearchPending: Boolean,
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
@@ -180,6 +182,7 @@ internal fun CatalogResultsPane(
             filterButtonFocusRequester = filterButtonFocusRequester,
             randomButtonFocusRequester = randomButtonFocusRequester,
             mainMenuFocusRequester = mainMenuFocusRequester,
+            downFocusRequester = if (itemCount > 0 && !isFilterPanelOpen) gridFocusRequester else FocusRequester.Default,
             onQueryChanged = onQueryChanged,
             onSearchSubmitted = onSearchSubmitted,
             onOpenFilters = onOpenFilters,
@@ -218,7 +221,8 @@ internal fun CatalogResultsPane(
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
 
-                itemCount == 0 && (isLoading || isSearchPending) -> TvPosterGridSkeleton()
+                itemCount == 0 && (isLoading || isSearchPending) ->
+                    if (isRowLayout) TvTitleRowListSkeleton() else TvPosterGridSkeleton()
                 initialError != null -> SearchErrorMessage(
                     message = initialError,
                     retryFocusRequester = retryFocusRequester,
@@ -255,6 +259,7 @@ internal fun CatalogResultsPane(
                         gridFallbackFocusRequester = gridFallbackFocusRequester(),
                         onItemSelected = onItemSelected,
                         showTitleYear = showTitleYear,
+                        isRowLayout = isRowLayout,
                     )
                 }
             }

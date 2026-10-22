@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.search
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 
@@ -32,6 +33,8 @@ data class SearchItemEntry(
     val position: Int,
     val animeId: Int,
     val title: String,
+    @ColumnInfo(defaultValue = "''")
+    val description: String = "",
     val posterUrl: String? = null,
     val rating: Double? = null,
     val year: Int? = null,

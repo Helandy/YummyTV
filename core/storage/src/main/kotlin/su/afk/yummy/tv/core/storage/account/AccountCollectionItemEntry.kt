@@ -23,4 +23,7 @@ data class AccountCollectionItemEntry(
     val posterFullsizeUrl: String? = null,
     val posterMegaUrl: String? = null,
     val views: Int? = null,
+    val likes: Int? = null,
+    /** Первые постеры коллекции, склеенные через `\n` (Room-колонка без конвертера). */
+    val posterUrls: String = "",
 )

@@ -41,6 +41,12 @@ data class AnimeDetailsEntry(
     val episodesNextDateEpochSeconds: Long? = null,
     val episodesPrevDateEpochSeconds: Long? = null,
     @ColumnInfo(defaultValue = "0") val reviewsCount: Int = 0,
+    @ColumnInfo(defaultValue = "0") val commentsCount: Int = 0,
+    @ColumnInfo(defaultValue = "0") val parentCommentsCount: Int = 0,
+    @ColumnInfo(defaultValue = "0") val postsCount: Int = 0,
+    @ColumnInfo(defaultValue = "0") val listsCount: Int = 0,
+    @ColumnInfo(defaultValue = "0") val trailersCount: Int = 0,
+    @ColumnInfo(defaultValue = "0") val bloggerVideosCount: Int = 0,
     val malId: Int? = null,
     val cachedAt: Long,
 )

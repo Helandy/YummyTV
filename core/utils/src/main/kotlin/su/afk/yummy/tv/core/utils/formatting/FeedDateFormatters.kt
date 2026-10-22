@@ -28,3 +28,13 @@ fun Long.formatAirDate(): String {
 }
 
 private const val SECONDS_IN_DAY = 24L * 60L * 60L
+
+/**
+ * Полная дата комментария: «20 нояб. 2024 в 18:30» для ru, «20 Nov 2024, 18:30» для остальных локалей.
+ * Вход — Unix-время в секундах.
+ */
+fun Long.formatCommentDateTime(): String {
+    val locale = Locale.getDefault()
+    val pattern = if (locale.language == "ru") "d MMM yyyy 'в' HH:mm" else "d MMM yyyy, HH:mm"
+    return SimpleDateFormat(pattern, locale).format(Date(this * 1_000L))
+}

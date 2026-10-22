@@ -40,11 +40,11 @@ internal fun VoteButton(
             imageVector = if (isLike) Icons.Filled.ThumbUp else Icons.Filled.ThumbDown,
             contentDescription = null,
             tint = tint,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(18.dp),
         )
         Text(
             text = count.toString(),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelLarge,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
             color = tint,
         )

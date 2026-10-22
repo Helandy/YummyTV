@@ -25,7 +25,7 @@
     <string name="details_blogger_videos">Обзоры</string>
     <string name="details_mobile_blogger_videos">Обзоры</string>
     <string name="details_reviews">Рецензии</string>
-    <string name="details_reviews_count">Рецензии (%1$d)</string>
+    <string name="details_reviews_count">Рецензии</string>
         <string name="details_mobile_empty">Тайтл не найден</string>
     <string name="details_watch">Смотреть</string>
     <string name="details_watch_restart">Смотреть сначала</string>
@@ -54,7 +54,9 @@
     <string name="details_viewing_order">Порядок</string>
     <string name="details_rating_button">Рейтинг</string>
     <string name="details_collections_button">Коллекции</string>
+    <string name="details_mobile_show_collections">Показать коллекции</string>
     <string name="details_mobile_show_comments">Показать комментарии</string>
+    <string name="details_mobile_universe_show_all">Показать все</string>
     <string name="details_screenshots_title">Скриншоты</string>
     <string name="details_kinopoisk_rating">КП %1$s</string>
     <string name="details_shikimori_rating">Shikimori %1$s</string>
@@ -151,6 +153,7 @@
     <string name="details_mobile_screenshot">Скриншот</string>
     <string name="details_trailer_number">Трейлер %1$d</string>
     <string name="details_mobile_other_titles">Другие названия</string>
+    <string name="details_mobile_title_copied">Название скопировано</string>
     <string name="details_mobile_studios">Студии</string>
     <string name="details_full_genres">Жанры</string>
     <string name="details_mobile_creators">Создатели</string>
@@ -169,7 +172,7 @@
     <string name="details_list_stat_item">%1$s %2$s</string>
     <string name="details_mobile_title_universe">Вселенная тайтла</string>
     <string name="details_related_anime">Связанные аниме</string>
-    <string name="details_related_anime_count">Связанные аниме (%1$d)</string>
+    <string name="details_related_anime_count">Связанные аниме</string>
     <string name="details_related_empty">Связанные аниме не найдены</string>
     <string name="details_relation_studio">Студия</string>
     <string name="details_relation_director">Режиссёр</string>
@@ -181,6 +184,7 @@
     <string name="details_mobile_remove_watch_later">Убрать из отложенных</string>
     <string name="details_mobile_unmark_episode_watched">Убрать отметку о просмотре</string>
     <string name="details_comments">Комментарии</string>
+    <string name="details_comments_count">Комментарии (%1$s)</string>
     <string name="details_screenshots_empty">Скриншоты не найдены</string>
     <string name="details_previous">Предыдущий</string>
     <string name="details_next">Следующий</string>
@@ -229,4 +233,8 @@
     <string name="details_mobile_titles_japanese">Японское</string>
     <string name="details_mobile_titles_english">Английское</string>
     <string name="details_mobile_titles_alternative">Альтернативное</string>
+    <string name="details_mobile_episodes_hint">Выбрать серию и озвучку</string>
+    <string name="details_mobile_subscriptions_hint">Уведомления о новых сериях</string>
+    <string name="details_mobile_subscriptions_locked_hint">Войдите, чтобы подписаться</string>
+    <string name="details_mobile_recommended_title">Похожие тайтлы</string>
 </resources>

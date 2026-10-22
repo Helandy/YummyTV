@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalAvatarHat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ internal fun AccountMobileAvatar(
     Box(
         modifier = modifier
             .size(72.dp)
+            .seasonalAvatarHat()
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
         contentAlignment = Alignment.Center,

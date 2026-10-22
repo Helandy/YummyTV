@@ -88,14 +88,25 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     }
 
     @Test
-    fun `adaptive quality starts at the best level up to the policy ceiling and ignores the preferred one`() = runTest {
+    fun `adaptive quality starts at the best level up to the policy ceiling when preferred is best`() = runTest {
         adaptiveQuality.value = true
-        preferredQuality.value = PreferredVideoQuality.P360
+        preferredQuality.value = PreferredVideoQuality.BEST
         coEvery { resolvePlayerStream(any()) } returns stream("360p", "720p", "1080p", "2160p")
 
         val result = createHandler().resolve(state(KODIK_URL), null) as PlayerStreamResult.Stream
 
         assertEquals("2160p", result.selectedQuality)
+    }
+
+    @Test
+    fun `adaptive quality starts no higher than the preferred quality`() = runTest {
+        adaptiveQuality.value = true
+        preferredQuality.value = PreferredVideoQuality.P720
+        coEvery { resolvePlayerStream(any()) } returns stream("360p", "720p", "1080p", "2160p")
+
+        val result = createHandler().resolve(state(KODIK_URL), null) as PlayerStreamResult.Stream
+
+        assertEquals("720p", result.selectedQuality)
     }
 
     @Test

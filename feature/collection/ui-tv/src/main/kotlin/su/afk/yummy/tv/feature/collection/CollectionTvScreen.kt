@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.view.CollectionGridPane
@@ -168,6 +169,7 @@ fun CollectionTvScreen(
         isMutationLoading = state.isUpdating || state.isDeleting,
         error = state.error?.asString(),
         firstVisibleItemIndex = state.firstVisibleItemIndex,
+        isRowLayout = state.titleCardLayout == TitleCardLayout.ROW,
         firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
         onAnimeSelected = onAnimeSelected,
         onScrollPositionChanged = onScrollPositionChanged,

@@ -44,11 +44,14 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleRowCard
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
+import su.afk.yummy.tv.core.designsystem.skeleton.MobileTitleRowSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.feature.catalog.CatalogState
 import su.afk.yummy.tv.feature.catalog.mobile.view.CATALOG_SKELETON_ITEMS
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileClearButton
@@ -86,6 +89,7 @@ fun CatalogMobileScreen(
     val refreshState = results.loadState.refresh
     val appendState = results.loadState.append
     val hasActiveSearch = state.isSearchActive
+    val isRowLayout = state.titleCardLayout == TitleCardLayout.ROW
     val initialError = (refreshState as? LoadState.Error)
         ?.takeIf { results.itemCount == 0 }
         ?.error
@@ -118,6 +122,7 @@ fun CatalogMobileScreen(
             contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding),
             modifier = Modifier.imePadding(),
             state = gridState,
+            singleColumn = isRowLayout,
         ) {
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {
                 OutlinedTextField(
@@ -190,10 +195,14 @@ fun CatalogMobileScreen(
             // Лоадер внутри сетки: полноэкранный увёл бы поле поиска из-под пальца при наборе
             if (isFirstPageLoading && results.itemCount == 0) {
                 items(count = CATALOG_SKELETON_ITEMS, contentType = { "poster_skeleton" }) {
-                    MobilePosterCardSkeleton(
-                        shimmer = rememberSkeletonShimmer(),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    if (isRowLayout) {
+                        MobileTitleRowSkeleton(shimmer = rememberSkeletonShimmer())
+                    } else {
+                        MobilePosterCardSkeleton(
+                            shimmer = rememberSkeletonShimmer(),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             } else if (isFirstPageLoading) {
                 item(span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
@@ -239,10 +248,20 @@ fun CatalogMobileScreen(
             items(
                 count = results.itemCount,
                 key = results.itemKey { it.id },
-                contentType = { "poster" },
+                contentType = { if (isRowLayout) "title_row" else "poster" },
             ) { index ->
                 results[index]?.let { item ->
-                    MobilePosterCard(
+                    if (isRowLayout) {
+                        MobileTitleRowCard(
+                            title = item.title,
+                            posterUrl = item.posterUrl,
+                            description = item.description,
+                            year = item.year,
+                            rating = item.rating,
+                            animeId = item.id,
+                            onClick = { onEvent(CatalogState.Event.ItemSelected(item.id)) },
+                        )
+                    } else MobilePosterCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
                         animeId = item.id,

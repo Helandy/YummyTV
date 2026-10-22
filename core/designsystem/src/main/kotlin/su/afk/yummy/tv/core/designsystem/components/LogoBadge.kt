@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,7 +21,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Логотип студии или балансера на светлой подложке (логотипы рассчитаны на белый фон).
+ * Логотип студии озвучки на всю плитку: картинки квадратные, со своим фоном, поэтому без белой
+ * подложки и отступов (иначе вокруг круглого логотипа остаётся белая кайма).
  * Без картинки показывает [fallbackIcon] (у плееров и озвучек она своя) на тёмной подложке.
  */
 @Composable
@@ -37,14 +37,14 @@ fun LogoBadge(
         modifier = modifier
             .size(size)
             .clip(RoundedCornerShape(size / 5))
-            .background(if (logoRes != null) Color.White else Color(0xFF3A3A44)),
+            .background(Color(0xFF3A3A44)),
     ) {
         if (logoRes != null) {
             Image(
                 painter = painterResource(logoRes),
                 contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(size).padding(size / 10),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(size),
             )
         } else {
             Icon(

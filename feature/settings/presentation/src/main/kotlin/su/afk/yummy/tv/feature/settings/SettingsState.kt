@@ -7,7 +7,6 @@ import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -18,7 +17,9 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
+import su.afk.yummy.tv.core.model.settings.YaniApplicationToken
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -39,10 +40,11 @@ class SettingsState {
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
+        val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
         val showCatalogTitleYear: Boolean = false,
         val newEpisodesSectionEnabled: Boolean = true,
+        val seasonalDecorationsEnabled: Boolean = true,
         val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
-        val newEpisodesHideWatched: Boolean = false,
         val showLibraryTitleYear: Boolean = false,
         val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,
@@ -78,8 +80,6 @@ class SettingsState {
         val videoDownloadWifiOnly: Boolean = false,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
-        val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
-            SettingsStore.defaultDetailsButtonOrder.toImmutableList(),
         val libraryTabOrder: ImmutableList<LibraryTabKind> =
             SettingsStore.defaultLibraryTabOrder.toImmutableList(),
         val videoExportDirectoryName: String? = null,
@@ -95,7 +95,11 @@ class SettingsState {
         /** ID устройства в аналитике, разбитый на группы по 3 цифры; null — ID недоступен. */
         val analyticsDeviceId: String? = null,
         val releaseNotes: ReleaseNotesStatus = ReleaseNotesStatus.Idle,
-    ) : UiState
+    ) : UiState {
+        /** Задан свой токен, а не встроенный: только тогда есть что сбрасывать. */
+        val isYaniApplicationTokenCustom: Boolean
+            get() = yaniApplicationToken.isNotBlank() && yaniApplicationToken != YaniApplicationToken.DEFAULT
+    }
 
     /** Пользовательские действия на экране настроек. */
     sealed interface Event : UiEvent {
@@ -117,8 +121,14 @@ class SettingsState {
         /** Пользователь выбрал размер карточек постеров. */
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event
 
+        /** Пользователь выбрал раскладку карточек тайтлов в каталоге и коллекции. */
+        data class TitleCardLayoutSelected(val layout: TitleCardLayout) : Event
+
         /** Пользователь переключил отображение года у тайтлов в топе. */
         data object ShowCatalogTitleYearToggled : Event
+
+        /** Пользователь включил или выключил праздничное оформление. */
+        data object SeasonalDecorationsToggled : Event
 
         /** Пользователь включил или выключил блок новых серий на главной. */
         data object NewEpisodesSectionToggled : Event
@@ -127,7 +137,6 @@ class SettingsState {
         data class NewEpisodesSourceToggled(val source: NewEpisodesSource) : Event
 
         /** Пользователь переключил, скрывать ли из блока уже просмотренные серии. */
-        data object NewEpisodesHideWatchedToggled : Event
 
         /** Пользователь переключил отображение года у тайтлов в библиотеке. */
         data object ShowLibraryTitleYearToggled : Event
@@ -219,18 +228,6 @@ class SettingsState {
         /** Пользователь выбрал язык контента Yani. */
         data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
 
-        /** Пользователь переместил кнопку деталей в указанном направлении. */
-        data class DetailsButtonMoved(
-            val action: DetailsButtonAction,
-            val direction: DetailsButtonMoveDirection,
-        ) : Event
-
-        /** Пользователь открыл экран настройки порядка кнопок деталей. */
-        data object DetailsButtonOrderScreenOpened : Event
-
-        /** Пользователь подтвердил текущий порядок кнопок деталей. */
-        data object DetailsButtonOrderSelected : Event
-
         /** Пользователь переместил вкладку библиотеки в указанном направлении. */
         data class LibraryTabMoved(
             val tab: LibraryTabKind,
@@ -251,9 +248,6 @@ class SettingsState {
 
         /** Передача сессии на ТВ по локальной сети. */
         data object LoginOnTvSelected : Event
-
-        /** Пользователь сбросил порядок кнопок деталей к стандартному. */
-        data object DetailsButtonOrderReset : Event
 
         data object VideoExportDirectorySelected : Event
 

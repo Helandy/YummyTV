@@ -14,9 +14,10 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
-import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileEmptyText
@@ -24,7 +25,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
-/** Коллекции пользователя сеткой постеров — как в каталоге коллекций. */
+/** Коллекции пользователя плоскими карточками — как в каталоге коллекций. */
 @Composable
 internal fun UserProfileCollectionsGrid(
     collections: LazyPagingItems<AnimeCollectionSummary>,
@@ -36,7 +37,7 @@ internal fun UserProfileCollectionsGrid(
     }
     val refresh = collections.loadState.refresh
     val append = collections.loadState.append
-    MobilePosterGrid(contentPadding = PaddingValues(bottom = 32.dp)) {
+    MobilePosterGrid(contentPadding = PaddingValues(bottom = 32.dp), minCellWidth = 300.dp) {
         when {
             refresh is LoadState.Loading -> item(key = "loading", span = { GridItemSpan(maxLineSpan) }) {
                 AccountMobileLoadingIndicator()
@@ -60,10 +61,19 @@ internal fun UserProfileCollectionsGrid(
             key = collections.itemKey { "collection_${it.id}" },
         ) { index ->
             collections[index]?.let { item ->
-                MobilePosterCard(
+                MobileCollectionCard(
                     title = item.title,
-                    posterUrl = item.posterUrl,
+                    posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },
                     onClick = { onEvent(UserProfileState.Event.CollectionSelected(item.id)) },
+                    badge = {
+                        CollectionStatBadges(
+                            likes = item.likes,
+                            views = item.views,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp),
+                        )
+                    },
                 )
             }
         }

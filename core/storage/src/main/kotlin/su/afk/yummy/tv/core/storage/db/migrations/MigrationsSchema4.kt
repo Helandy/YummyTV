@@ -318,3 +318,102 @@ internal val MIGRATION_58_59 = object : Migration(58, 59) {
         db.execSQL("ALTER TABLE account_user_friends ADD COLUMN sex INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/**
+ * Счётчики тайтла (комментарии, посты, списки, трейлеры, видео блогеров) приходят в самом ответе
+ * `/anime/{id}`. Кэш деталей сбрасывается, чтобы они заполнились при ближайшей загрузке.
+ */
+internal val MIGRATION_59_60 = object : Migration(59, 60) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        for (column in listOf(
+            "commentsCount", "parentCommentsCount", "postsCount",
+            "listsCount", "trailersCount", "bloggerVideosCount",
+        )) {
+            db.execSQL("ALTER TABLE anime_details ADD COLUMN $column INTEGER NOT NULL DEFAULT 0")
+        }
+        db.execSQL("DELETE FROM anime_details")
+    }
+}
+
+/**
+ * Каталог коллекций: в карточке TV три постера вместо одного. Страницы каталога — короткий кэш,
+ * поэтому сбрасываем их, чтобы они заново заполнились с полным набором постеров.
+ */
+internal val MIGRATION_60_61 = object : Migration(60, 61) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE collection_catalog_items ADD COLUMN posterUrls TEXT NOT NULL DEFAULT ''")
+        db.execSQL("DELETE FROM collection_catalog_items")
+        db.execSQL("DELETE FROM collection_catalog_pages")
+    }
+}
+
+/**
+ * Коллекции аккаунта (в т.ч. «коллекции тайтла»): в карточке три постера вместо одного.
+ * Страницы — короткий кэш, сбрасываем их, чтобы они заполнились заново.
+ */
+internal val MIGRATION_61_62 = object : Migration(61, 62) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE account_collection_items ADD COLUMN posterUrls TEXT NOT NULL DEFAULT ''")
+        db.execSQL("DELETE FROM account_collection_items")
+        db.execSQL("DELETE FROM account_collection_pages")
+    }
+}
+
+/**
+ * Коллекции аккаунта: добавляем число лайков. Колонка могла уже появиться в dev-сборке схемы 62,
+ * поэтому добавляем её только при отсутствии.
+ */
+internal val MIGRATION_62_63 = object : Migration(62, 63) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        val hasLikes = db.query("PRAGMA table_info(account_collection_items)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            generateSequence { if (cursor.moveToNext()) cursor.getString(nameIndex) else null }.any { it == "likes" }
+        }
+        if (!hasLikes) db.execSQL("ALTER TABLE account_collection_items ADD COLUMN likes INTEGER")
+        db.execSQL("DELETE FROM account_collection_items")
+        db.execSQL("DELETE FROM account_collection_pages")
+    }
+}
+
+/** Каталог коллекций: добавляем число просмотров; страницы — короткий кэш, сбрасываем. */
+internal val MIGRATION_63_64 = object : Migration(63, 64) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE collection_catalog_items ADD COLUMN views INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("DELETE FROM collection_catalog_items")
+        db.execSQL("DELETE FROM collection_catalog_pages")
+    }
+}
+
+/** Главная: карточки коллекций показывают три постера, лайки и просмотры; кэш ленты сбрасываем. */
+internal val MIGRATION_64_65 = object : Migration(64, 65) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE home_feed_items ADD COLUMN collectionPosterUrls TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE home_feed_items ADD COLUMN collectionLikes INTEGER")
+        db.execSQL("ALTER TABLE home_feed_items ADD COLUMN collectionViews INTEGER")
+        db.execSQL("DELETE FROM home_feed_items")
+        db.execSQL("DELETE FROM home_feed_caches")
+    }
+}
+
+/** Коллекция: автор (ник и аватар) и число комментариев; кэш деталей сбрасываем. */
+internal val MIGRATION_65_66 = object : Migration(65, 66) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE collection_details ADD COLUMN ownerNickname TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE collection_details ADD COLUMN ownerAvatarUrl TEXT")
+        db.execSQL("ALTER TABLE collection_details ADD COLUMN commentsCount INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("DELETE FROM collection_details")
+        db.execSQL("DELETE FROM collection_anime_items")
+    }
+}
+
+/** Описание тайтла в выдаче каталога и в коллекции; кэши сбрасываем, чтобы они заполнились с описанием. */
+internal val MIGRATION_66_67 = object : Migration(66, 67) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE search_items ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+        db.execSQL("DELETE FROM search_items")
+        db.execSQL("DELETE FROM search_pages")
+        db.execSQL("DELETE FROM collection_details")
+        db.execSQL("DELETE FROM collection_anime_items")
+    }
+}

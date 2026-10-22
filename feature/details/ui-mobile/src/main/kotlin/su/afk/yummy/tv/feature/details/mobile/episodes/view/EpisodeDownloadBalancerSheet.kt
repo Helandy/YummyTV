@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
@@ -49,6 +50,7 @@ internal fun EpisodeDownloadBalancerSheet(
                         title = option.title,
                         logoName = option.title,
                         logoRes = balancerLogoRes(option.title),
+                        logoFallbackIcon = balancerFallbackIcon(option.title),
                         subtitle = option.subtitle,
                         enabled = !option.resolving && !option.status.blocksNewDownload(),
                         accentTitle = true,

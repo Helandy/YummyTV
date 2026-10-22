@@ -9,12 +9,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
-import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
-import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
@@ -25,9 +23,11 @@ import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePickerOption
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.core.designsystem.theme.previewColor
 import su.afk.yummy.tv.feature.settings.common.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /** Состояние шторок и диалогов, общее для всех категорий мобильных настроек. */
@@ -53,7 +53,12 @@ internal fun SettingsMobileDialogsHost(
             title = stringResource(R.string.settings_new_episodes_sources_title),
             selectedValues = state.newEpisodesSources,
             options = NewEpisodesSource.entries.map {
-                SettingsMobilePickerOption(it, it.label())
+                SettingsMobilePickerOption(
+                    value = it,
+                    label = it.label(),
+                    icon = it.icon(),
+                    iconColor = it.color(),
+                )
             },
             onDismiss = { dialogs.activePicker = null },
             onToggle = { onEvent(SettingsState.Event.NewEpisodesSourceToggled(it)) },
@@ -86,6 +91,7 @@ internal fun SettingsMobileDialogsHost(
                     it,
                     it.label(),
                     it.hint(),
+                    labelColor = it.previewColor(),
                 )
             },
             onDismiss = { dialogs.activePicker = null },
@@ -125,40 +131,6 @@ internal fun SettingsMobileDialogsHost(
             onDismiss = { dialogs.activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.PosterQualitySelected(it))
-                dialogs.activePicker = null
-            },
-        )
-
-        SettingsMobilePicker.POSTER_SIZE -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_mobile_poster_size),
-            selectedValue = state.posterCardSize,
-            options = PosterCardSize.entries.map {
-                SettingsMobilePickerOption(
-                    it,
-                    it.label(),
-                    it.hint(),
-                )
-            },
-            onDismiss = { dialogs.activePicker = null },
-            onSelected = {
-                onEvent(SettingsState.Event.PosterCardSizeSelected(it))
-                dialogs.activePicker = null
-            },
-        )
-
-        SettingsMobilePicker.LIBRARY_CONTINUE_WATCHING_SIZE -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_library_continue_watching_card_size_title),
-            selectedValue = state.libraryContinueWatchingCardSize,
-            options = LibraryContinueWatchingCardSize.entries.map {
-                SettingsMobilePickerOption(
-                    it,
-                    it.label(),
-                    it.hint(),
-                )
-            },
-            onDismiss = { dialogs.activePicker = null },
-            onSelected = {
-                onEvent(SettingsState.Event.LibraryContinueWatchingCardSizeSelected(it))
                 dialogs.activePicker = null
             },
         )

@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
+import su.afk.yummy.tv.domain.collection.model.CollectionSort
 import su.afk.yummy.tv.domain.collection.model.CreateCollectionRequest
 import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.domain.collection.usecase.CreateCollectionUseCase
@@ -40,12 +41,18 @@ class CollectionsCatalogViewModel @Inject internal constructor(
 ) : BaseViewModel<CollectionsCatalogState.State, CollectionsCatalogState.Event, CollectionsCatalogState.Effect>() {
 
     override fun createInitialState() =
-        CollectionsCatalogState.State(items = createPagingFlow())
+        CollectionsCatalogState.State(items = createPagingFlow(CollectionSort.NEW))
 
     override fun onEvent(event: CollectionsCatalogState.Event) {
         when (event) {
             CollectionsCatalogState.Event.BackSelected -> nav.back()
             CollectionsCatalogState.Event.RetrySelected -> Unit
+            is CollectionsCatalogState.Event.SortSelected -> {
+                if (event.sort != currentState.sort) {
+                    setState { copy(sort = event.sort, items = createPagingFlow(event.sort)) }
+                }
+            }
+
             CollectionsCatalogState.Event.CreateSelected -> openCreateDialog()
             CollectionsCatalogState.Event.CreateDismissed -> {
                 if (!currentState.isCreating) {
@@ -123,12 +130,12 @@ class CollectionsCatalogViewModel @Inject internal constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun createPagingFlow() =
+    private fun createPagingFlow(sort: CollectionSort) =
         mutationNotifier.version
-            .flatMapLatest { createPagerFlow() }
+            .flatMapLatest { createPagerFlow(sort) }
             .cachedIn(viewModelScope)
 
-    private fun createPagerFlow() =
+    private fun createPagerFlow(sort: CollectionSort) =
         Pager(
             config = PagingConfig(
                 pageSize = COLLECTIONS_PAGE_SIZE,
@@ -137,7 +144,7 @@ class CollectionsCatalogViewModel @Inject internal constructor(
             ),
             pagingSourceFactory = {
                 OffsetPagingSource(itemKey = { it.id }) { limit, offset ->
-                    val page = getCollections(limit, offset)
+                    val page = getCollections(limit, offset, sort)
                     OffsetPage(
                         items = page.items,
                         nextOffset = page.nextOffset,

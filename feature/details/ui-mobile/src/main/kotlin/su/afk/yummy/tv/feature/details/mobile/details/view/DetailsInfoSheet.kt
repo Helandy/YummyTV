@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,11 +15,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.utils.system.copyToClipboard
 import su.afk.yummy.tv.feature.details.mobile.details.utils.groupTitlesByScript
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -28,6 +32,8 @@ internal fun DetailsInfoSheet(
     titles: List<String>,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val copyLabel = stringResource(R.string.details_mobile_other_titles)
     val groups = remember(titles) { titles.groupTitlesByScript() }
     BaseBottomSheet(
         onDismissRequest = onDismiss,
@@ -72,6 +78,11 @@ internal fun DetailsInfoSheet(
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clickable {
+                                        if (context.copyToClipboard(copyLabel, title)) {
+                                            Toast.makeText(context, R.string.details_mobile_title_copied, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
                                     .padding(horizontal = 16.dp, vertical = 12.dp),
                             )
                         }

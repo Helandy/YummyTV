@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -240,6 +241,23 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 @get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
 val isDynamicColorSupported: Boolean
     get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+/**
+ * Акцентный цвет темы для превью в списке выбора: тот, что получит `primary` после выбора,
+ * с учётом светлого/тёмного фона текущего экрана. Для [AppTheme.DYNAMIC] — системный акцент.
+ */
+@Composable
+fun AppTheme.previewColor(): Color {
+    val darkSurface = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val context = LocalContext.current
+    return when {
+        this == AppTheme.DYNAMIC && isDynamicColorSupported ->
+            if (darkSurface) dynamicDarkColorScheme(context).primary else dynamicLightColorScheme(context).primary
+
+        darkSurface -> palette.primary
+        else -> palette.primaryLight
+    }
+}
 
 private val AppTheme.palette: YummyTvPalette
     get() = when (this) {

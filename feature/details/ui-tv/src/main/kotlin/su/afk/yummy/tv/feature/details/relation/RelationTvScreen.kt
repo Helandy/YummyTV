@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredExtraRowGap
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
@@ -205,7 +206,7 @@ fun RelationTvScreen(
                                 vertical = TvScreenPadding.Vertical,
                             ),
                             horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
-                            verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                            verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredExtraRowGap),
                         ) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
                                 Column(

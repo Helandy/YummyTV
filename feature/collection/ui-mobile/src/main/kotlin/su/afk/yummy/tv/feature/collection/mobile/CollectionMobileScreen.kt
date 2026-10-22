@@ -2,8 +2,10 @@ package su.afk.yummy.tv.feature.collection.mobile
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,9 +30,11 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleRowCard
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.collection.CollectionState
@@ -39,6 +44,7 @@ import su.afk.yummy.tv.feature.collection.mobile.view.MobileCollectionEditDialog
 import su.afk.yummy.tv.feature.collection.mobile.view.MobileDeleteCollectionDialog
 import su.afk.yummy.tv.feature.collection.presentation.R
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.CollectionAuthorChip
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -110,8 +116,21 @@ fun CollectionMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = collection?.title ?: stringResource(R.string.collection_mobile_title),
+                title = stringResource(R.string.collection_mobile_title),
                 onBack = { onEvent(CollectionState.Event.BackSelected) },
+                actions = {
+                    if (collection != null && collection.ownerNickname.isNotBlank()) {
+                        CollectionAuthorChip(
+                            nickname = collection.ownerNickname,
+                            avatarUrl = collection.ownerAvatarUrl,
+                            modifier = Modifier
+                                .widthIn(max = 180.dp)
+                                .padding(end = 8.dp)
+                                .clip(MaterialTheme.shapes.small)
+                                .clickable { onEvent(CollectionState.Event.AuthorSelected) },
+                        )
+                    }
+                },
             )
         },
         isLoading = state.isLoading,
@@ -128,7 +147,10 @@ fun CollectionMobileScreen(
             }
         },
     ) {
-        MobilePosterGrid(contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding)) {
+        MobilePosterGrid(
+            contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding),
+            singleColumn = state.titleCardLayout == TitleCardLayout.ROW,
+        ) {
             if (collection != null) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     CollectionMobileHeader(
@@ -139,8 +161,27 @@ fun CollectionMobileScreen(
                         onDelete = { onEvent(CollectionState.Event.DeleteSelected) },
                     )
                 }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    CollectionEngagementPanel(
+                        collection = collection,
+                        voting = state.isVoteLoading,
+                        onVote = { vote -> onEvent(CollectionState.Event.VoteSelected(vote)) },
+                        onCommentsClick = { onEvent(CollectionState.Event.CommentsSelected) },
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                }
                 items(collection.animes, key = { lazyKey("collectionanime", it.id) }) { item ->
-                    MobilePosterCard(
+                    if (state.titleCardLayout == TitleCardLayout.ROW) {
+                        MobileTitleRowCard(
+                            title = item.title,
+                            posterUrl = item.posterUrl,
+                            description = item.description,
+                            year = item.year,
+                            rating = item.rating,
+                            animeId = item.id,
+                            onClick = { onEvent(CollectionState.Event.AnimeSelected(item.id)) },
+                        )
+                    } else MobilePosterCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
                         animeId = item.id,
@@ -163,15 +204,6 @@ fun CollectionMobileScreen(
                             }
                         },
                         onClick = { onEvent(CollectionState.Event.AnimeSelected(item.id)) },
-                    )
-                }
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    CollectionEngagementPanel(
-                        collection = collection,
-                        voting = state.isVoteLoading,
-                        onVote = { vote -> onEvent(CollectionState.Event.VoteSelected(vote)) },
-                        onCommentsClick = { onEvent(CollectionState.Event.CommentsSelected) },
-                        modifier = Modifier.padding(top = 8.dp),
                     )
                 }
             }

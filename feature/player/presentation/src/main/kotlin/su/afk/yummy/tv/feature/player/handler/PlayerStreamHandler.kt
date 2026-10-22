@@ -60,13 +60,14 @@ internal class PlayerStreamHandler @Inject constructor(
         // session's master URL to the bnsi one parsed out of the source list, and that URL carries
         // a path token the CDN answers with 403 token_decrypt once the session is live. It may only
         // run after the correctly-signed master is in play, which is why it stays in the ViewModel.
-        // Адаптивный режим стартует с лучшего не выше потолка политики: предпочитаемое качество
-        // при нём отключено в настройках и не учитывается.
+        // Адаптивный режим стартует с лучшего не выше выбранного качества (оно же потолок политики);
+        // «Лучшее» в нём означает потолок по умолчанию.
         val preferredHeightAsync = async {
+            val preferred = settingsStore.preferredVideoQuality.first().height
             if (settingsStore.adaptiveVideoQualityEnabled.first()) {
-                QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT
+                preferred ?: QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT
             } else {
-                settingsStore.preferredVideoQuality.first().height
+                preferred
             }
         }
         val resumeAsync = async {

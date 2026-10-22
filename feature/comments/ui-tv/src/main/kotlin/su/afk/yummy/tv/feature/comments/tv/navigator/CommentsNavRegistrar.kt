@@ -20,7 +20,7 @@ class CommentsNavRegistrar @Inject constructor() : ITvCommentsEntry {
                 val viewModel = hiltViewModel<CommentsViewModel, CommentsViewModel.Factory>(
                     key = "comments-tv-${targetType.apiValue}-${destination.targetId}",
                     creationCallback = { factory ->
-                        factory.create(targetType, destination.targetId)
+                        factory.create(targetType, destination.targetId, destination.totalCount)
                     },
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->

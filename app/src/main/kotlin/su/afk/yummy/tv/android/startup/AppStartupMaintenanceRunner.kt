@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
@@ -22,6 +23,7 @@ import javax.inject.Singleton
 class AppStartupMaintenanceRunner @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val settingsStore: SettingsStore,
+    private val interfaceModePreferences: AppInterfaceModePreferences,
     private val legacyStreamingCachePruner: LegacyStreamingCachePruner,
     private val storageCleanupStore: StorageCleanup,
     @DefaultApplicationScope private val scope: CoroutineScope,
@@ -32,6 +34,11 @@ class AppStartupMaintenanceRunner @Inject constructor(
             // Фоновая обслуживающая задача не должна ронять процесс (диск полон, битый файл настроек).
             runSuspendCatching {
                 settingsStore.ensureYaniContentLanguageInitialized()
+                // Интерфейс уже выбирался → это обновление, а не чистая установка: оставляем качество
+                // постеров, которое пользователь имел до появления пробы на экране первичной настройки.
+                if (interfaceModePreferences.selectedMode != null) {
+                    settingsStore.pinLegacyPosterQualityIfAbsent()
+                }
                 if (settingsStore.markStartedVersion(BuildConfig.VERSION_CODE)) {
                     deleteDownloadedUpdateApk()
                 }

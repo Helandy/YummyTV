@@ -28,10 +28,10 @@
     <string name="player_server_error">Помилка сервера (%1$d)</string>
     <string name="player_adaptive_quality_title">Адаптивна якість</string>
     <string name="player_adaptive_quality_current">Зараз: %1$s</string>
+    <string name="player_adaptive_quality_current_limit">Зараз: %1$s · ліміт: %2$s</string>
     <string name="player_adaptive_quality_badge">А</string>
     <string name="player_adaptive_quality_hint">Підлаштовується під мережу та пристрій</string>
     <string name="player_quality_auto">авто</string>
-    <string name="player_selected">Зараз</string>
     <string name="player_quality_title">Якість</string>
     <string name="player_dubbing_title">Озвучення</string>
         <string name="player_speed_title">Швидкість</string>
@@ -42,7 +42,7 @@
     <string name="player_track_fallback">Доріжка %1$d</string>
     <string name="player_quality_meta">Відеопотік</string>
     <string name="player_dubbing_meta">Доріжка озвучення</string>
-    <string name="player_balancer_meta">Балансер відтворення</string>
+    <string name="player_balancer_meta">Балансер</string>
     <string name="player_episode_unavailable">Немає цієї серії</string>
     <string name="player_resize_fit">Оригінальний</string>
     <string name="player_resize_zoom">Зум</string>

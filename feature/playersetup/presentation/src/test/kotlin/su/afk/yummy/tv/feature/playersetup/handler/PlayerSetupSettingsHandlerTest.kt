@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.playersetup.handler
 
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -9,10 +10,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
+import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
@@ -21,6 +25,8 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
 
     private val store: PlayerSettingsStore = mockk(relaxed = true)
     private val accountStore: YaniAccountSettingsStore = mockk(relaxed = true)
+    private val appearanceStore: AppearanceSettingsStore = mockk(relaxed = true)
+    private val imageFormatSupport: ImageFormatSupport = mockk()
 
     private val showOpening = MutableStateFlow(true)
     private val autoSkip = MutableStateFlow(false)
@@ -97,5 +103,30 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
         }
     }
 
-    private fun createHandler() = PlayerSetupSettingsHandler(store = store, accountStore = accountStore)
+    @Test
+    fun `detect stores quality chosen by probe`() = runTest {
+        coEvery { appearanceStore.isPosterQualityStored() } returns false
+        coEvery { imageFormatSupport.isAvifSupported() } returns false
+        coEvery { imageFormatSupport.isWebpSupported() } returns true
+
+        createHandler().detectPosterQualityIfNeeded()
+
+        coVerify { appearanceStore.initPosterQualityIfAbsent(PosterQuality.STANDARD) }
+    }
+
+    @Test
+    fun `detect keeps already stored quality`() = runTest {
+        coEvery { appearanceStore.isPosterQualityStored() } returns true
+
+        createHandler().detectPosterQualityIfNeeded()
+
+        coVerify(exactly = 0) { appearanceStore.initPosterQualityIfAbsent(any()) }
+    }
+
+    private fun createHandler() = PlayerSetupSettingsHandler(
+        store = store,
+        accountStore = accountStore,
+        appearanceStore = appearanceStore,
+        imageFormatSupport = imageFormatSupport,
+    )
 }

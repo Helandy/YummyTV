@@ -5,7 +5,6 @@ import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -14,6 +13,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
@@ -36,13 +36,6 @@ internal class SettingsAnalytics @Inject constructor(
             EVENT_INTERFACE_MODE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to mode.name.lowercase()),
         )
-    }
-
-    /**
-     * Пользователь открыл экран настройки порядка кнопок деталей.
-     */
-    fun eventDetailsButtonOrderScreenOpened() {
-        tracker.track(EVENT_DETAILS_BUTTON_ORDER_SCREEN_OPENED)
     }
 
     /**
@@ -90,6 +83,18 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(
             EVENT_POSTER_CARD_SIZE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to size.name.lowercase()),
+        )
+    }
+
+    /**
+     * Пользователь выбрал раскладку карточек тайтлов в каталоге и коллекции.
+     *
+     * Параметры: value.
+     */
+    fun eventTitleCardLayoutSelected(layout: TitleCardLayout) {
+        tracker.track(
+            EVENT_TITLE_CARD_LAYOUT_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to layout.name.lowercase()),
         )
     }
 
@@ -348,31 +353,6 @@ internal class SettingsAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь изменил порядок кнопок на экране деталей.
-     *
-     * Параметры: action, direction.
-     */
-    fun eventDetailsButtonMoved(
-        action: DetailsButtonAction,
-        direction: DetailsButtonMoveDirection
-    ) {
-        tracker.track(
-            EVENT_DETAILS_BUTTON_ORDER_MOVED,
-            analyticsParamsOf(
-                PARAM_ACTION to action.name.lowercase(),
-                PARAM_DIRECTION to direction.name.lowercase(),
-            ),
-        )
-    }
-
-    /**
-     * Пользователь сбросил порядок кнопок на экране деталей.
-     */
-    fun eventDetailsButtonOrderReset() {
-        tracker.track(EVENT_DETAILS_BUTTON_ORDER_RESET)
-    }
-
-    /**
      * Пользователь открыл экран настройки порядка вкладок библиотеки.
      */
     fun eventLibraryTabOrderScreenOpened() {
@@ -451,8 +431,6 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_auto_skip_openings_endings_toggled"
         const val EVENT_AUTO_SKIP_DELAY_CHANGED = "settings_auto_skip_delay_changed"
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
-        const val EVENT_DETAILS_BUTTON_ORDER_MOVED = "settings_details_button_order_moved"
-        const val EVENT_DETAILS_BUTTON_ORDER_RESET = "settings_details_button_order_reset"
         const val EVENT_LIBRARY_TAB_ORDER_MOVED = "settings_library_tab_order_moved"
         const val EVENT_LIBRARY_TAB_ORDER_RESET = "settings_library_tab_order_reset"
         const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"
@@ -462,11 +440,10 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_show_top_title_year_toggled"
         const val EVENT_SHOW_LIBRARY_TITLE_YEAR_TOGGLED =
             "settings_show_library_title_year_toggled"
-        const val EVENT_DETAILS_BUTTON_ORDER_SCREEN_OPENED =
-            "settings_details_button_order_screen"
         const val EVENT_LIBRARY_CONTINUE_WATCHING_CARD_SIZE_SELECTED =
             "settings_library_continue_watching_card_size_selected"
         const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
+        const val EVENT_TITLE_CARD_LAYOUT_SELECTED = "settings_title_card_layout_selected"
         const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
         const val EVENT_PREFERRED_PLAYER_SELECTED = "settings_preferred_player_selected"
         const val EVENT_PLAYER_BUFFER_PROFILE_SELECTED = "settings_player_buffer_profile_selected"

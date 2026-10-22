@@ -14,9 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.utils.addUrlLinks
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.common.utils.color
@@ -27,7 +31,9 @@ internal fun ApiSettingsPanel(
     upFocusRequester: FocusRequester,
     contentFocusRequester: FocusRequester? = null,
     restoreUpToTab: Boolean = true,
+    canReset: Boolean,
     onTokenChanged: (String) -> Unit,
+    onReset: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -65,10 +71,30 @@ internal fun ApiSettingsPanel(
                     },
                 ),
         )
+        val hint = stringResource(R.string.settings_yani_application_token_hint)
+        val linkStyle = SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+        )
         Text(
-            text = stringResource(R.string.settings_yani_application_token_hint),
+            text = buildAnnotatedString {
+                append(hint)
+                addUrlLinks(hint, linkStyle)
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (canReset) {
+            DetailsButtonOrderResetRow(
+                label = stringResource(R.string.settings_yani_application_token_reset),
+                hint = stringResource(R.string.settings_yani_application_token_reset_hint),
+                onReset = onReset,
+                modifier = if (restoreUpToTab) {
+                    Modifier.restoreCategoryFocusOnLeft(upFocusRequester)
+                } else {
+                    Modifier
+                },
+            )
+        }
     }
 }

@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class CommentsDestination(
     val targetType: String,
     val targetId: Int,
+    val totalCount: Int? = null,
 ) : NavKey

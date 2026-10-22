@@ -3,16 +3,14 @@ package su.afk.yummy.tv.feature.details.details
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
-import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
@@ -35,10 +33,12 @@ class DetailsState {
         val userRating: Int? = null,
         /** Трейлеры тайтла; пусто, пока не загрузились или их нет. */
         val trailers: ImmutableList<AnimeTrailer> = persistentListOf(),
-        /** Есть ли видео блогеров по тайтлу; карточка скрыта, когда их точно нет. */
-        val hasBloggerVideos: Boolean = true,
         /** Сводка рейтинга и статистики списков; `null`, если показывать нечего. */
         val ratingOverview: DetailsRatingOverview? = null,
+        /** Бэйдж числа коллекций с тайтлом («20+», если API отдал целую страницу); `null` — без бэйджа. */
+        val collectionsBadge: String? = null,
+        /** Коллекции с тайтлом (первая страница) для ленты в деталях; пусто, если их нет. */
+        val collections: ImmutableList<AnimeCollectionSummary> = persistentListOf(),
         /** Трейлеры и сводка рейтинга ещё грузятся — блоки показывают скелетоны. */
         val isExtrasLoading: Boolean = true,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
@@ -46,6 +46,8 @@ class DetailsState {
         val pendingDubbingSelection: DubbingPickerState? = null,
         val showLibraryListPicker: Boolean = false,
         val isWatchLaunchPending: Boolean = false,
+        /** Прогресс просмотра с сервера ещё догружается — кнопку просмотра нажимать рано. */
+        val isProgressRefreshing: Boolean = false,
         val isSignedIn: Boolean = false,
         val subscriptions: ImmutableList<SubscriptionOption> = persistentListOf(),
         val showSubscriptionsPicker: Boolean = false,
@@ -56,9 +58,16 @@ class DetailsState {
         val showInfoSheet: Boolean = false,
         /** Системный запрос разрешения на уведомления уже показывали. */
         val notificationPermissionRequested: Boolean = false,
-        val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
-            SettingsStore.defaultDetailsButtonOrder.toImmutableList(),
-    ) : UiState
+    ) : UiState {
+        /**
+         * Видео ещё грузятся: Yani /videos, прогресс сервера и внешние источники
+         * (AniLibria, 4K, AniBoom, AniStar приходят в одном ответе) — кнопка просмотра неактивна.
+         */
+        val isWatchDataLoading: Boolean
+            get() = isProgressRefreshing ||
+                videosState is VideosUiState.NotLoaded ||
+                videosState is VideosUiState.Loading
+    }
 
     /** Пользовательские действия на основном экране деталей аниме. */
     sealed interface Event : UiEvent {
@@ -118,6 +127,9 @@ class DetailsState {
 
         /** Пользователь открыл коллекции с этим аниме. */
         data object CollectionsSelected : Event
+
+        /** Пользователь открыл коллекцию из ленты в деталях. */
+        data class CollectionSelected(val collectionId: Int) : Event
 
         /** Пользователь открыл комментарии к этому аниме. */
         data object CommentsSelected : Event

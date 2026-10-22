@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
+import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -120,7 +121,7 @@ private fun MobilePlayerBalancerRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        LogoBadge(logoRes = balancerLogoRes(label), size = 32.dp)
+        LogoBadge(logoRes = balancerLogoRes(label), size = 32.dp, fallbackIcon = balancerFallbackIcon(label))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(3.dp),

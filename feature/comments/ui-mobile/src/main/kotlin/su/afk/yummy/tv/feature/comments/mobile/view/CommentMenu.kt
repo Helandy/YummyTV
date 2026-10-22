@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.comments.mobile.view
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
@@ -28,7 +27,6 @@ import su.afk.yummy.tv.feature.comments.presentation.R
 @Composable
 internal fun CommentMenu(
     canEdit: Boolean,
-    onReply: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onReport: () -> Unit,
@@ -50,14 +48,6 @@ internal fun CommentMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.comments_reply)) },
-                leadingIcon = { Icon(Icons.AutoMirrored.Filled.Reply, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onReply()
-                },
-            )
             if (canEdit) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.comments_edit)) },

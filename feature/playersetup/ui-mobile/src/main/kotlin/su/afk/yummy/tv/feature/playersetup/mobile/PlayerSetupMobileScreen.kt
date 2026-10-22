@@ -19,14 +19,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
+import su.afk.yummy.tv.feature.playersetup.mobile.model.PlayerSetupMobilePicker
 import su.afk.yummy.tv.feature.playersetup.mobile.model.PlayerSetupMobilePickerOption
 import su.afk.yummy.tv.feature.playersetup.mobile.utils.setupHint
 import su.afk.yummy.tv.feature.playersetup.mobile.utils.setupLabel
@@ -43,7 +45,7 @@ fun PlayerSetupMobileScreen(
     effect: Flow<PlayerSetupState.Effect>,
     onEvent: (PlayerSetupState.Event) -> Unit,
 ) {
-    var showQualityPicker by remember { mutableStateOf(false) }
+    var activePicker by remember { mutableStateOf<PlayerSetupMobilePicker?>(null) }
 
     BaseScreen(isScroll = false) {
         Column(
@@ -61,15 +63,70 @@ fun PlayerSetupMobileScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = stringResource(R.string.player_setup_mobile_subtitle),
+                    text = stringResource(R.string.player_setup_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            // Только три ключевые опции: остальное (язык, ориентация, PiP, таймлайн, выбор озвучки)
-            // остаётся на умолчаниях и меняется в настройках.
-            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_main)) {
+            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_general)) {
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_language_label),
+                    value = state.contentLanguage.setupLabel(),
+                    hint = stringResource(R.string.player_setup_language_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.LANGUAGE },
+                )
+            }
+
+            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_timings)) {
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_opening_timeline_label),
+                    hint = stringResource(R.string.player_setup_opening_timeline_hint),
+                    enabled = state.showOpeningOnTimeline,
+                    onClick = { onEvent(PlayerSetupState.Event.ShowOpeningOnTimelineToggled) },
+                )
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_auto_skip_label),
+                    hint = stringResource(R.string.player_setup_auto_skip_hint),
+                    enabled = state.autoSkipOpeningsEndings,
+                    onClick = { onEvent(PlayerSetupState.Event.AutoSkipOpeningsEndingsToggled) },
+                )
+            }
+
+            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_episodes)) {
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_auto_play_label),
+                    hint = stringResource(R.string.player_setup_auto_play_hint),
+                    enabled = state.autoPlayNextEpisode,
+                    onClick = { onEvent(PlayerSetupState.Event.AutoPlayNextEpisodeToggled) },
+                )
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_suggest_next_label),
+                    hint = stringResource(R.string.player_setup_suggest_next_hint),
+                    enabled = state.suggestNextEpisodeOnWatched,
+                    onClick = { onEvent(PlayerSetupState.Event.SuggestNextEpisodeOnWatchedToggled) },
+                )
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_ask_dubbing_label),
+                    hint = stringResource(R.string.player_setup_ask_dubbing_hint),
+                    enabled = state.askDubbingOnWatch,
+                    onClick = { onEvent(PlayerSetupState.Event.AskDubbingOnWatchToggled) },
+                )
+            }
+
+            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_playback)) {
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_mobile_orientation_label),
+                    value = state.playerOrientationMode.setupLabel(),
+                    hint = stringResource(R.string.player_setup_mobile_orientation_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.ORIENTATION },
+                )
+                PlayerSetupMobileToggleRow(
+                    label = stringResource(R.string.player_setup_mobile_pip_label),
+                    hint = stringResource(R.string.player_setup_mobile_pip_hint),
+                    enabled = state.pictureInPictureEnabled,
+                    onClick = { onEvent(PlayerSetupState.Event.PictureInPictureToggled) },
+                )
                 PlayerSetupMobileToggleRow(
                     label = stringResource(R.string.player_setup_adaptive_quality_label),
                     hint = stringResource(R.string.player_setup_adaptive_quality_hint),
@@ -80,20 +137,7 @@ fun PlayerSetupMobileScreen(
                     label = stringResource(R.string.player_setup_quality_label),
                     value = state.preferredVideoQuality.setupLabel(),
                     hint = stringResource(R.string.player_setup_quality_hint),
-                    onClick = { showQualityPicker = true },
-                    enabled = !state.adaptiveVideoQualityEnabled,
-                )
-                PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_auto_skip_label),
-                    hint = stringResource(R.string.player_setup_auto_skip_hint),
-                    enabled = state.autoSkipOpeningsEndings,
-                    onClick = { onEvent(PlayerSetupState.Event.AutoSkipOpeningsEndingsToggled) },
-                )
-                PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_auto_play_label),
-                    hint = stringResource(R.string.player_setup_auto_play_hint),
-                    enabled = state.autoPlayNextEpisode,
-                    onClick = { onEvent(PlayerSetupState.Event.AutoPlayNextEpisodeToggled) },
+                    onClick = { activePicker = PlayerSetupMobilePicker.QUALITY },
                 )
             }
 
@@ -112,18 +156,46 @@ fun PlayerSetupMobileScreen(
         }
     }
 
-    if (showQualityPicker) {
-        PlayerSetupMobilePickerSheet(
+    when (activePicker) {
+        PlayerSetupMobilePicker.LANGUAGE -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_language_label),
+            selectedValue = state.contentLanguage,
+            options = YaniContentLanguage.entries.map {
+                PlayerSetupMobilePickerOption(it, it.setupLabel())
+            },
+            onDismiss = { activePicker = null },
+            onSelected = {
+                onEvent(PlayerSetupState.Event.ContentLanguageSelected(it))
+                activePicker = null
+            },
+        )
+
+        PlayerSetupMobilePicker.ORIENTATION -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_mobile_orientation_label),
+            selectedValue = state.playerOrientationMode,
+            options = PlayerOrientationMode.entries.map {
+                PlayerSetupMobilePickerOption(it, it.setupLabel(), it.setupHint())
+            },
+            onDismiss = { activePicker = null },
+            onSelected = {
+                onEvent(PlayerSetupState.Event.PlayerOrientationModeSelected(it))
+                activePicker = null
+            },
+        )
+
+        PlayerSetupMobilePicker.QUALITY -> PlayerSetupMobilePickerSheet(
             title = stringResource(R.string.player_setup_quality_label),
             selectedValue = state.preferredVideoQuality,
             options = PreferredVideoQuality.entries.map {
                 PlayerSetupMobilePickerOption(it, it.setupLabel(), it.setupHint())
             },
-            onDismiss = { showQualityPicker = false },
+            onDismiss = { activePicker = null },
             onSelected = {
                 onEvent(PlayerSetupState.Event.PreferredVideoQualitySelected(it))
-                showQualityPicker = false
+                activePicker = null
             },
         )
+
+        null -> Unit
     }
 }

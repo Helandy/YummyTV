@@ -3,7 +3,9 @@ package su.afk.yummy.tv.core.designsystem.mobile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -83,6 +85,47 @@ fun MobileReactionsCard(
     }
 }
 
+/** Лаконичный ряд реакций без подложки и заголовка; [trailing] — доп. кнопка справа (например, комментарии). */
+@Composable
+fun MobileReactionsRow(
+    likes: Int,
+    dislikes: Int,
+    selection: MobileReactionSelection,
+    enabled: Boolean,
+    onLikeClick: () -> Unit,
+    onDislikeClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    trailing: @Composable RowScope.() -> Unit = {},
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MobileReactionButton(
+            icon = Icons.Filled.ThumbUp,
+            count = likes,
+            color = YummySemanticColors.Like,
+            selected = selection == MobileReactionSelection.LIKE,
+            enabled = enabled,
+            onClick = onLikeClick,
+            contentPadding = CompactReactionPadding,
+        )
+        MobileReactionButton(
+            icon = Icons.Filled.ThumbDown,
+            count = dislikes,
+            color = YummySemanticColors.Dislike,
+            selected = selection == MobileReactionSelection.DISLIKE,
+            enabled = enabled,
+            onClick = onDislikeClick,
+            contentPadding = CompactReactionPadding,
+        )
+        trailing()
+    }
+}
+
+private val CompactReactionPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+
 @Composable
 private fun MobileReactionButton(
     icon: ImageVector,
@@ -92,19 +135,23 @@ private fun MobileReactionButton(
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 13.dp),
 ) {
     Surface(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        color = if (selected) color.copy(alpha = 0.18f)
-        else MaterialTheme.colorScheme.surfaceContainerHighest,
+        color = if (selected) {
+            color.copy(alpha = 0.18f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHighest
+        },
         contentColor = color,
         shape = RoundedCornerShape(12.dp),
         border = if (selected) BorderStroke(1.dp, color) else null,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
+            modifier = Modifier.padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {

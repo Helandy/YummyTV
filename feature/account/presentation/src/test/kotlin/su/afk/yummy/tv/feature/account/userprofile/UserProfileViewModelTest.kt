@@ -87,7 +87,7 @@ class UserProfileViewModelTest : BaseUnitTest() {
         every { accountNavigator.getUserProfileDest(any()) } returns navKey
         every { accountNavigator.getAccountDest() } returns navKey
         every { messagesNavigator.chat(any(), any(), any()) } returns navKey
-        every { commentsNavigator.getCommentsDest(any(), any()) } returns navKey
+        every { commentsNavigator.getCommentsDest(any(), any(), any()) } returns navKey
         coEvery { commentsHandler.loadPreview(USER_ID) } returns Result.success(listOf(commentPreview))
         every { appearanceSettingsStore.showLibraryTitleYear } returns showTitleYear
     }
@@ -318,7 +318,7 @@ class UserProfileViewModelTest : BaseUnitTest() {
     fun `comments open the user comments`() {
         createViewModel().setEvent(Event.CommentsSelected)
 
-        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.USER, USER_ID) }
+        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.USER, USER_ID, any()) }
     }
 
     @Test

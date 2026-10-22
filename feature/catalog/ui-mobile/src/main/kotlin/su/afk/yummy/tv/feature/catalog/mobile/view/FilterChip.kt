@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -28,8 +26,6 @@ internal fun FilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 14.dp,
-    centered: Boolean = false,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     val shape = CircleShape
@@ -67,8 +63,7 @@ internal fun FilterChip(
             .border(width = 1.dp, color = borderColor, shape = shape)
             .background(backgroundColor, shape)
             .clickable(onClick = onClick)
-            .padding(horizontal = horizontalPadding, vertical = 9.dp),
-        horizontalArrangement = if (centered) Arrangement.Center else Arrangement.Start,
+            .padding(horizontal = 14.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

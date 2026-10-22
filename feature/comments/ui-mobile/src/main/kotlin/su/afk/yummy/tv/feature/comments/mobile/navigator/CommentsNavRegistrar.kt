@@ -19,7 +19,7 @@ class CommentsNavRegistrar @Inject constructor() : IMobileCommentsEntry {
                 val targetType = CommentTargetType.valueOf(dest.targetType)
                 val viewModel = hiltViewModel<CommentsViewModel, CommentsViewModel.Factory>(
                     key = "comments-${targetType.apiValue}-${dest.targetId}",
-                    creationCallback = { factory -> factory.create(targetType, dest.targetId) },
+                    creationCallback = { factory -> factory.create(targetType, dest.targetId, dest.totalCount) },
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     CommentsMobileScreen(state = state, effect = effect, onEvent = onEvent)

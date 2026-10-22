@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -28,6 +29,7 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
+import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -71,6 +73,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val commentsNavigator: ICommentsNavigator,
     private val reviewsNavigator: IReviewsNavigator,
+    private val collectionNavigator: ICollectionNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
     private val imageViewNavigator: IImageViewNavigator,
     private val stringProvider: StringProvider,
@@ -161,9 +164,6 @@ class DetailsViewModel @AssistedInject internal constructor(
                 updateMergedWatchProgress()
             }
             .launchIn(viewModelScope)
-        screenDataHandler.detailsButtonOrder
-            .onEach { order -> setState { copy(detailsButtonOrder = order.toImmutableList()) } }
-            .launchIn(viewModelScope)
         screenDataHandler.observeAccountSession()
             .onEach { session ->
                 val wasSignedIn = currentState.isSignedIn
@@ -172,14 +172,14 @@ class DetailsViewModel @AssistedInject internal constructor(
                     copy(
                         isSignedIn = signedIn,
                         subscriptions = if (!signedIn) persistentListOf() else subscriptions,
-                        showSubscriptionsPicker = if (!signedIn) false else showSubscriptionsPicker,
-                        isSubscriptionsLoading = if (!signedIn) false else isSubscriptionsLoading,
+                        showSubscriptionsPicker = signedIn && showSubscriptionsPicker,
+                        isSubscriptionsLoading = signedIn && isSubscriptionsLoading,
                     )
                 }
                 if (signedIn && !wasSignedIn) {
                     viewModelScope.launch {
                         refreshLibraryState()
-                        refreshVideosFromNetwork()
+                        if (!currentState.isProgressRefreshing) refreshVideosFromNetwork()
                     }
                 } else if (!signedIn) {
                     setState { copy(libraryList = null) }
@@ -240,7 +240,7 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             is DetailsState.Event.StudioSelected ->
                 nav.navigate(
-                    detailsNavigator.getRelationDest(DetailsRelationKind.STUDIO, event.id, event.url)
+                    detailsNavigator.getRelationDest(DetailsRelationKind.STUDIO, event.id, event.url),
                 )
 
             is DetailsState.Event.DirectorSelected ->
@@ -269,12 +269,15 @@ class DetailsViewModel @AssistedInject internal constructor(
             DetailsState.Event.RatingScreenSelected ->
                 nav.navigate(detailsNavigator.getRatingDest(animeId))
 
+            is DetailsState.Event.CollectionSelected ->
+                nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+
             DetailsState.Event.CollectionsSelected ->
                 nav.navigate(detailsNavigator.getCollectionsDest(animeId))
 
             DetailsState.Event.CommentsSelected -> {
                 analytics.eventDetailsCommentsSelected(animeId)
-                nav.navigate(commentsNavigator.getAnimeCommentsDest(animeId))
+                nav.navigate(commentsNavigator.getAnimeCommentsDest(animeId, currentState.details?.commentsCount))
             }
 
             DetailsState.Event.ReviewsSelected -> nav.navigate(reviewsNavigator.list(animeId))
@@ -426,20 +429,24 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun load() {
-        viewModelScope.launch { loadDetails() }
+        viewModelScope.launch {
+            loadDetails()
+            // Счётчики из деталей решают, какие дополнительные запросы вообще нужны.
+            loadExtras()
+        }
         viewModelScope.launch { refreshLibraryState() }
         viewModelScope.launch { loadVideosIfCacheMissing() }
-        viewModelScope.launch { loadExtras() }
     }
 
     private suspend fun loadExtras() {
         setState { copy(isExtrasLoading = true) }
-        val extras = extrasHandler.load(animeId)
+        val extras = extrasHandler.load(animeId, trailersCount = currentState.details?.trailersCount)
         setState {
             copy(
                 trailers = extras.trailers.toImmutableList(),
-                hasBloggerVideos = extras.hasBloggerVideos,
                 ratingOverview = extras.ratingOverview,
+                collectionsBadge = extras.collectionsBadge,
+                collections = extras.collections.toImmutableList(),
                 isExtrasLoading = false,
             )
         }
@@ -546,8 +553,12 @@ class DetailsViewModel @AssistedInject internal constructor(
             pendingSubscriptionStates = subscriptionHandler.pendingSubscriptionStates(animeId),
         )
         if (cached != null) {
+            // isSignedIn в состоянии приходит асинхронно — берём сессию напрямую и поднимаем флаг
+            // до показа кэша, иначе кнопка успевает мигнуть доступной.
+            val signedIn = screenDataHandler.observeAccountSession().first().isAuthorized
+            if (signedIn) setState { copy(isProgressRefreshing = true) }
             setVideos(cached)
-            if (currentState.isSignedIn) {
+            if (signedIn) {
                 refreshVideosFromNetwork()
             }
             return
@@ -566,14 +577,19 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private suspend fun refreshVideosFromNetwork() {
-        videoHandler.refresh(
-            animeId = animeId,
-            pendingSubscriptionStates = subscriptionHandler.pendingSubscriptionStates(animeId),
-        ).onSuccess { result ->
-            setVideos(result)
-            if (currentState.isWatchLaunchPending) {
-                openInitialVideo(result.videos)
+        setState { copy(isProgressRefreshing = true) }
+        try {
+            videoHandler.refresh(
+                animeId = animeId,
+                pendingSubscriptionStates = subscriptionHandler.pendingSubscriptionStates(animeId),
+            ).onSuccess { result ->
+                setVideos(result)
+                if (currentState.isWatchLaunchPending) {
+                    openInitialVideo(result.videos)
+                }
             }
+        } finally {
+            setState { copy(isProgressRefreshing = false) }
         }
     }
 
@@ -599,12 +615,13 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun onWatchSelected() {
+        if (currentState.isProgressRefreshing) return
         when (val videosState = currentState.videosState) {
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
             VideosUiState.NotLoaded,
             VideosUiState.Empty,
             is VideosUiState.Error,
-            -> {
+                -> {
                 setState { copy(isWatchLaunchPending = true) }
                 viewModelScope.launch { loadVideos() }
             }
@@ -622,7 +639,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             VideosUiState.NotLoaded,
             VideosUiState.Empty,
             is VideosUiState.Error,
-            -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
+                -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
 
             VideosUiState.Loading -> setState { copy(isSubscriptionsLoading = true) }
         }

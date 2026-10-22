@@ -64,6 +64,9 @@ fun CollectionsCatalogTvScreen(
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val loadingFocusRequester = remember { FocusRequester() }
     val retryFocusRequester = remember { FocusRequester() }
+    val sortFocusRequester = remember { FocusRequester() }
+    // После первой загрузки сетку (с чипами сортировки) не заменяем экраном загрузки при смене сортировки.
+    var hasLoadedContent by remember { mutableStateOf(false) }
     val itemIds = remember(snapshotItems) { snapshotItems.map { it.id } }
     val itemFocusRequesters = remember(itemCount) { List(itemCount) { FocusRequester() } }
     var lastFocusedItemId by rememberSaveable { mutableIntStateOf(0) }
@@ -73,6 +76,7 @@ fun CollectionsCatalogTvScreen(
     }
     val preferredContentFocusRequester = when {
         itemCount > 0 -> itemFocusRequesters.getOrNull(focusedIndex)
+        hasLoadedContent -> sortFocusRequester
         isLoading -> loadingFocusRequester
         initialError != null -> retryFocusRequester
         else -> null
@@ -82,6 +86,10 @@ fun CollectionsCatalogTvScreen(
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
+
+    LaunchedEffect(itemCount) {
+        if (itemCount > 0) hasLoadedContent = true
     }
 
     LaunchedEffect(isLoading, itemCount) {
@@ -113,13 +121,13 @@ fun CollectionsCatalogTvScreen(
         contentAlignment = Alignment.Center,
     ) {
         when {
-            isLoading && itemCount == 0 -> TvLoadingScreen(
+            isLoading && itemCount == 0 && !hasLoadedContent -> TvLoadingScreen(
                 modifier = Modifier
                     .focusRequester(loadingFocusRequester)
                     .focusable(),
             )
 
-            initialError != null -> CollectionsCatalogMessage(
+            initialError != null && !hasLoadedContent -> CollectionsCatalogMessage(
                 message = initialError,
                 onRetry = {
                     onEvent(CollectionsCatalogState.Event.RetrySelected)
@@ -128,13 +136,16 @@ fun CollectionsCatalogTvScreen(
                 retryFocusRequester = retryFocusRequester,
             )
 
-            shouldShowEmpty -> TvStateMessage(
+            shouldShowEmpty && !hasLoadedContent -> TvStateMessage(
                 title = stringResource(R.string.collection_catalog_tv_empty),
             )
 
             else -> CollectionsCatalogGrid(
                 pagingItems = items,
                 isLoadingMore = appendState is LoadState.Loading,
+                selectedSort = state.sort,
+                sortFocusRequester = sortFocusRequester,
+                onSortSelected = { onEvent(CollectionsCatalogState.Event.SortSelected(it)) },
                 itemFocusRequesters = itemFocusRequesters,
                 onCollectionSelected = {
                     onEvent(CollectionsCatalogState.Event.CollectionSelected(it))

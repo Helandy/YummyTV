@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.mobile
 
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalPrompt
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,6 +21,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
+import su.afk.yummy.tv.core.designsystem.seasonal.LocalSeasonalDecorationsEnabled
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.BackStackHost
@@ -80,10 +82,17 @@ class MobileMainGraph @Inject internal constructor(
                 isTelevision = false,
             ) {
                 ConfirmDialogHost(isTelevision = false)
+                SeasonalPrompt(
+                    theme = state.seasonalPrompt,
+                    isTelevision = false,
+                    ready = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination,
+                    onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
+                )
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalSeasonalDecorationsEnabled provides state.seasonalDecorationsEnabled,
                     LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,
                     LocalLibraryUserRatings provides state.libraryUserRatings,
@@ -102,6 +111,7 @@ class MobileMainGraph @Inject internal constructor(
                             onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = true))
                         },
                         toastMessage = toast.message,
+                        showSeasonalOverlay = !isFullscreenDestination,
                     ) {
                         AppNavHost(
                             navManager = navManager,

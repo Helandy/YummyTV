@@ -1,8 +1,16 @@
 package su.afk.yummy.tv.feature.details.viewingorder.view
 
+import androidx.compose.foundation.border
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
@@ -19,7 +27,10 @@ internal fun ViewingOrderCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onFocused: () -> Unit = {},
+    /** Тайтл, чья страница сейчас открыта: обводка отличается от фокусной и скрывается, пока карточка в фокусе. */
+    selected: Boolean = false,
 ) {
+    var focused by remember { mutableStateOf(false) }
     val meta = listOfNotNull(
         item.type,
         item.episodesCount?.let { stringResource(R.string.details_episodes_count_short, it) },
@@ -29,7 +40,15 @@ internal fun ViewingOrderCard(
         title = item.title,
         posterUrl = item.poster?.bestUrl,
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
+            .onFocusChanged { focused = it.hasFocus }
+            .then(
+                if (selected && !focused) {
+                    Modifier.border(SelectedBorderWidth, MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.medium)
+                } else {
+                    Modifier
+                },
+            ),
         subtitle = meta,
         caption = item.relation,
         onFocused = onFocused,
@@ -42,3 +61,5 @@ internal fun ViewingOrderCard(
         },
     )
 }
+
+private val SelectedBorderWidth = 2.dp

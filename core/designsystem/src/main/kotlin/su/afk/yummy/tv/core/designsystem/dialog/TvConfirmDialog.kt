@@ -55,6 +55,8 @@ import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
 internal fun TvConfirmDialog(
     request: ConfirmDialogRequest,
     onAnswer: (Boolean) -> Unit,
+    /** Закрытие без выбора (Back, тап по фону); по умолчанию это отказ. */
+    onDismiss: () -> Unit = { onAnswer(false) },
 ) {
     val focusManager = LocalFocusManager.current
     val confirmFocusRequester = remember { FocusRequester() }
@@ -67,7 +69,7 @@ internal fun TvConfirmDialog(
     }
 
     Dialog(
-        onDismissRequest = { onAnswer(false) },
+        onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
@@ -79,7 +81,7 @@ internal fun TvConfirmDialog(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = { onAnswer(false) },
+                    onClick = onDismiss,
                 ),
             contentAlignment = Alignment.Center,
         ) {
@@ -95,7 +97,7 @@ internal fun TvConfirmDialog(
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                             if (event.key == Key.Back || event.key == Key.Escape) {
-                                onAnswer(false)
+                                onDismiss()
                                 true
                             } else {
                                 false

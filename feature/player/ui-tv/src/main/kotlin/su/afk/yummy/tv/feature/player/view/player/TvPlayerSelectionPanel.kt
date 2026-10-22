@@ -22,8 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.Icon
@@ -47,13 +47,11 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
-import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun TvPlayerSelectionPanel(
@@ -70,6 +68,8 @@ internal fun TvPlayerSelectionPanel(
     /** Логотип слева от названия (студии озвучки, балансеры); без него пункты рисуются как раньше. */
     logoFor: ((String) -> Int?)? = null,
     logoFallbackIcon: ImageVector = Icons.Filled.PlayCircle,
+    /** Значок по названию пункта; перекрывает [logoFallbackIcon]. */
+    logoFallbackFor: ((String) -> ImageVector)? = null,
     itemMeta: @Composable (index: Int) -> String? = { null },
     itemMetaContent: @Composable (index: Int, contentColor: Color) -> Unit = { index, contentColor ->
         val meta = itemMeta(index)
@@ -151,7 +151,7 @@ internal fun TvPlayerSelectionPanel(
                         accentLabel = accentLabel,
                         logoName = if (logoFor != null) label else null,
                         logoRes = logoFor?.invoke(label),
-                        logoFallbackIcon = logoFallbackIcon,
+                        logoFallbackIcon = logoFallbackFor?.invoke(label) ?: logoFallbackIcon,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
                         onExitDown = if (idx == lastEnabledIndex) onExitDown else null,
                         onClick = { onItemSelected(idx) },
@@ -204,7 +204,15 @@ internal fun PlayerSelectionItem(
         label = "playerSelectionItemBorder",
     )
     val contentColor by animateColorAsState(
-        targetValue = (if (focused) colors.onPrimary else if (selected) Color.Black else Color.White)
+        targetValue = (
+            if (focused) {
+                colors.onPrimary
+            } else if (selected) {
+                Color.Black
+            } else {
+                Color.White
+            }
+            )
             .let { if (enabled) it else it.copy(alpha = 0.42f) },
         animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
         label = "playerSelectionItemContent",
@@ -291,21 +299,6 @@ internal fun PlayerSelectionItem(
                     overflow = TextOverflow.Ellipsis,
                 )
                 metaContent(contentColor)
-            }
-            if (selected) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(Color.Black.copy(alpha = 0.10f))
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.player_selected),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = contentColor.copy(alpha = 0.72f),
-                        maxLines = 1,
-                    )
-                }
             }
         }
     }

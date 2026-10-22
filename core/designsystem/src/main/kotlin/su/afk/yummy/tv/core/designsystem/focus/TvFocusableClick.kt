@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.focus
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalFocusLights
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -54,6 +55,7 @@ fun Modifier.tvFocusableClick(
             scaleX = scale
             scaleY = scale
         }
+        .seasonalFocusLights(focused, shape)
         .border(
             border = BorderStroke(width = 3.dp, color = borderColor),
             shape = shape,

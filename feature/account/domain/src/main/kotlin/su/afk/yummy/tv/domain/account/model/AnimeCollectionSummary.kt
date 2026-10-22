@@ -7,4 +7,7 @@ data class AnimeCollectionSummary(
     val posterUrl: String?,
     val poster: AnimeCollectionPoster?,
     val views: Int?,
+    val likes: Int? = null,
+    /** До трёх первых постеров коллекции — для коллажа в карточке. */
+    val posterUrls: List<String> = emptyList(),
 )

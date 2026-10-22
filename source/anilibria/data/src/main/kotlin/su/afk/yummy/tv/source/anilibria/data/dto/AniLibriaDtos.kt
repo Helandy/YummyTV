@@ -7,11 +7,20 @@ data class AniLibriaExternalIdDto(
     val id: Int? = null,
 )
 
+@Serializable
+data class AniLibriaNameDto(
+    val main: String? = null,
+    val english: String? = null,
+    val alternative: String? = null,
+)
+
 /** Элемент ответа `/app/search/releases` (запрашиваются только нужные поля). */
 @Serializable
 data class AniLibriaSearchItemDto(
     val id: Int = 0,
     val mal: AniLibriaExternalIdDto? = null,
+    val name: AniLibriaNameDto? = null,
+    val year: Int? = null,
     val is_blocked_by_geo: Boolean = false,
     val is_blocked_by_copyrights: Boolean = false,
 )

@@ -5,17 +5,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -26,13 +22,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
-import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
@@ -41,8 +36,13 @@ import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
+import su.afk.yummy.tv.feature.details.mobile.details.utils.tightenVerticalSpacing
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsCollectionsSection
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsCommentsBar
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsInfoBlock
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsInfoSheet
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsLinkRow
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsLinksCard
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileSkeleton
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
@@ -50,9 +50,15 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRatingOverview
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRatingOverviewSkeleton
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsScreenshotsRow
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsUniverseSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsVideoSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.SubscriptionsSignInSheet
+import su.afk.yummy.tv.feature.details.mobile.details.view.buildDetailsLinks
+import su.afk.yummy.tv.feature.details.mobile.details.view.commentsDetailsLink
+import su.afk.yummy.tv.feature.details.mobile.details.view.similarDetailsLink
+import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -73,8 +79,9 @@ private fun DetailsMobileScreenErrorPreview() = ScreenPreviewTheme {
     DetailsMobileScreen(
         DetailsState.State(
             isLoading = false,
-            error = UiText.Res(R.string.details_load_error)
-        ), emptyFlow()
+            error = UiText.Res(R.string.details_load_error),
+        ),
+        emptyFlow(),
     ) {}
 }
 
@@ -132,9 +139,8 @@ fun DetailsMobileScreen(
             modifier = Modifier
                 .mobileContentMaxWidth()
                 .fillMaxSize()
-                .testTag("details_root")
-                .navigationBarsPadding(),
-            contentPadding = PaddingValues(bottom = 24.dp),
+                .testTag("details_root"),
+            contentPadding = PaddingValues(bottom = 0.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item(key = "hero") {
@@ -153,16 +159,11 @@ fun DetailsMobileScreen(
             item(key = "actions") {
                 DetailsSecondaryActions(
                     state = state,
-                    details = details,
                     onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsRouteSelected) },
                     onSubscriptionsLockedSelected = {
                         onEvent(DetailsState.Event.SubscriptionsSignInPromptSelected)
                     },
                     onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
-                    onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
-                    onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
-                    onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
-                    onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
@@ -187,8 +188,8 @@ fun DetailsMobileScreen(
                 DetailsVideoSection(
                     trailers = state.trailers,
                     bloggerVideosImageModel = details.poster.bestUrl(),
-                    isTrailersLoading = state.isExtrasLoading,
-                    hasBloggerVideos = state.hasBloggerVideos,
+                    isTrailersLoading = state.isExtrasLoading && details.trailersCount > 0,
+                    hasBloggerVideos = details.bloggerVideosCount > 0,
                     onTrailersClick = { onEvent(DetailsState.Event.TrailersSelected) },
                     onBloggerVideosClick = { onEvent(DetailsState.Event.BloggerVideosSelected) },
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -209,14 +210,41 @@ fun DetailsMobileScreen(
                     DetailsRatingOverviewSkeleton(modifier = Modifier.padding(horizontal = 16.dp))
                 }
             }
-            item(key = "comments") {
-                FilledTonalButton(
-                    onClick = { onEvent(DetailsState.Event.CommentsSelected) },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.details_mobile_show_comments))
+            state.details?.takeIf { it.viewingOrder.size > 1 }?.let { details ->
+                item(key = "universe") {
+                    DetailsUniverseSection(
+                        items = details.viewingOrder,
+                        currentAnimeId = details.id,
+                        onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
+                        onShowAllClick = { onEvent(DetailsState.Event.ViewingOrderSelected) },
+                    )
+                }
+            }
+            item(key = "similar") {
+                // Ближе к «Вселенной» выше и к коллекциям ниже, чем общий шаг ленты.
+                DetailsLinkRow(
+                    link = similarDetailsLink { onEvent(DetailsState.Event.SimilarSelected) },
+                    modifier = Modifier.tightenVerticalSpacing(top = 12.dp, bottom = 8.dp),
+                )
+            }
+            if (state.collections.isNotEmpty()) {
+                item(key = "collections") {
+                    DetailsCollectionsSection(
+                        collections = state.collections,
+                        onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
+                        onShowAllClick = { onEvent(DetailsState.Event.CollectionsSelected) },
+                    )
+                }
+            }
+            if (details.reviewsCount > 0) {
+                item(key = "links") {
+                    DetailsLinksCard(
+                        links = buildDetailsLinks(
+                            reviewsCount = details.reviewsCount,
+                            reviewsBadge = details.reviewsCount.toCompactCount(),
+                            onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                        ),
+                    )
                 }
             }
             state.error?.let { error ->
@@ -227,6 +255,14 @@ fun DetailsMobileScreen(
                         onAction = { onEvent(DetailsState.Event.RetrySelected) },
                     )
                 }
+            }
+            item(key = "comments") {
+                DetailsCommentsBar(
+                    commentsDetailsLink(
+                        commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
+                        onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
+                    ),
+                )
             }
         }
         DetailsPickerSheets(
@@ -257,7 +293,9 @@ fun DetailsMobileScreen(
         if (state.showInfoSheet) {
             state.details?.let { details ->
                 DetailsInfoSheet(
-                    titles = details.otherTitles.filter { it.isNotBlank() },
+                    titles = (listOf(details.title) + details.otherTitles)
+                        .filter { it.isNotBlank() }
+                        .distinct(),
                     onDismiss = { onEvent(DetailsState.Event.InfoDismissed) },
                 )
             }
@@ -268,6 +306,5 @@ fun DetailsMobileScreen(
                 onDismiss = { onEvent(DetailsState.Event.SubscriptionsSignInPromptDismissed) },
             )
         }
-
     }
 }

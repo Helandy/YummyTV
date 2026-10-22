@@ -142,6 +142,11 @@ internal class CvhExtractor @Inject constructor(
             qualities.putCvhQuality("480p", sources.optString("mpegMediumUrl"), failoverHost, useFailoverHost)
             qualities.putCvhQuality("720p", sources.optString("mpegHighUrl"), failoverHost, useFailoverHost)
             qualities.putCvhQuality("1080p", sources.optString("mpegFullHdUrl"), failoverHost, useFailoverHost)
+            // 1440p приходит под двумя ключами (mpegQhdUrl / mpeg2kUrl): берём один, чтобы не дублировать качество.
+            val qhdUrl = sources.optString("mpegQhdUrl").ifBlank { sources.optString("mpeg2kUrl") }
+            qualities.putCvhQuality("1440p", qhdUrl, failoverHost, useFailoverHost)
+            // Ярлык строго «NNNp»: «4K» qualityHeight() распарсит как высоту 4.
+            qualities.putCvhQuality("2160p", sources.optString("mpeg4kUrl"), failoverHost, useFailoverHost)
 
             if (qualities.isEmpty()) {
                 logFailure(iframeUrl, "no mp4 qualities in sources")

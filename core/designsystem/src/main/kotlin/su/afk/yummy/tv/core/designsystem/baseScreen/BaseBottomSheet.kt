@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalPanelDecor
 
 /**
  * Гасит остаточный scroll/fling, когда список внутри шторки короче её максимальной высоты и
@@ -94,6 +95,7 @@ fun BaseBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .seasonalPanelDecor()
                 .heightIn(max = maxHeight)
                 .navigationBarsPadding()
                 .padding(contentPadding)

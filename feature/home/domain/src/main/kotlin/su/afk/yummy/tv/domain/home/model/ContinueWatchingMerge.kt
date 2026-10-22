@@ -3,8 +3,10 @@ package su.afk.yummy.tv.domain.home.model
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.common.player.isServerMirrorOfExtraSource
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
+import su.afk.yummy.tv.core.model.anime.mergeEpisodeProgress
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -49,6 +51,51 @@ fun List<HomeContinueWatchingItem>.mergeWithRemote(
         }
         .sortedByDescending { it.updatedAt }
 }
+
+/**
+ * Сверяет карточки с тем, что видит список серий тайтла: серверный прогресс из [serverProgress]
+ * сливается с локальной историей [localHistory] общим [mergeEpisodeProgress]. Если по этому правилу
+ * серия карточки просмотрена, карточка не остаётся висеть: при [suggestNextEpisode] она становится
+ * карточкой следующей серии, иначе тайтл скрывается. Тайтлы без серверного прогресса не трогаем.
+ */
+fun List<HomeContinueWatchingItem>.reconcileWithEpisodeProgress(
+    serverProgress: List<AnimeWatchProgress>,
+    localHistory: List<HomeContinueWatchingItem>,
+    suggestNextEpisode: Boolean,
+): List<HomeContinueWatchingItem> {
+    if (serverProgress.isEmpty()) return this
+    val serverByAnime = serverProgress.groupBy { it.animeId }
+    val historyByAnime = localHistory.groupBy { it.animeId }
+    return mapNotNull { card ->
+        val server = serverByAnime[card.animeId]
+        if (server == null || card.source == ContinueWatchingSource.REMOTE_NEXT_EPISODE) {
+            return@mapNotNull card
+        }
+        val cardEpisode = card.episode.episodeGroupKey()
+        val resolved = mergeEpisodeProgress(
+            serverEntries = server,
+            localEntries = historyByAnime[card.animeId].orEmpty().map { it.toWatchProgress() },
+        ).firstOrNull { it.episode.episodeGroupKey() == cardEpisode }
+        when {
+            resolved == null || !isWatchedProgress(resolved.positionMs, resolved.durationMs) -> card
+            suggestNextEpisode -> card.toNextEpisodeCard()
+            else -> null
+        }
+    }
+}
+
+private fun HomeContinueWatchingItem.toWatchProgress(): AnimeWatchProgress =
+    AnimeWatchProgress(
+        animeId = animeId,
+        episode = episode,
+        videoId = videoId,
+        episodeUrl = episodeUrl,
+        positionMs = positionMs,
+        durationMs = durationMs,
+        updatedAt = updatedAt,
+        playerName = playerName,
+        dubbing = dubbing,
+    )
 
 private fun HomeContinueWatchingItem.withEchoDate(
     historyByEpisode: Map<Pair<Int, String>, List<HomeContinueWatchingItem>>,

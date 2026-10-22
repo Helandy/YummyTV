@@ -216,6 +216,11 @@ if (file("source/anistar").isDirectory) {
     include(":source:anistar:data")
 }
 
+if (file("source/amedia").isDirectory) {
+    include(":source:amedia:domain")
+    include(":source:amedia:data")
+}
+
 if (file("source/anilibria").isDirectory) {
     include(":source:anilibria:domain")
     include(":source:anilibria:data")

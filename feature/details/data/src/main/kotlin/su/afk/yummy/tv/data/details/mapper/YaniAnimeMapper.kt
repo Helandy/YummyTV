@@ -48,6 +48,12 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         },
         screenshots = source.randomScreenshots.toAnimeScreenshots(),
         reviewsCount = source.reviewsCount.coerceAtLeast(0),
+        commentsCount = source.commentsCount.coerceAtLeast(0),
+        parentCommentsCount = source.parentCommentsCount.coerceAtLeast(0),
+        postsCount = source.postsCount.coerceAtLeast(0),
+        listsCount = source.listsCount.coerceAtLeast(0),
+        trailersCount = source.trailersCount.coerceAtLeast(0),
+        bloggerVideosCount = source.partnerVideosCount.coerceAtLeast(0),
         malId = source.remoteIds?.myAnimeListId?.takeIf { it > 0 },
     )
 }

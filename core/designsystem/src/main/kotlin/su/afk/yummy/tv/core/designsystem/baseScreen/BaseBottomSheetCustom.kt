@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.baseScreen
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalPanelDecor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,7 +64,7 @@ fun BaseBottomSheetCustom(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentWindowInsets = { WindowInsets(0.dp) },
     ) {
-        Box(modifier = Modifier.nestedScroll(rememberBottomOverscrollGuard())) {
+        Box(modifier = Modifier.seasonalPanelDecor().nestedScroll(rememberBottomOverscrollGuard())) {
             content(maxHeight)
         }
     }

@@ -112,7 +112,6 @@ class HomeViewModelTest : BaseUnitTest() {
         every { observeContinueWatching() } returns continueWatching
         every { settingsStore.newEpisodesSectionEnabled } returns flowOf(true)
         every { settingsStore.newEpisodesSources } returns flowOf(NewEpisodesSource.DEFAULT)
-        every { settingsStore.newEpisodesHideWatched } returns flowOf(false)
         every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(emptySet())
         every { observeWatchedEpisodes() } returns flowOf(emptyMap())
         every { settingsStore.hiddenRecommendationIds } returns hiddenIds
@@ -409,7 +408,7 @@ class HomeViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `community prompt is shown once after five days and remembered`() {
+    fun `community prompt is shown once after two days and remembered`() {
         communityPrompt.value = CommunityPromptSnapshot(dismissed = false, firstUseTimeMs = 0L)
 
         val vm = createViewModel()
@@ -421,7 +420,7 @@ class HomeViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `community prompt is not shown before five days or when dismissed`() {
+    fun `community prompt is not shown before two days or when dismissed`() {
         communityPrompt.value = CommunityPromptSnapshot(
             dismissed = false,
             firstUseTimeMs = System.currentTimeMillis(),
@@ -568,11 +567,10 @@ class HomeViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `watched titles leave the new episodes section when hiding is on`() {
+    fun `watched titles leave the new episodes section `() {
         coEvery { getRecentlyAiredSchedule(any()) } returns listOf(item(1).copy(episodeNumber = 3))
         every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(setOf(1))
         every { observeWatchedEpisodes() } returns flowOf(mapOf(1 to setOf(3)))
-        every { settingsStore.newEpisodesHideWatched } returns flowOf(true)
 
         val types = createViewModel().currentState.feed?.sections?.map { it.type }
 

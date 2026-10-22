@@ -39,4 +39,5 @@ internal fun SearchSort.label(): String = when (this) {
     SearchSort.VIEWS -> stringResource(R.string.search_filter_sort_views)
     SearchSort.TOP -> stringResource(R.string.search_filter_sort_top)
     SearchSort.ID -> stringResource(R.string.search_filter_sort_id)
+    SearchSort.YEAR -> stringResource(R.string.search_filter_sort_year)
 }

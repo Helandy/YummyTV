@@ -1,10 +1,11 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,9 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
@@ -40,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,12 +46,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +66,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
+import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -93,8 +93,9 @@ internal fun DetailsButtonBar(
     isWatchLoading: Boolean,
     watchProgress: DetailsWatchProgressIndex,
     canSubscribe: Boolean,
-    buttonOrder: List<DetailsButtonAction>,
     restoreFocusRequest: Int,
+    hiddenActions: Set<DetailsButtonAction>,
+    focusOnResume: Boolean,
     firstFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
@@ -112,7 +113,6 @@ internal fun DetailsButtonBar(
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
     modifier: Modifier = Modifier,
-    height: Dp = 150.dp,
 ) {
     val continueTarget = (videosState as? VideosUiState.Content)?.let { content ->
         resolveDetailsContinueTarget(
@@ -146,6 +146,7 @@ internal fun DetailsButtonBar(
         icon = Icons.Filled.PlayArrow,
         style = ButtonStyle.Filled,
         onClick = onWatchSelected,
+        enabled = !isWatchLoading,
     )
     val libraryButton = ButtonData(
         action = DetailsButtonAction.LIBRARY,
@@ -240,7 +241,11 @@ internal fun DetailsButtonBar(
         ),
         ButtonData(
             DetailsButtonAction.COMMENTS,
-            stringResource(R.string.details_comments),
+            if (details.commentsCount > 0) {
+                stringResource(R.string.details_comments_count, details.commentsCount.toCompactCount())
+            } else {
+                stringResource(R.string.details_comments)
+            },
             Icons.AutoMirrored.Filled.Comment,
             ButtonStyle.Normal,
             onCommentsSelected,
@@ -277,11 +282,11 @@ internal fun DetailsButtonBar(
     }
     val availableButtons = (listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons)
         .associateBy { it.action }
-    val buttons = buttonOrder.mapNotNull { availableButtons[it] } +
-            availableButtons.values.filterNot { button -> button.action in buttonOrder }
+    val buttons = DetailsButtonAction.defaultOrder
+        .filterNot { it in hiddenActions }
+        .mapNotNull { availableButtons[it] }
     val buttonRows = buttons.toButtonRows()
     val initialFocusedAction = buttons.firstOrNull()?.action ?: DetailsButtonAction.WATCH
-    val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     var focusedAction by rememberSaveable { mutableStateOf(initialFocusedAction) }
@@ -294,31 +299,15 @@ internal fun DetailsButtonBar(
             if (index == 0) firstFocusRequester else FocusRequester()
         }
     }
-    // Отступ, позволяющий отцентрировать сфокусированную строку: сверху ровно на одну
-    // строку меньше (первая строка прижата к верху), снизу — до центра последней.
-    val verticalCenterInset = (height - ButtonRowHeight) / 2
-    val topPadding = (verticalCenterInset - ButtonRowHeight - ButtonRowSpacing).coerceAtLeast(0.dp)
-    val centerScrollOffset = with(LocalDensity.current) { -verticalCenterInset.roundToPx() }
-
-    fun rowScrollOffset(rowIndex: Int): Int = if (rowIndex == 0) 0 else centerScrollOffset
-
     val requestFocusedButton: () -> Unit = {
         val targetIndex = focusedButtonIndex().coerceIn(0, buttons.lastIndex)
         scope.launch {
-            val targetRow = buttonRows.rowIndexForButton(targetIndex)
-            listState.scrollToItem(targetRow, rowScrollOffset(targetRow))
             focusRequesters.getOrNull(targetIndex)?.let { requestFocusUntilTimeout(it) }
         }
     }
 
-    fun onRowFocused(rowIndex: Int) {
-        scope.launch {
-            listState.animateScrollToItem(rowIndex, rowScrollOffset(rowIndex))
-        }
-    }
-
     LaunchedEffect(buttons.size) {
-        requestFocusedButton()
+        if (focusOnResume) requestFocusedButton()
     }
 
     LaunchedEffect(restoreFocusRequest) {
@@ -327,9 +316,9 @@ internal fun DetailsButtonBar(
         }
     }
 
-    DisposableEffect(lifecycleOwner, buttons.size, focusedAction) {
+    DisposableEffect(lifecycleOwner, buttons.size, focusedAction, focusOnResume) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
+            if (event == Lifecycle.Event.ON_RESUME && focusOnResume) {
                 requestFocusedButton()
             }
         }
@@ -337,88 +326,67 @@ internal fun DetailsButtonBar(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(height),
-    ) {
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         // i = W*(s-1)/(2s): при ширине кнопки W-2i и масштабе s выступ (W-2i)*(s-1)/2 == i,
         // так что сфокусированная кнопка встаёт ровно по краю бара.
         val focusInset = maxWidth * ((ButtonFocusedScale - 1f) / (2f * ButtonFocusedScale))
-        LazyColumn(
-            state = listState,
+        // Кнопок мало и они все помещаются, поэтому бар не скроллится: фокус просто ходит по строкам.
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(height),
-            contentPadding = PaddingValues(
-                start = focusInset,
-                end = focusInset,
-                top = topPadding,
-                bottom = verticalCenterInset,
-            ),
+                .padding(horizontal = focusInset),
             verticalArrangement = Arrangement.spacedBy(ButtonRowSpacing),
         ) {
-            itemsIndexed(
-                items = buttonRows,
-                key = { _, row -> row.key },
-            ) { rowIndex, row ->
-                when (row) {
-                    is ButtonRowData.Single -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp),
-                        ) {
-                            DetailsActionButton(
-                                button = row.button,
-                                index = row.index,
-                                focusRequester = focusRequesters[row.index],
-                                onFocused = {
-                                    focusedAction = row.button.action
-                                    onRowFocused(rowIndex)
-                                },
-                            )
-                        }
-                    }
-
-                    is ButtonRowData.Pair -> {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(ButtonRowHeight),
-                            horizontalArrangement = Arrangement.spacedBy(ButtonColumnSpacing),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            DetailsActionButton(
-                                button = row.first,
-                                index = row.firstIndex,
-                                focusRequester = focusRequesters[row.firstIndex],
-                                onFocused = {
-                                    focusedAction = row.first.action
-                                    onRowFocused(rowIndex)
-                                },
-                                modifier = Modifier.weight(1f),
-                            )
-                            if (row.second != null && row.secondIndex != null) {
+            buttonRows.forEach { row ->
+                key(row.key) {
+                    when (row) {
+                        is ButtonRowData.Single -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(ButtonRowHeight),
+                            ) {
                                 DetailsActionButton(
-                                    button = row.second,
-                                    index = row.secondIndex,
-                                    focusRequester = focusRequesters[row.secondIndex],
-                                    onFocused = {
-                                        focusedAction = row.second.action
-                                        onRowFocused(rowIndex)
-                                    },
+                                    button = row.button,
+                                    index = row.index,
+                                    focusRequester = focusRequesters[row.index],
+                                    onFocused = { focusedAction = row.button.action },
+                                )
+                            }
+                        }
+
+                        is ButtonRowData.Pair -> {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(ButtonRowHeight),
+                                horizontalArrangement = Arrangement.spacedBy(ButtonColumnSpacing),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                DetailsActionButton(
+                                    button = row.first,
+                                    index = row.firstIndex,
+                                    focusRequester = focusRequesters[row.firstIndex],
+                                    onFocused = { focusedAction = row.first.action },
                                     modifier = Modifier.weight(1f),
                                 )
-                            } else {
-                                Spacer(modifier = Modifier.weight(1f))
+                                if (row.second != null && row.secondIndex != null) {
+                                    DetailsActionButton(
+                                        button = row.second,
+                                        index = row.secondIndex,
+                                        focusRequester = focusRequesters[row.secondIndex],
+                                        onFocused = { focusedAction = row.second.action },
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
     }
 }
 
@@ -439,15 +407,16 @@ private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
                 add(ButtonRowData.Pair(index, button, null, null))
             }
             index += 1
+        } else if (nextButton == null) {
+            // Последняя кнопка без пары растягивается на всю ширину, как «Смотреть».
+            add(ButtonRowData.Single(index, button))
+            index += 1
         } else {
-            add(ButtonRowData.Pair(index, button, nextButton?.let { index + 1 }, nextButton))
-            index += if (nextButton != null) 2 else 1
+            add(ButtonRowData.Pair(index, button, index + 1, nextButton))
+            index += 2
         }
     }
 }
-
-private fun List<ButtonRowData>.rowIndexForButton(buttonIndex: Int): Int =
-    indexOfFirst { buttonIndex in it.buttonIndices }.coerceAtLeast(0)
 
 @Composable
 private fun DetailsActionButton(
@@ -470,6 +439,7 @@ private fun DetailsActionButton(
         iconSize = iconSize,
         verticalPadding = verticalPadding,
         focusedScale = focusedScale,
+        enabled = button.enabled,
         onClick = {
             onFocused()
             button.onClick()
@@ -495,6 +465,7 @@ private fun ActionButton(
     iconSize: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
     focusedScale: Float = ButtonFocusedScale,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -521,7 +492,13 @@ private fun ActionButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = focusedScale)
+            .alpha(if (enabled) 1f else 0.5f)
+            .tvFocusableClick(
+                onClick = { if (enabled) onClick() },
+                shape = shape,
+                focusedScale = focusedScale,
+            )
+            .let { if (style == ButtonStyle.Filled) it.seasonalButtonDecor() else it }
             .background(bgColor, shape)
             .padding(horizontal = 20.dp, vertical = verticalPadding),
         contentAlignment = Alignment.Center,

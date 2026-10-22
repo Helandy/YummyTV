@@ -59,6 +59,7 @@ import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
+import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
@@ -202,7 +203,7 @@ private fun BalancerOptionItem(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            LogoBadge(logoRes = balancerLogoRes(label), size = 36.dp)
+            LogoBadge(logoRes = balancerLogoRes(label), size = 36.dp, fallbackIcon = balancerFallbackIcon(label))
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp),

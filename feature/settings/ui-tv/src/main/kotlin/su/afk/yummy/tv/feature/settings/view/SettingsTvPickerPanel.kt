@@ -20,10 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
-import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
-import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
@@ -32,12 +30,12 @@ import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.utils.hint
+import su.afk.yummy.tv.core.designsystem.theme.previewColor
 import su.afk.yummy.tv.feature.settings.common.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
-import su.afk.yummy.tv.feature.settings.common.utils.toDetailsButtonOrderItems
 
 /** Текущее значение пункта-пикера для строки в центральной колонке. */
 @Composable
@@ -46,15 +44,10 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.CONTENT_LANGUAGE -> state.contentLanguage.label()
     SettingsTvPicker.THEME -> state.appTheme.label()
     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
-    SettingsTvPicker.POSTER_SIZE -> state.posterCardSize.label()
-    SettingsTvPicker.CONTINUE_WATCHING_SIZE -> state.libraryContinueWatchingCardSize.label()
     SettingsTvPicker.POSTER_QUALITY -> state.posterQuality.label()
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
-
-    SettingsTvPicker.DETAILS_BUTTON_ORDER ->
-        state.detailsButtonOrder.toDetailsButtonOrderItems().joinToString(" · ") { it.label }
 
     SettingsTvPicker.PREFERRED_PLAYER -> state.preferredPlayer.label()
     SettingsTvPicker.SUBTITLE_COLOR -> state.subtitleStyle.textColor.label()
@@ -127,6 +120,7 @@ internal fun SettingsTvPickerPanel(
                 selected = state.appTheme,
                 labelOf = { it.label() },
                 hintOf = { it.hint() },
+                colorOf = { it.previewColor() },
                 focusRequester = entryFocusRequester,
                 onSelected = { select(SettingsState.Event.AppThemeSelected(it)) },
             )
@@ -138,26 +132,6 @@ internal fun SettingsTvPickerPanel(
                 hintOf = { it.hint() },
                 focusRequester = entryFocusRequester,
                 onSelected = { select(SettingsState.Event.BackgroundStyleSelected(it)) },
-            )
-
-            SettingsTvPicker.POSTER_SIZE -> PickerOptions(
-                values = PosterCardSize.entries,
-                selected = state.posterCardSize,
-                labelOf = { it.label() },
-                hintOf = { it.hint() },
-                focusRequester = entryFocusRequester,
-                onSelected = { select(SettingsState.Event.PosterCardSizeSelected(it)) },
-            )
-
-            SettingsTvPicker.CONTINUE_WATCHING_SIZE -> PickerOptions(
-                values = LibraryContinueWatchingCardSize.entries,
-                selected = state.libraryContinueWatchingCardSize,
-                labelOf = { it.label() },
-                hintOf = { it.hint() },
-                focusRequester = entryFocusRequester,
-                onSelected = {
-                    select(SettingsState.Event.LibraryContinueWatchingCardSizeSelected(it))
-                },
             )
 
             SettingsTvPicker.POSTER_QUALITY -> PickerOptions(
@@ -188,19 +162,6 @@ internal fun SettingsTvPickerPanel(
                     onEvent(SettingsState.Event.LibraryTabMoved(it, DetailsButtonMoveDirection.DOWN))
                 },
                 onReset = { onEvent(SettingsState.Event.LibraryTabOrderReset) },
-            )
-
-            SettingsTvPicker.DETAILS_BUTTON_ORDER -> DetailsButtonOrderPanel(
-                order = state.detailsButtonOrder,
-                upFocusRequester = openerFocusRequester,
-                contentFocusRequester = entryFocusRequester,
-                onMoveUp = {
-                    onEvent(SettingsState.Event.DetailsButtonMoved(it, DetailsButtonMoveDirection.UP))
-                },
-                onMoveDown = {
-                    onEvent(SettingsState.Event.DetailsButtonMoved(it, DetailsButtonMoveDirection.DOWN))
-                },
-                onReset = { onEvent(SettingsState.Event.DetailsButtonOrderReset) },
             )
 
             SettingsTvPicker.PREFERRED_PLAYER -> PickerOptions(

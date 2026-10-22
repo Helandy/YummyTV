@@ -34,6 +34,10 @@
     <string name="comments_sort_new">New</string>
     <string name="comments_sort_old">Old</string>
     <string name="comments_sort_best">Best</string>
+    <string name="comments_total">%s total</string>
+    <string name="comments_sort_new_first">Newest first</string>
+    <string name="comments_sort_old_first">Oldest first</string>
+    <string name="comments_sort_best_first">Best first</string>
     <string name="comments_report_spam">Spam</string>
     <string name="comments_report_insult">Insult</string>
         <string name="comments_report_flood">Flood</string>

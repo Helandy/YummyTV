@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -18,8 +19,10 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.comments.CommentTargetType
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -37,6 +40,7 @@ import su.afk.yummy.tv.domain.collection.usecase.RemoveCollectionVoteUseCase
 import su.afk.yummy.tv.domain.collection.usecase.UpdateCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.VoteCollectionUseCase
 import su.afk.yummy.tv.feature.collection.CollectionState.Event
+import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 
@@ -47,10 +51,15 @@ class CollectionViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val commentsNavigator: ICommentsNavigator = mockk()
+    private val accountNavigator: IAccountNavigator = mockk()
     private val repository: CollectionRepository = mockk()
     private val mutationNotifier: CollectionMutationRepository = mockk(relaxed = true)
     private val accountRepository: AccountRepository = mockk()
     private val stringProvider: StringProvider = mockk()
+    private val titleCardLayout = MutableStateFlow(TitleCardLayout.TILE)
+    private val appearanceSettingsStore: AppearanceSettingsStore = mockk {
+        every { titleCardLayout } returns this@CollectionViewModelTest.titleCardLayout
+    }
     private val analytics: CollectionAnalytics = mockk(relaxed = true)
     private val navKey: NavKey = mockk()
 
@@ -58,7 +67,8 @@ class CollectionViewModelTest : BaseUnitTest() {
     fun setUp() {
         every { stringProvider.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { detailsNavigator.getDetailsDest(any()) } returns navKey
-        every { commentsNavigator.getCommentsDest(any(), any()) } returns navKey
+        every { commentsNavigator.getCommentsDest(any(), any(), any()) } returns navKey
+        every { accountNavigator.getUserProfileDest(any()) } returns navKey
         coEvery { accountRepository.getSession() } returns AccountSession(isAuthorized = true, userId = OWNER_ID)
         coEvery { repository.getCollection(COLLECTION_ID) } returns collection()
     }
@@ -70,6 +80,7 @@ class CollectionViewModelTest : BaseUnitTest() {
         nav = nav,
         detailsNavigator = detailsNavigator,
         commentsNavigator = commentsNavigator,
+        accountNavigator = accountNavigator,
         getCollection = GetCollectionUseCase(repository),
         getAccountSession = GetAccountSessionUseCase(accountRepository),
         voteCollection = VoteCollectionUseCase(repository),
@@ -77,6 +88,7 @@ class CollectionViewModelTest : BaseUnitTest() {
         updateCollection = UpdateCollectionUseCase(repository, mutationNotifier),
         deleteCollection = DeleteCollectionUseCase(repository, mutationNotifier),
         stringProvider = stringProvider,
+        appearanceSettingsStore = appearanceSettingsStore,
         analytics = analytics,
     )
 
@@ -102,6 +114,16 @@ class CollectionViewModelTest : BaseUnitTest() {
         assertEquals("Title", state.collection?.title)
         assertTrue(state.isOwner)
         verify(exactly = 1) { analytics.eventScreenOpened(COLLECTION_ID) }
+    }
+
+    @Test
+    fun `title card layout follows the appearance setting`() {
+        val vm = createViewModel()
+        assertEquals(TitleCardLayout.TILE, vm.currentState.titleCardLayout)
+
+        titleCardLayout.value = TitleCardLayout.ROW
+
+        assertEquals(TitleCardLayout.ROW, vm.currentState.titleCardLayout)
     }
 
     @Test
@@ -276,10 +298,20 @@ class CollectionViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.GridScrolled(index = 4, offset = 12))
 
         verify(exactly = 1) { detailsNavigator.getDetailsDest(7) }
-        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.COLLECTION, COLLECTION_ID) }
+        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.COLLECTION, COLLECTION_ID, any()) }
         verify(exactly = 2) { nav.navigate(navKey) }
         assertEquals(4, vm.currentState.firstVisibleItemIndex)
         assertEquals(12, vm.currentState.firstVisibleItemScrollOffset)
+    }
+
+    @Test
+    fun `author selection opens the owner profile`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.AuthorSelected)
+
+        verify(exactly = 1) { accountNavigator.getUserProfileDest(OWNER_ID) }
+        verify(exactly = 1) { nav.navigate(navKey) }
     }
 
     @Test

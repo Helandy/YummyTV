@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.core.designsystem.components
 
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalEmptyIllustration
+import su.afk.yummy.tv.core.designsystem.seasonal.rememberSeasonalTheme
+import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -43,12 +46,17 @@ fun StateMessage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = .72f),
-            modifier = Modifier.size(iconSize)
-        )
+        // Пустое состояние (без кнопки действия, то есть не ошибка с повтором) на Хэллоуин — призрак.
+        if (onAction == null && action == null && rememberSeasonalTheme() == SeasonalTheme.HALLOWEEN) {
+            SeasonalEmptyIllustration(Modifier.size(iconSize * 2))
+        } else {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = .72f),
+                modifier = Modifier.size(iconSize)
+            )
+        }
         Spacer(Modifier.height(18.dp))
         Text(
             text = title,

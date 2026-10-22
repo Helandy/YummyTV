@@ -7,7 +7,6 @@ import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -18,9 +17,9 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
-import su.afk.yummy.tv.feature.settings.common.model.DetailsButtonOrderItem
 import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
@@ -38,37 +37,6 @@ fun AppInterfaceMode.hint(): String = stringResource(
         AppInterfaceMode.TV -> R.string.settings_interface_tv_hint
     },
 )
-
-@Composable
-fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<DetailsButtonOrderItem> =
-    buildList {
-        var index = 0
-        while (index <= this@toDetailsButtonOrderItems.lastIndex) {
-            val action = this@toDetailsButtonOrderItems[index]
-            val nextAction = this@toDetailsButtonOrderItems.getOrNull(index + 1)
-            if (action == DetailsButtonAction.LIBRARY && nextAction == DetailsButtonAction.FAVORITE) {
-                add(
-                    DetailsButtonOrderItem(
-                        key = "LIBRARY_FAVORITE",
-                        action = DetailsButtonAction.LIBRARY,
-                        label = stringResource(R.string.settings_details_button_library_favorite),
-                    ),
-                )
-                index += 2
-            } else if (action != DetailsButtonAction.FAVORITE) {
-                add(
-                    DetailsButtonOrderItem(
-                        key = action.name,
-                        action = action,
-                        label = action.label(),
-                    ),
-                )
-                index += 1
-            } else {
-                index += 1
-            }
-        }
-    }
 
 /**
  * Темы, доступные в мобильном выборе: системная палитра есть только с Android 12,
@@ -126,23 +94,18 @@ fun BackgroundStyle.hint(): String = stringResource(
 )
 
 @Composable
-fun DetailsButtonAction.label(): String = stringResource(
+fun TitleCardLayout.label(): String = stringResource(
     when (this) {
-        DetailsButtonAction.WATCH -> R.string.settings_details_button_watch
-        DetailsButtonAction.LIBRARY -> R.string.settings_details_button_library
-        DetailsButtonAction.FAVORITE -> R.string.settings_details_button_favorite
-        DetailsButtonAction.EPISODES -> R.string.settings_details_button_episodes
-        DetailsButtonAction.SUBSCRIPTIONS -> R.string.settings_details_button_subscriptions
-        DetailsButtonAction.FULL_DETAILS -> R.string.settings_details_button_full_details
-        DetailsButtonAction.TRAILERS -> R.string.settings_details_button_trailers
-        DetailsButtonAction.SIMILAR -> R.string.settings_details_button_similar
-        DetailsButtonAction.VIEWING_ORDER -> R.string.settings_details_button_viewing_order
-        DetailsButtonAction.RATING -> R.string.settings_details_button_rating
-        DetailsButtonAction.COLLECTIONS -> R.string.settings_details_button_collections
-        DetailsButtonAction.COMMENTS -> R.string.settings_details_button_comments
-        DetailsButtonAction.REVIEWS -> R.string.settings_details_button_reviews
-        DetailsButtonAction.BLOGGER_VIDEOS -> R.string.settings_details_button_blogger_videos
-        DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots
+        TitleCardLayout.TILE -> R.string.settings_title_card_layout_tile
+        TitleCardLayout.ROW -> R.string.settings_title_card_layout_row
+    },
+)
+
+@Composable
+fun TitleCardLayout.hint(): String = stringResource(
+    when (this) {
+        TitleCardLayout.TILE -> R.string.settings_title_card_layout_tile_hint
+        TitleCardLayout.ROW -> R.string.settings_title_card_layout_row_hint
     },
 )
 

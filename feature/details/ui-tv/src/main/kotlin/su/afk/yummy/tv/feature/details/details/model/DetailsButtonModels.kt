@@ -13,6 +13,7 @@ internal data class ButtonData(
     val style: ButtonStyle,
     val onClick: () -> Unit,
     val overrideColor: Color? = null,
+    val enabled: Boolean = true,
 )
 
 internal sealed interface ButtonRowData {

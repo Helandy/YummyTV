@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
+import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
@@ -28,11 +29,11 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkip
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsButtonOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesHideWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -40,6 +41,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBu
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.titleCardLayoutKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
@@ -98,10 +100,10 @@ internal class DataStoreSettingsStore @Inject constructor(
             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
+            titleCardLayout = prefs.enum(titleCardLayoutKey, TitleCardLayout.TILE),
             showCatalogTitleYear = prefs[showCatalogTitleYearKey] ?: false,
             newEpisodesSectionEnabled = prefs[newEpisodesSectionEnabledKey] ?: true,
             newEpisodesSources = prefs[newEpisodesSourcesKey].toNewEpisodesSources(),
-            newEpisodesHideWatched = prefs[newEpisodesHideWatchedKey] ?: false,
             showLibraryTitleYear = prefs[showLibraryTitleYearKey] ?: false,
             libraryContinueWatchingCardSize = prefs.enum(
                 libraryContinueWatchingCardSizeKey,
@@ -145,8 +147,8 @@ internal class DataStoreSettingsStore @Inject constructor(
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: store.resolveSystemContentLanguage(),
-            detailsButtonOrder = prefs[detailsButtonOrderKey].toDetailsButtonOrder(),
             libraryTabOrder = prefs[libraryTabOrderKey].toLibraryTabOrder(),
+            seasonalDecorationsEnabled = prefs[seasonalDecorationsEnabledKey] ?: true,
         )
     }
 
@@ -159,6 +161,8 @@ internal class DataStoreSettingsStore @Inject constructor(
             yaniNickname = prefs[yaniNicknameKey].orEmpty(),
             yaniAvatarUrl = prefs[yaniAvatarUrlKey].orEmpty(),
             yaniUnreadNotificationsCount = prefs[yaniUnreadNotificationsCountKey] ?: 0,
+            seasonalDecorationsEnabled = prefs[seasonalDecorationsEnabledKey] ?: true,
+            seasonalAnnouncedKey = prefs[seasonalAnnouncedKey].orEmpty(),
         )
     }
 }

@@ -5,15 +5,19 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
+import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
 import su.afk.yummy.tv.core.storage.home.isFresh
@@ -42,6 +46,7 @@ class YaniHomeFeedRepository(
     private val settingsStore: YaniAccountSettingsStore,
     private val playerSettingsStore: PlayerSettingsStore,
     private val watchProgressStore: WatchProgressStorage,
+    private val animeStorage: AnimeStorage,
     private val analyticsTracker: AnalyticsTracker,
 ) : HomeFeedRepository {
 
@@ -116,6 +121,10 @@ class YaniHomeFeedRepository(
     override fun observeWatchHistory(): Flow<List<HomeContinueWatchingItem>> =
         watchProgressStore.observeAll()
             .map { entries -> entries.map { it.toHomeContinueWatchingItem() } }
+            .distinctUntilChanged()
+
+    override fun observeServerWatchProgress(): Flow<List<AnimeWatchProgress>> =
+        flow { emitAll(animeStorage.observeServerWatchProgress(settingsStore.currentLanguageCode())) }
             .distinctUntilChanged()
 
     override fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>> =

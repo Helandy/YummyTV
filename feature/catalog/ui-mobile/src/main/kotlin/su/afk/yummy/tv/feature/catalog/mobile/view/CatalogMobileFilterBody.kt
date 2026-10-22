@@ -128,16 +128,12 @@ internal fun ColumnScope.CatalogMobileFilterBody(
         }
 
         FilterSection(title = stringResource(R.string.search_filter_age)) {
-            // Коды рейтинга короткие: пять чипов одной ширины делят строку поровну.
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ChipFlow {
                 ageOptions().forEach { option ->
                     FilterChip(
                         label = option.label,
                         selected = option.value in draftFilters.ageRatings,
                         onClick = { onAgeRatingToggled(option.value) },
-                        modifier = Modifier.weight(1f),
-                        horizontalPadding = 6.dp,
-                        centered = true,
                     )
                 }
             }

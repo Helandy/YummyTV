@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class AnimeStorageDao {
@@ -66,6 +67,16 @@ abstract class AnimeStorageDao {
         """
     )
     abstract suspend fun getVideoEntries(animeId: Int, language: String): List<AnimeVideoEntry>
+
+    /** Видео с серверным `watched` из неустаревших кэшей: после смены аккаунта кэш обнуляется. */
+    @Query(
+        """
+        SELECT v.* FROM anime_videos v
+        JOIN anime_video_caches c ON c.animeId = v.animeId AND c.language = v.language
+        WHERE v.language = :language AND c.cachedAt > 0 AND v.watchedDateSeconds IS NOT NULL
+        """
+    )
+    abstract fun observeWatchedVideoEntries(language: String): Flow<List<AnimeVideoEntry>>
 
     @Query(
         """

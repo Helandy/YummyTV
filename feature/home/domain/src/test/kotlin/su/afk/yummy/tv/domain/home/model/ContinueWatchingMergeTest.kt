@@ -3,6 +3,7 @@ package su.afk.yummy.tv.domain.home.model
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 class ContinueWatchingMergeTest : BaseUnitTest() {
@@ -106,6 +107,87 @@ class ContinueWatchingMergeTest : BaseUnitTest() {
         assertEquals(listOf(remote), listOf(local).merge(remote))
     }
 
+    @Test
+    fun `card of an episode the server marks watched is replaced by the next episode`() {
+        val card = local(episode = "3", positionMs = PARTIAL_MS, durationMs = EPISODE_MS)
+
+        val result = listOf(card).reconcile(server(episode = "3", positionMs = EPISODE_MS - 10_000L))
+
+        assertEquals("4", result.single().episode)
+        assertEquals(ContinueWatchingSource.REMOTE_NEXT_EPISODE, result.single().source)
+    }
+
+    @Test
+    fun `card of a watched episode is hidden when next episode suggestion is off`() {
+        val card = local(episode = "3", positionMs = PARTIAL_MS, durationMs = EPISODE_MS)
+
+        val result = listOf(card).reconcile(
+            server(episode = "3", positionMs = EPISODE_MS - 10_000L),
+            suggestNextEpisode = false,
+        )
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `newer local progress beats an older server watched record`() {
+        val card = local(episode = "3", positionMs = PARTIAL_MS, durationMs = EPISODE_MS)
+            .copy(updatedAt = SERVER_UPDATED_AT + 1)
+
+        val result = listOf(card).reconcile(
+            server(episode = "3", positionMs = EPISODE_MS - 10_000L),
+            history = listOf(card),
+        )
+
+        assertEquals(listOf(card), result)
+    }
+
+    @Test
+    fun `server record of another episode leaves the card alone`() {
+        val card = local(episode = "3", positionMs = PARTIAL_MS, durationMs = EPISODE_MS)
+
+        assertEquals(listOf(card), listOf(card).reconcile(server(episode = "2", positionMs = EPISODE_MS)))
+    }
+
+    @Test
+    fun `titles without server progress are left alone`() {
+        val card = local(episode = "3", positionMs = PARTIAL_MS, durationMs = EPISODE_MS)
+
+        assertEquals(listOf(card), listOf(card).reconcile())
+    }
+
+    @Test
+    fun `leading zero in the server episode still matches the card`() {
+        val card = local(episode = "3", positionMs = PARTIAL_MS, durationMs = EPISODE_MS)
+
+        val result = listOf(card).reconcile(
+            server(episode = "03", positionMs = EPISODE_MS),
+            suggestNextEpisode = false,
+        )
+
+        assertTrue(result.isEmpty())
+    }
+
+    private fun List<HomeContinueWatchingItem>.reconcile(
+        vararg server: AnimeWatchProgress,
+        history: List<HomeContinueWatchingItem> = this,
+        suggestNextEpisode: Boolean = true,
+    ) = reconcileWithEpisodeProgress(
+        serverProgress = server.toList(),
+        localHistory = history,
+        suggestNextEpisode = suggestNextEpisode,
+    )
+
+    private fun server(episode: String, positionMs: Long) = AnimeWatchProgress(
+        animeId = ANIME_ID,
+        episode = episode,
+        videoId = 99,
+        episodeUrl = "https://kodik.info/seria/99",
+        positionMs = positionMs,
+        durationMs = EPISODE_MS,
+        updatedAt = SERVER_UPDATED_AT,
+    )
+
     private fun List<HomeContinueWatchingItem>.merge(
         remote: HomeContinueWatchingItem,
         suppressedAt: Map<Int, Long> = emptyMap(),
@@ -153,5 +235,8 @@ class ContinueWatchingMergeTest : BaseUnitTest() {
         const val WATCHED_MS = 1_430_000L
         const val LOCAL_UPDATED_AT = 1_000_000L
         const val REMOTE_UPDATED_AT = 2_000_000L
+        const val SERVER_UPDATED_AT = 3_000_000L
+        const val EPISODE_MS = 729_000L // 12:09
+        const val PARTIAL_MS = 423_000L // 7:03
     }
 }

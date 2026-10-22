@@ -72,6 +72,20 @@ androidComponents {
             (output as? com.android.build.api.variant.impl.VariantOutputImpl)?.outputFileName?.set(fileName)
         }
     }
+
+    // mapping.txt R8 лежит в build/outputs/mapping/<variant> и затирается следующей сборкой.
+    // Копируем его в app/mappings/<версия>-<код>/<тип>/, чтобы mapping каждой версии сохранялся
+    // отдельно и им можно было расшифровать крэши AppMetrica этой версии.
+    onVariants { variant ->
+        if (variant.buildType == "debug") return@onVariants
+        val capitalized = variant.name.replaceFirstChar { it.uppercase() }
+        val saveMapping = tasks.register<Copy>("save${capitalized}Mapping") {
+            from(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.OBFUSCATION_MAPPING_FILE))
+            into(layout.projectDirectory.dir("mappings/$appVersionName-$appVersionCode/${variant.name}"))
+        }
+        tasks.matching { it.name == "assemble$capitalized" || it.name == "bundle$capitalized" }
+            .configureEach { finalizedBy(saveMapping) }
+    }
 }
 
 dependencies {
@@ -81,6 +95,8 @@ dependencies {
     findProject(":source:aniboom:data")?.let { implementation(it) }
     // Необязательный источник «AniStar»: нет каталога source/anistar, нет и зависимости.
     findProject(":source:anistar:data")?.let { implementation(it) }
+    // Необязательный источник «Amedia»: нет каталога source/amedia, нет и зависимости.
+    findProject(":source:amedia:data")?.let { implementation(it) }
     // Необязательный источник «AniLibria»: нет каталога source/anilibria, нет и зависимости.
     findProject(":source:anilibria:data")?.let { implementation(it) }
     implementation(project(":core:analytics"))

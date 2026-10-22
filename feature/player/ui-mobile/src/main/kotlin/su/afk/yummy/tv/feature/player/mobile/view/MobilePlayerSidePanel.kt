@@ -78,6 +78,8 @@ internal fun BoxScope.MobilePlayerSidePanel(
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
     adaptiveQuality: Boolean,
+    adaptiveLimitQuality: String?,
+    onAdaptiveLimitSelected: (String) -> Unit,
     onAdaptiveQualityChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -160,6 +162,8 @@ internal fun BoxScope.MobilePlayerSidePanel(
                         selectedQuality = selectedQuality,
                         onQualitySelected = onQualitySelected,
                         adaptiveQuality = adaptiveQuality,
+                        adaptiveLimitQuality = adaptiveLimitQuality,
+                        onAdaptiveLimitSelected = onAdaptiveLimitSelected,
                         onAdaptiveQualityChange = onAdaptiveQualityChange,
                         selectedSpeed = selectedSpeed,
                         onSpeedSelected = onSpeedSelected,

@@ -30,6 +30,12 @@ data class YaniAnimeResponseDto(
     @SerialName("random_screenshots") val randomScreenshots: List<YaniScreenshotDto> = emptyList(),
     val user: YaniAnimeUserDto? = null,
     @SerialName("reviews_count") val reviewsCount: Int = 0,
+    @SerialName("comments_count") val commentsCount: Int = 0,
+    @SerialName("parent_comments_count") val parentCommentsCount: Int = 0,
+    @SerialName("posts_count") val postsCount: Int = 0,
+    @SerialName("lists_count") val listsCount: Int = 0,
+    @SerialName("trailers_count") val trailersCount: Int = 0,
+    @SerialName("partner_videos_count") val partnerVideosCount: Int = 0,
     @SerialName("remote_ids") val remoteIds: YaniRemoteIdsDto? = null,
 )
 

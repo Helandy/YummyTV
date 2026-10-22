@@ -35,6 +35,8 @@ class CommentsState {
         val pendingDelete: Comment? = null,
         val pendingReport: Comment? = null,
         val isMutating: Boolean = false,
+        /** Число комментариев с ответами; `null`, если экран открыт без известного числа. */
+        val totalCount: Int? = null,
     ) : UiState {
         val isSignedIn: Boolean get() = currentUserId > 0
     }

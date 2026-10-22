@@ -1,77 +1,38 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
-import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.presentation.R
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DetailsSecondaryActions(
     state: DetailsState.State,
-    details: AnimeDetails,
     onSubscriptionsSelected: () -> Unit,
     onSubscriptionsLockedSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
-    onSimilarSelected: () -> Unit,
-    onViewingOrderSelected: () -> Unit,
-    onCollectionsSelected: () -> Unit,
-    onReviewsSelected: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val actions = buildMobileActions(
         state = state,
-        details = details,
         onSubscriptionsSelected = onSubscriptionsSelected,
         onSubscriptionsLockedSelected = onSubscriptionsLockedSelected,
         onEpisodesSelected = onEpisodesSelected,
-        onSimilarSelected = onSimilarSelected,
-        onViewingOrderSelected = onViewingOrderSelected,
-        onCollectionsSelected = onCollectionsSelected,
-        onReviewsSelected = onReviewsSelected,
     )
     if (actions.isEmpty()) return
 
-    Column(
+    Row(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        MobileSectionHeader(title = stringResource(R.string.details_mobile_sections))
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            maxItemsInEachRow = 2,
-        ) {
-            actions.forEach { action ->
-                DetailsActionCard(
-                    action = action,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                )
-            }
-            if (actions.size % 2 != 0) {
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                )
-            }
+        actions.forEach { action ->
+            DetailsActionCard(
+                action = action,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }

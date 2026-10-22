@@ -43,6 +43,7 @@
     <string name="search_mobile_filter_sort_rating_counters">Оцінки</string>
     <string name="search_filter_sort_views">Перегляди</string>
     <string name="search_filter_sort_top">Топ</string>
+    <string name="search_filter_sort_year">Рік</string>
     <string name="search_mobile_filter_sort_id">Нове</string>
     <string name="search_placeholder">Пошук аніме…</string>
     <string name="search_empty">Нічого не знайдено</string>

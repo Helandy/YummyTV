@@ -9,7 +9,6 @@
     <string name="collection_update_error">Не удалось изменить коллекцию</string>
     <string name="collection_delete_error">Не удалось удалить коллекцию</string>
     <string name="collection_comments">Комментарии</string>
-    <string name="collection_reactions_title">Оцените коллекцию</string>
     <string name="collection_mobile_title">Коллекция</string>
     <string name="collection_catalog_title">Коллекции</string>
         <string name="collection_create_dialog_title">Новая коллекция</string>
@@ -23,4 +22,10 @@
     <string name="collection_delete_dialog_title">Удалить коллекцию?</string>
     <string name="collection_delete_dialog_message">Коллекция будет удалена без возможности восстановления.</string>
     <string name="collection_catalog_tv_empty">Коллекций пока нет</string>
+    <string name="collection_sort_new">Новые</string>
+    <string name="collection_sort_best">Популярные</string>
+    <string name="collection_sort_old">Старые</string>
+    <string name="collection_description_more">Показать полностью</string>
+    <string name="collection_description_mobile_more">Подробнее</string>
+    <string name="collection_description_less">Свернуть</string>
 </resources>

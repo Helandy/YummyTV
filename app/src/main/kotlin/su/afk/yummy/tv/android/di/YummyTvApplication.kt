@@ -18,6 +18,7 @@ import su.afk.yummy.tv.android.cast.CastAnalytics
 import su.afk.yummy.tv.android.episodepush.NewEpisodePushScheduler
 import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator
 import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
+import su.afk.yummy.tv.android.seasonal.SeasonalAppIconSwitcher
 import su.afk.yummy.tv.android.startup.AppStartupMaintenanceRunner
 import su.afk.yummy.tv.android.startup.CoilImageLoaderInstaller
 import su.afk.yummy.tv.android.startup.StartupMetricsTracker
@@ -81,6 +82,9 @@ class YummyTvApplication :
     lateinit var startupMaintenanceRunner: AppStartupMaintenanceRunner
 
     @Inject
+    lateinit var seasonalAppIconSwitcher: SeasonalAppIconSwitcher
+
+    @Inject
     lateinit var castAnalytics: CastAnalytics
 
     @Inject
@@ -133,6 +137,7 @@ class YummyTvApplication :
             }
         }
         trace("App.maintenance") { startupMaintenanceRunner.run() }
+        trace("App.seasonalIcon") { seasonalAppIconSwitcher.start() }
 
         startupMetricsTracker.onApplicationCreated()
     }

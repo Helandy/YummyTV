@@ -72,7 +72,11 @@ class ReviewDetailsViewModel @AssistedInject constructor(
             )
 
             ReviewDetailsState.Event.CommentsSelected -> nav.navigate(
-                commentsNavigator.getCommentsDest(CommentTargetType.REVIEW, reviewId)
+                commentsNavigator.getCommentsDest(
+                    CommentTargetType.REVIEW,
+                    reviewId,
+                    currentState.details?.commentsCount,
+                )
             )
         }
     }

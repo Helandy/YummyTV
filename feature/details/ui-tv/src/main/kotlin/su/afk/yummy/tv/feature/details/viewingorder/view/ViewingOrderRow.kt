@@ -151,6 +151,7 @@ internal fun ViewingOrderRow(
                         },
                         onFocused = { rememberFocusedItem(index) },
                         modifier = Modifier.focusRequester(focusRequesters[index]),
+                        selected = item.animeId == currentAnimeId,
                     )
                 }
             }

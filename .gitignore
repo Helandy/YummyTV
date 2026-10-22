@@ -21,3 +21,4 @@ node_modules/
 /app/release/*
 /app/debug/*
 /.claude/*
+/app/mappings/

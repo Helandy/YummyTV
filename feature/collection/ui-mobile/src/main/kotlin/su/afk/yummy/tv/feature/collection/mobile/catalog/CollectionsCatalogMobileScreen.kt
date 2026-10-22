@@ -25,17 +25,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
-import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogState
-import su.afk.yummy.tv.feature.collection.mobile.view.CollectionLikesBadge
+import su.afk.yummy.tv.feature.collection.mobile.view.CollectionsSortSelector
 import su.afk.yummy.tv.feature.collection.mobile.view.CreateCollectionDialog
 import su.afk.yummy.tv.feature.collection.presentation.R
 
@@ -101,6 +102,10 @@ fun CollectionsCatalogMobileScreen(
                 title = stringResource(R.string.collection_catalog_title),
                 onBack = { onEvent(CollectionsCatalogState.Event.BackSelected) },
             )
+            CollectionsSortSelector(
+                selectedSort = state.sort,
+                onSortSelected = { onEvent(CollectionsCatalogState.Event.SortSelected(it)) },
+            )
         },
         isLoading = refreshState is LoadState.Loading && pagingItems.itemCount == 0,
         error = initialError?.let { ErrorItem(title = it, message = it) },
@@ -121,6 +126,7 @@ fun CollectionsCatalogMobileScreen(
         MobilePosterGrid(
             contentPadding = PaddingValues(bottom = 80.dp),
             state = gridState,
+            minCellWidth = 300.dp,
         ) {
             val error = (appendState as? LoadState.Error)?.error
             if (error != null && pagingItems.itemCount > 0) {
@@ -136,15 +142,16 @@ fun CollectionsCatalogMobileScreen(
                 key = pagingItems.itemKey { it.id },
             ) { index ->
                 pagingItems[index]?.let { item ->
-                    MobilePosterCard(
+                    MobileCollectionCard(
                         title = item.title,
-                        posterUrl = item.posterUrl,
-                        posterOverlay = {
-                            CollectionLikesBadge(
-                                likesCount = item.likesCount,
+                        posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },
+                        badge = {
+                            CollectionStatBadges(
+                                likes = item.likesCount,
+                                views = item.viewsCount,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .padding(6.dp),
+                                    .padding(8.dp),
                             )
                         },
                         onClick = {

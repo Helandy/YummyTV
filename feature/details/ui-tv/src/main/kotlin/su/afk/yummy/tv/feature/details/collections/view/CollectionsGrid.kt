@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -21,12 +22,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
+import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
@@ -38,11 +42,9 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.designsystem.tv.TvCollectionCard
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
-import su.afk.yummy.tv.feature.details.collections.utils.posterUrl
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -51,8 +53,8 @@ internal fun CollectionsGrid(
     collections: List<AnimeCollectionSummary>,
     onCollectionSelected: (Int) -> Unit,
 ) {
-    val posterQuality = LocalPosterQuality.current
-    val cardWidth = currentTvTitleCardDimensions().width
+    // Плоская карточка занимает ширину двух постерных колонок.
+    val cardWidth = currentTvTitleCardDimensions().width * 2
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     val collectionIds = remember(collections) { collections.map { it.id } }
@@ -160,11 +162,20 @@ internal fun CollectionsGrid(
                     }
                     val stableOnFocused =
                         remember(collection.id, index) { { rememberFocusedCollection(index) } }
-                    TvTitleCard(
+                    TvCollectionCard(
                         title = collection.title,
-                        posterUrl = collection.posterUrl(posterQuality),
+                        posterUrls = collection.posterUrls.ifEmpty { listOfNotNull(collection.posterUrl) },
                         onClick = stableOnClick,
                         onFocused = stableOnFocused,
+                        badge = {
+                            CollectionStatBadges(
+                                likes = collection.likes,
+                                views = collection.views,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp),
+                            )
+                        },
                         modifier = Modifier
                             .focusRequester(focusRequesters[index])
                             .tvWholeItemBringIntoView(gridStartExtent.takeIf { index < gridColumnCount })
