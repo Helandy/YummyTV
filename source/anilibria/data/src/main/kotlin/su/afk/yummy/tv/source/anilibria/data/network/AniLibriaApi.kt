@@ -4,6 +4,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.content.TextContent
+import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
+import su.afk.yummy.tv.core.network.yummy.signSiteRequest
+import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaLookupRequestDto
+import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaLookupResponseDto
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
@@ -12,10 +22,26 @@ import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaSearchItemDto
 import java.io.IOException
 import javax.inject.Inject
 
-/** Публичный API AniLibria (`aniliberty.top`): поиск релиза и серии с HLS-ссылками. Авторизация не нужна. */
+/** Публичный API AniLibria (`aniliberty.top`): серии с HLS-ссылками и запасной поиск релиза; сервер YummyTV: каталог релизов по MAL id. */
 internal class AniLibriaApi @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
+    private val signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
+    private val siteApiConfig: SiteApiConfig,
 ) {
+    /** Релизы тайтла из копии каталога на сервере YummyTV: поиск по MAL id без обращений к API AniLibria. */
+    suspend fun findReleaseIds(request: AniLibriaLookupRequestDto): List<Int> {
+        val url = "${siteApiConfig.baseUrl}/anilibria/title"
+        // Тело сериализуется один раз: подписанные байты совпадают с отправленными.
+        val body = Json.encodeToString(AniLibriaLookupRequestDto.serializer(), request)
+        val response = client.post(url) {
+            signSiteRequest(signers, "POST", url, body.toByteArray(Charsets.UTF_8))
+            setBody(TextContent(body, ContentType.Application.Json))
+        }
+        if (!response.status.isSuccess()) throw IOException("AniLibria catalog: HTTP ${response.status.value}")
+        return response.body<AniLibriaLookupResponseDto>().releaseIds
+    }
+
+
     suspend fun search(query: String): List<AniLibriaSearchItemDto> {
         val response = client.get("$BASE/app/search/releases") {
             parameter("query", query)

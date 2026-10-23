@@ -50,3 +50,17 @@ data class AniLibriaReleaseDto(
     val name: AniLibriaNameDto? = null,
     val episodes: List<AniLibriaEpisodeDto> = emptyList(),
 )
+
+/** Запрос к серверу YummyTV: какие релизы AniLibria у тайтла (сервер хранит копию каталога). */
+@Serializable
+data class AniLibriaLookupRequestDto(
+    val malId: Int,
+    val title: String,
+    val otherTitles: List<String>,
+    val year: Int? = null,
+)
+
+@Serializable
+data class AniLibriaLookupResponseDto(
+    val releaseIds: List<Int> = emptyList(),
+)

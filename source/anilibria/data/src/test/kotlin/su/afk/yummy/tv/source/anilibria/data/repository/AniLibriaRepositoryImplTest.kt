@@ -1,9 +1,11 @@
 package su.afk.yummy.tv.source.anilibria.data.repository
 
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaExternalIdDto
@@ -11,12 +13,18 @@ import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaNameDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaSearchItemDto
 import su.afk.yummy.tv.source.anilibria.data.network.AniLibriaApi
+import java.io.IOException
 
 class AniLibriaRepositoryImplTest : BaseUnitTest() {
 
     private val api: AniLibriaApi = mockk()
 
     private fun createRepository() = AniLibriaRepositoryImpl(api)
+
+    @Before
+    fun catalogUnavailable() {
+        coEvery { api.findReleaseIds(any()) } throws IOException("offline")
+    }
 
     private fun item(id: Int, mal: Int?, english: String, year: Int) = AniLibriaSearchItemDto(
         id = id,
@@ -68,5 +76,24 @@ class AniLibriaRepositoryImplTest : BaseUnitTest() {
 
         coEvery { api.search(any()) } returns listOf(item(1, null, "Some Show", 2020), item(2, null, "Some Show", 2021))
         assertEquals(emptyList<Any>(), createRepository().findReleases(6, listOf("Some Show"), 2021))
+    }
+
+    @Test
+    fun `server catalog answer is used without searching`() = runTest {
+        coEvery { api.findReleaseIds(any()) } returns listOf(9542)
+        stubRelease(9542, 52991)
+
+        val releases = createRepository().findReleases(52991, listOf("Фрирен", "Sousou no Frieren"), 2023)
+
+        assertEquals(listOf(9542), releases.map { it.id })
+        coVerify(exactly = 0) { api.search(any()) }
+    }
+
+    @Test
+    fun `empty server answer is final and does not fall back to search`() = runTest {
+        coEvery { api.findReleaseIds(any()) } returns emptyList()
+
+        assertEquals(emptyList<Any>(), createRepository().findReleases(1, listOf("Some Show"), 2020))
+        coVerify(exactly = 0) { api.search(any()) }
     }
 }
