@@ -4,7 +4,6 @@ package su.afk.yummy.tv.feature.home.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -52,17 +51,17 @@ internal fun HomeCommunityPromptDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    OutlinedButton(onClick = onLater, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.home_community_prompt_later))
-                    }
-                    Button(onClick = onJoin, modifier = Modifier.weight(1f)) {
+                    Button(onClick = onJoin, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.home_community_prompt_join))
+                    }
+                    OutlinedButton(onClick = onLater, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.home_community_prompt_later))
                     }
                 }
             }

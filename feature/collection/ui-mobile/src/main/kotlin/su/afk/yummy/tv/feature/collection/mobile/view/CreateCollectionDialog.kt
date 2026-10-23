@@ -5,13 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.designsystem.R as CoreR
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
@@ -34,11 +31,18 @@ internal fun CreateCollectionDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(decorFitsSystemWindows = false),
         title = { Text(stringResource(R.string.collection_create_dialog_title)) },
-        text = {
+        confirmText = stringResource(R.string.collection_create_confirm),
+        onConfirm = onConfirm,
+        confirmEnabled = title.isNotBlank() && !isCreating,
+        confirmLoading = isCreating,
+        dismissText = stringResource(CoreR.string.common_cancel),
+        onDismiss = onDismiss,
+        dismissEnabled = !isCreating,
+        content = {
             Column(
                 modifier = Modifier.imePadding(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -74,23 +78,6 @@ internal fun CreateCollectionDialog(
                         enabled = !isCreating,
                     )
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm,
-                enabled = title.isNotBlank() && !isCreating,
-            ) {
-                if (isCreating) {
-                    YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    Text(stringResource(R.string.collection_create_confirm))
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isCreating) {
-                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

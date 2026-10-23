@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.feature.settings.presentation.R
@@ -36,10 +35,22 @@ internal fun CacheStorageMobileDialog(
 ) {
     val context = LocalContext.current
 
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.settings_cache_storage_title)) },
-        text = {
+        confirmText = stringResource(
+                        if (isLoading) {
+                            R.string.settings_cache_storage_loading
+                        } else {
+                            R.string.settings_cache_storage_refresh
+                        },
+                    ),
+        onConfirm = onRefresh,
+        confirmEnabled = !isLoading,
+        dismissText = stringResource(CoreR.string.common_close),
+        onDismiss = onDismiss,
+        scrollableContent = false,
+        content = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -69,24 +80,6 @@ internal fun CacheStorageMobileDialog(
                         )
                     }
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onRefresh, enabled = !isLoading) {
-                Text(
-                    stringResource(
-                        if (isLoading) {
-                            R.string.settings_cache_storage_loading
-                        } else {
-                            R.string.settings_cache_storage_refresh
-                        },
-                    ),
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(CoreR.string.common_close))
             }
         },
     )

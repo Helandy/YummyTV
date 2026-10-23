@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -19,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -67,20 +66,16 @@ fun ReviewDetailsMobileScreen(
     }
 
     if (confirmDelete) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text(stringResource(R.string.review_delete_confirm)) },
-            confirmButton = {
-                TextButton(onClick = {
+            confirmText = stringResource(CoreR.string.common_delete),
+            onConfirm = {
                     confirmDelete = false
                     onEvent(ReviewDetailsState.Event.DeleteConfirmed)
-                }) { Text(stringResource(CoreR.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDelete = false }) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
-            },
+                },
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = { confirmDelete = false },
         )
     }
 

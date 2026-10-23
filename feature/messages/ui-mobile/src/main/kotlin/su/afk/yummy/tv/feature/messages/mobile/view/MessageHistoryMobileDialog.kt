@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.domain.messages.model.MessageHistoryEntry
@@ -34,10 +34,13 @@ internal fun MessageHistoryMobileDialog(
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.messages_history_title)) },
-        text = {
+        confirmText = stringResource(CoreR.string.common_close),
+        onConfirm = onDismiss,
+        scrollableContent = false,
+        content = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -60,9 +63,6 @@ internal fun MessageHistoryMobileDialog(
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(CoreR.string.common_close)) }
         },
     )
 }

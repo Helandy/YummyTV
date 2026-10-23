@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.domain.comments.model.Comment
@@ -43,26 +43,16 @@ internal fun CommentsDialogs(
     onReportDismiss: () -> Unit,
 ) {
     if (pendingDelete != null) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = onDeleteDismiss,
             title = { Text(stringResource(R.string.comments_delete_title)) },
-            text = { Text(stringResource(R.string.comments_delete_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = onDeleteConfirm,
-                    enabled = !isMutating,
-                ) {
-                    Text(stringResource(CoreR.string.common_delete))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = onDeleteDismiss,
-                    enabled = !isMutating,
-                ) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
-            },
+            confirmText = stringResource(CoreR.string.common_delete),
+            onConfirm = onDeleteConfirm,
+            confirmEnabled = !isMutating,
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = onDeleteDismiss,
+            dismissEnabled = !isMutating,
+            content = { Text(stringResource(R.string.comments_delete_message)) },
         )
     }
     if (pendingReport != null) {

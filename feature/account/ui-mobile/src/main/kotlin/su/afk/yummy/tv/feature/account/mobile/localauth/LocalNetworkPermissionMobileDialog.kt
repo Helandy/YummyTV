@@ -1,10 +1,9 @@
 package su.afk.yummy.tv.feature.account.mobile.localauth
 
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.permissions.LocalNetworkPermissionStep
 import su.afk.yummy.tv.feature.account.presentation.R
 
@@ -20,10 +19,20 @@ internal fun LocalNetworkPermissionMobileDialog(
 
     val isBlocked = step == LocalNetworkPermissionStep.Blocked
 
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.account_local_network_permission_title)) },
-        text = {
+        confirmText = stringResource(
+                        if (isBlocked) {
+                            R.string.account_local_network_permission_open_settings
+                        } else {
+                            R.string.account_local_network_permission_allow
+                        },
+                    ),
+        onConfirm = if (isBlocked) onOpenSettings else onConfirm,
+        dismissText = stringResource(R.string.account_local_network_permission_later),
+        onDismiss = onDismiss,
+        content = {
             Text(
                 stringResource(
                     if (isBlocked) {
@@ -33,24 +42,6 @@ internal fun LocalNetworkPermissionMobileDialog(
                     },
                 ),
             )
-        },
-        confirmButton = {
-            TextButton(onClick = if (isBlocked) onOpenSettings else onConfirm) {
-                Text(
-                    stringResource(
-                        if (isBlocked) {
-                            R.string.account_local_network_permission_open_settings
-                        } else {
-                            R.string.account_local_network_permission_allow
-                        },
-                    ),
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.account_local_network_permission_later))
-            }
         },
     )
 }

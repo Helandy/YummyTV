@@ -1,10 +1,9 @@
 package su.afk.yummy.tv.feature.messages.mobile.view
 
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.messages.presentation.R
 
@@ -23,64 +22,52 @@ internal fun ChatManagementMobileDialogs(
     onBanDismiss: () -> Unit,
 ) {
     if (showDeleteConfirmation) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = onDeleteDismiss,
             title = { Text(stringResource(R.string.messages_delete_title)) },
-            text = { Text(stringResource(R.string.messages_delete_confirmation)) },
-            confirmButton = {
-                TextButton(onClick = onDeleteConfirm, enabled = !isMutating) {
-                    Text(stringResource(CoreR.string.common_delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDeleteDismiss, enabled = !isMutating) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
-            },
+            confirmText = stringResource(CoreR.string.common_delete),
+            onConfirm = onDeleteConfirm,
+            confirmEnabled = !isMutating,
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = onDeleteDismiss,
+            dismissEnabled = !isMutating,
+            content = { Text(stringResource(R.string.messages_delete_confirmation)) },
         )
     }
 
     if (showClaimConfirmation) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = onClaimDismiss,
             title = { Text(stringResource(R.string.messages_claim_title)) },
-            text = { Text(stringResource(R.string.messages_claim_description)) },
-            confirmButton = {
-                TextButton(onClick = onClaimConfirm, enabled = !isMutating) {
-                    Text(stringResource(R.string.messages_claim))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onClaimDismiss, enabled = !isMutating) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
-            },
+            confirmText = stringResource(R.string.messages_claim),
+            onConfirm = onClaimConfirm,
+            confirmEnabled = !isMutating,
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = onClaimDismiss,
+            dismissEnabled = !isMutating,
+            content = { Text(stringResource(R.string.messages_claim_description)) },
         )
     }
 
     if (showBanConfirmation) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = onBanDismiss,
             title = {
                 Text(stringResource(if (isBanned) R.string.messages_unban_title else R.string.messages_ban_title))
             },
-            text = {
+            confirmText = stringResource(if (isBanned) R.string.messages_unban else R.string.messages_ban),
+            onConfirm = onBanConfirm,
+            confirmEnabled = !isMutating,
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = onBanDismiss,
+            dismissEnabled = !isMutating,
+            content = {
                 Text(
                     stringResource(
                         if (isBanned) R.string.messages_unban_confirmation
                         else R.string.messages_ban_confirmation
                     )
                 )
-            },
-            confirmButton = {
-                TextButton(onClick = onBanConfirm, enabled = !isMutating) {
-                    Text(stringResource(if (isBanned) R.string.messages_unban else R.string.messages_ban))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onBanDismiss, enabled = !isMutating) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
             },
         )
     }

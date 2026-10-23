@@ -1,12 +1,10 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes.view
 
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
@@ -15,7 +13,7 @@ internal fun EpisodeDownloadDeleteConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -25,19 +23,10 @@ internal fun EpisodeDownloadDeleteConfirmationDialog(
                 )
             )
         },
-        text = { Text(stringResource(R.string.details_mobile_delete_downloaded_episode_message)) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = stringResource(CoreR.string.common_delete),
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(CoreR.string.common_cancel))
-            }
-        },
+        confirmText = stringResource(CoreR.string.common_delete),
+        onConfirm = onConfirm,
+        destructive = true,
+        dismissText = stringResource(CoreR.string.common_cancel),
+        content = { Text(stringResource(R.string.details_mobile_delete_downloaded_episode_message)) },
     )
 }

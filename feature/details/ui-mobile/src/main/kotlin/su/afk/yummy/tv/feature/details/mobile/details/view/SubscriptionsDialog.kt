@@ -3,17 +3,16 @@ package su.afk.yummy.tv.feature.details.mobile.details.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -24,10 +23,12 @@ internal fun SubscriptionsDialog(
     onToggle: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.details_subscriptions)) },
-        text = {
+        confirmText = stringResource(CoreR.string.common_close),
+        onConfirm = onDismiss,
+        content = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
                     state.isSubscriptionsLoading && state.subscriptions.isEmpty() -> {
@@ -77,11 +78,6 @@ internal fun SubscriptionsDialog(
                         }
                     }
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(CoreR.string.common_close))
             }
         },
     )

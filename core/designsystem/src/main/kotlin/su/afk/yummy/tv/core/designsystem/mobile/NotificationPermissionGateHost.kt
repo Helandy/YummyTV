@@ -12,9 +12,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -67,37 +65,25 @@ fun NotificationPermissionGateHost(
     }
 
     when (state.visibleDialog) {
-        NotificationPermissionDialog.Explanation -> AlertDialog(
+        NotificationPermissionDialog.Explanation -> MobileAlertDialog(
             onDismissRequest = state::complete,
-            text = {
+            confirmText = stringResource(R.string.notification_permission_enable),
+            onConfirm = ::requestPermissionOrOpenSettings,
+            dismissText = stringResource(R.string.notification_permission_decline),
+            onDismiss = state::showReminder,
+            content = {
                 Text(stringResource(explanationRes))
-            },
-            confirmButton = {
-                TextButton(onClick = ::requestPermissionOrOpenSettings) {
-                    Text(stringResource(R.string.notification_permission_enable))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = state::showReminder) {
-                    Text(stringResource(R.string.notification_permission_decline))
-                }
             },
         )
 
-        NotificationPermissionDialog.Reminder -> AlertDialog(
+        NotificationPermissionDialog.Reminder -> MobileAlertDialog(
             onDismissRequest = state::complete,
-            text = {
+            confirmText = stringResource(R.string.notification_permission_changed_mind),
+            onConfirm = ::requestPermissionOrOpenSettings,
+            dismissText = stringResource(R.string.notification_permission_ok),
+            onDismiss = state::complete,
+            content = {
                 Text(stringResource(R.string.notification_permission_settings_reminder))
-            },
-            confirmButton = {
-                TextButton(onClick = ::requestPermissionOrOpenSettings) {
-                    Text(stringResource(R.string.notification_permission_changed_mind))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = state::complete) {
-                    Text(stringResource(R.string.notification_permission_ok))
-                }
             },
         )
 

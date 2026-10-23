@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -265,26 +265,22 @@ fun ProfileEditMobileScreen(
     }
 
     deleteImageKind?.let { kind ->
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = { deleteImageKind = null },
             title = { Text(stringResource(R.string.profile_delete_image_title)) },
-            text = { Text(stringResource(R.string.profile_delete_image_message)) },
-            confirmButton = {
-                TextButton(onClick = {
+            confirmText = stringResource(CoreR.string.common_delete),
+            onConfirm = {
                     deleteImageKind = null
                     onEvent(ProfileEditState.Event.DeleteImageSelected(kind))
-                }) { Text(stringResource(CoreR.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { deleteImageKind = null }) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            },
+                },
+            dismissText = stringResource(android.R.string.cancel),
+            onDismiss = { deleteImageKind = null },
+            content = { Text(stringResource(R.string.profile_delete_image_message)) },
         )
     }
 
     state.pendingUnlinkAccount?.let { provider ->
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = { onEvent(ProfileEditState.Event.UnlinkAccountDismissed) },
             title = {
                 Text(
@@ -294,19 +290,13 @@ fun ProfileEditMobileScreen(
                     ),
                 )
             },
-            text = { Text(stringResource(R.string.profile_unlink_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = { onEvent(ProfileEditState.Event.UnlinkAccountConfirmed) },
-                    enabled = state.unlinkingAccount == null,
-                ) { Text(stringResource(R.string.profile_unlink_account)) }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { onEvent(ProfileEditState.Event.UnlinkAccountDismissed) },
-                    enabled = state.unlinkingAccount == null,
-                ) { Text(stringResource(android.R.string.cancel)) }
-            },
+            confirmText = stringResource(R.string.profile_unlink_account),
+            onConfirm = { onEvent(ProfileEditState.Event.UnlinkAccountConfirmed) },
+            confirmEnabled = state.unlinkingAccount == null,
+            dismissText = stringResource(android.R.string.cancel),
+            onDismiss = { onEvent(ProfileEditState.Event.UnlinkAccountDismissed) },
+            dismissEnabled = state.unlinkingAccount == null,
+            content = { Text(stringResource(R.string.profile_unlink_confirm_message)) },
         )
     }
 

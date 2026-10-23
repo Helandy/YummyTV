@@ -2,16 +2,14 @@ package su.afk.yummy.tv.feature.messages.mobile.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.messages.presentation.R
 
@@ -23,11 +21,17 @@ internal fun EditMessageMobileDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(decorFitsSystemWindows = false),
         title = { Text(stringResource(R.string.messages_edit_title)) },
-        text = {
+        confirmText = stringResource(R.string.messages_save),
+        onConfirm = onConfirm,
+        confirmEnabled = enabled && text.isNotBlank(),
+        dismissText = stringResource(CoreR.string.common_cancel),
+        onDismiss = onDismiss,
+        dismissEnabled = enabled,
+        content = {
             Column(modifier = Modifier.imePadding()) {
                 OutlinedTextField(
                     shape = MaterialTheme.shapes.large,
@@ -37,16 +41,6 @@ internal fun EditMessageMobileDialog(
                     minLines = 3,
                     maxLines = 8,
                 )
-            }
-        },
-        confirmButton = {
-            Button(onClick = onConfirm, enabled = enabled && text.isNotBlank()) {
-                Text(stringResource(R.string.messages_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = enabled) {
-                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

@@ -1,10 +1,9 @@
 package su.afk.yummy.tv.feature.videodownload.mobile.view
 
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.videodownload.presentation.R
 
@@ -15,10 +14,14 @@ internal fun VideoExportReExportConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    MobileAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.video_export_reexport_dialog_title)) },
-        text = {
+        confirmText = stringResource(R.string.video_export_reexport_dialog_confirm),
+        onConfirm = onConfirm,
+        dismissText = stringResource(CoreR.string.common_cancel),
+        onDismiss = onDismiss,
+        content = {
             Text(
                 stringResource(
                     R.string.video_export_reexport_dialog_message,
@@ -26,16 +29,6 @@ internal fun VideoExportReExportConfirmationDialog(
                     episode,
                 )
             )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.video_export_reexport_dialog_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(CoreR.string.common_cancel))
-            }
         },
     )
 }

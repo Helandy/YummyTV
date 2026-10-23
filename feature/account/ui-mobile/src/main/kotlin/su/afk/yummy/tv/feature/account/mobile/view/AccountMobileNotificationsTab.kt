@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGranted
@@ -171,39 +171,31 @@ internal fun AccountMobileNotificationsTab(
         }
     }
     if (showReadAllConfirm) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = { showReadAllConfirm = false },
             title = { Text(stringResource(R.string.account_mark_all_read_title)) },
-            text = { Text(stringResource(R.string.account_mark_all_read_message)) },
-            confirmButton = {
-                TextButton(onClick = {
+            confirmText = stringResource(R.string.account_mark_all_read),
+            onConfirm = {
                     showReadAllConfirm = false
                     onEvent(AccountState.Event.AllNotificationsReadSelected)
-                }) { Text(stringResource(R.string.account_mark_all_read)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showReadAllConfirm = false }) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
-            },
+                },
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = { showReadAllConfirm = false },
+            content = { Text(stringResource(R.string.account_mark_all_read_message)) },
         )
     }
     if (showDeleteAllConfirm) {
-        AlertDialog(
+        MobileAlertDialog(
             onDismissRequest = { showDeleteAllConfirm = false },
             title = { Text(stringResource(R.string.account_delete_all_notifications_title)) },
-            text = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
-            confirmButton = {
-                TextButton(onClick = {
+            confirmText = stringResource(R.string.account_delete_all_notifications),
+            onConfirm = {
                     showDeleteAllConfirm = false
                     onEvent(AccountState.Event.AllNotificationsDeleteSelected)
-                }) { Text(stringResource(R.string.account_delete_all_notifications)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteAllConfirm = false }) {
-                    Text(stringResource(CoreR.string.common_cancel))
-                }
-            },
+                },
+            dismissText = stringResource(CoreR.string.common_cancel),
+            onDismiss = { showDeleteAllConfirm = false },
+            content = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
         )
     }
     NotificationPermissionGateHost(
