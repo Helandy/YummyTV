@@ -2,12 +2,19 @@ package su.afk.yummy.tv.core.model.anime.utils
 
 private val CYRILLIC = Regex("\\p{IsCyrillic}")
 private val LATIN = Regex("\\p{IsLatin}")
+
+// Границы слова и цифры заданы явными Unicode-классами: встроенный флаг `(?U)` Android ICU не принимает,
+// а `\b` без него на JVM 19+ видит только ASCII.
+private const val WORD_START = """(?<![\p{L}\p{N}_])"""
+private const val WORD_END = """(?![\p{L}\p{N}_])"""
+private const val PREFIX = """[\s:,\-–—]*"""
+private const val NUMBER = """\p{Nd}+"""
 private val SEASON_SUFFIXES = listOf(
-    Regex("""(?U)[\s:,\-–—]*\b(?:\d+(?:st|nd|rd|th)|first|second|third|fourth|final)\s+season\b.*$""", RegexOption.IGNORE_CASE),
-    Regex("""(?U)[\s:,\-–—]*\bseason\s+\d+\b.*$""", RegexOption.IGNORE_CASE),
-    Regex("""(?U)[\s:,\-–—]*\b(?:part|cour)\s+\d+\b.*$""", RegexOption.IGNORE_CASE),
-    Regex("""(?U)[\s:,\-–—]*\b\d+\s*(?:сезон|часть)\b.*$""", RegexOption.IGNORE_CASE),
-    Regex("""(?U)[\s:,\-–—]*\b(?:сезон|часть)\s+\d+\b.*$""", RegexOption.IGNORE_CASE),
+    Regex("""$PREFIX$WORD_START(?:$NUMBER(?:st|nd|rd|th)|first|second|third|fourth|final)\s+season$WORD_END.*$""", RegexOption.IGNORE_CASE),
+    Regex("""$PREFIX${WORD_START}season\s+$NUMBER$WORD_END.*$""", RegexOption.IGNORE_CASE),
+    Regex("""$PREFIX$WORD_START(?:part|cour)\s+$NUMBER$WORD_END.*$""", RegexOption.IGNORE_CASE),
+    Regex("""$PREFIX$WORD_START$NUMBER\s*(?:сезон|часть)$WORD_END.*$""", RegexOption.IGNORE_CASE),
+    Regex("""$PREFIX$WORD_START(?:сезон|часть)\s+$NUMBER$WORD_END.*$""", RegexOption.IGNORE_CASE),
 )
 
 /** Ключ для сравнения названий: нижний регистр, «ё»→«е», только буквы и цифры. */
