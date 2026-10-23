@@ -39,6 +39,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -206,7 +207,7 @@ internal fun LibraryGrid(
                     top = 16.dp,
                     bottom = TvScreenPadding.Vertical,
                 ),
-                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
             ) {
                 itemsIndexed(items, key = { index, item -> lazyKey("library", item.animeId, index) }) { index, item ->

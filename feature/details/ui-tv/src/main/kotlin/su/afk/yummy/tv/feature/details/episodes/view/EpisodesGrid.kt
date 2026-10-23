@@ -40,6 +40,7 @@ import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -168,7 +169,7 @@ internal fun EpisodesGrid(
                         bottom = TvScreenPadding.Vertical,
                     ),
                     horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
-                    verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                    verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }, contentType = { "header" }) {
                         Text(

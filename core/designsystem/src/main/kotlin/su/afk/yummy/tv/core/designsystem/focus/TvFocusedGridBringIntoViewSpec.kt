@@ -89,7 +89,9 @@ fun rememberTvTopAnchoredGridBringIntoViewSpec(
     rowSpacing: Dp,
     topContentPadding: Dp = 0.dp,
 ): BringIntoViewSpec {
-    val pivotOffsetPx = with(LocalDensity.current) { (rowSpacing - topContentPadding).coerceAtLeast(0.dp).toPx() }
+    val pivotOffsetPx = with(LocalDensity.current) {
+        (rowSpacing + TvTopAnchoredFocusInset - topContentPadding).coerceAtLeast(0.dp).toPx()
+    }
     return remember(pivotOffsetPx) {
         TvPivotBringIntoViewSpec(
             skipIfFullyVisible = false,
@@ -115,12 +117,19 @@ val TvCenteredCarouselBringIntoViewSpec: BringIntoViewSpec =
     TvPivotBringIntoViewSpec(skipIfFullyVisible = false, centered = true)
 
 /**
+ * Запас между верхней кромкой экрана и фокусным рядом сверх [rowSpacing]: рамка фокуса, скейл и оверскан ТВ
+ * иначе обрезают рамку у самой кромки. Грид с верхним якорем обязан добавить его к `verticalArrangement`
+ * (см. [TvTopAnchoredExtraRowGap]), иначе из-за кромки торчит низ предыдущего ряда.
+ */
+val TvTopAnchoredFocusInset = 4.dp
+
+/**
  * Добавка к `verticalArrangement` грида с верхним якорем: ряд встаёт на [rowSpacing] от кромки (рамке
  * фокуса и скейлу хватает места), а низ предыдущего ряда уходит за экран и не торчит — у карточек
  * с плашкой статуса он иначе виден цветной полоской. Грид должен сам использовать
  * `TvCardSpacing.Vertical + TvTopAnchoredExtraRowGap` между рядами.
  */
-val TvTopAnchoredExtraRowGap = 2.dp
+val TvTopAnchoredExtraRowGap = 2.dp + TvTopAnchoredFocusInset
 
 internal const val FocusedItemPivotFraction = 0.12f
 

@@ -39,6 +39,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -200,7 +201,7 @@ internal fun ContinueWatchingGrid(
                     top = 16.dp,
                     bottom = TvScreenPadding.Vertical,
                 ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp + TvTopAnchoredFocusInset),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
             ) {
                 itemsIndexed(

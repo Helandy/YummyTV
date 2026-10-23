@@ -36,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -114,7 +115,7 @@ fun TrailersTvScreen(
                             bottom = TvScreenPadding.Vertical,
                         ),
                         horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
-                        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
                         modifier = Modifier
                             .fillMaxSize()
                             .tvFocusRestorer(),

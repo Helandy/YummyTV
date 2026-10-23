@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -136,7 +137,7 @@ fun ReviewsListTvScreen(
                         state = gridState,
                         columns = GridCells.Fixed(ReviewsGridColumnCount),
                         horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
-                        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
                         contentPadding = PaddingValues(
                             top = TvCardSpacing.Vertical,
                             bottom = TvScreenPadding.Vertical,

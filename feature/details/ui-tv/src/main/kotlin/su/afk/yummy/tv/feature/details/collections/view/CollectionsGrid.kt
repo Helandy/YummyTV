@@ -38,6 +38,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
@@ -123,7 +124,7 @@ internal fun CollectionsGrid(
                     top = TvScreenPadding.Vertical,
                     bottom = TvScreenPadding.Vertical,
                 ),
-                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
                 horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
                 modifier = Modifier
                     .fillMaxSize()
