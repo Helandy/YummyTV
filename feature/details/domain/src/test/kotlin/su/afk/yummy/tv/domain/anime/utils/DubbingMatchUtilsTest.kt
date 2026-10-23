@@ -25,6 +25,13 @@ class DubbingMatchUtilsTest {
     }
 
     @Test
+    fun `exact full name wins when voice and dubbing share a studio`() {
+        val both = listOf("Озвучка AniLibria", "Дубляж AniLibria")
+        assertEquals("Дубляж AniLibria", matchDubbingName("Дубляж AniLibria", both))
+        assertEquals("Озвучка AniLibria", matchDubbingName("Озвучка AniLibria", both))
+    }
+
+    @Test
     fun `noise words and spacing are ignored`() {
         assertEquals("Озвучка AniDUB Online", matchDubbingName("Anidub", yummy))
         assertEquals("Озвучка SHIZA Project", matchDubbingName("Shiza", yummy))
