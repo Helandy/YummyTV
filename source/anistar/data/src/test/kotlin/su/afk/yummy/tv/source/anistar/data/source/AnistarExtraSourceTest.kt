@@ -35,16 +35,15 @@ class AnistarExtraSourceTest : BaseUnitTest() {
         creators = emptyList(), studios = emptyList(), viewingOrder = emptyList(), screenshots = emptyList(), malId = malId,
     )
 
-    private val title = AnistarTitle(2658, "https://v31.astar.bz")
+    private val title = AnistarTitle(2658, "https://v31.astar.bz", listOf(AnistarEpisode(2), AnistarEpisode(1)))
 
-    private fun videoRepository() = AnistarExtraVideoRepository(FindAnistarTitleUseCase(repository), GetAnistarEpisodesUseCase(repository))
+    private fun videoRepository() = AnistarExtraVideoRepository(FindAnistarTitleUseCase(repository), GetAnistarEpisodesUseCase())
 
     private fun streamRepository() = AnistarExtraStreamRepository(ResolveAnistarStreamsUseCase(repository), messages)
 
     @Test
     fun `videos are built per episode and lookup carries the app data`() = runTest {
         coEvery { repository.findTitle(AnistarLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28)) } returns title
-        coEvery { repository.getEpisodes(title) } returns listOf(AnistarEpisode(2), AnistarEpisode(1))
 
         val videos = videoRepository().videos(details(52991))
 

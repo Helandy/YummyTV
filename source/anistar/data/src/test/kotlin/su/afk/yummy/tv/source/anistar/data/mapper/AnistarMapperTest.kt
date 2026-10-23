@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarTitleResponseDto
+import su.afk.yummy.tv.source.anistar.domain.model.AnistarEpisode
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarLookup
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarTitle
 
@@ -22,9 +23,9 @@ class AnistarMapperTest {
 
     @Test
     fun `title is built from an available response and the mirror is normalised`() {
-        val title = AnistarMapper.toTitle(AnistarTitleResponseDto(true, 2658, "https://v31.astar.bz/"))
+        val title = AnistarMapper.toTitle(AnistarTitleResponseDto(true, 2658, "https://v31.astar.bz/", listOf(2, 1, 0)))
 
-        assertEquals(AnistarTitle(2658, "https://v31.astar.bz"), title)
+        assertEquals(AnistarTitle(2658, "https://v31.astar.bz", listOf(AnistarEpisode(2), AnistarEpisode(1))), title)
     }
 
     @Test

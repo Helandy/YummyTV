@@ -19,6 +19,8 @@ data class AnistarTitleResponseDto(
     val available: Boolean = false,
     val newsId: Long? = null,
     val mirror: String? = null,
+    /** Номера вышедших серий (читает сервер); `null` — сервер плеер-страницу не прочитал. */
+    val episodes: List<Int>? = null,
 )
 
 @Serializable

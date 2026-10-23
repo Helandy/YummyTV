@@ -16,4 +16,13 @@ data class AmediaLookupRequestDto(
 data class AmediaTitleResponseDto(
     val available: Boolean = false,
     val pageUrl: String? = null,
+    /** Вышедшие серии со страницы тайтла (читает сервер); `null` — сервер страницу не прочитал. */
+    val episodes: List<AmediaEpisodeDto>? = null,
+)
+
+@Serializable
+data class AmediaEpisodeDto(
+    val number: Int,
+    val vodId: Long? = null,
+    val rutubeUrl: String? = null,
 )

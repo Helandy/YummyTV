@@ -21,11 +21,13 @@ class AnistarUseCasesTest : BaseUnitTest() {
     private val target = AnistarTarget(2658, 1)
 
     @Test
-    fun `episodes are sorted and duplicates by number are collapsed`() = runTest {
-        val title = AnistarTitle(2658, "https://v31.astar.bz")
-        coEvery { repository.getEpisodes(title) } returns listOf(AnistarEpisode(3), AnistarEpisode(1), AnistarEpisode(3), AnistarEpisode(2))
+    fun `episodes are sorted and duplicates by number are collapsed`() {
+        val title = AnistarTitle(
+            2658, "https://v31.astar.bz",
+            listOf(AnistarEpisode(3), AnistarEpisode(1), AnistarEpisode(3), AnistarEpisode(2)),
+        )
 
-        assertEquals(listOf(1, 2, 3), GetAnistarEpisodesUseCase(repository)(title).map { it.number })
+        assertEquals(listOf(1, 2, 3), GetAnistarEpisodesUseCase()(title).map { it.number })
     }
 
     @Test

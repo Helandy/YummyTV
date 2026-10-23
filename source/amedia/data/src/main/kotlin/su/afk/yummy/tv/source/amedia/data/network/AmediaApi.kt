@@ -20,7 +20,7 @@ import su.afk.yummy.tv.source.amedia.data.dto.AmediaTitleResponseDto
 import java.io.IOException
 import javax.inject.Inject
 
-/** Сервер YummyTV (какая страница amd.online у тайтла), страница тайтла, страница плеера `aser.pro/vod/{id}` и HLS-плейлисты. */
+/** Сервер YummyTV (страница amd.online у тайтла и её серии), страница плеера `aser.pro/vod/{id}` и HLS-плейлисты. */
 internal class AmediaApi @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
     private val signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
@@ -37,8 +37,6 @@ internal class AmediaApi @Inject constructor(
         if (!response.status.isSuccess()) throw IOException("Amedia API: HTTP ${response.status.value}")
         return response.body()
     }
-
-    suspend fun getTitlePage(pageUrl: String): String = getText(pageUrl)
 
     suspend fun getVodPage(vodId: Long): String = getText("$VOD_URL/$vodId")
 

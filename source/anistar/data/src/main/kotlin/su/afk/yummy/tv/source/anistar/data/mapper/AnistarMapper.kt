@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.model.anime.utils.originalAnimeTitle
 import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarLookupRequestDto
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarTitleResponseDto
+import su.afk.yummy.tv.source.anistar.domain.model.AnistarEpisode
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarLookup
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarTitle
 
@@ -25,6 +26,6 @@ internal object AnistarMapper {
         if (!dto.available) return null
         val newsId = dto.newsId?.takeIf { it > 0 } ?: return null
         val mirror = dto.mirror?.trim()?.trimEnd('/')?.takeIf { it.startsWith("https://") } ?: return null
-        return AnistarTitle(newsId, mirror)
+        return AnistarTitle(newsId, mirror, dto.episodes.orEmpty().filter { it > 0 }.map(::AnistarEpisode))
     }
 }

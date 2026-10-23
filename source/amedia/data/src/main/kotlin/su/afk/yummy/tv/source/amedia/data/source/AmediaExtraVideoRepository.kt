@@ -12,8 +12,8 @@ import su.afk.yummy.tv.source.amedia.domain.usecase.GetAmediaEpisodesUseCase
 import javax.inject.Inject
 
 /**
- * Добавляет балансер «Amedia» с единственной озвучкой сайта amd.online. Страницу тайтла находит сервер YummyTV (по MAL id
- * или названиям); без MAL id источника нет. Серия собственного плеера идёт адресом `source://amedia/…` (поток запрашивается при
+ * Добавляет балансер «Amedia» с единственной озвучкой сайта amd.online. Страницу тайтла и её серии отдаёт сервер YummyTV (по MAL id
+ * или названиям; на amd.online при открытии деталей клиент не ходит); без MAL id источника нет. Серия собственного плеера идёт адресом `source://amedia/…` (поток запрашивается при
  * открытии), а серия, вместо которой сайт вставил Rutube, — самой Rutube-ссылкой: её разбирает штатный Rutube-экстрактор.
  */
 internal class AmediaExtraVideoRepository @Inject constructor(

@@ -39,16 +39,15 @@ class AmediaExtraSourceTest : BaseUnitTest() {
         creators = emptyList(), studios = emptyList(), viewingOrder = emptyList(), screenshots = emptyList(), malId = malId,
     )
 
-    private val title = AmediaTitle("https://amd.online/5753-x.html")
+    private fun title(vararg episodes: AmediaEpisode) = AmediaTitle("https://amd.online/5753-x.html", episodes.toList())
 
-    private fun videoRepository() = AmediaExtraVideoRepository(FindAmediaTitleUseCase(repository), GetAmediaEpisodesUseCase(repository))
+    private fun videoRepository() = AmediaExtraVideoRepository(FindAmediaTitleUseCase(repository), GetAmediaEpisodesUseCase())
 
     private fun streamRepository() = AmediaExtraStreamRepository(ResolveAmediaStreamsUseCase(repository), messages)
 
     @Test
     fun `videos are built per episode and lookup carries the app data`() = runTest {
-        coEvery { repository.findTitle(AmediaLookup(59088, "Мстители", listOf("Revengers"), 2026, "tv", 12)) } returns title
-        coEvery { repository.getEpisodes(title) } returns listOf(
+        coEvery { repository.findTitle(AmediaLookup(59088, "Мстители", listOf("Revengers"), 2026, "tv", 12)) } returns title(
             AmediaEpisode(2, AmediaEpisodeSource.Vod(48111)),
             AmediaEpisode(1, AmediaEpisodeSource.Vod(47997)),
         )
@@ -64,8 +63,7 @@ class AmediaExtraSourceTest : BaseUnitTest() {
     @Test
     fun `rutube episode keeps the rutube embed as its url`() = runTest {
         val embed = "https://rutube.ru/play/embed/be753fcea5b1c586363cf8a220c47167"
-        coEvery { repository.findTitle(any()) } returns title
-        coEvery { repository.getEpisodes(title) } returns listOf(
+        coEvery { repository.findTitle(any()) } returns title(
             AmediaEpisode(1, AmediaEpisodeSource.Rutube(embed)),
             AmediaEpisode(2, AmediaEpisodeSource.Vod(30296)),
         )

@@ -11,8 +11,8 @@ import su.afk.yummy.tv.source.anistar.domain.usecase.GetAnistarEpisodesUseCase
 import javax.inject.Inject
 
 /**
- * Добавляет балансер «AniStar» с единственной озвучкой сайта. Тайтл ищет сервер YummyTV по MAL id и названиям; без MAL id
- * источника нет. Серии берутся из плейлиста плеер-страницы, но ссылок на файлы здесь нет: у них токен и срок жизни, поэтому
+ * Добавляет балансер «AniStar» с единственной озвучкой сайта. Тайтл и номера серий отдаёт сервер YummyTV (ищет по MAL id и названиям, плеер-страницу читает сам с кэшем); без MAL id
+ * источника нет. Ссылок на файлы здесь нет: у них токен и срок жизни, поэтому
  * поток запрашивается при открытии плеера.
  */
 internal class AnistarExtraVideoRepository @Inject constructor(

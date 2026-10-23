@@ -2,9 +2,7 @@ package su.afk.yummy.tv.source.anistar.data.repository
 
 import su.afk.yummy.tv.source.anistar.data.mapper.AnistarMapper
 import su.afk.yummy.tv.source.anistar.data.network.AnistarApi
-import su.afk.yummy.tv.source.anistar.data.utils.AnistarPlaylistEntry
 import su.afk.yummy.tv.source.anistar.data.utils.parseAnistarPlaylist
-import su.afk.yummy.tv.source.anistar.domain.model.AnistarEpisode
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarLookup
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarStreams
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarTarget
@@ -22,12 +20,9 @@ internal class AnistarRepositoryImpl @Inject constructor(
 
     private data class CachedTitle(val title: AnistarTitle?, val fetchedAtMs: Long)
 
-    private data class CachedPlaylist(val entries: List<AnistarPlaylistEntry>, val fetchedAtMs: Long)
-
     private data class CachedMirror(val mirror: String, val fetchedAtMs: Long)
 
     private val byMalId = ConcurrentHashMap<Int, CachedTitle>()
-    private val playlists = ConcurrentHashMap<Long, CachedPlaylist>()
 
     @Volatile
     private var mirror: CachedMirror? = null
@@ -37,20 +32,13 @@ internal class AnistarRepositoryImpl @Inject constructor(
         byMalId[lookup.malId]?.takeIf { now - it.fetchedAtMs < TITLE_TTL_MS }?.let { return it.title }
 
         // Сбой сети в кэш не попадает: исключение уйдёт наверх, источник просто не появится в этот раз.
-        val title = AnistarMapper.toTitle(api.findTitle(AnistarMapper.toRequest(lookup)))
+        val dto = api.findTitle(AnistarMapper.toRequest(lookup))
+        // Тайтл есть, а серии сервер не прочитал: это сбой, а не «серий нет» — пустой ответ не кэшируем.
+        if (dto.available && dto.episodes == null) throw IOException("AniStar API: сервер не прочитал серии")
+        val title = AnistarMapper.toTitle(dto)
         byMalId[lookup.malId] = CachedTitle(title, now)
         title?.let { mirror = CachedMirror(it.mirror, now) }
         return title
-    }
-
-    /** Список серий переживает [PLAYLIST_TTL_MS]: плейлист длинного тайтла — сотни килобайт, а экран деталей открывают часто. */
-    override suspend fun getEpisodes(title: AnistarTitle): List<AnistarEpisode> {
-        val now = System.currentTimeMillis()
-        val entries = playlists[title.newsId]?.takeIf { now - it.fetchedAtMs < PLAYLIST_TTL_MS }?.entries
-            ?: parseAnistarPlaylist(api.getPlayerPage(title.mirror, title.newsId)).also {
-                playlists[title.newsId] = CachedPlaylist(it, now)
-            }
-        return entries.map { AnistarEpisode(it.number) }
     }
 
     /** Ссылки на HLS с токеном: плейлист берётся заново при каждом запуске серии. Зеркало, которое не отвечает, обновляется один раз. */
@@ -76,8 +64,8 @@ internal class AnistarRepositoryImpl @Inject constructor(
     }
 
     private companion object {
-        const val TITLE_TTL_MS = 10 * 60 * 1000L
-        const val PLAYLIST_TTL_MS = 5 * 60 * 1000L
+        // Короткий срок: вместе с тайтлом приходят серии, а новая серия не должна ждать дольше пары минут сверх серверного кэша.
+        const val TITLE_TTL_MS = 5 * 60 * 1000L
         const val MIRROR_TTL_MS = 30 * 60 * 1000L
     }
 }

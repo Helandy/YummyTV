@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarMirrorResponseDto
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarTitleResponseDto
 import su.afk.yummy.tv.source.anistar.data.network.AnistarApi
+import su.afk.yummy.tv.source.anistar.domain.model.AnistarEpisode
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarLookup
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarTarget
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarTitle
@@ -22,11 +23,11 @@ class AnistarRepositoryImplTest : BaseUnitTest() {
     private val api: AnistarApi = mockk()
     private val lookup = AnistarLookup(1, "A", emptyList(), null, null, null)
     private val playlist = requireNotNull(javaClass.getResourceAsStream("/anistar-playlist.html")).readBytes().decodeToString()
-    private val title = AnistarTitle(2658, "https://v31.astar.bz")
+    private val title = AnistarTitle(2658, "https://v31.astar.bz", listOf(AnistarEpisode(391), AnistarEpisode(392)))
 
     private fun createRepository() = AnistarRepositoryImpl(api)
 
-    private val available = AnistarTitleResponseDto(true, 2658, "https://v31.astar.bz")
+    private val available = AnistarTitleResponseDto(true, 2658, "https://v31.astar.bz", listOf(391, 392))
 
     @Test
     fun `title is cached per mal id including the negative answer`() = runTest {
@@ -55,14 +56,14 @@ class AnistarRepositoryImplTest : BaseUnitTest() {
     }
 
     @Test
-    fun `episodes come from the playlist and are cached`() = runTest {
-        coEvery { api.getPlayerPage("https://v31.astar.bz", 2658) } returns playlist
+    fun `title the server could not read episodes for is a failure and is not cached`() = runTest {
+        coEvery { api.findTitle(any()) } returns available.copy(episodes = null)
         val repository = createRepository()
 
-        assertEquals(listOf(391, 392, 393, 4), repository.getEpisodes(title).map { it.number })
-        repository.getEpisodes(title)
+        assertThrows(IOException::class.java) { kotlinx.coroutines.runBlocking { repository.findTitle(lookup) } }
 
-        coVerify(exactly = 1) { api.getPlayerPage(any(), any()) }
+        coEvery { api.findTitle(any()) } returns available
+        assertEquals(title, repository.findTitle(lookup))
     }
 
     @Test

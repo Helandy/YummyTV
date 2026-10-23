@@ -24,13 +24,14 @@ class AmediaUseCasesTest : BaseUnitTest() {
     private fun episode(number: Int, vodId: Long) = AmediaEpisode(number, AmediaEpisodeSource.Vod(vodId))
 
     @Test
-    fun `episodes are sorted and duplicates by number are collapsed`() = runTest {
-        val title = AmediaTitle("https://amd.online/5753-x.html")
-        coEvery { repository.getEpisodes(title) } returns
-            listOf(episode(3, 30), episode(1, 10), episode(3, 31), episode(2, 20))
+    fun `episodes are sorted and duplicates by number are collapsed`() {
+        val title = AmediaTitle(
+            "https://amd.online/5753-x.html",
+            listOf(episode(3, 30), episode(1, 10), episode(3, 31), episode(2, 20)),
+        )
 
-        assertEquals(listOf(1, 2, 3), GetAmediaEpisodesUseCase(repository)(title).map { it.number })
-        assertEquals(episode(3, 30), GetAmediaEpisodesUseCase(repository)(title).last())
+        assertEquals(listOf(1, 2, 3), GetAmediaEpisodesUseCase()(title).map { it.number })
+        assertEquals(episode(3, 30), GetAmediaEpisodesUseCase()(title).last())
     }
 
     @Test

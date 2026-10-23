@@ -11,6 +11,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.amedia.data.network.AmediaApi
+import su.afk.yummy.tv.source.amedia.data.dto.AmediaEpisodeDto
 import su.afk.yummy.tv.source.amedia.data.dto.AmediaTitleResponseDto
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
@@ -25,14 +26,17 @@ class AmediaRepositoryImplTest : BaseUnitTest() {
     private val lookup = AmediaLookup(59088, "Токийские мстители: Битва", listOf("Tokyo Revengers"), 2026, "tv", 12)
     private val pageUrl = "https://amd.online/5753-b.html"
 
+    private val serverEpisodes = listOf(AmediaEpisodeDto(1, vodId = 47997))
+    private val title = AmediaTitle(pageUrl, listOf(AmediaEpisode(1, AmediaEpisodeSource.Vod(47997))))
+
     private fun createRepository() = AmediaRepositoryImpl(api)
 
     @Test
     fun `title comes from the server and is cached per mal id including the negative answer`() = runTest {
-        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl)
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl, serverEpisodes)
         val repository = createRepository()
 
-        assertEquals(AmediaTitle(pageUrl), repository.findTitle(lookup))
+        assertEquals(title, repository.findTitle(lookup))
         repository.findTitle(lookup)
         coVerify(exactly = 1) { api.findTitle(any()) }
 
@@ -49,20 +53,19 @@ class AmediaRepositoryImplTest : BaseUnitTest() {
 
         assertThrows(IOException::class.java) { runBlocking { repository.findTitle(lookup) } }
 
-        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl)
-        assertEquals(AmediaTitle(pageUrl), repository.findTitle(lookup))
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl, serverEpisodes)
+        assertEquals(title, repository.findTitle(lookup))
     }
 
     @Test
-    fun `episodes are parsed from the title page and cached`() = runTest {
-        coEvery { api.getTitlePage(pageUrl) } returns """<a data-vid="1" data-vlnk="https://aser.pro/vod/47997" class="x">1</a>"""
+    fun `title the server could not read episodes for is a failure and is not cached`() = runTest {
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl, episodes = null)
         val repository = createRepository()
 
-        val first = repository.getEpisodes(AmediaTitle(pageUrl))
-        repository.getEpisodes(AmediaTitle(pageUrl))
+        assertThrows(IOException::class.java) { runBlocking { repository.findTitle(lookup) } }
 
-        assertEquals(listOf(AmediaEpisode(1, AmediaEpisodeSource.Vod(47997))), first)
-        coVerify(exactly = 1) { api.getTitlePage(pageUrl) }
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl, serverEpisodes)
+        assertEquals(title, repository.findTitle(lookup))
     }
 
     @Test

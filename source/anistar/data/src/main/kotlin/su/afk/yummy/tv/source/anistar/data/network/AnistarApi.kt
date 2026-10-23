@@ -21,7 +21,7 @@ import su.afk.yummy.tv.source.anistar.data.dto.AnistarTitleResponseDto
 import java.io.IOException
 import javax.inject.Inject
 
-/** Собственный сервер YummyTV (есть ли тайтл на AniStar, живое зеркало) и плеер-страница AniStar (серии и потоки). */
+/** Собственный сервер YummyTV (есть ли тайтл на AniStar и его серии, живое зеркало) и плеер-страница AniStar (потоки серии). */
 internal class AnistarApi @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
     private val signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
@@ -46,7 +46,7 @@ internal class AnistarApi @Inject constructor(
         return response.body()
     }
 
-    /** HTML плеер-страницы тайтла с JS-массивом серий; для несуществующей новости сайт отвечает 200 без серий. */
+    /** HTML плеер-страницы тайтла с JS-массивом серий и ссылками на потоки; для несуществующей новости сайт отвечает 200 без серий. */
     suspend fun getPlayerPage(mirror: String, newsId: Long): String {
         val response = client.get("$mirror/test/player2/videoas_p2p_new.php") { url.parameters.append("id", newsId.toString()) }
         if (!response.status.isSuccess()) throw IOException("AniStar player: HTTP ${response.status.value}")
