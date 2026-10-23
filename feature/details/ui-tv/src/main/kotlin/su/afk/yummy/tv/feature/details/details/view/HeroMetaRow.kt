@@ -60,17 +60,6 @@ internal fun HeroMetaRow(details: AnimeDetails) {
                     .padding(horizontal = 5.dp, vertical = 2.dp),
             )
         }
-        ageRating?.let { label ->
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Medium,
-                color = Color.White,
-                modifier = Modifier
-                    .background(Color.Black, RoundedCornerShape(3.dp))
-                    .padding(horizontal = 5.dp, vertical = 2.dp),
-            )
-        }
         viewsLabel?.let { views ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -94,6 +83,17 @@ internal fun HeroMetaRow(details: AnimeDetails) {
                     color = chipColor.copy(alpha = 0.85f),
                 )
             }
+        }
+        ageRating?.let { label ->
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                modifier = Modifier
+                    .background(Color.Black, RoundedCornerShape(3.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp),
+            )
         }
     }
 }
