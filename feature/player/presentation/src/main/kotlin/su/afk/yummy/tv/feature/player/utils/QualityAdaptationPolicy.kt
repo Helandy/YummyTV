@@ -102,11 +102,9 @@ class QualityAdaptationPolicy(
         if (levels.size < 2) return QualityAdaptationDecision.Keep
         trim(nowMs)
 
-        // С какого тика последняя оценка полосы покрывает следующую ступень с запасом.
-        val nextUp = nextHigher(currentHeight, available, nowMs)
-        val bandwidthEnough = nextUp != null &&
-            lastBandwidthBps >= nominalBitrateBps(nextUp) * UP_BANDWIDTH_FACTOR
-        goodBandwidthSinceMs = if (bandwidthEnough) goodBandwidthSinceMs ?: nowMs else null
+        // С какого тика последняя оценка полосы покрывает с запасом хотя бы одну ступень выше.
+        val upTarget = upgradeTarget(currentHeight, available, nowMs)
+        goodBandwidthSinceMs = if (upTarget != null) goodBandwidthSinceMs ?: nowMs else null
 
         val deviceStruggles = droppedFrames.sumOf { it.second } >= DEVICE_DROPPED_FRAMES_LIMIT
         // Одна затянувшаяся остановка — тот же сигнал, что и две короткие: второго захода в
@@ -130,19 +128,23 @@ class QualityAdaptationPolicy(
         val goodSince = goodBandwidthSinceMs ?: return QualityAdaptationDecision.Keep
         if (nowMs - goodSince < UP_STABLE_MS) return QualityAdaptationDecision.Keep
 
-        val higher = nextHigher(currentHeight, available, nowMs) ?: return QualityAdaptationDecision.Keep
+        val higher = upTarget ?: return QualityAdaptationDecision.Keep
         val label = levels.first { it.second == higher }.first
         return QualityAdaptationDecision.Switch(label, isDowngrade = false)
     }
 
-    /** Ближайшая высота выше [height], куда можно подняться: в пределах потолка, без банов. */
-    private fun nextHigher(height: Int, available: List<String>, nowMs: Long): Int? =
+    /**
+     * Наивысшая высота выше [height], на которую хватает полосы с запасом: в пределах потолка, без
+     * банов. Поднимаемся сразу на неё, а не по ступеньке, иначе возврат после падения затягивается.
+     */
+    private fun upgradeTarget(height: Int, available: List<String>, nowMs: Long): Int? =
         available
             .mapNotNull { it.qualityHeight() }
             .filter { it > height && it <= ceilingHeight }
             .filter { candidate -> deviceLimitHeight?.let { candidate < it } ?: true }
             .filter { candidate -> (networkBanUntilMs[candidate] ?: 0L) <= nowMs }
-            .minOrNull()
+            .filter { candidate -> lastBandwidthBps >= nominalBitrateBps(candidate) * UP_BANDWIDTH_FACTOR }
+            .maxOrNull()
 
     private fun trim(nowMs: Long) {
         while (stallTimesMs.isNotEmpty() && nowMs - stallTimesMs.first() > STALL_WINDOW_MS) {
@@ -177,10 +179,10 @@ class QualityAdaptationPolicy(
         const val DEVICE_DROPPED_FRAMES_LIMIT = 30
         const val DROPPED_WINDOW_MS = 10_000L
 
-        const val NETWORK_BAN_MS = 2 * 60_000L
-        const val MIN_SWITCH_INTERVAL_MS = 60_000L
-        const val UP_STABLE_MS = 30_000L
-        const val UP_MIN_BUFFER_MS = 10_000L
+        const val NETWORK_BAN_MS = 30_000L
+        const val MIN_SWITCH_INTERVAL_MS = 15_000L
+        const val UP_STABLE_MS = 8_000L
+        const val UP_MIN_BUFFER_MS = 6_000L
         const val UP_BANDWIDTH_FACTOR = 1.5
 
         /** Ориентировочный битрейт качества, бит/с: у MP4-источников реального нет в манифесте. */

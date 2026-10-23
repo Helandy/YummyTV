@@ -144,28 +144,40 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
         policy.onQualityChanged(3_000L)
         policy.onStallEnded()
 
-        // 1080p забанен на 2 минуты после падения по сети.
-        goodNetwork("720p", from = 4_000L, to = 100_000L)
-        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 100_000L))
+        // 1080p забанен на 30 с после падения по сети.
+        goodNetwork("720p", from = 4_000L, to = 30_000L)
+        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 30_000L))
 
-        goodNetwork("720p", from = 301_000L, to = 340_000L)
+        goodNetwork("720p", from = 35_000L, to = 60_000L)
         assertEquals(
             QualityAdaptationDecision.Switch("1080p", isDowngrade = false),
-            decide("720p", now = 340_000L),
+            decide("720p", now = 60_000L),
         )
     }
 
     @Test
     fun `upgrade waits for the minimum interval since the last switch`() {
         policy.onQualityChanged(0L)
-        goodNetwork("480p", from = 1_000L, to = 40_000L)
+        goodNetwork("480p", from = 1_000L, to = 14_000L)
 
-        assertEquals(QualityAdaptationDecision.Keep, decide("480p", now = 40_000L))
+        assertEquals(QualityAdaptationDecision.Keep, decide("480p", now = 14_000L))
 
-        goodNetwork("480p", from = 41_000L, to = 61_000L)
+        goodNetwork("480p", from = 15_000L, to = 25_000L)
         assertEquals(
-            QualityAdaptationDecision.Switch("720p", isDowngrade = false),
-            decide("480p", now = 61_000L),
+            QualityAdaptationDecision.Switch("1080p", isDowngrade = false),
+            decide("480p", now = 25_000L),
+        )
+    }
+
+    @Test
+    fun `upgrade jumps straight to the highest level the bandwidth covers`() {
+        policy.onQualityChanged(0L)
+        // 1080p требует ~5 Мбит/с × 1.5 = 7.5; 8 Мбит/с хватает на 1080p, но не на 4K.
+        network(8_000_000L, "360p", from = 1_000L, to = 30_000L)
+
+        assertEquals(
+            QualityAdaptationDecision.Switch("1080p", isDowngrade = false),
+            decide("360p", now = 30_000L),
         )
     }
 

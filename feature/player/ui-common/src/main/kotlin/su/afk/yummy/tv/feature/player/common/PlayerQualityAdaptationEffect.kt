@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -18,7 +19,8 @@ import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
  * здесь только сбор сигналов плеера и отправка [PlayerState.Event.QualitySelected] с `auto = true`.
  *
  * Политика пересоздаётся при смене набора качеств (новая серия или источник), поэтому память о
- * проблемных уровнях живёт в пределах одного потока. Остановки при старте и перемотке не считаются.
+ * проблемных уровнях живёт в пределах одного потока. Остановки после перемотки, пропуска опенинга и
+ * замены item (смена сабов) не считаются.
  */
 @Composable
 fun PlayerQualityAdaptationEffect(
@@ -49,7 +51,19 @@ fun PlayerQualityAdaptationEffect(
                 newPosition: Player.PositionInfo,
                 reason: Int,
             ) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK) seekPending = true
+                // Любой управляемый разрыв (перемотка, пропуск опенинга, замена item при смене
+                // сабов/озвучки) даёт буферизацию, не связанную с сетью. Идущая остановка не в счёт.
+                if (reason != Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
+                    seekPending = true
+                    policy.onStallEnded()
+                }
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                    seekPending = true
+                    policy.onStallEnded()
+                }
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
