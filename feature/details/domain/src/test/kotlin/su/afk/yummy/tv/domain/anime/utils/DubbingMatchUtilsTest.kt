@@ -39,6 +39,45 @@ class DubbingMatchUtilsTest {
     }
 
     @Test
+    fun `studio balancers attach to their yani voiceovers`() {
+        val pool = listOf("Озвучка Animedia", "Озвучка AniStar", "Субтитры Wakanim")
+        assertEquals("Озвучка Animedia", matchDubbingName("Amedia", pool))
+        assertEquals("Озвучка AniStar", matchDubbingName("AniStar", pool))
+        assertEquals("Озвучка AniStar", matchDubbingName("Анистар", pool))
+        assertEquals("Озвучка Animedia", matchDubbingName("Анимедиа", pool))
+        assertNull(matchDubbingName("Amedia", listOf("Озвучка AniLibria")))
+    }
+
+    @Test
+    fun `studio twins all get the balancer`() {
+        val pool = listOf("Озвучка AniMedia", "Озвучка Animedia", "Озвучка AniStar")
+        assertEquals(listOf("Озвучка AniMedia", "Озвучка Animedia"), matchDubbingNames("Amedia", pool))
+        val base = listOf(
+            video(1, "Озвучка AniMedia", "Плеер Kodik", "https://k/1"),
+            video(2, "Озвучка Animedia", "Плеер Kodik", "https://k/2"),
+        )
+        val merged = mergeExtraDubbings(base, listOf(video(-5, "Amedia", "Amedia", "source://amedia/1")))
+        assertEquals(listOf("Озвучка AniMedia", "Озвучка Animedia"), merged.map { it.dubbing })
+        assertEquals(-5, merged[0].id)
+        assert(merged[1].id != merged[0].id && merged[1].id < 0)
+        assertEquals("source://amedia/1", merged[1].iframeUrl)
+    }
+
+    @Test
+    fun `voice and dubbing of one studio both get the balancer`() {
+        val pool = listOf("Озвучка AniLibria", "Дубляж AniLibria", "Субтитры AniLibria")
+        assertEquals(listOf("Озвучка AniLibria", "Дубляж AniLibria"), matchDubbingNames("anilibria", pool))
+        // Точное имя по-прежнему выбирает ровно одну.
+        assertEquals(listOf("Дубляж AniLibria"), matchDubbingNames("Дубляж AniLibria", pool))
+    }
+
+    @Test
+    fun `different studios sharing a loose key are still not merged`() {
+        val pool = listOf("Озвучка AniDUB", "Озвучка AniDUB Online")
+        assertNull(matchDubbingName("Anidub Studio", pool))
+    }
+
+    @Test
     fun `ambiguous loose match is not merged`() {
         val pool = listOf("Озвучка AniDUB", "Озвучка AniDUB Online")
         assertEquals("Озвучка AniDUB", matchDubbingName("AniDUB", pool))

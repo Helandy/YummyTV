@@ -24,6 +24,10 @@ private val ALIASES = mapOf(
     "ort" to "орт",
     "shizaproject" to "shiza",
     "дубляжная" to "тодубляжная",
+    "amedia" to "animedia",
+    "амедиа" to "animedia",
+    "анимедиа" to "animedia",
+    "анистар" to "anistar",
 )
 
 /** Тип озвучки: озвучка и субтитры одной студии — разные дорожки, их сливать нельзя. */
@@ -112,41 +116,56 @@ private fun ParsedDubbing.componentKeys(): Set<String> =
  * Подстроки не используются; на каждом шаге нужен ровно один кандидат, иначе берётся следующий шаг.
  * Шаги: то же написание → точный ключ → ключ без вложенных префиксов → мягкий ключ → набор компонентов.
  */
-fun matchDubbingName(name: String, candidates: Collection<String>): String? {
+fun matchDubbingName(name: String, candidates: Collection<String>): String? =
+    matchDubbingNames(name, candidates).firstOrNull()
+
+/**
+ * Как [matchDubbingName], но возвращает все озвучки-близнецы одной студии: «Animedia» и «AniMedia», «Озвучка X» и «Дубляж X»
+ * (тот же точный ключ и тот же тип). Источник относится к каждой из них. Пустой список — совпадения нет или оно неоднозначно.
+ */
+fun matchDubbingNames(name: String, candidates: Collection<String>): List<String> {
     // Полное имя совпало буква в букву: «Озвучка X» и «Дубляж X» после снятия префикса неотличимы, а имя точное.
-    candidates.firstOrNull { it == name }?.let { return it }
+    candidates.firstOrNull { it == name }?.let { return listOf(it) }
     val target = name.parseDubbing()
-    if (target.exactKey().isEmpty()) return null
+    if (target.exactKey().isEmpty()) return emptyList()
     val parsed = candidates.distinct().map { it to it.parseDubbing() }
 
-    fun find(pool: List<Pair<String, ParsedDubbing>>, exactOnly: Boolean): String? {
-        fun unique(predicate: (ParsedDubbing) -> Boolean): String? =
-            pool.filter { (_, p) -> predicate(p) }.singleOrNull()?.first
+    fun find(pool: List<Pair<String, ParsedDubbing>>, exactOnly: Boolean): List<String> {
+        fun unique(predicate: (ParsedDubbing) -> Boolean): List<String> =
+            pool.filter { (_, p) -> predicate(p) }.map { it.first }.takeIf { it.size == 1 }.orEmpty()
 
-        unique { it.text.trim() == target.text.trim() }?.let { return it }
-        unique { it.exactKey() == target.exactKey() }?.let { return it }
-        if (exactOnly) return null
-        unique { it.baseKey() == target.baseKey() }?.let { return it }
+        // Одна студия под разным написанием или типом: ключ тот же, значит берём всех.
+        fun twins(predicate: (ParsedDubbing) -> Boolean): List<String> {
+            val matches = pool.filter { (_, p) -> predicate(p) }
+            if (matches.map { (_, p) -> p.exactKey() }.distinct().size != 1) return emptyList()
+            return matches.map { it.first }
+        }
+
+        twins { it.text.trim() == target.text.trim() }.takeIf { it.isNotEmpty() }?.let { return it }
+        twins { it.exactKey() == target.exactKey() }.takeIf { it.isNotEmpty() }?.let { return it }
+        if (exactOnly) return emptyList()
+        unique { it.baseKey() == target.baseKey() }.takeIf { it.isNotEmpty() }?.let { return it }
         target.looseKey().takeIf { it.isNotEmpty() }?.let { loose ->
-            unique { it.looseKey() == loose }?.let { return it }
+            unique { it.looseKey() == loose }.takeIf { it.isNotEmpty() }?.let { return it }
         }
         val components = target.componentKeys()
         if (components.size > 1) {
-            unique { it.componentKeys() == components }?.let { return it }
+            unique { it.componentKeys() == components }.takeIf { it.isNotEmpty() }?.let { return it }
         }
-        return null
+        return emptyList()
     }
 
-    find(parsed.filter { (_, p) -> p.kind == target.kind }, exactOnly = false)?.let { return it }
+    find(parsed.filter { (_, p) -> p.kind == target.kind }, exactOnly = false).takeIf { it.isNotEmpty() }?.let { return it }
     // «Wakanim», «SubVost»: источник не назвал тип, а у Yummy такая команда есть только как субтитры.
     if (!target.explicitKind && target.kind == DubbingKind.VOICE) {
         return find(parsed.filter { (_, p) -> p.kind == DubbingKind.SUBTITLES }, exactOnly = true)
     }
-    return null
+    return emptyList()
 }
 
 /**
- * Подставляет [extras] каноническое имя озвучки Yummy из [base], если названия совпали по [matchDubbingName].
+ * Подставляет [extras] каноническое имя озвучки Yummy из [base], если названия совпали по [matchDubbingNames].
+ * Если у студии несколько озвучек-близнецов, видео источника копируется в каждую (копии получают свой id).
  * Видео без совпадения остаются со своим именем; ссылка источника (`iframeUrl`) не меняется.
  * Пустые тайминги пропуска берутся у видео [base] той же озвучки и серии (у источника-расширения
  * своих таймингов нет, а таймлайн релиза одной озвучки совпадает).
@@ -154,19 +173,23 @@ fun matchDubbingName(name: String, candidates: Collection<String>): String? {
 fun mergeExtraDubbings(base: List<AnimeVideo>, extras: List<AnimeVideo>): List<AnimeVideo> {
     if (extras.isEmpty() || base.isEmpty()) return extras
     val names = base.map { it.dubbing.trim() }.filter { it.isNotEmpty() }.distinct()
-    val cache = HashMap<String, String?>()
+    val cache = HashMap<String, List<String>>()
     val skipsByEpisode = HashMap<Pair<String, String>, AnimeVideoSkips>()
     base.forEach { video ->
         if (video.skips.opening == null && video.skips.ending == null) return@forEach
         skipsByEpisode.getOrPut(video.dubbing.trim() to video.episode.episodeGroupKey()) { video.skips }
     }
-    return extras.map { video ->
-        val raw = video.dubbing.trim()
-        val canonical = cache.getOrPut(raw) { matchDubbingName(raw, names) }
-        val renamed = if (canonical == null || canonical == video.dubbing) video else video.copy(dubbing = canonical)
-        if (renamed.skips.opening != null || renamed.skips.ending != null) return@map renamed
-        val skips = skipsByEpisode[renamed.dubbing.trim() to renamed.episode.episodeGroupKey()]
-        if (skips == null) renamed else renamed.copy(skips = skips)
+    return extras.flatMap { video ->
+        val canonicals = cache.getOrPut(video.dubbing.trim()) { matchDubbingNames(video.dubbing.trim(), names) }
+        val targets = canonicals.ifEmpty { listOf(video.dubbing) }
+        targets.mapIndexed { index, canonical ->
+            var copy = if (canonical == video.dubbing) video else video.copy(dubbing = canonical)
+            // Первая копия сохраняет id (на нём держится прогресс), остальным нужен свой.
+            if (index > 0) copy = copy.copy(id = -(("${video.id}|$canonical").hashCode() and Int.MAX_VALUE) - 1)
+            if (copy.skips.opening != null || copy.skips.ending != null) return@mapIndexed copy
+            val skips = skipsByEpisode[copy.dubbing.trim() to copy.episode.episodeGroupKey()]
+            if (skips == null) copy else copy.copy(skips = skips)
+        }
     }
 }
 
