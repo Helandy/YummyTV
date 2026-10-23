@@ -72,6 +72,16 @@ class DubbingMatchUtilsTest {
     }
 
     @Test
+    fun `4k team names find their yani dubbings`() {
+        assertEquals(listOf("Озвучка AniLibria"), matchDubbingNames("AniLiberty (AniLibria)", listOf("Озвучка AniLibria", "Озвучка AniStar")))
+        assertEquals(listOf("Озвучка AniLibria"), matchDubbingNames("AniLiberty", listOf("Озвучка AniLibria")))
+        assertEquals(
+            listOf("Озвучка Freedub", "Дубляж Freedub"),
+            matchDubbingNames("FreedubStudio", listOf("Озвучка Freedub", "Дубляж Freedub", "Озвучка AniDUB")),
+        )
+    }
+
+    @Test
     fun `different studios sharing a loose key are still not merged`() {
         val pool = listOf("Озвучка AniDUB", "Озвучка AniDUB Online")
         assertNull(matchDubbingName("Anidub Studio", pool))

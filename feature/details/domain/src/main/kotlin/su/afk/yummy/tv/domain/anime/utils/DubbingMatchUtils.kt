@@ -19,6 +19,8 @@ private val GLUED_NOISE_SUFFIXES = listOf("studio", "project", "team", "online")
 /** Ключи после снятия типа и домена; значения — точные ключи, у которых нет общего написания. */
 private val ALIASES = mapOf(
     "анилибрия" to "anilibria",
+    "aniliberty" to "anilibria",
+    "anilibertyanilibria" to "anilibria",
     "анидаб" to "anidub",
     "анидуб" to "anidub",
     "ort" to "орт",
@@ -147,6 +149,9 @@ fun matchDubbingNames(name: String, candidates: Collection<String>): List<String
         unique { it.baseKey() == target.baseKey() }.takeIf { it.isNotEmpty() }?.let { return it }
         target.looseKey().takeIf { it.isNotEmpty() }?.let { loose ->
             unique { it.looseKey() == loose }.takeIf { it.isNotEmpty() }?.let { return it }
+            // «FreedubStudio» → и «Озвучка Freedub», и «Дубляж Freedub»: ключи без Studio совпали, а без вложенных префиксов они одно имя.
+            val loosely = pool.filter { (_, p) -> p.looseKey() == loose }
+            if (loosely.size > 1 && loosely.map { (_, p) -> p.baseKey() }.distinct().size == 1) return loosely.map { it.first }
         }
         val components = target.componentKeys()
         if (components.size > 1) {
