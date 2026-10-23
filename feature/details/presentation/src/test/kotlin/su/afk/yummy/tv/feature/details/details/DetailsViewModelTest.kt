@@ -65,8 +65,10 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val permissionRequested = MutableStateFlow(false)
+    private val sectionsHintDismissed = MutableStateFlow(false)
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true) {
         every { notificationPermissionRequested } returns permissionRequested
+        every { detailsSectionsHintDismissed } returns sectionsHintDismissed
     }
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val commentsNavigator: ICommentsNavigator = mockk()
@@ -515,6 +517,18 @@ class DetailsViewModelTest : BaseUnitTest() {
 
         assertTrue(vm.currentState.notificationPermissionRequested)
         coVerify(exactly = 1) { appLifecycleSettingsStore.markNotificationPermissionRequested() }
+    }
+
+    @Test
+    fun `sections hint is shown until dismissed and dismissal is remembered`() {
+        val vm = createViewModel()
+        assertTrue(vm.currentState.showSectionsHint)
+
+        vm.setEvent(Event.SectionsHintDismissed)
+        sectionsHintDismissed.value = true
+
+        assertFalse(vm.currentState.showSectionsHint)
+        coVerify(exactly = 1) { appLifecycleSettingsStore.dismissDetailsSectionsHint() }
     }
 
     private companion object {

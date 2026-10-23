@@ -43,6 +43,8 @@
     <string name="details_full_description">Описание</string>
     <string name="details_episodes">Серии</string>
     <string name="details_episodes_empty">Серий пока нет</string>
+    <string name="details_sections_hint">Вы можете нажимать вниз, чтобы увидеть больше секций: описание, рейтинг, вселенную тайтла и похожие тайтлы. Попробуйте — это легко</string>
+    <string name="details_sections_hint_dismiss">Хорошо, запомнил</string>
     <string name="details_subscriptions">Подписки</string>
     <string name="details_mobile_subscriptions_sign_in_title">Войдите, чтобы получать уведомления о новых сериях</string>
     <string name="details_mobile_subscriptions_sign_in_description">Подпишитесь на озвучку — и мы сообщим, как только выйдет новая серия.</string>

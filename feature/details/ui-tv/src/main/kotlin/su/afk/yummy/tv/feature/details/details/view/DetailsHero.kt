@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,7 +33,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -63,6 +61,8 @@ internal fun DetailsHero(
     restoreButtonFocusRequest: Int,
     hiddenActions: Set<DetailsButtonAction>,
     focusOnResume: Boolean,
+    showSectionsHint: Boolean,
+    onSectionsHintDismissed: () -> Unit,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFavoriteToggle: () -> Unit,
@@ -122,7 +122,6 @@ internal fun DetailsHero(
         val rowSpacing = if (isCompactHeight) 28.dp else 48.dp
         val columnSpacing = if (isCompactHeight) 8.dp else 12.dp
         val titleMaxLines = 3
-        val descriptionMaxLines = 3
         val posterWidth = if (isCompactHeight) 260.dp else 300.dp
 
         Row(
@@ -179,17 +178,6 @@ internal fun DetailsHero(
                 HeroGenresRow(details)
                 HeroEpisodesRow(details)
 
-                if (details.description.isNotBlank()) {
-                    Text(
-                        text = details.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.80f),
-                        minLines = descriptionMaxLines,
-                        maxLines = descriptionMaxLines,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
                 DetailsButtonBar(
                     details = details,
                     isInLibrary = isInLibrary,
@@ -220,6 +208,10 @@ internal fun DetailsHero(
                     onBloggerVideosSelected = onBloggerVideosSelected,
                     modifier = Modifier.padding(top = 8.dp),
                 )
+
+                if (showSectionsHint) {
+                    DetailsSectionsHint(onDismiss = onSectionsHintDismissed)
+                }
             }
 
             Column(

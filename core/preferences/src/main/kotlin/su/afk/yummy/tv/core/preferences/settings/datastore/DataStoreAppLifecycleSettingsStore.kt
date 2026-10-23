@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communit
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communityPromptFirstUseTimeMsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastSeenAnnouncementIdKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastStartedVersionCodeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsSectionsHintDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.notificationPermissionRequestedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewChannelPromptAnsweredKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.supportPromptDismissedKey
@@ -53,6 +54,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
     override val previewChannelPromptAnswered: Flow<Boolean> =
         store.boolean(previewChannelPromptAnsweredKey, false)
 
+    override val detailsSectionsHintDismissed: Flow<Boolean> =
+        store.boolean(detailsSectionsHintDismissedKey, false)
+
     override suspend fun setWatchNextEnabled(enabled: Boolean) =
         store.setBoolean(watchNextEnabledKey, enabled)
 
@@ -93,6 +97,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override suspend fun markPreviewChannelPromptAnswered() =
         store.setBoolean(previewChannelPromptAnsweredKey, true)
+
+    override suspend fun dismissDetailsSectionsHint() =
+        store.setBoolean(detailsSectionsHintDismissedKey, true)
 
     override suspend fun markStartedVersion(versionCode: Int): Boolean {
         var isFreshVersion = true

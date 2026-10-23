@@ -43,6 +43,8 @@
     <string name="details_full_description">Description</string>
     <string name="details_episodes">Episodes</string>
     <string name="details_episodes_empty">No episodes yet</string>
+    <string name="details_sections_hint">You can press down to see more sections: description, rating, the title’s universe and similar titles. Give it a try — it’s easy</string>
+    <string name="details_sections_hint_dismiss">Got it</string>
     <string name="details_subscriptions">Subscriptions</string>
     <string name="details_mobile_subscriptions_sign_in_title">Sign in to get notified about new episodes</string>
     <string name="details_mobile_subscriptions_sign_in_description">Subscribe to a dub and we will let you know as soon as a new episode is out.</string>

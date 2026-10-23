@@ -97,6 +97,8 @@ internal object SettingsPreferenceKeys {
         booleanPreferencesKey("notification_permission_requested")
     val previewChannelPromptAnsweredKey =
         booleanPreferencesKey("preview_channel_prompt_answered")
+    val detailsSectionsHintDismissedKey =
+        booleanPreferencesKey("details_sections_hint_dismissed")
     val videoExportDirectoryUriKey = stringPreferencesKey("video_export_directory_uri")
     val videoExportDirectoryNameKey = stringPreferencesKey("video_export_directory_name")
     val videoExportAutoEnabledKey = booleanPreferencesKey("video_export_auto_enabled")

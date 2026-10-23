@@ -58,6 +58,8 @@ class DetailsState {
         val showInfoSheet: Boolean = false,
         /** Системный запрос разрешения на уведомления уже показывали. */
         val notificationPermissionRequested: Boolean = false,
+        /** Показывать ТВ-подсказку «нажмите вниз — там доп. секции», пока её не закрыли. */
+        val showSectionsHint: Boolean = false,
     ) : UiState {
         /**
          * Видео ещё грузятся: Yani /videos, прогресс сервера и внешние источники
@@ -188,6 +190,9 @@ class DetailsState {
 
         /** Экран показал системный запрос разрешения на уведомления. */
         data object NotificationPermissionRequested : Event
+
+        /** Пользователь закрыл подсказку про секции кнопкой «Хорошо, запомнил». */
+        data object SectionsHintDismissed : Event
     }
 
     sealed interface Effect : UiEffect {

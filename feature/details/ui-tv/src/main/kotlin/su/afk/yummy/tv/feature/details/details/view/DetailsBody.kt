@@ -210,6 +210,8 @@ internal fun DetailsBody(
                         hiddenActions = hiddenActions,
                         // restoreTarget держит цель, пока система не успела отдать фокус хиро и стереть lastFocusTarget.
                         focusOnResume = lastFocusTarget == null && restoreTarget == null,
+                        showSectionsHint = state.showSectionsHint,
+                        onSectionsHintDismissed = { onEvent(DetailsState.Event.SectionsHintDismissed) },
                         onWatchSelected = onWatchSelected,
                         onLibraryToggle = onLibraryToggle,
                         onFavoriteToggle = onFavoriteToggle,

@@ -131,6 +131,9 @@ class DetailsViewModel @AssistedInject internal constructor(
         appLifecycleSettingsStore.notificationPermissionRequested
             .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
             .launchIn(viewModelScope)
+        appLifecycleSettingsStore.detailsSectionsHintDismissed
+            .onEach { dismissed -> setState { copy(showSectionsHint = !dismissed) } }
+            .launchIn(viewModelScope)
         screenDataHandler.observeLibraryState(animeId)
             .onEach { library ->
                 val pending = pendingFavorite
@@ -336,6 +339,10 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.NotificationPermissionRequested -> viewModelScope.launch {
                 appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
+
+            DetailsState.Event.SectionsHintDismissed -> viewModelScope.launch {
+                appLifecycleSettingsStore.dismissDetailsSectionsHint()
             }
         }
     }

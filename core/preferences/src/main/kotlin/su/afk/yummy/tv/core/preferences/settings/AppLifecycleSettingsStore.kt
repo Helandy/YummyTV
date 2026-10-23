@@ -29,6 +29,9 @@ interface AppLifecycleSettingsStore {
     /** Отвечал ли пользователь на предложение добавить preview-канал на главный экран ТВ. */
     val previewChannelPromptAnswered: Flow<Boolean>
 
+    /** Закрыл ли пользователь подсказку «листайте вниз — там доп. секции» на ТВ-деталях. */
+    val detailsSectionsHintDismissed: Flow<Boolean>
+
     suspend fun setWatchNextEnabled(enabled: Boolean)
     suspend fun setBetaUpdatesEnabled(enabled: Boolean)
     suspend fun setAppLogRecordingEnabled(enabled: Boolean)
@@ -47,6 +50,9 @@ interface AppLifecycleSettingsStore {
 
     /** Помечает, что предложение добавить preview-канал уже показывалось и получило ответ. */
     suspend fun markPreviewChannelPromptAnswered()
+
+    /** Помечает подсказку про секции на ТВ-деталях как закрытую навсегда. */
+    suspend fun dismissDetailsSectionsHint()
 
     /** Returns `true` when [versionCode] differs from the previously started one. */
     suspend fun markStartedVersion(versionCode: Int): Boolean
