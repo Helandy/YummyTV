@@ -834,6 +834,8 @@ internal fun MobileNativePlayer(
             onStabilizationChange = { onEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
             adaptiveQuality = ui.adaptiveQuality,
             adaptiveLimitQuality = ui.adaptiveLimitLabel,
+            adaptiveLimitBest = ui.adaptiveLimitBest,
+            onAdaptiveLimitBestSelected = { onEvent(PlayerState.Event.AdaptiveQualityLimitBestSelected) },
             onAdaptiveLimitSelected = { quality ->
                 onEvent(
                     PlayerState.Event.AdaptiveQualityLimitSelected(

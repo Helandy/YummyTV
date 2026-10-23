@@ -5,6 +5,7 @@ import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 import su.afk.yummy.tv.feature.player.utils.activeBalancer
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbing
@@ -109,6 +110,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         adaptiveQuality = adaptiveQualityActive(this),
         adaptiveCeilingHeight = adaptiveCeilingHeight,
         adaptiveLimitLabel = adaptiveLimitLabel(qualities.keys, adaptiveCeilingHeight),
+        adaptiveLimitBest = adaptiveCeilingHeight >= QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
         canChangePlayer = canChangePlayer,
         canChangeDubbing = canChangeDubbing,

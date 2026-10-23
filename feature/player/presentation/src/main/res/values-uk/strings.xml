@@ -32,6 +32,7 @@
     <string name="player_adaptive_quality_badge">А</string>
     <string name="player_adaptive_quality_hint">Підлаштовується під мережу та пристрій</string>
     <string name="player_quality_auto">авто</string>
+    <string name="player_quality_best">Найкраще</string>
     <string name="player_quality_title">Якість</string>
     <string name="player_dubbing_title">Озвучення</string>
         <string name="player_speed_title">Швидкість</string>

@@ -40,6 +40,8 @@ data class PlayerPlaybackUiState(
     val adaptiveCeilingHeight: Int,
     /** Метка потока, выше которой адаптация не поднимается (лимит, показываемый пользователю). */
     val adaptiveLimitLabel: String?,
+    /** Лимит адаптации снят («Лучшее»): ползунок показывает последний пункт. */
+    val adaptiveLimitBest: Boolean,
     /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
     val playbackUrl: String,
     val canChangePlayer: Boolean,

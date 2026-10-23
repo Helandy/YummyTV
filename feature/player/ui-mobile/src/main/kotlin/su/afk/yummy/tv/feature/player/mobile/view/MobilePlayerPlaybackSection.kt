@@ -28,7 +28,9 @@ internal fun MobilePlayerPlaybackSection(
     onQualitySelected: (String) -> Unit,
     adaptiveQuality: Boolean,
     adaptiveLimitQuality: String?,
+    adaptiveLimitBest: Boolean,
     onAdaptiveLimitSelected: (String) -> Unit,
+    onAdaptiveLimitBestSelected: () -> Unit,
     onAdaptiveQualityChange: (Boolean) -> Unit,
     selectedSpeed: Float,
     onSpeedSelected: (Float) -> Unit,
@@ -40,7 +42,15 @@ internal fun MobilePlayerPlaybackSection(
             val currentIndex = qualities.indexOf(selectedQuality).coerceAtLeast(0)
             // При адаптации ползунок показывает и двигает лимит, а не текущее качество.
             val limitIndex = qualities.indexOf(adaptiveLimitQuality).coerceAtLeast(0)
-            val qualityIndex = if (adaptiveQuality) limitIndex else currentIndex
+            // В адаптиве к меткам добавляется «Лучшее»: лимит снят, настройка не прибивается к максимуму тайтла.
+            val bestLabel = stringResource(R.string.player_quality_best)
+            val sliderLabels = if (adaptiveQuality) qualities + bestLabel else qualities
+            val bestIndex = qualities.size
+            val qualityIndex = when {
+                adaptiveQuality && adaptiveLimitBest -> bestIndex
+                adaptiveQuality -> limitIndex
+                else -> currentIndex
+            }
             MobilePlayerSettingsSection(
                 title = stringResource(R.string.player_quality_title),
                 icon = Icons.Filled.HighQuality,
@@ -64,7 +74,7 @@ internal fun MobilePlayerPlaybackSection(
                                     stringResource(
                                         R.string.player_adaptive_quality_current_limit,
                                         qualities.getOrNull(currentIndex).orEmpty(),
-                                        qualities.getOrNull(limitIndex).orEmpty(),
+                                        if (adaptiveLimitBest) bestLabel else qualities.getOrNull(limitIndex).orEmpty(),
                                     )
                                 } else {
                                     stringResource(R.string.player_adaptive_quality_hint)
@@ -82,16 +92,16 @@ internal fun MobilePlayerPlaybackSection(
                 }
                 MobilePlayerSliderRow(
                     value = qualityIndex,
-                    valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
-                    valueLabel = { index -> qualities[index] },
+                    valueRange = 0..(sliderLabels.size - 1).coerceAtLeast(0),
+                    valueLabel = { index -> sliderLabels[index] },
                     onValueCommitted = { index ->
-                        if (adaptiveQuality) {
-                            onAdaptiveLimitSelected(qualities[index])
-                        } else {
-                            onQualitySelected(qualities[index])
+                        when {
+                            adaptiveQuality && index == bestIndex -> onAdaptiveLimitBestSelected()
+                            adaptiveQuality -> onAdaptiveLimitSelected(qualities[index])
+                            else -> onQualitySelected(qualities[index])
                         }
                     },
-                    tickLabels = qualities,
+                    tickLabels = sliderLabels,
                     enabled = true,
                     // Выбранное качество уже подсвечено в подписях под треком.
                     showValueLabel = false,

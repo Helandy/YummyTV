@@ -176,6 +176,9 @@ class PlayerState {
          */
         data class AdaptiveQualityLimitSelected(val quality: String, val currentPosMs: Long) : Event
 
+        /** Пользователь выбрал в ползунке лимита пункт «Лучшее»: потолка нет, в настройки пишется «Лучшее». */
+        data object AdaptiveQualityLimitBestSelected : Event
+
         /** Пользователь включил или выключил стабилизацию громкости в боковой панели плеера. */
         data class VolumeStabilizationToggled(val enabled: Boolean) : Event
 

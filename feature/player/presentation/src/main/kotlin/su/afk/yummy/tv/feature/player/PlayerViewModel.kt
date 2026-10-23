@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
+import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
@@ -473,6 +474,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                     onEvent(PlayerState.Event.QualitySelected(target, event.currentPosMs, auto = true))
                 }
             }
+
+            is PlayerState.Event.AdaptiveQualityLimitBestSelected ->
+                preferences.setAdaptiveLimit(host, PreferredVideoQuality.BEST)
 
             is PlayerState.Event.AdaptiveQualityToggled ->
                 preferences.setAdaptiveQuality(host, event.enabled)

@@ -32,6 +32,7 @@
     <string name="player_adaptive_quality_badge">A</string>
     <string name="player_adaptive_quality_hint">Adapts to your network and device</string>
     <string name="player_quality_auto">auto</string>
+    <string name="player_quality_best">Best</string>
     <string name="player_quality_title">Quality</string>
     <string name="player_dubbing_title">Dubbing</string>
         <string name="player_speed_title">Speed</string>
