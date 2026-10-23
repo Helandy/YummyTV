@@ -63,7 +63,7 @@ internal fun DetailsScreenshotsRow(
                     ),
                 ) {
                     AsyncImage(
-                        model = screenshot.small ?: screenshot.full,
+                        model = screenshot.url,
                         contentDescription = screenshot.episode?.let {
                             stringResource(R.string.details_episode_number, it)
                         } ?: stringResource(R.string.details_mobile_screenshot),

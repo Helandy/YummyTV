@@ -32,6 +32,6 @@ internal fun AnimeVideoSkipSegment?.toPlayerSourceSkipSegment(): PlayerSourceSki
 internal fun List<AnimeScreenshot>.toScreenshotByEpisode(): Map<String, String> =
     mapNotNull { screenshot ->
         val episode = screenshot.episode ?: return@mapNotNull null
-        val url = screenshot.small ?: screenshot.full ?: return@mapNotNull null
+        val url = screenshot.url ?: return@mapNotNull null
         episode to url
     }.toMap()

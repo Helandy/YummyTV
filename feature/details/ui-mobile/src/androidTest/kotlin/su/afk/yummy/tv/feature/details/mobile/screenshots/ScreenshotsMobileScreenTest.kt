@@ -58,8 +58,8 @@ class ScreenshotsMobileScreenTest {
             ScreenshotsState.State(
                 isLoading = false,
                 screenshots = persistentListOf(
-                    AnimeScreenshot(id = 1, episode = "3", small = null, full = null),
-                    AnimeScreenshot(id = 2, episode = "4", small = null, full = null),
+                    AnimeScreenshot(id = 1, episode = "3", url = null),
+                    AnimeScreenshot(id = 2, episode = "4", url = null),
                 ),
             ),
         )

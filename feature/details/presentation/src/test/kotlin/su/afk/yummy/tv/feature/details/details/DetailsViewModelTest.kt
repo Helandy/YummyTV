@@ -229,8 +229,8 @@ class DetailsViewModelTest : BaseUnitTest() {
     @Test
     fun `screenshot from the details row opens the gallery at its index`() {
         val screenshots = listOf(
-            AnimeScreenshot(id = 1, episode = null, small = "s1", full = "f1"),
-            AnimeScreenshot(id = 2, episode = null, small = "s2", full = "f2"),
+            AnimeScreenshot(id = 1, episode = null, url = "f1"),
+            AnimeScreenshot(id = 2, episode = null, url = "f2"),
         )
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
             Result.success(animeDetails(id = ANIME_ID, screenshots = screenshots))

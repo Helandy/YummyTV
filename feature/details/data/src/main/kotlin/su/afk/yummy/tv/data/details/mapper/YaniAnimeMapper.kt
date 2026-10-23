@@ -143,8 +143,7 @@ private fun YaniViewingOrderItemDto.toViewingOrderItem(
 private fun YaniScreenshotDto.toAnimeScreenshot(): AnimeScreenshot = AnimeScreenshot(
     id = id,
     episode = episode?.normalizedEpisodeNumber(),
-    small = sizes.small?.toHttpsUrl(),
-    full = sizes.full?.toHttpsUrl(),
+    url = (sizes.full ?: sizes.small)?.toHttpsUrl(),
 )
 
 private fun List<YaniScreenshotDto>.toAnimeScreenshots(): List<AnimeScreenshot> {
@@ -157,5 +156,4 @@ private fun List<YaniScreenshotDto>.toAnimeScreenshots(): List<AnimeScreenshot> 
 }
 
 private fun AnimeScreenshot.dedupeImageUrl(): String? =
-    full?.takeIf { it.isNotBlank() }
-        ?: small?.takeIf { it.isNotBlank() }
+    url?.takeIf { it.isNotBlank() }

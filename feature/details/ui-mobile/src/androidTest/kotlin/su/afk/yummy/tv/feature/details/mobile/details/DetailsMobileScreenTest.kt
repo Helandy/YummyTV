@@ -129,7 +129,7 @@ class DetailsMobileScreenTest {
 
     @Test
     fun screenshotInRowSendsScreenshotSelected() {
-        val screenshots = listOf(AnimeScreenshot(id = 1, episode = null, small = null, full = null))
+        val screenshots = listOf(AnimeScreenshot(id = 1, episode = null, url = null))
         setScreen(DetailsState.State(isLoading = false, details = details.copy(screenshots = screenshots)))
 
         composeRule.onNode(hasTestTag("details_root") and hasScrollAction())

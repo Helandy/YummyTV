@@ -49,7 +49,7 @@ internal fun ScreenshotCard(
     ) {
         Box {
             AsyncImage(
-                model = screenshot.small ?: screenshot.full,
+                model = screenshot.url,
                 contentDescription = screenshot.episode?.let {
                     stringResource(R.string.details_episode_number, it)
                 },

@@ -49,7 +49,7 @@ class ScreenshotsViewModelTest : BaseUnitTest() {
         imageViewNavigator = imageViewNavigator,
     )
 
-    private fun screenshot(id: Int, full: String?, small: String? = null) = AnimeScreenshot(id, null, small, full)
+    private fun screenshot(id: Int, url: String?) = AnimeScreenshot(id, null, url)
 
     @Test
     fun `loads the title and its screenshots`() {
@@ -79,7 +79,7 @@ class ScreenshotsViewModelTest : BaseUnitTest() {
     @Test
     fun `selected screenshot opens the gallery of all full urls`() {
         coEvery { repository.getAnimeDetails(ANIME_ID) } returns animeDetails(
-            screenshots = listOf(screenshot(1, "full1"), screenshot(2, null, small = "small2"), screenshot(3, "full3")),
+            screenshots = listOf(screenshot(1, "full1"), screenshot(2, "small2"), screenshot(3, "full3")),
         )
         val vm = createViewModel()
 

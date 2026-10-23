@@ -232,8 +232,7 @@ internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
             AnimeScreenshot(
                 id = it.screenshotId,
                 episode = it.episode?.normalizedEpisodeNumber(),
-                small = it.smallUrl,
-                full = it.fullUrl,
+                url = it.fullUrl ?: it.smallUrl,
             )
         },
         reviewsCount = source.reviewsCount,

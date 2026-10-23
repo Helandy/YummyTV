@@ -132,5 +132,5 @@ internal fun AnimeDetails?.playerPosterUrl(): String =
 /** Превью серий из скриншотов тайтла: номер серии → маленькая картинка. */
 internal fun AnimeDetails?.screenshotByEpisode(): Map<String, String> =
     this?.screenshots.orEmpty().mapNotNull { screenshot ->
-        screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
+        screenshot.episode?.let { episode -> episode to screenshot.url.orEmpty() }
     }.toMap()
