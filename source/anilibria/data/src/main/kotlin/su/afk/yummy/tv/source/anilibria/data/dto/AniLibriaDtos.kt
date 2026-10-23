@@ -47,5 +47,6 @@ data class AniLibriaEpisodeDto(
 data class AniLibriaReleaseDto(
     val id: Int = 0,
     val mal: AniLibriaExternalIdDto? = null,
+    val name: AniLibriaNameDto? = null,
     val episodes: List<AniLibriaEpisodeDto> = emptyList(),
 )

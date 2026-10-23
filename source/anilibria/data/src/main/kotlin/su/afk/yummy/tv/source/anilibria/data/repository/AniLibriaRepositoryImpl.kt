@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.source.anilibria.data.repository
 
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import su.afk.yummy.tv.core.model.anime.utils.animeTitleKey
 import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
@@ -22,17 +23,21 @@ internal class AniLibriaRepositoryImpl @Inject constructor(
 
     private data class Cached(val release: AniLibriaRelease?, val fetchedAtMs: Long)
 
-    private val byMalId = ConcurrentHashMap<Int, Cached>()
+    private data class CachedList(val releases: List<AniLibriaRelease>, val fetchedAtMs: Long)
+
+    private val byMalId = ConcurrentHashMap<Int, CachedList>()
     private val byReleaseId = ConcurrentHashMap<Int, Cached>()
 
-    override suspend fun findRelease(malId: Int, titles: List<String>, year: Int?): AniLibriaRelease? {
+    override suspend fun findReleases(malId: Int, titles: List<String>, year: Int?): List<AniLibriaRelease> {
         val now = System.currentTimeMillis()
-        byMalId[malId]?.takeIf { now - it.fetchedAtMs < TTL_MS }?.let { return it.release }
+        byMalId[malId]?.takeIf { now - it.fetchedAtMs < TTL_MS }?.let { return it.releases }
 
         // Сбой сети в кэш не попадает: исключение уйдёт наверх, источник просто не появится в этот раз.
-        val release = findReleaseId(malId, titles, year)?.let { id -> getRelease(id) }
-        byMalId[malId] = Cached(release, now)
-        return release
+        val releases = coroutineScope {
+            findReleaseIds(malId, titles, year).map { id -> async { getRelease(id) } }.awaitAll().filterNotNull()
+        }
+        byMalId[malId] = CachedList(releases, now)
+        return releases
     }
 
     override suspend fun getRelease(releaseId: Int): AniLibriaRelease? {
@@ -46,24 +51,23 @@ internal class AniLibriaRepositoryImpl @Inject constructor(
         return release
     }
 
-    private suspend fun findReleaseId(malId: Int, titles: List<String>, year: Int?): Int? {
+    private suspend fun findReleaseIds(malId: Int, titles: List<String>, year: Int?): List<Int> {
         val sorted = prioritizeAnimeTitles("", titles, MAX_TITLES)
         val queries = sorted.flatMap { listOf(it, stripSeasonSuffix(it)) }.distinct().take(MAX_QUERIES)
         val wanted = sorted.map(::animeTitleKey).toSet()
-        // Все запросы уходят одновременно, чтобы пользователь не ждал их по очереди; результаты разбираем в порядке приоритета.
+        // Все запросы уходят одновременно, чтобы пользователь не ждал их по очереди. Ждём все: озвучка и новый дубляж
+        // одного тайтла могут найтись разными запросами.
         return coroutineScope {
             val searches = queries.map { query -> async { api.search(query) } }
+            val marked = LinkedHashSet<Int>()
             val unmarked = LinkedHashMap<Int, AniLibriaSearchItemDto>()
             for (search in searches) {
                 val found = search.await()
-                found.firstOrNull { it.mal?.id == malId }?.let { match ->
-                    searches.forEach { it.cancel() }
-                    return@coroutineScope match.id
-                }
+                found.filter { it.mal?.id == malId }.forEach { marked += it.id }
                 // Релиз без MAL id принимаем только при точном названии и году: иначе легко взять соседний сезон.
                 found.filter { it.mal?.id == null && it.matches(wanted, year) }.forEach { unmarked.putIfAbsent(it.id, it) }
             }
-            unmarked.keys.singleOrNull()
+            if (marked.isNotEmpty()) marked.toList() else unmarked.keys.singleOrNull()?.let(::listOf).orEmpty()
         }
     }
 

@@ -4,7 +4,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaExternalIdDto
@@ -36,9 +35,9 @@ class AniLibriaRepositoryImplTest : BaseUnitTest() {
         coEvery { api.search("Sousou no Frieren") } returns listOf(item(9542, 52991, "Sousou no Frieren", 2023))
         stubRelease(9542, 52991)
 
-        val release = createRepository().findRelease(52991, listOf("Фрирен", "Sousou no Frieren"), 2023)
+        val release = createRepository().findReleases(52991, listOf("Фрирен", "Sousou no Frieren"), 2023)
 
-        assertEquals(9542, release?.id)
+        assertEquals(listOf(9542), release.map { it.id })
     }
 
     @Test
@@ -47,9 +46,9 @@ class AniLibriaRepositoryImplTest : BaseUnitTest() {
         coEvery { api.search("Sousou no Frieren") } returns listOf(item(10085, 59978, "Sousou no Frieren 2nd Season", 2026))
         stubRelease(10085, 59978)
 
-        val release = createRepository().findRelease(59978, listOf("Sousou no Frieren 2nd Season"), 2026)
+        val release = createRepository().findReleases(59978, listOf("Sousou no Frieren 2nd Season"), 2026)
 
-        assertEquals(10085, release?.id)
+        assertEquals(listOf(10085), release.map { it.id })
     }
 
     @Test
@@ -57,17 +56,17 @@ class AniLibriaRepositoryImplTest : BaseUnitTest() {
         coEvery { api.search(any()) } returns listOf(item(1, null, "Some Show", 2020))
         stubRelease(1, null)
 
-        val release = createRepository().findRelease(5, listOf("Some Show"), 2021)
+        val release = createRepository().findReleases(5, listOf("Some Show"), 2021)
 
-        assertEquals(1, release?.id)
+        assertEquals(listOf(1), release.map { it.id })
     }
 
     @Test
     fun `release without mal id is rejected for another year or when ambiguous`() = runTest {
         coEvery { api.search(any()) } returns listOf(item(1, null, "Some Show", 2010))
-        assertNull(createRepository().findRelease(5, listOf("Some Show"), 2021))
+        assertEquals(emptyList<Any>(), createRepository().findReleases(5, listOf("Some Show"), 2021))
 
         coEvery { api.search(any()) } returns listOf(item(1, null, "Some Show", 2020), item(2, null, "Some Show", 2021))
-        assertNull(createRepository().findRelease(6, listOf("Some Show"), 2021))
+        assertEquals(emptyList<Any>(), createRepository().findReleases(6, listOf("Some Show"), 2021))
     }
 }

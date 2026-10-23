@@ -9,12 +9,16 @@ import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaSkip
 
 internal object AniLibriaMapper {
 
+    /** Релиз нового дубляжа называется «… — новый дубляж». */
+    private const val DUBBING_MARK = "дубляж"
+
     /** Серии с дробным или пустым номером (спешлы) отбрасываем: адрес серии строится по целому номеру. */
     fun toRelease(malId: Int, dto: AniLibriaReleaseDto): AniLibriaRelease =
         AniLibriaRelease(
             id = dto.id,
             malId = malId,
             episodes = dto.episodes.mapNotNull(::toEpisode).distinctBy { it.ordinal }.sortedBy { it.ordinal },
+            isDubbing = dto.name?.main?.contains(DUBBING_MARK, ignoreCase = true) == true,
         )
 
     private fun toEpisode(dto: AniLibriaEpisodeDto): AniLibriaEpisode? {

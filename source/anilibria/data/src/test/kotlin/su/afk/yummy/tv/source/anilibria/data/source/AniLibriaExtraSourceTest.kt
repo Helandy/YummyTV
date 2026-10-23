@@ -14,7 +14,7 @@ import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaEpisode
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaRelease
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaSkip
 import su.afk.yummy.tv.source.anilibria.domain.repository.AniLibriaRepository
-import su.afk.yummy.tv.source.anilibria.domain.usecase.FindAniLibriaReleaseUseCase
+import su.afk.yummy.tv.source.anilibria.domain.usecase.FindAniLibriaReleasesUseCase
 import su.afk.yummy.tv.source.anilibria.domain.usecase.ResolveAniLibriaStreamsUseCase
 
 class AniLibriaExtraSourceTest : BaseUnitTest() {
@@ -43,18 +43,18 @@ class AniLibriaExtraSourceTest : BaseUnitTest() {
         ),
     )
 
-    private fun videoRepository() = AniLibriaExtraVideoRepository(FindAniLibriaReleaseUseCase(repository))
+    private fun videoRepository() = AniLibriaExtraVideoRepository(FindAniLibriaReleasesUseCase(repository))
 
     private fun streamRepository() =
         AniLibriaExtraStreamRepository(ResolveAniLibriaStreamsUseCase(repository), messages)
 
     @Test
     fun `videos are built per episode with source urls and skips`() = runTest {
-        coEvery { repository.findRelease(52991, listOf("Фрирен", "Frieren"), null) } returns release
+        coEvery { repository.findReleases(52991, listOf("Фрирен", "Frieren"), null) } returns listOf(release)
         val videos = videoRepository().videos(details(52991))
         assertEquals(listOf("1", "2"), videos.map { it.episode })
         assertEquals("source://anilibria/9542/1", videos[0].iframeUrl)
-        assertEquals("AniLibria", videos[0].dubbing)
+        assertEquals("Озвучка AniLibria", videos[0].dubbing)
         assertTrue(videos.all { it.id < 0 })
         assertEquals(5_000L, videos[0].skips.opening?.startMs)
         assertEquals(95_000L, videos[0].skips.opening?.endMs)
@@ -64,7 +64,7 @@ class AniLibriaExtraSourceTest : BaseUnitTest() {
     @Test
     fun `no mal id or no release gives no videos`() = runTest {
         assertTrue(videoRepository().videos(details(null)).isEmpty())
-        coEvery { repository.findRelease(1, any(), any()) } returns null
+        coEvery { repository.findReleases(1, any(), any()) } returns emptyList()
         assertTrue(videoRepository().videos(details(1)).isEmpty())
     }
 

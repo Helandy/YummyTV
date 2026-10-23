@@ -113,6 +113,8 @@ private fun ParsedDubbing.componentKeys(): Set<String> =
  * Шаги: то же написание → точный ключ → ключ без вложенных префиксов → мягкий ключ → набор компонентов.
  */
 fun matchDubbingName(name: String, candidates: Collection<String>): String? {
+    // Полное имя совпало буква в букву: «Озвучка X» и «Дубляж X» после снятия префикса неотличимы, а имя точное.
+    candidates.firstOrNull { it == name }?.let { return it }
     val target = name.parseDubbing()
     if (target.exactKey().isEmpty()) return null
     val parsed = candidates.distinct().map { it to it.parseDubbing() }
