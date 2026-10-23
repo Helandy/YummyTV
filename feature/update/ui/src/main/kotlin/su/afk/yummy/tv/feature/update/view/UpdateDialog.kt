@@ -50,13 +50,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.components.ReleaseNotesMarkdown
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.update.UpdateState
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
 import su.afk.yummy.tv.feature.update.ui.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 fun UpdateDialog(
@@ -73,13 +73,13 @@ fun UpdateDialog(
                 required = dest.required,
                 updatesCount = dest.updatesCount,
                 isPrerelease = dest.isPrerelease,
-            )
+            ),
         )
     }
 
     val configuration = LocalConfiguration.current
     val isTelevision = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
+        Configuration.UI_MODE_TYPE_TELEVISION
     val maxDialogWidth = if (isTelevision) 760.dp else 680.dp
     val horizontalFill = if (isTelevision) 0.72f else 0.92f
     val dialogPadding = if (configuration.screenWidthDp < 420) 20.dp else 32.dp
@@ -94,6 +94,7 @@ fun UpdateDialog(
             modifier = Modifier
                 .fillMaxWidth(horizontalFill)
                 .widthIn(max = maxDialogWidth)
+                .heightIn(max = (configuration.screenHeightDp * 0.9f).dp)
                 .background(
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(16.dp),
@@ -118,8 +119,8 @@ private fun AvailableContent(
 ) {
     val configuration = LocalConfiguration.current
     val isTelevision = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
-    val changelogMinHeight = if (configuration.screenHeightDp < 640) 160.dp else 200.dp
+        Configuration.UI_MODE_TYPE_TELEVISION
+    val changelogMinHeight = 80.dp
     val changelogMaxHeight = when {
         configuration.screenHeightDp < 640 -> 260.dp
         isTelevision -> 380.dp
@@ -140,7 +141,7 @@ private fun AvailableContent(
     Column {
         Text(
             text = stringResource(
-                if (status.required) R.string.update_required_title else R.string.update_available_title
+                if (status.required) R.string.update_required_title else R.string.update_available_title,
             ),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
@@ -185,6 +186,7 @@ private fun AvailableContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f, fill = false)
                     .heightIn(min = changelogMinHeight, max = changelogMaxHeight)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
@@ -253,7 +255,7 @@ private fun AvailableContent(
                         .focusRequester(closeFocus)
                         .background(
                             MaterialTheme.colorScheme.surfaceVariant,
-                            buttonShape
+                            buttonShape,
                         )
                         .tvFocusableClick(
                             onClick = { onEvent(UpdateState.Event.Dismiss) },
@@ -291,7 +293,7 @@ private fun AvailableContent(
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
-    }
+        }
 
         Spacer(Modifier.height(16.dp))
         ManualUpdateHint(isTelevision = isTelevision)
