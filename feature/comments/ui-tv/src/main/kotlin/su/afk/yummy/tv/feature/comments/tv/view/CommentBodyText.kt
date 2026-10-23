@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusHighlight
@@ -42,14 +43,20 @@ internal fun CommentBodyText(text: String, nextFocusRequester: FocusRequester) {
                 1 + if (visibleSpoilers[index] == true) part.text.toParagraphs().size else 0
         }
     }
+    val focusRequesters = remember(focusStopCount) { List(focusStopCount) { FocusRequester() } }
     var focusStopIndex = 0
-    fun Modifier.lastFocusStopDown(): Modifier {
-        focusStopIndex++
-        return if (focusStopIndex == focusStopCount) {
-            focusProperties { down = nextFocusRequester }
-        } else {
-            this
-        }
+
+    // Явная цепочка DOWN/UP между стопами: пространственный поиск промахивается мимо узкой
+    // плашки спойлера под текстом на всю ширину.
+    fun Modifier.focusStop(): Modifier {
+        val i = focusStopIndex++
+        if (i >= focusRequesters.size) return this
+        return this
+            .focusRequester(focusRequesters[i])
+            .focusProperties {
+                down = focusRequesters.getOrNull(i + 1) ?: nextFocusRequester
+                if (i > 0) up = focusRequesters[i - 1]
+            }
     }
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -64,7 +71,7 @@ internal fun CommentBodyText(text: String, nextFocusRequester: FocusRequester) {
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .lastFocusStopDown()
+                            .focusStop()
                             .tvFocusHighlight(),
                     )
                 }
@@ -72,14 +79,18 @@ internal fun CommentBodyText(text: String, nextFocusRequester: FocusRequester) {
                 is CommentTextPart.Spoiler -> {
                     val visible = visibleSpoilers[index] == true
                     Text(
-                        text = if (visible) part.title else stringResource(
-                            R.string.comments_spoiler_hidden,
-                            part.title,
-                        ),
+                        text = if (visible) {
+                            part.title
+                        } else {
+                            stringResource(
+                                R.string.comments_spoiler_hidden,
+                                part.title,
+                            )
+                        },
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         modifier = Modifier
-                            .lastFocusStopDown()
+                            .focusStop()
                             .tvFocusableClick(
                                 onClick = { visibleSpoilers[index] = !visible },
                                 shape = RoundedCornerShape(8.dp),
@@ -99,7 +110,7 @@ internal fun CommentBodyText(text: String, nextFocusRequester: FocusRequester) {
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .lastFocusStopDown()
+                                    .focusStop()
                                     .tvFocusHighlight(),
                             )
                         }
