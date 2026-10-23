@@ -11,7 +11,9 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.amedia.data.network.AmediaApi
+import su.afk.yummy.tv.source.amedia.data.dto.AmediaTitleResponseDto
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaLookup
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTarget
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTitle
@@ -20,43 +22,47 @@ import java.io.IOException
 class AmediaRepositoryImplTest : BaseUnitTest() {
 
     private val api: AmediaApi = mockk()
-    private val lookup = AmediaLookup(59088, "Токийские мстители: Битва", listOf("Tokyo Revengers"))
-    private val wrongUrl = "https://amd.online/843-a.html"
-    private val rightUrl = "https://amd.online/5753-b.html"
-
-    private fun page(malId: Int) = """
-        <video-player data-title-id="$malId" data-aggregator="mali"></video-player>
-        <a data-vid="1" data-vlnk="https://aser.pro/vod/47997" class="x">1</a>
-    """.trimIndent()
+    private val lookup = AmediaLookup(59088, "Токийские мстители: Битва", listOf("Tokyo Revengers"), 2026, "tv", 12)
+    private val pageUrl = "https://amd.online/5753-b.html"
 
     private fun createRepository() = AmediaRepositoryImpl(api)
 
     @Test
-    fun `title is the first search hit with matching mal id and its episodes are reused`() = runTest {
-        coEvery { api.search(any()) } returns """<a href="$wrongUrl">a</a><a href="$rightUrl">b</a>"""
-        coEvery { api.getTitlePage(wrongUrl) } returns page(42249)
-        coEvery { api.getTitlePage(rightUrl) } returns page(59088)
+    fun `title comes from the server and is cached per mal id including the negative answer`() = runTest {
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl)
         val repository = createRepository()
 
-        val title = repository.findTitle(lookup)
+        assertEquals(AmediaTitle(pageUrl), repository.findTitle(lookup))
+        repository.findTitle(lookup)
+        coVerify(exactly = 1) { api.findTitle(any()) }
 
-        assertEquals(AmediaTitle(rightUrl), title)
-        assertEquals(listOf(AmediaEpisode(1, 47997)), repository.getEpisodes(title!!))
-        coVerify(exactly = 1) { api.getTitlePage(rightUrl) }
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(available = false)
+        assertNull(repository.findTitle(lookup.copy(malId = 2)))
+        repository.findTitle(lookup.copy(malId = 2))
+        coVerify(exactly = 2) { api.findTitle(any()) }
     }
 
     @Test
-    fun `no match is cached and network failure is not`() = runTest {
-        coEvery { api.search(any()) } returns """<a href="$wrongUrl">a</a>"""
-        coEvery { api.getTitlePage(wrongUrl) } returns page(42249)
+    fun `server failure is not cached`() = runTest {
+        coEvery { api.findTitle(any()) } throws IOException("down")
         val repository = createRepository()
 
-        assertNull(repository.findTitle(lookup))
-        repository.findTitle(lookup)
-        coVerify(exactly = 1) { api.getTitlePage(wrongUrl) }
+        assertThrows(IOException::class.java) { runBlocking { repository.findTitle(lookup) } }
 
-        coEvery { api.search(any()) } throws IOException("down")
-        assertThrows(IOException::class.java) { runBlocking { createRepository().findTitle(lookup) } }
+        coEvery { api.findTitle(any()) } returns AmediaTitleResponseDto(true, pageUrl)
+        assertEquals(AmediaTitle(pageUrl), repository.findTitle(lookup))
+    }
+
+    @Test
+    fun `episodes are parsed from the title page and cached`() = runTest {
+        coEvery { api.getTitlePage(pageUrl) } returns """<a data-vid="1" data-vlnk="https://aser.pro/vod/47997" class="x">1</a>"""
+        val repository = createRepository()
+
+        val first = repository.getEpisodes(AmediaTitle(pageUrl))
+        repository.getEpisodes(AmediaTitle(pageUrl))
+
+        assertEquals(listOf(AmediaEpisode(1, AmediaEpisodeSource.Vod(47997))), first)
+        coVerify(exactly = 1) { api.getTitlePage(pageUrl) }
     }
 
     @Test

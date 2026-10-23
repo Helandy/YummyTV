@@ -5,17 +5,11 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
 
 class AmediaHtmlUtilsTest : BaseUnitTest() {
 
     private val titlePage = """
-        <video-player
-        id="myPlayer"
-        data-title-id="59088"
-        data-publisher-id="1080"
-        data-aggregator="mali"
-        season="4"
-        ></video-player>
         <a data-text="2" data-vid="2" data-vlnk="https://aser.pro/vod/48111" href='https://amd.online/5753-x/episode/2/seriya-onlayn.html'  class='BatcoH-prevnext'>
         <a data-vid="1" data-vlnk="https://aser.pro/vod/47997" href="https://amd.online/5753-x/episode/1/seriya-onlayn.html" class="BatcoH sel-active">1</a>
         <a data-vid="2" data-vlnk="https://aser.pro/vod/48111" href="https://amd.online/5753-x/episode/2/seriya-onlayn.html" class="BatcoH">2</a>
@@ -24,34 +18,31 @@ class AmediaHtmlUtilsTest : BaseUnitTest() {
     """.trimIndent()
 
     @Test
-    fun `search links are page urls without episode pages and duplicates`() {
-        val html = """
-            <a href="https://amd.online/1304-tokijskie-mstiteli-2.html">a</a>
-            <a href="https://amd.online/5753-x/episode/1/seriya-onlayn.html">e</a>
-            <a href="https://amd.online/1304-tokijskie-mstiteli-2.html">again</a>
-            <a href="https://amd.online/843-tokiyskie-mstiteli.html">b</a>
-        """.trimIndent()
-
-        assertEquals(
-            listOf("https://amd.online/1304-tokijskie-mstiteli-2.html", "https://amd.online/843-tokiyskie-mstiteli.html"),
-            parseAmediaSearchLinks(html),
-        )
-    }
-
-    @Test
-    fun `mal id comes only from the mali aggregator tag`() {
-        assertEquals(59088, parseAmediaMalId(titlePage))
-        assertNull(parseAmediaMalId(titlePage.replace("mali", "kinopoisk")))
-        assertNull(parseAmediaMalId("<div></div>"))
-    }
-
-    @Test
     fun `released episodes are parsed and unreleased are skipped`() {
         val episodes = parseAmediaEpisodes(titlePage)
 
         assertEquals(
-            listOf(AmediaEpisode(2, 48111), AmediaEpisode(1, 47997), AmediaEpisode(2, 48111), AmediaEpisode(3, 48250)),
+            listOf(
+                AmediaEpisode(2, AmediaEpisodeSource.Vod(48111)), AmediaEpisode(1, AmediaEpisodeSource.Vod(47997)),
+                AmediaEpisode(2, AmediaEpisodeSource.Vod(48111)), AmediaEpisode(3, AmediaEpisodeSource.Vod(48250)),
+            ),
             episodes,
+        )
+    }
+
+    @Test
+    fun `episode where the site embedded rutube keeps the embed`() {
+        val embed = "https://rutube.ru/play/embed/be753fcea5b1c586363cf8a220c47167"
+        val html = """
+            <a data-vid="1" data-vlnk="$embed" href="https://amd.online/1489-x/episode/1/seriya-onlayn.html" class="BatcoH">1</a>
+            <a data-vid="2" data-vlnk="https://aser.pro/vod/30155" href="https://amd.online/1489-x/episode/2/seriya-onlayn.html" class="BatcoH">2</a>
+            <a data-vid="3" data-vlnk="https://rutube.ru/play/embed/" href="x" class="BatcoH">3</a>
+            <a data-vid="4" data-vlnk="https://evil.example/play/embed/abc" href="x" class="BatcoH">4</a>
+        """.trimIndent()
+
+        assertEquals(
+            listOf(AmediaEpisode(1, AmediaEpisodeSource.Rutube(embed)), AmediaEpisode(2, AmediaEpisodeSource.Vod(30155))),
+            parseAmediaEpisodes(html),
         )
     }
 

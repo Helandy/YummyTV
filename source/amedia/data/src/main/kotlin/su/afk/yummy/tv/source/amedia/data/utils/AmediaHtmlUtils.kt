@@ -1,40 +1,34 @@
 package su.afk.yummy.tv.source.amedia.data.utils
 
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
 import java.net.URI
 
-private val SEARCH_LINK = Regex("""href="(https://amd\.online/\d+-[^"/]+\.html)"""")
-private val PLAYER_TAG = Regex("""<video-player\b[^>]*>""", RegexOption.DOT_MATCHES_ALL)
 private val ANCHOR_TAG = Regex("""<a\s[^>]*>""")
 private val VOD_LINK = Regex("""https://aser\.pro/vod/(\d+)""")
+private const val RUTUBE_EMBED_PREFIX = "https://rutube.ru/play/embed/"
 private val VOD_FILE = Regex("""file:\s*"(https://[^"]+\.m3u8[^"]*)"""")
 private val RESOLUTION = Regex("""RESOLUTION=\d+x(\d+)""")
 
 private fun String.attr(name: String): String? =
     Regex("""\b$name="([^"]*)"""").find(this)?.groupValues?.get(1)
 
-/** Ссылки на страницы тайтлов из выдачи поиска в порядке появления, без повторов. */
-internal fun parseAmediaSearchLinks(html: String): List<String> =
-    SEARCH_LINK.findAll(html).map { it.groupValues[1] }.distinct().toList()
-
-/** MAL id страницы: у вшитого плеера стоит `data-title-id` вместе с `data-aggregator="mali"`; иначе `null`. */
-internal fun parseAmediaMalId(html: String): Int? {
-    val tag = PLAYER_TAG.find(html)?.value ?: return null
-    if (tag.attr("data-aggregator") != "mali") return null
-    return tag.attr("data-title-id")?.toIntOrNull()
-}
-
 /**
- * Вышедшие серии из кнопок `data-vid` + `data-vlnk="https://aser.pro/vod/{id}"`. У ещё не вышедшей серии ссылка ведёт
- * на `/index.php?do=nz…`, такие пропускаются.
+ * Вышедшие серии из кнопок `data-vid` + `data-vlnk`: ссылка на `https://aser.pro/vod/{id}` или, у части серий, на Rutube-embed
+ * вместо него. У ещё не вышедшей серии ссылка ведёт на `/index.php?do=nz…`, такие пропускаются.
  */
 internal fun parseAmediaEpisodes(html: String): List<AmediaEpisode> =
     ANCHOR_TAG.findAll(html).mapNotNull { match ->
         val tag = match.value
         val number = tag.attr("data-vid")?.toIntOrNull()?.takeIf { it > 0 } ?: return@mapNotNull null
-        val vodId = VOD_LINK.find(tag.attr("data-vlnk").orEmpty())?.groupValues?.get(1)?.toLongOrNull()
-            ?: return@mapNotNull null
-        AmediaEpisode(number, vodId)
+        val link = tag.attr("data-vlnk").orEmpty()
+        val vodId = VOD_LINK.find(link)?.groupValues?.get(1)?.toLongOrNull()
+        val source = when {
+            vodId != null -> AmediaEpisodeSource.Vod(vodId)
+            link.startsWith(RUTUBE_EMBED_PREFIX) && link.length > RUTUBE_EMBED_PREFIX.length -> AmediaEpisodeSource.Rutube(link)
+            else -> return@mapNotNull null
+        }
+        AmediaEpisode(number, source)
     }.toList()
 
 /** Адрес мастер-плейлиста HLS (только https) из `new Playerjs({file: "…"})` на странице `aser.pro/vod/{id}`. */

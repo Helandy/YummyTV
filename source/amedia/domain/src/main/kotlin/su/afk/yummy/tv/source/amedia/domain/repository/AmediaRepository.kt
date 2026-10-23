@@ -7,7 +7,7 @@ import su.afk.yummy.tv.source.amedia.domain.model.AmediaTarget
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTitle
 
 interface AmediaRepository {
-    /** Ищет тайтл на amd.online и сверяет MAL id; `null` — такой страницы нет. Сбой сети уходит исключением. */
+    /** Спрашивает у сервера, есть ли тайтл на amd.online; `null` — нет. Сбой сети уходит исключением. */
     suspend fun findTitle(lookup: AmediaLookup): AmediaTitle?
 
     /** Вышедшие серии Amedia-плеера по возрастанию номера; пусто, если серий нет. Сбой сети уходит исключением. */

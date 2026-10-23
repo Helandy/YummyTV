@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.source.amedia.data.source
 
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -14,6 +13,9 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaLookup
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaStreams
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTarget
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTitle
@@ -44,9 +46,34 @@ class AmediaExtraSourceTest : BaseUnitTest() {
     private fun streamRepository() = AmediaExtraStreamRepository(ResolveAmediaStreamsUseCase(repository), messages)
 
     @Test
-    fun `disabled balancer gives no videos and does not search`() = runTest {
-        assertTrue(videoRepository().videos(details(59088)).isEmpty())
-        coVerify(exactly = 0) { repository.findTitle(any()) }
+    fun `videos are built per episode and lookup carries the app data`() = runTest {
+        coEvery { repository.findTitle(AmediaLookup(59088, "Мстители", listOf("Revengers"), 2026, "tv", 12)) } returns title
+        coEvery { repository.getEpisodes(title) } returns listOf(
+            AmediaEpisode(2, AmediaEpisodeSource.Vod(48111)),
+            AmediaEpisode(1, AmediaEpisodeSource.Vod(47997)),
+        )
+
+        val videos = videoRepository().videos(details(59088))
+
+        assertEquals(listOf("1", "2"), videos.map { it.episode })
+        assertEquals("source://amedia/47997", videos[0].iframeUrl)
+        assertTrue(videos.all { it.player == "Amedia" && it.dubbing == "Amedia" && it.id < 0 })
+        assertEquals(videos.size, videos.map { it.id }.toSet().size)
+    }
+
+    @Test
+    fun `rutube episode keeps the rutube embed as its url`() = runTest {
+        val embed = "https://rutube.ru/play/embed/be753fcea5b1c586363cf8a220c47167"
+        coEvery { repository.findTitle(any()) } returns title
+        coEvery { repository.getEpisodes(title) } returns listOf(
+            AmediaEpisode(1, AmediaEpisodeSource.Rutube(embed)),
+            AmediaEpisode(2, AmediaEpisodeSource.Vod(30296)),
+        )
+
+        val videos = videoRepository().videos(details(1))
+
+        assertEquals(listOf(embed, "source://amedia/30296"), videos.map { it.iframeUrl })
+        assertTrue(videos.all { it.player == "Amedia" })
     }
 
     @Test

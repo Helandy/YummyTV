@@ -8,6 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
+import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaStreams
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaStreamsResult
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTarget
@@ -20,14 +21,16 @@ class AmediaUseCasesTest : BaseUnitTest() {
     private val repository: AmediaRepository = mockk()
     private val target = AmediaTarget(47997)
 
+    private fun episode(number: Int, vodId: Long) = AmediaEpisode(number, AmediaEpisodeSource.Vod(vodId))
+
     @Test
     fun `episodes are sorted and duplicates by number are collapsed`() = runTest {
         val title = AmediaTitle("https://amd.online/5753-x.html")
         coEvery { repository.getEpisodes(title) } returns
-            listOf(AmediaEpisode(3, 30), AmediaEpisode(1, 10), AmediaEpisode(3, 31), AmediaEpisode(2, 20))
+            listOf(episode(3, 30), episode(1, 10), episode(3, 31), episode(2, 20))
 
         assertEquals(listOf(1, 2, 3), GetAmediaEpisodesUseCase(repository)(title).map { it.number })
-        assertEquals(30L, GetAmediaEpisodesUseCase(repository)(title).last().vodId)
+        assertEquals(episode(3, 30), GetAmediaEpisodesUseCase(repository)(title).last())
     }
 
     @Test
