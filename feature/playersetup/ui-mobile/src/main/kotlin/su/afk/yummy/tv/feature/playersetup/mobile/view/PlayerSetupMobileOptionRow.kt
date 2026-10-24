@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,8 @@ internal fun PlayerSetupMobileOptionRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /** Если задана, вместо текста значения показывается значок; текст уходит в contentDescription. */
+    valueIcon: ImageVector? = null,
 ) {
     Row(
         modifier = modifier
@@ -51,13 +54,21 @@ internal fun PlayerSetupMobileOptionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        if (valueIcon != null) {
+            Icon(
+                imageVector = valueIcon,
+                contentDescription = value,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
         Icon(
             imageVector = Icons.Filled.KeyboardArrowDown,
             contentDescription = null,

@@ -3,15 +3,18 @@ package su.afk.yummy.tv.feature.settings.mobile.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -24,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
@@ -66,6 +70,8 @@ internal fun <T> SettingsMobilePickerSheet(
                     selected = option.value == selectedValue,
                     onClick = { onSelected(option.value) },
                     labelColor = option.labelColor,
+                    icon = option.icon,
+                    iconColor = option.iconColor,
                     modifier = if (option.value == selectedValue) {
                         Modifier.focusRequester(selectedOptionFocusRequester)
                     } else {
@@ -85,6 +91,8 @@ private fun PickerOptionRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     labelColor: Color? = null,
+    icon: ImageVector? = null,
+    iconColor: Color? = null,
 ) {
     val shape = RoundedCornerShape(8.dp)
     Row(
@@ -100,6 +108,18 @@ private fun PickerOptionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (icon != null) {
+            val tint = iconColor ?: MaterialTheme.colorScheme.primary
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(tint.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
+            }
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
@@ -121,7 +141,7 @@ private fun PickerOptionRow(
             }
         }
         if (selected) {
-            androidx.compose.foundation.layout.Box(
+            Box(
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)

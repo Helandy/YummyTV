@@ -1,7 +1,12 @@
 package su.afk.yummy.tv.feature.settings.mobile.utils
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.RotateLeft
+import androidx.compose.material.icons.rounded.RotateRight
+import androidx.compose.material.icons.rounded.ScreenRotation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.settings.AppTheme
@@ -55,3 +60,9 @@ internal fun PlayerOrientationMode.hint(): String = stringResource(
         PlayerOrientationMode.RIGHT -> R.string.settings_player_orientation_right_hint
     },
 )
+
+internal fun PlayerOrientationMode.icon(): ImageVector = when (this) {
+    PlayerOrientationMode.SYSTEM -> Icons.Rounded.ScreenRotation
+    PlayerOrientationMode.RIGHT -> Icons.Rounded.RotateRight
+    PlayerOrientationMode.LEFT -> Icons.Rounded.RotateLeft
+}

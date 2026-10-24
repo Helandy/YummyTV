@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -31,12 +30,14 @@ import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
 import su.afk.yummy.tv.feature.playersetup.mobile.model.PlayerSetupMobilePicker
 import su.afk.yummy.tv.feature.playersetup.mobile.model.PlayerSetupMobilePickerOption
 import su.afk.yummy.tv.feature.playersetup.mobile.utils.setupHint
+import su.afk.yummy.tv.feature.playersetup.mobile.utils.setupIcon
 import su.afk.yummy.tv.feature.playersetup.mobile.utils.setupLabel
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobileOptionRow
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobilePickerSheet
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobileSection
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobileToggleRow
 import su.afk.yummy.tv.feature.playersetup.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,6 +119,7 @@ fun PlayerSetupMobileScreen(
                 PlayerSetupMobileOptionRow(
                     label = stringResource(R.string.player_setup_mobile_orientation_label),
                     value = state.playerOrientationMode.setupLabel(),
+                    valueIcon = state.playerOrientationMode.setupIcon(),
                     hint = stringResource(R.string.player_setup_mobile_orientation_hint),
                     onClick = { activePicker = PlayerSetupMobilePicker.ORIENTATION },
                 )
@@ -174,7 +176,7 @@ fun PlayerSetupMobileScreen(
             title = stringResource(R.string.player_setup_mobile_orientation_label),
             selectedValue = state.playerOrientationMode,
             options = PlayerOrientationMode.entries.map {
-                PlayerSetupMobilePickerOption(it, it.setupLabel(), it.setupHint())
+                PlayerSetupMobilePickerOption(it, it.setupLabel(), it.setupHint(), it.setupIcon())
             },
             onDismiss = { activePicker = null },
             onSelected = {

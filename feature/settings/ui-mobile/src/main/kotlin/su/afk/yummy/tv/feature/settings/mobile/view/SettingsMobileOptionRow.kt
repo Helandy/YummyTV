@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +35,8 @@ internal fun SettingsMobileOptionRow(
     modifier: Modifier = Modifier,
     /** Переопределяет цвет значения — например, чтобы показать реальный цвет субтитров. */
     valueColor: Color? = null,
+    /** Если задана, вместо текста значения показывается значок; текст уходит в contentDescription. */
+    valueIcon: ImageVector? = null,
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -67,15 +70,23 @@ internal fun SettingsMobileOptionRow(
                     )
                 }
             }
-            Text(
-                text = value,
-                modifier = Modifier.widthIn(max = valueMaxWidth),
-                style = MaterialTheme.typography.bodyMedium,
-                color = valueColor ?: MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.End,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (valueIcon != null) {
+                Icon(
+                    imageVector = valueIcon,
+                    contentDescription = value,
+                    tint = valueColor ?: MaterialTheme.colorScheme.primary,
+                )
+            } else {
+                Text(
+                    text = value,
+                    modifier = Modifier.widthIn(max = valueMaxWidth),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = valueColor ?: MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.End,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Icon(
                 imageVector = Icons.Filled.KeyboardArrowDown,
                 contentDescription = null,

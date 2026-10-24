@@ -1,6 +1,11 @@
 package su.afk.yummy.tv.feature.playersetup.mobile.utils
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.RotateLeft
+import androidx.compose.material.icons.rounded.RotateRight
+import androidx.compose.material.icons.rounded.ScreenRotation
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
@@ -19,6 +24,12 @@ internal fun PlayerOrientationMode.setupLabel(): String = stringResource(
         PlayerOrientationMode.RIGHT -> R.string.player_setup_mobile_orientation_right
     },
 )
+
+internal fun PlayerOrientationMode.setupIcon(): ImageVector = when (this) {
+    PlayerOrientationMode.SYSTEM -> Icons.Rounded.ScreenRotation
+    PlayerOrientationMode.RIGHT -> Icons.Rounded.RotateRight
+    PlayerOrientationMode.LEFT -> Icons.Rounded.RotateLeft
+}
 
 @Composable
 internal fun YaniContentLanguage.setupLabel(): String = stringResource(

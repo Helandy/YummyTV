@@ -21,6 +21,7 @@ import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePickerOption
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
+import su.afk.yummy.tv.feature.settings.mobile.utils.icon
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.core.designsystem.theme.previewColor
@@ -160,6 +161,7 @@ internal fun SettingsMobileDialogsHost(
                     it,
                     it.label(),
                     it.hint(),
+                    icon = it.icon(),
                 )
             },
             onDismiss = { dialogs.activePicker = null },

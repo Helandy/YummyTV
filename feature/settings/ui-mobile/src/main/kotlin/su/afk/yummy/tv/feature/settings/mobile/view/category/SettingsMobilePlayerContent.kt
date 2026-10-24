@@ -14,6 +14,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
+import su.afk.yummy.tv.feature.settings.mobile.utils.icon
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileActionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
@@ -91,6 +92,7 @@ internal fun SettingsMobilePlayerContent(
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_player_orientation_title),
                 value = state.playerOrientationMode.label(),
+                valueIcon = state.playerOrientationMode.icon(),
                 hint = state.playerOrientationMode.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.PLAYER_ORIENTATION) },
             )
