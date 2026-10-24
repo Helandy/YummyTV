@@ -99,8 +99,8 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
     }
 
     @Test
-    fun `extra 4k source stays first despite fewer views`() {
-        val fourK = video(id = 4, dubbing = "AniLibria", player = "4K", views = 1, url = "source://4k/1")
+    fun `extra 4k source goes after yani balancers despite more views`() {
+        val fourK = video(id = 4, dubbing = "AniLibria", player = "4K", views = 1_000_000, url = "source://4k/1")
 
         val selection = createHandler().balancerSelection(
             listOf(alloha, kodik, fourK),
@@ -108,7 +108,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
             resolvingKeys = emptySet(),
         )
 
-        assertEquals(listOf("4K", "Kodik", "Alloha"), selection.options.map { it.title })
+        assertEquals(listOf("Kodik", "Alloha", "4K"), selection.options.map { it.title })
     }
 
     @Test

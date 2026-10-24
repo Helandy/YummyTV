@@ -14,17 +14,6 @@ data class AniLibriaNameDto(
     val alternative: String? = null,
 )
 
-/** Элемент ответа `/app/search/releases` (запрашиваются только нужные поля). */
-@Serializable
-data class AniLibriaSearchItemDto(
-    val id: Int = 0,
-    val mal: AniLibriaExternalIdDto? = null,
-    val name: AniLibriaNameDto? = null,
-    val year: Int? = null,
-    val is_blocked_by_geo: Boolean = false,
-    val is_blocked_by_copyrights: Boolean = false,
-)
-
 @Serializable
 data class AniLibriaSkipDto(
     val start: Double? = null,
@@ -60,7 +49,27 @@ data class AniLibriaLookupRequestDto(
     val year: Int? = null,
 )
 
+/**
+ * Ответ сервера YummyTV. [releases] — релизы с уже прочитанными серями (без ссылок на потоки); если их меньше, чем [releaseIds],
+ * сервер часть релизов ещё не дочитал.
+ */
 @Serializable
 data class AniLibriaLookupResponseDto(
     val releaseIds: List<Int> = emptyList(),
+    val releases: List<AniLibriaCatalogReleaseDto> = emptyList(),
+)
+
+@Serializable
+data class AniLibriaCatalogReleaseDto(
+    val id: Int = 0,
+    val dubbing: Boolean = false,
+    val episodes: List<AniLibriaCatalogEpisodeDto> = emptyList(),
+)
+
+@Serializable
+data class AniLibriaCatalogEpisodeDto(
+    val ordinal: Int = 0,
+    val durationSec: Int? = null,
+    val openingStartSec: Int? = null,
+    val openingEndSec: Int? = null,
 )

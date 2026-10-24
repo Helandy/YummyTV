@@ -53,15 +53,16 @@ fun String.playerDisplayOrderPriority(): Int =
     }
 
 /**
- * Порядок балансеров в списках: источник 4K всегда первым, остальные — по убыванию просмотров
- * ([views]); при равенстве — по фиксированному приоритету, затем по имени.
+ * Порядок балансеров в списках: сначала источники yani, внешние (`source://`) — после них; внутри
+ * каждой группы — по убыванию просмотров ([views]), при равенстве — по фиксированному приоритету,
+ * затем по имени.
  */
 fun <T> balancerDisplayComparator(
     playerName: (T) -> String,
     iframeUrl: (T) -> String,
     views: (T) -> Int,
 ): Comparator<T> =
-    compareBy<T> { if (balancerDisplayPriority(playerName(it), iframeUrl(it)) < 0) 0 else 1 }
+    compareBy<T> { if (balancerDisplayPriority(playerName(it), iframeUrl(it)) < 0) 1 else 0 }
         .thenByDescending { views(it) }
         .thenBy { balancerDisplayPriority(playerName(it), iframeUrl(it)) }
         .thenBy { playerName(it) }

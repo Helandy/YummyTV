@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.source.anilibria.data.mapper
 
+import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaCatalogReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaEpisodeDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaSkipDto
@@ -21,6 +22,25 @@ internal object AniLibriaMapper {
             isDubbing = dto.name?.main?.contains(DUBBING_MARK, ignoreCase = true) == true,
         )
 
+    /** Релиз из ответа сервера: серии без ссылок на потоки, их [AniLibriaRepository.getRelease] берёт у AniLibria при запуске серии. */
+    fun toRelease(malId: Int, dto: AniLibriaCatalogReleaseDto): AniLibriaRelease =
+        AniLibriaRelease(
+            id = dto.id,
+            malId = malId,
+            episodes = dto.episodes.filter { it.ordinal > 0 }.distinctBy { it.ordinal }.sortedBy { it.ordinal }.map { episode ->
+                AniLibriaEpisode(
+                    ordinal = episode.ordinal,
+                    name = null,
+                    hls480 = null,
+                    hls720 = null,
+                    hls1080 = null,
+                    durationSec = episode.durationSec?.takeIf { it > 0 },
+                    opening = toSkip(episode.openingStartSec, episode.openingEndSec),
+                )
+            },
+            isDubbing = dto.dubbing,
+        )
+
     private fun toEpisode(dto: AniLibriaEpisodeDto): AniLibriaEpisode? {
         val ordinal = dto.ordinal?.takeIf { it > 0 && it % 1.0 == 0.0 }?.toInt() ?: return null
         val episode = AniLibriaEpisode(
@@ -35,9 +55,10 @@ internal object AniLibriaMapper {
         return episode.takeIf { it.hls480 != null || it.hls720 != null || it.hls1080 != null }
     }
 
-    private fun toSkip(dto: AniLibriaSkipDto): AniLibriaSkip? {
-        val start = dto.start?.toInt() ?: return null
-        val stop = dto.stop?.toInt() ?: return null
+    private fun toSkip(dto: AniLibriaSkipDto): AniLibriaSkip? = toSkip(dto.start?.toInt(), dto.stop?.toInt())
+
+    private fun toSkip(start: Int?, stop: Int?): AniLibriaSkip? {
+        if (start == null || stop == null) return null
         return AniLibriaSkip(start, stop).takeIf { start >= 0 && stop > start }
     }
 }
