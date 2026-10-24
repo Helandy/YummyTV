@@ -175,7 +175,13 @@ internal fun SettingsMobileDialogsHost(
             title = stringResource(R.string.settings_subtitle_color_title),
             selectedValue = state.subtitleStyle.textColor,
             options = PlayerSubtitleTextColor.entries.map {
-                SettingsMobilePickerOption(it, it.label(), labelColor = it.color)
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                    labelColor = it.color,
+                    icon = it.icon(),
+                    iconColor = it.color,
+                )
             },
             onDismiss = { dialogs.activePicker = null },
             onSelected = {
@@ -192,7 +198,7 @@ internal fun SettingsMobileDialogsHost(
             title = stringResource(R.string.settings_tab_background),
             selectedValue = state.subtitleStyle.background,
             options = PlayerSubtitleBackground.entries.map {
-                SettingsMobilePickerOption(it, it.label())
+                SettingsMobilePickerOption(it, it.label(), icon = it.icon())
             },
             onDismiss = { dialogs.activePicker = null },
             onSelected = {

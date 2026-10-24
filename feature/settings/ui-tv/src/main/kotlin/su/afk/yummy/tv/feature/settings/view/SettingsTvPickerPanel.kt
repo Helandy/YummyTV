@@ -17,6 +17,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
@@ -34,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.theme.previewColor
 import su.afk.yummy.tv.feature.settings.common.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 
@@ -178,6 +180,7 @@ internal fun SettingsTvPickerPanel(
                 selected = state.subtitleStyle.textColor,
                 labelOf = { it.label() },
                 colorOf = { it.color },
+                iconOf = { it.icon() },
                 focusRequester = entryFocusRequester,
                 onSelected = {
                     select(
@@ -190,6 +193,7 @@ internal fun SettingsTvPickerPanel(
                 values = PlayerSubtitleBackground.entries,
                 selected = state.subtitleStyle.background,
                 labelOf = { it.label() },
+                iconOf = { it.icon() },
                 focusRequester = entryFocusRequester,
                 onSelected = {
                     select(
@@ -211,6 +215,7 @@ private fun <T> PickerOptions(
     onSelected: (T) -> Unit,
     hintOf: (@Composable (T) -> String)? = null,
     colorOf: (@Composable (T) -> Color)? = null,
+    iconOf: ((T) -> ImageVector)? = null,
 ) {
     val focusIndex = values.indexOf(selected).coerceAtLeast(0)
     values.forEachIndexed { index, value ->
@@ -220,6 +225,7 @@ private fun <T> PickerOptions(
             selected = value == selected,
             onClick = { onSelected(value) },
             labelColor = colorOf?.invoke(value),
+            icon = iconOf?.invoke(value),
             modifier = if (index == focusIndex) Modifier.focusRequester(focusRequester) else Modifier,
         )
         if (index < values.lastIndex) {

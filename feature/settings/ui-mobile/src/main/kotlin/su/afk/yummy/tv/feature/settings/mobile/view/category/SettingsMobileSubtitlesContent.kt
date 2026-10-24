@@ -7,6 +7,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
+import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
@@ -59,11 +60,13 @@ internal fun SettingsMobileSubtitlesContent(
                 label = stringResource(R.string.settings_subtitle_color_title),
                 value = state.subtitleStyle.textColor.label(),
                 valueColor = state.subtitleStyle.textColor.color,
+                valueIcon = state.subtitleStyle.textColor.icon(),
                 onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_COLOR) },
             )
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_tab_background),
                 value = state.subtitleStyle.background.label(),
+                valueIcon = state.subtitleStyle.background.icon(),
                 onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_BACKGROUND) },
             )
         }
