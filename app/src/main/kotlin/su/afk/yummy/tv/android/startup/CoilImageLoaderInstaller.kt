@@ -2,11 +2,13 @@ package su.afk.yummy.tv.android.startup
 
 import android.app.ActivityManager
 import android.content.Context
+import android.os.Build
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.disk.DiskCache
 import coil3.disk.directory
+import coil3.gif.AnimatedImageDecoder
 import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
@@ -83,8 +85,8 @@ class CoilImageLoaderInstaller @Inject constructor(
                     add(
                         KodikThumbnailFetcher.Factory(
                             resolveKodikThumbnailUrl,
-                            kodikThumbnailCacheIO
-                        )
+                            kodikThumbnailCacheIO,
+                        ),
                     )
                     add(HistoryEpisodeThumbnailKeyer())
                     add(
@@ -92,13 +94,15 @@ class CoilImageLoaderInstaller @Inject constructor(
                             getCachedAnimeVideos,
                             resolveKodikThumbnailUrl,
                             kodikThumbnailCacheIO,
-                        )
+                        ),
                     )
                     add(KtorNetworkFetcherFactory(httpClient = imageHttpClient))
                     // yani отдаёт картинки новостей только в AVIF. Системный декодер на части ТВ-приставок
                     // (Google TV Streamer) уходит в аппаратный AV1-кодек: ~3 с на картинку, а кадры
                     // 1919x1079 не декодируются вовсе. Программный декод через libavif + dav1d.
                     add(AvifImageDecoder.Factory())
+                    // Анимированный WebP (декор аватарки): платформенный декодер с API 28, ниже виден первый кадр.
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) add(AnimatedImageDecoder.Factory())
                 }
                 .build()
         }

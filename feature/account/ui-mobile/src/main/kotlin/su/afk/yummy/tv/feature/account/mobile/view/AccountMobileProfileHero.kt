@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalAvatarFrame
 
 /**
  * Шапка профиля: баннер (или градиент, если баннера нет), аватар с обводкой,
@@ -140,23 +141,25 @@ internal fun AccountMobileProfileHero(
                 .padding(start = 20.dp, end = 20.dp, top = bannerHeight - (AvatarSize + AvatarRing * 2) / 3, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Box(modifier = Modifier.size(AvatarSize + AvatarRing * 2)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(surface)
-                        .clickable(enabled = avatarUrl.isNotBlank()) { avatarOpened = true }
-                        .padding(AvatarRing),
-                ) {
-                    AccountMobileAvatar(
-                        avatarUrl = avatarUrl,
-                        nickname = nickname,
-                        isLoading = isLoading,
-                        modifier = Modifier.size(AvatarSize),
-                    )
+            SeasonalAvatarFrame(avatarSize = AvatarSize + AvatarRing * 2) {
+                Box(modifier = Modifier.size(AvatarSize + AvatarRing * 2)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .background(surface)
+                            .clickable(enabled = avatarUrl.isNotBlank()) { avatarOpened = true }
+                            .padding(AvatarRing),
+                    ) {
+                        AccountMobileAvatar(
+                            avatarUrl = avatarUrl,
+                            nickname = nickname,
+                            isLoading = isLoading,
+                            modifier = Modifier.size(AvatarSize),
+                        )
+                    }
+                    avatarBadge()
                 }
-                avatarBadge()
             }
             content()
         }

@@ -23,7 +23,8 @@ import coil3.compose.AsyncImage
 
 /**
  * Баннер профиля фоном под шапкой: картинка (или градиент, если баннера нет)
- * и затемнение слева и снизу, чтобы имя и кнопки читались на любом баннере.
+ * и затемнение слева и снизу, чтобы имя и кнопки читались на любом баннере. Скругление режет только фон:
+ * содержимое (декор аватарки) может выходить за верхнюю кромку.
  */
 @Composable
 internal fun AccountBanner(
@@ -33,54 +34,56 @@ internal fun AccountBanner(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val background = MaterialTheme.colorScheme.background
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
-                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.25f),
+    Box(modifier = modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(RoundedCornerShape(18.dp))
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.25f),
+                        ),
                     ),
                 ),
-            ),
-    ) {
-        // Широкую панораму (AVIF) платформа декодирует с Android 12; иначе или при ошибке — cropped.
-        var useWide by remember(bannerWideUrl) {
-            mutableStateOf(!bannerWideUrl.isNullOrBlank() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-        }
-        val model = if (useWide) bannerWideUrl else bannerUrl?.takeIf { it.isNotBlank() }
-        if (model != null) {
-            AsyncImage(
-                model = model,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                onError = { if (useWide) useWide = false },
-                modifier = Modifier.matchParentSize(),
+        ) {
+            // Широкую панораму (AVIF) платформа декодирует с Android 12; иначе или при ошибке — cropped.
+            var useWide by remember(bannerWideUrl) {
+                mutableStateOf(!bannerWideUrl.isNullOrBlank() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            }
+            val model = if (useWide) bannerWideUrl else bannerUrl?.takeIf { it.isNotBlank() }
+            if (model != null) {
+                AsyncImage(
+                    model = model,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    onError = { if (useWide) useWide = false },
+                    modifier = Modifier.matchParentSize(),
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.horizontalGradient(
+                            0f to background.copy(alpha = 0.82f),
+                            0.55f to background.copy(alpha = 0.35f),
+                            1f to background.copy(alpha = 0.1f),
+                        ),
+                    ),
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0.45f to background.copy(alpha = 0f),
+                            1f to background.copy(alpha = 0.7f),
+                        ),
+                    ),
             )
         }
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.horizontalGradient(
-                        0f to background.copy(alpha = 0.82f),
-                        0.55f to background.copy(alpha = 0.35f),
-                        1f to background.copy(alpha = 0.1f),
-                    ),
-                ),
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.45f to background.copy(alpha = 0f),
-                        1f to background.copy(alpha = 0.7f),
-                    ),
-                ),
-        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()

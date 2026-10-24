@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -90,7 +91,8 @@ internal fun TvSideMenuAccountItem(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(28.dp)) {
+        // requiredSize: в свёрнутой панели под иконку остаётся 24dp, size сплющил бы аватарку в овал.
+        Box(modifier = Modifier.requiredSize(28.dp)) {
             if (signedIn && avatarUrl.isNotBlank()) {
                 AsyncImage(
                     model = avatarUrl,
