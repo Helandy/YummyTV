@@ -71,7 +71,7 @@ class Anime4kExtraSourceTest : BaseUnitTest() {
     fun `videos are built per episode and dubbing without file urls`() = runTest {
         enabled(true)
         every { ads.isAvailable } returns true
-        coEvery { repository.getTitle(1735) } returns title
+        coEvery { repository.getTitle(any()) } returns title
 
         val videos = videoRepository().videos(details(1735))
 
@@ -176,7 +176,7 @@ class Anime4kExtraSourceTest : BaseUnitTest() {
         every { toggles.isEnabled(any<FeatureFlag.BooleanFlag>()) } returns false
         every { ads.isAvailable } returns true
         every { signer.isAvailable } returns true
-        coEvery { repository.getTitle(1735) } returns title
+        coEvery { repository.getTitle(any()) } returns title
         val debugRepo = Anime4kExtraVideoRepository(GetAnime4kTitleUseCase(repository), ads, Anime4kFeatureGate(toggles, true), signer)
 
         assertEquals(3, debugRepo.videos(details(1735)).size)

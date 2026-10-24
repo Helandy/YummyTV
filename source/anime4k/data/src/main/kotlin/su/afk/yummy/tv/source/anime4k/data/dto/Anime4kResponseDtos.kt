@@ -3,6 +3,16 @@ package su.afk.yummy.tv.source.anime4k.data.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class Anime4kLookupRequestDto(
+    val malId: Int,
+    val title: String,
+    val otherTitles: List<String>,
+    val year: Int? = null,
+    val type: String? = null,
+    val episodes: Int? = null,
+)
+
+@Serializable
 data class Anime4kTitleResponseDto(
     val available: Boolean = false,
     val episodes: List<Anime4kEpisodeResponseDto> = emptyList(),

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.source.anime4k.data.repository
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsRequestDto
 import su.afk.yummy.tv.source.anime4k.data.mapper.Anime4kMapper
 import su.afk.yummy.tv.source.anime4k.data.network.Anime4kApi
+import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kStreams
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTarget
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTicket
@@ -21,15 +22,16 @@ internal class Anime4kRepositoryImpl @Inject constructor(
 
     private data class CachedTitle(val title: Anime4kTitle?, val fetchedAtMs: Long)
 
+    // Ключ — MAL id из lookup: у одного тайтла otherTitles/год/тип между вызовами практически не меняются.
     private val titleCache = ConcurrentHashMap<Int, CachedTitle>()
 
-    override suspend fun getTitle(malId: Int): Anime4kTitle? {
+    override suspend fun getTitle(lookup: Anime4kLookup): Anime4kTitle? {
         val now = System.currentTimeMillis()
-        titleCache[malId]?.takeIf { now - it.fetchedAtMs < TITLE_TTL_MS }?.let { return it.title }
+        titleCache[lookup.malId]?.takeIf { now - it.fetchedAtMs < TITLE_TTL_MS }?.let { return it.title }
 
         // Сбой сети в кэш не попадает: исключение уйдёт наверх, источник просто не появится в этот раз.
-        val title = api.getTitle(malId)?.let { Anime4kMapper.toTitle(malId, it) }
-        titleCache[malId] = CachedTitle(title, now)
+        val title = Anime4kMapper.toTitle(lookup.malId, api.findTitle(Anime4kMapper.toRequest(lookup)))
+        titleCache[lookup.malId] = CachedTitle(title, now)
         return title
     }
 

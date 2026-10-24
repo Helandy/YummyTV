@@ -6,6 +6,7 @@ import su.afk.yummy.tv.source.anime4k.data.flag.Anime4kFeatureGate
 import su.afk.yummy.tv.source.anime4k.data.signing.RequestSigner
 import su.afk.yummy.tv.source.anime4k.data.utils.parseAnime4kSourceUrl
 import su.afk.yummy.tv.source.anime4k.data.utils.toSourceUrl
+import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTarget
 import su.afk.yummy.tv.source.anime4k.domain.repository.RewardedAdRepository
 import su.afk.yummy.tv.source.anime4k.domain.usecase.GetAnime4kTitleUseCase
@@ -25,7 +26,15 @@ internal class Anime4kExtraVideoRepository @Inject constructor(
             return emptyList()
         }
         val malId = details.malId ?: return emptyList()
-        val title = getTitle(malId) ?: return emptyList()
+        val lookup = Anime4kLookup(
+            malId = malId,
+            title = details.title,
+            otherTitles = details.otherTitles,
+            year = details.year,
+            type = details.type,
+            episodes = details.episodes?.count,
+        )
+        val title = getTitle(lookup) ?: return emptyList()
 
         return title.episodes.flatMap { episode ->
             episode.dubbings.map { team ->

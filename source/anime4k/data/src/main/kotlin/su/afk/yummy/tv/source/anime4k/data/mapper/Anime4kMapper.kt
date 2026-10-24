@@ -1,15 +1,28 @@
 package su.afk.yummy.tv.source.anime4k.data.mapper
 
+import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
+import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kLookupRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTicketResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTitleResponseDto
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kEpisode
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kFile
+import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kStreams
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTicket
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTitle
 
 internal object Anime4kMapper {
+    private const val MAX_OTHER_TITLES = 20
+
+    fun toRequest(lookup: Anime4kLookup): Anime4kLookupRequestDto = Anime4kLookupRequestDto(
+        malId = lookup.malId,
+        title = lookup.title,
+        otherTitles = prioritizeAnimeTitles(lookup.title, lookup.otherTitles, MAX_OTHER_TITLES),
+        year = lookup.year,
+        type = lookup.type,
+        episodes = lookup.episodes,
+    )
 
     /** `null`, если сервер сказал, что 4K нет, или не прислал ни одной серии с озвучкой. */
     fun toTitle(malId: Int, dto: Anime4kTitleResponseDto): Anime4kTitle? {

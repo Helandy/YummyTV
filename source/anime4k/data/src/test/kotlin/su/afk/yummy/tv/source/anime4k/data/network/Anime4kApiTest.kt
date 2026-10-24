@@ -19,6 +19,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kLookupRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsRequestDto
 import su.afk.yummy.tv.source.anime4k.data.signing.RequestSigner
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kApiException
@@ -54,19 +55,19 @@ class Anime4kApiTest : BaseUnitTest() {
         return Anime4kApi(client, signer)
     }
 
+    private val lookup = Anime4kLookupRequestDto(1735, "Наруто", listOf("Naruto"), 2002, "tv", 220)
+
     @Test
-    fun `title request goes to the title endpoint and is parsed`() = runTest {
+    fun `title request is a signed post to the title endpoint`() = runTest {
         val dto = api(body = """{"available":true,"episodes":[{"number":"1","season":"1","dubbings":["AlexFilm"]}]}""")
-            .getTitle(1735)
+            .findTitle(lookup)
 
-        assertTrue(requests.single().url.toString().endsWith("/anime4k/title/1735"))
-        assertEquals(true, dto?.available)
-        assertEquals(listOf("AlexFilm"), dto?.episodes?.single()?.dubbings)
-    }
-
-    @Test
-    fun `missing title is null`() = runTest {
-        assertNull(api(HttpStatusCode.NotFound).getTitle(1))
+        val sent = requests.single()
+        assertEquals(HttpMethod.Post, sent.method)
+        assertTrue(sent.url.toString().endsWith("/anime4k/title"))
+        assertTrue(sent.body.toByteArray().decodeToString().contains("\"malId\":1735"))
+        assertEquals(true, dto.available)
+        assertEquals(listOf("AlexFilm"), dto.episodes.single().dubbings)
     }
 
     @Test
@@ -105,12 +106,15 @@ class Anime4kApiTest : BaseUnitTest() {
 
     @Test
     fun `every request is signed over method path and exact body`() = runTest {
-        api(body = """{"available":false}""").getTitle(1735)
+        api(body = """{"available":false}""").findTitle(lookup)
         api(body = """{"ticket":"abc","notBeforeSec":1,"expiresInSec":2}""").requestTicket("dev")
         val streams = api(body = """{"referer":"r","files":[]}""")
         streams.getStreams(Anime4kStreamsRequestDto("abc", 1735, "1", "1", "AlexFilm"), null)
 
-        assertEquals(Triple("GET", "/api/anime4k/title/1735", ""), signer.calls[0])
+        val (titleMethod, titlePath, titleBody) = signer.calls[0]
+        assertEquals("POST", titleMethod)
+        assertEquals("/api/anime4k/title", titlePath)
+        assertTrue(titleBody.contains("\"malId\":1735"))
         assertEquals(Triple("POST", "/api/anime4k/ticket", ""), signer.calls[1])
         val (method, path, signedBody) = signer.calls[2]
         assertEquals("POST", method)

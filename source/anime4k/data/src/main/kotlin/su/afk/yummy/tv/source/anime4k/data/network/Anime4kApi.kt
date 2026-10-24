@@ -2,7 +2,6 @@ package su.afk.yummy.tv.source.anime4k.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -15,6 +14,7 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.network.yummy.signSiteRequest
+import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kLookupRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTicketResponseDto
@@ -32,13 +32,14 @@ internal class Anime4kApi @Inject constructor(
 ) {
     private val base: String get() = "${siteApiConfig.baseUrl}/anime4k"
 
-    /** `null` при 404: тайтла на сервере нет. */
-    suspend fun getTitle(malId: Int): Anime4kTitleResponseDto? {
-        val url = "$base/title/$malId"
-        val response = client.get(url) {
-            sign("GET", url, ByteArray(0))
+    suspend fun findTitle(request: Anime4kLookupRequestDto): Anime4kTitleResponseDto {
+        val url = "$base/title"
+        // Тело сериализуется один раз: подписанные байты совпадают с отправленными.
+        val body = Json.encodeToString(Anime4kLookupRequestDto.serializer(), request)
+        val response = client.post(url) {
+            sign("POST", url, body.toByteArray(Charsets.UTF_8))
+            setBody(TextContent(body, ContentType.Application.Json))
         }
-        if (response.status == HttpStatusCode.NotFound) return null
         response.requireSuccess()
         return response.body()
     }

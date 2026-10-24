@@ -10,8 +10,21 @@ import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamFileDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTicketResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTitleResponseDto
+import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 
 class Anime4kMapperTest : BaseUnitTest() {
+
+    @Test
+    fun `request carries lookup fields as they are`() {
+        val request = Anime4kMapper.toRequest(Anime4kLookup(1735, "Наруто", listOf("Naruto"), 2002, "tv", 220))
+
+        assertEquals(1735, request.malId)
+        assertEquals("Наруто", request.title)
+        assertEquals(listOf("Naruto"), request.otherTitles)
+        assertEquals(2002, request.year)
+        assertEquals("tv", request.type)
+        assertEquals(220, request.episodes)
+    }
 
     @Test
     fun `unavailable or empty title is null`() {
