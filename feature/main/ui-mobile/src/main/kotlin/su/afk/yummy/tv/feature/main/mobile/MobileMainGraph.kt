@@ -103,7 +103,10 @@ class MobileMainGraph @Inject internal constructor(
                 ) {
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
-                        menuItems = mobileMenuItems(state.unreadNotificationsCount),
+                        menuItems = mobileMenuItems(
+                            state.unreadNotificationsCount,
+                            if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
+                        ),
                         showBottomBar = atTabRoot && !isRequiredUpdateDestination &&
                             !isFullscreenDestination,
                         showRail = showRail,

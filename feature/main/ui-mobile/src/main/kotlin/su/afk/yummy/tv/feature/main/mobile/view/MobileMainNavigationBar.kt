@@ -54,7 +54,7 @@ internal fun <T> MobileMainNavigationBar(
                     selected = selected,
                     colors = itemColors,
                     onClick = { onDestinationSelected(item.destination) },
-                    icon = { MobileMainNavigationIcon(item) },
+                    icon = { MobileMainNavigationIcon(item, selected) },
                 )
             }
         }

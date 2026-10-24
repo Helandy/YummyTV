@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,15 +41,16 @@ internal fun <T> MobileMainNavigationRail(
             verticalArrangement = Arrangement.spacedBy(RailItemSpacing, Alignment.CenterVertically),
         ) {
             menuItems.forEach { item ->
-                NavigationRailItem(
+                val selected = item.destination == selectedDestination
+                MobileMainNavigationRailItem(
                     modifier = Modifier
                         .testTag("main_tab")
                         .clickablePointer()
                         .then(if (item.hasSeasonalDecor) Modifier.seasonalRailItemDecor() else Modifier),
-                    selected = item.destination == selectedDestination,
+                    selected = selected,
                     colors = itemColors,
                     onClick = { onDestinationSelected(item.destination) },
-                    icon = { MobileMainNavigationIcon(item) },
+                    icon = { MobileMainNavigationIcon(item, selected) },
                 )
             }
         }

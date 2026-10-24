@@ -13,7 +13,7 @@ import su.afk.yummy.tv.feature.main.presentation.R
 
 /** Вкладки мобильной навигации (бар или рейка) в порядке показа. */
 @Composable
-internal fun mobileMenuItems(unreadNotificationsCount: Int): List<MobileMenuItem<RootTab>> = listOf(
+internal fun mobileMenuItems(unreadNotificationsCount: Int, avatarUrl: String): List<MobileMenuItem<RootTab>> = listOf(
     MobileMenuItem(
         stringResource(R.string.main_tab_news),
         RootTab.POSTS,
@@ -40,5 +40,6 @@ internal fun mobileMenuItems(unreadNotificationsCount: Int): List<MobileMenuItem
         RootTab.ACCOUNT,
         Icons.Default.AccountCircle,
         badgeCount = unreadNotificationsCount,
+        avatarUrl = avatarUrl,
     ),
 )

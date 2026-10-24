@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:utils"))
+    implementation(libs.coil.compose)
     implementation(project(":feature:account:api"))
     implementation(project(":feature:bloggers:api"))
     implementation(project(":feature:collection:api"))
