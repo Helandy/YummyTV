@@ -144,28 +144,26 @@ fun MobileTitleListCard(
                     ownerRating = ownerRating?.takeIf { showViewerMark },
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Column(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    val countdown = releaseCountdownText(item.nextEpisodeAtSeconds, nowEpochSeconds)
+                    Text(
+                        text = countdown.orEmpty(),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                     item.dateText?.takeIf { it.isNotBlank() }?.let { date ->
                         Text(
                             text = date,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    releaseCountdownText(item.nextEpisodeAtSeconds, nowEpochSeconds)?.let { text ->
-                        Text(
-                            text = text,
-                            modifier = Modifier.align(Alignment.Start),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
