@@ -2,9 +2,11 @@ package su.afk.yummy.tv.android
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -17,10 +19,10 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.android.shortcuts.AppShortcutsPublisher
 import su.afk.yummy.tv.android.widget.ContinueWatchingWidgetUpdater
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
+import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
-import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -46,7 +48,11 @@ class MobileActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // тёмные бары до первой композиции; YummyTvTheme затем подстраивает иконки под выбранный фон
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
 
         setContent {
             // теги Compose видны UiAutomator как resource-id — на них опираются сценарии

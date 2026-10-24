@@ -24,6 +24,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 
@@ -198,15 +200,21 @@ fun YummyTvTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         val lightBars = !darkTheme
-        DisposableEffect(lightBars) {
+        val applyBars = {
             view.context.findActivity()?.window?.let { window ->
                 WindowCompat.getInsetsController(window, view).apply {
                     isAppearanceLightStatusBars = lightBars
                     isAppearanceLightNavigationBars = lightBars
                 }
             }
+            Unit
+        }
+        DisposableEffect(lightBars, view) {
+            applyBars()
             onDispose { }
         }
+        // Возврат из плеера/фона/PiP может сбросить флаги окна — ключ lightBars при этом не менялся.
+        LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { applyBars() }
     }
 
     if (useTvTypography) {
