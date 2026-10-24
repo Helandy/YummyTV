@@ -46,22 +46,22 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.navigator.PLAYER_CONTENT_KEY
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeQuality
-import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
+import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
+import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
+import su.afk.yummy.tv.feature.player.utils.artworkSource
+import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.preferredQualityForLabel
 import su.afk.yummy.tv.feature.player.utils.qualityHeight
 import su.afk.yummy.tv.feature.player.utils.streamQualities
-import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
-import su.afk.yummy.tv.feature.player.utils.activeVideoId
-import su.afk.yummy.tv.feature.player.utils.artworkSource
-import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 
 /**
  * Оркестратор экрана плеера: источники, поток, прогресс.
@@ -890,6 +890,12 @@ class PlayerViewModel @AssistedInject internal constructor(
             )
         }
         if (resolveFailed) return
+        if (completedRecovery) {
+            // Тихий повтор уже получил новую ссылку, но плеер может снова зависнуть на загрузке
+            // (узел не отвечает): сторож срабатывает один раз на заход в буферизацию и больше не
+            // придёт, а таймер подсказки выше сброшен. Без этого юзер остаётся с голым спиннером.
+            changePlayerHint.start(CHANGE_PLAYER_HINT_DELAY_MS) { currentState.isPlaybackRecovering }
+        }
         syncBackStackDestination()
         sourceBehaviors.forEach { it.afterStreamApplied(result) }
     }
