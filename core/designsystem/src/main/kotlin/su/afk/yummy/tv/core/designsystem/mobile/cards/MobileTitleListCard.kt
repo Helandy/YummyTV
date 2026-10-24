@@ -28,7 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.FavoriteMarker
 import su.afk.yummy.tv.core.designsystem.components.ListStatusChip
 import su.afk.yummy.tv.core.designsystem.components.ReleaseStatusChip
@@ -83,8 +83,8 @@ fun MobileTitleListCard(
                     .width(MobileTitleListPosterWidth)
                     .fillMaxHeight(),
             ) {
-                AsyncImage(
-                    model = item.posterUrl,
+                FallbackAsyncImage(
+                    models = item.posterUrls,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

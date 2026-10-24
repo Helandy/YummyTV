@@ -24,7 +24,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 @Composable
 internal fun DetailsVideoSection(
     trailers: List<AnimeTrailer>,
-    bloggerVideosImageModel: Any?,
+    bloggerVideosImageModels: List<Any>,
     isTrailersLoading: Boolean,
     hasBloggerVideos: Boolean,
     onTrailersClick: () -> Unit,
@@ -57,7 +57,7 @@ internal fun DetailsVideoSection(
                 DetailsVideoCard(
                     title = stringResource(R.string.details_trailers),
                     icon = Icons.Filled.Movie,
-                    imageModel = trailers.firstNotNullOfOrNull { it.youtubeThumbnailUrl },
+                    imageModels = listOfNotNull(trailers.firstNotNullOfOrNull { it.youtubeThumbnailUrl }),
                     subtitle = stringResource(R.string.details_mobile_trailers_hint),
                     badge = trailers.size.toString(),
                     onClick = onTrailersClick,
@@ -70,7 +70,7 @@ internal fun DetailsVideoSection(
                 DetailsVideoCard(
                     title = stringResource(R.string.details_mobile_blogger_videos),
                     icon = Icons.Filled.VideoCameraFront,
-                    imageModel = bloggerVideosImageModel,
+                    imageModels = bloggerVideosImageModels,
                     subtitle = stringResource(R.string.details_mobile_blogger_videos_hint),
                     imageTint = MaterialTheme.colorScheme.tertiaryContainer,
                     onClick = onBloggerVideosClick,

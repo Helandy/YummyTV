@@ -18,12 +18,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
@@ -123,7 +125,7 @@ fun RelationMobileScreen(
                     item(key = lazyKey("relation", item.animeId)) {
                         MobilePosterCard(
                             title = item.title,
-                            posterUrl = item.posterUrl,
+                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                             animeId = item.animeId,
                             rating = item.rating,
                             posterOverlay = {
@@ -144,14 +146,14 @@ private fun previewStudioRelation() = AnimeRelation(
         AnimeRelationItem(
             animeId = 1,
             title = "Violet Evergarden",
-            posterUrl = null,
+            poster = null,
             rating = 8.7,
             year = 2018,
         ),
         AnimeRelationItem(
             animeId = 2,
             title = "K-On!",
-            posterUrl = null,
+            poster = null,
             rating = 8.1,
             year = 2009,
         ),

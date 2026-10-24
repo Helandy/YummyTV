@@ -36,11 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatNextEpisodeRelease
@@ -60,15 +61,15 @@ internal fun DetailsMobileHero(
 ) {
     val configuration = LocalConfiguration.current
     val posterWidth = (configuration.screenWidthDp.dp * 0.42f).coerceIn(142.dp, 190.dp)
-    val posterUrl = details.poster.bestUrl()
+    val posterUrls = details.poster.urlsByQuality(LocalPosterQuality.current)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface),
     ) {
-        AsyncImage(
-            model = posterUrl,
+        FallbackAsyncImage(
+            models = posterUrls,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -143,8 +144,8 @@ internal fun DetailsMobileHero(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            AsyncImage(
-                model = posterUrl,
+            FallbackAsyncImage(
+                models = posterUrls,
                 contentDescription = details.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

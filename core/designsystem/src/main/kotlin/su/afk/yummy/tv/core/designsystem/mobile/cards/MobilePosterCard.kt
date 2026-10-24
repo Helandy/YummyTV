@@ -24,7 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
@@ -41,7 +41,7 @@ import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 @Composable
 fun MobilePosterCard(
     title: String,
-    posterUrl: String?,
+    posterUrls: List<String>,
     modifier: Modifier = Modifier.width(currentMobilePosterWidth()),
     subtitle: String? = null,
     /** Акцентная строка под [subtitle] — например вид связи тайтла («продолжение»). */
@@ -76,10 +76,10 @@ fun MobilePosterCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(TITLE_POSTER_ASPECT_RATIO)
-                    .seasonalCardDecor(animeId ?: posterUrl.hashCode()),
+                    .seasonalCardDecor(animeId ?: posterUrls.firstOrNull().hashCode()),
             ) {
-                AsyncImage(
-                    model = posterUrl,
+                FallbackAsyncImage(
+                    models = posterUrls,
                     contentDescription = null,
                     modifier = Modifier
                         .matchParentSize()

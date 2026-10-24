@@ -1,10 +1,12 @@
 package su.afk.yummy.tv.domain.home.model
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
+
 data class HomeFeedItem(
     val id: Int,
     val title: String,
     val description: String,
-    val poster: HomePoster?,
+    val poster: AnimePoster?,
     val rating: Double?,
     val year: Int?,
     val action: HomeFeedItemAction,

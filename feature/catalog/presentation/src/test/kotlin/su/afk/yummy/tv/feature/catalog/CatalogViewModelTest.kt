@@ -372,7 +372,7 @@ class CatalogViewModelTest : BaseUnitTest() {
 
     @Test
     fun `random anime opens its details`() {
-        coEvery { repository.getRandomAnime() } returns SearchItem(id = 9, title = "Random", posterUrl = null, rating = null, year = null)
+        coEvery { repository.getRandomAnime() } returns SearchItem(id = 9, title = "Random", poster = null, rating = null, year = null)
         val vm = createViewModel()
 
         vm.setEvent(Event.RandomAnimeSelected)

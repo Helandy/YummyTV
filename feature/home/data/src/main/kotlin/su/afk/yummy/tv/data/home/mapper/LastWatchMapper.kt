@@ -1,12 +1,12 @@
 package su.afk.yummy.tv.data.home.mapper
 
 import su.afk.yummy.tv.core.common.episode.normalizedEpisodeNumber
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.utils.network.toHttpsUrlOrNull
 import su.afk.yummy.tv.data.home.dto.YaniLastWatchDto
 import su.afk.yummy.tv.data.home.dto.YaniPosterDto
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingSource
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.HomePoster
 
 internal fun List<YaniLastWatchDto>.toHomeContinueWatchingItems(): List<HomeContinueWatchingItem> =
     filter { it.animeId > 0 && it.date > 0L }
@@ -30,8 +30,8 @@ internal fun YaniLastWatchDto.toHomeContinueWatchingItem(): HomeContinueWatching
         source = ContinueWatchingSource.REMOTE,
     )
 
-private fun YaniPosterDto.toHomePoster(): HomePoster =
-    HomePoster(
+private fun YaniPosterDto.toHomePoster(): AnimePoster =
+    AnimePoster(
         small = small.toHttpsUrlOrNull(),
         medium = medium.toHttpsUrlOrNull(),
         big = big.toHttpsUrlOrNull(),

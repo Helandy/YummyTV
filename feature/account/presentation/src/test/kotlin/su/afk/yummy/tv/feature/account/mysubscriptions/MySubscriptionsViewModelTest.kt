@@ -144,7 +144,7 @@ class MySubscriptionsViewModelTest : BaseUnitTest() {
         playerId = 1,
         player = "Kodik",
         dubbing = "",
-        posterUrl = null,
+        poster = null,
         title = "Title $animeId",
     )
 

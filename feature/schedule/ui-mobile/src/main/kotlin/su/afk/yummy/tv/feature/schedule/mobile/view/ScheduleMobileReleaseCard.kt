@@ -26,7 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.feature.schedule.presentation.R
 import su.afk.yummy.tv.feature.schedule.utils.remainingText
 import su.afk.yummy.tv.feature.schedule.utils.timeLabel
@@ -74,8 +76,8 @@ internal fun ScheduleMobileReleaseCard(
                 .clip(RoundedCornerShape(6.dp))
                 .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
         ) {
-            AsyncImage(
-                model = item.posterUrl,
+            FallbackAsyncImage(
+                models = item.poster.urlsByQuality(LocalPosterQuality.current),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),

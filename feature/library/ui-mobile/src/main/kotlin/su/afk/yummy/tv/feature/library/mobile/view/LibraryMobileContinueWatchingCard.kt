@@ -21,11 +21,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileProgressMediaCard
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
+import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.feature.library.mobile.utils.posterUrl
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 import su.afk.yummy.tv.feature.library.mobile.utils.watchProgress
@@ -40,16 +41,16 @@ internal fun LibraryMobileContinueWatchingCard(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
 ) {
-    val imageModel = resolveContinueWatchingImageModel(
+    val imageModels = resolveContinueWatchingImageModels(
         screenshotUrl = entry.screenshotUrl,
         episodeUrl = entry.episodeUrl,
-        posterUrl = entry.poster.posterUrl(),
+        posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
         kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
     )
 
     MobileProgressMediaCard(
         title = entry.animeTitle.ifBlank { episodeLabel },
-        imageModel = imageModel,
+        imageModels = imageModels,
         subtitle = episodeLabel,
         trailingSubtitle = entry.timingLabel(),
         progress = entry.watchProgress(),

@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:catalog:api"))
     implementation(project(":feature:catalog:domain"))

@@ -14,8 +14,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 
 /**
  * Blurred, cropped poster behind the hero content, dimmed by a scrim so the
@@ -25,15 +27,16 @@ import su.afk.yummy.tv.core.model.anime.AnimeDetails
 @Composable
 internal fun HeroBackdrop(details: AnimeDetails) {
     val surface = MaterialTheme.colorScheme.surface
-    val backdropUrl = details.poster?.run { big ?: medium ?: small }
-    if (backdropUrl != null) HeroBackdropImage(backdropUrl, surface)
+    // Те же ссылки, что у постера хиро: картинка одна, второй раз она берётся из кэша, а не из сети.
+    val backdropUrls = details.poster.urlsByQuality(LocalPosterQuality.current)
+    if (backdropUrls.isNotEmpty()) HeroBackdropImage(backdropUrls, surface)
     HeroBottomFade()
 }
 
 @Composable
-private fun HeroBackdropImage(backdropUrl: String, surface: Color) {
-    AsyncImage(
-        model = backdropUrl,
+private fun HeroBackdropImage(backdropUrls: List<String>, surface: Color) {
+    FallbackAsyncImage(
+        models = backdropUrls,
         contentDescription = null,
         contentScale = ContentScale.Crop,
         alpha = 0.38f,

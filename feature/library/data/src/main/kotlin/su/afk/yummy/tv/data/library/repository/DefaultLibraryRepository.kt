@@ -3,12 +3,12 @@ package su.afk.yummy.tv.data.library.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.storage.library.LibraryStorage
 import su.afk.yummy.tv.data.library.storage.mapper.toLibraryEntry
 import su.afk.yummy.tv.data.library.storage.mapper.toLibraryItem
 import su.afk.yummy.tv.data.library.storage.mapper.toStoragePoster
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 
 class DefaultLibraryRepository(
@@ -47,7 +47,7 @@ class DefaultLibraryRepository(
     override suspend fun setFavorite(
         animeId: Int,
         title: String,
-        poster: LibraryPoster?,
+        poster: AnimePoster?,
         year: Int?,
         favorite: Boolean,
     ) {
@@ -63,7 +63,7 @@ class DefaultLibraryRepository(
     override suspend fun refreshMetadata(
         animeId: Int,
         title: String,
-        poster: LibraryPoster?,
+        poster: AnimePoster?,
         year: Int?,
     ) {
         store.refreshMetadata(

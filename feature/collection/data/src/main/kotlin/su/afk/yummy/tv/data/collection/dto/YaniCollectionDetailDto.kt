@@ -111,6 +111,7 @@ data class YaniCollectionPosterDto(
     val medium: String? = null,
     val big: String? = null,
     val fullsize: String? = null,
+    val mega: String? = null,
 )
 
 @Serializable

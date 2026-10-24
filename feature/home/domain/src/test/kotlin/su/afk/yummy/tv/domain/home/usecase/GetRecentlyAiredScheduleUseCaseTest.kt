@@ -87,7 +87,7 @@ class GetRecentlyAiredScheduleUseCaseTest : BaseUnitTest() {
     ) = AnimeScheduleItem(
         animeId = animeId,
         title = "Title $animeId",
-        posterUrl = null,
+        poster = null,
         nextDateEpochSeconds = null,
         airedEpisodes = airedEpisodes,
         totalEpisodes = 12,

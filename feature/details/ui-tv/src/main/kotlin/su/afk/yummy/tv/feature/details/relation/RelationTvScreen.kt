@@ -50,10 +50,12 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
@@ -244,7 +246,7 @@ fun RelationTvScreen(
                             itemsIndexed(relation.anime, key = { _, item -> lazyKey("relation", item.animeId) }) { index, item ->
                                 TvTitleCard(
                                     title = item.title,
-                                    posterUrl = item.posterUrl,
+                                    posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                                     animeId = item.animeId,
                                     onClick = {
                                         lastFocusTarget = RelationFocusTarget.Anime(item.animeId)
@@ -331,14 +333,14 @@ private fun previewDirectorRelation() = AnimeRelation(
         AnimeRelationItem(
             animeId = 1,
             title = "Spirited Away",
-            posterUrl = null,
+            poster = null,
             rating = 8.9,
             year = 2001,
         ),
         AnimeRelationItem(
             animeId = 2,
             title = "Howl's Moving Castle",
-            posterUrl = null,
+            poster = null,
             rating = 8.7,
             year = 2004,
         ),

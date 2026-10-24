@@ -34,14 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 
 @Composable
 fun TvProgressMediaCard(
     title: String,
-    imageModel: Any?,
+    imageModels: List<Any>,
     subtitle: String,
     trailingSubtitle: String?,
     progress: Float,
@@ -96,14 +96,14 @@ fun TvProgressMediaCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                AsyncImage(
-                    model = imageModel,
+                FallbackAsyncImage(
+                    models = imageModels,
                     contentDescription = title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                if (imageModel == null) {
+                if (imageModels.isEmpty()) {
                     Text(
                         text = title.take(1),
                         style = MaterialTheme.typography.displayLarge,

@@ -15,12 +15,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.domain.home.model.bestUrl
 import su.afk.yummy.tv.feature.home.recommendations.HomeRecommendationsState
 
 @Composable
@@ -46,7 +47,7 @@ fun HomeRecommendationsMobileScreen(
             items(state.items, key = { lazyKey("homerecommendation", it.id) }) { item ->
                 MobilePosterCard(
                     title = item.title,
-                    posterUrl = item.poster.bestUrl(),
+                    posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                     animeId = item.id,
                     rating = item.rating,
                     posterOverlay = {

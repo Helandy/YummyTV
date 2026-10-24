@@ -41,7 +41,7 @@ class CollectionMobileScreenTest {
         dislikesCount = 0,
         vote = CollectionVote.NEUTRAL,
         animes = listOf(
-            CollectionAnimeItem(id = 41, title = "Первое аниме", posterUrl = null, rating = 8.0, year = 2020),
+            CollectionAnimeItem(id = 41, title = "Первое аниме", poster = null, rating = 8.0, year = 2020),
         ),
     )
 

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.home.storage.mapper
 
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_COLLECTION
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_SERIES
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_VIDEO
@@ -30,8 +31,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
-import su.afk.yummy.tv.domain.home.model.HomePoster
-import su.afk.yummy.tv.domain.home.model.bestUrl
+import su.afk.yummy.tv.core.model.anime.bestUrl
 
 internal fun YaniFeedDto.toHomeFeedCache(
     language: String,
@@ -145,8 +145,8 @@ internal fun WatchProgressEntry.toHomeContinueWatchingItem(): HomeContinueWatchi
         screenshotUrl = screenshotUrl,
     )
 
-private fun String.toHomePoster(): HomePoster =
-    HomePoster(
+private fun String.toHomePoster(): AnimePoster =
+    AnimePoster(
         small = null,
         medium = null,
         big = null,
@@ -326,11 +326,11 @@ private fun posterOrNull(
     big: String?,
     fullsize: String?,
     mega: String?,
-): HomePoster? {
+): AnimePoster? {
     if (small == null && medium == null && big == null && fullsize == null && mega == null) {
         return null
     }
-    return HomePoster(
+    return AnimePoster(
         small = small,
         medium = medium,
         big = big,

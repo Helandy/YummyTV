@@ -6,10 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.designsystem.components.color
 import su.afk.yummy.tv.core.designsystem.components.icon
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.mapper.toLibraryTabKind
@@ -47,13 +44,4 @@ internal fun List<WatchHistoryEntry>.historyFocusKeys(): List<String> {
         val ordinal = seen.merge(base, 1, Int::plus)!! - 1
         if (ordinal == 0) base else "$base#$ordinal"
     }
-}
-
-internal fun LibraryItem.posterUrl(quality: PosterQuality): String? = poster.posterUrl(quality)
-
-private fun LibraryPoster?.posterUrl(quality: PosterQuality): String? = when (quality) {
-    PosterQuality.LOW -> this?.medium ?: this?.big ?: this?.fullsize ?: this?.small
-    PosterQuality.STANDARD -> this?.big ?: this?.medium ?: this?.fullsize ?: this?.small
-    PosterQuality.MEGA -> this?.mega ?: this?.big ?: this?.medium ?: this?.fullsize ?: this?.small
-    PosterQuality.HIGH -> this?.fullsize ?: this?.mega ?: this?.big ?: this?.medium ?: this?.small
 }

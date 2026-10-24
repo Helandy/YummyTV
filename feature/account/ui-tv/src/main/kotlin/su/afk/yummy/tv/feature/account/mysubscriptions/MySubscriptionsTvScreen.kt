@@ -33,8 +33,10 @@ import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvStateContent
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
@@ -148,7 +150,7 @@ private inline fun LazyGridScope.itemsIndexedSubscriptions(
         val subscription = state.subscriptions[index]
         TvTitleCard(
             title = subscription.title,
-            posterUrl = subscription.posterUrl,
+            posterUrls = subscription.poster.urlsByQuality(LocalPosterQuality.current),
             subtitle = subscription.player.takeIf { it.isNotBlank() },
             onClick = {
                 onEvent(MySubscriptionsState.Event.SubscriptionSelected(subscription.animeId))

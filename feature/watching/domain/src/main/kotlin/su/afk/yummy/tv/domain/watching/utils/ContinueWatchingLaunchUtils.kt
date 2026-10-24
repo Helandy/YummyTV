@@ -8,7 +8,7 @@ import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingRemoteProgressSwitch
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingSource
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.bestUrl
+import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.domain.watching.model.ContinueWatchingLaunchResolution
 import su.afk.yummy.tv.domain.watching.model.ServerContinueProgress
 import kotlin.math.abs

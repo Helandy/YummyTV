@@ -43,7 +43,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.feature.schedule.model.ScheduleReleaseUi
 import su.afk.yummy.tv.feature.schedule.presentation.R
 import su.afk.yummy.tv.feature.schedule.utils.remainingText
@@ -129,8 +131,8 @@ internal fun ScheduleReleaseRow(
                     .clip(RoundedCornerShape(6.dp))
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
             ) {
-                AsyncImage(
-                    model = item.posterUrl,
+                FallbackAsyncImage(
+                    models = item.poster.urlsByQuality(LocalPosterQuality.current),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),

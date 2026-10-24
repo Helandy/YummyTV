@@ -12,7 +12,7 @@ import su.afk.yummy.tv.core.model.anime.CardListStatus
 data class TitleListCardUi(
     val animeId: Int,
     val title: String,
-    val posterUrl: String?,
+    val posterUrls: List<String>,
     /** Оценка сайта. */
     val siteRating: Double? = null,
     /** Оценка пользователя, 1..10. */

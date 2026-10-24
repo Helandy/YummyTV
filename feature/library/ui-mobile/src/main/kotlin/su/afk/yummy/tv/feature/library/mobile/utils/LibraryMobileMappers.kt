@@ -5,9 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import su.afk.yummy.tv.core.designsystem.components.color
 import su.afk.yummy.tv.core.designsystem.components.icon
-import su.afk.yummy.tv.domain.home.model.HomePoster
-import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.mapper.toLibraryTabKind
 import su.afk.yummy.tv.feature.library.model.LibraryTab
@@ -38,15 +35,6 @@ internal fun LibraryState.State.mobileTabItemCount(tab: LibraryTab): Int? = when
     LibraryTab.HISTORY -> null
     else -> tabItems[tab]?.size ?: 0
 }
-
-internal fun LibraryItem.posterUrl(): String? =
-    poster.posterUrl()
-
-private fun LibraryPoster?.posterUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
-
-internal fun HomePoster?.posterUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
 
 @Composable
 internal fun LibraryTab.tabColor(): Color = toLibraryTabKind().color()

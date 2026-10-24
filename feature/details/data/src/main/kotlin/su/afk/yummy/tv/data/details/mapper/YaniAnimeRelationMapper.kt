@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.data.details.mapper
 
 import kotlinx.serialization.Serializable
-import su.afk.yummy.tv.core.utils.network.toHttpsUrl
+import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
 import su.afk.yummy.tv.data.details.dto.YaniDirectorResponseDto
 import su.afk.yummy.tv.data.details.dto.YaniGenreResponseDto
 import su.afk.yummy.tv.data.details.dto.YaniRelatedAnimeDto
@@ -64,8 +64,7 @@ private fun List<YaniRelatedAnimeDto>.toRelationItems(): List<AnimeRelationItem>
         AnimeRelationItem(
             animeId = id,
             title = title,
-            posterUrl = (item.poster?.big ?: item.poster?.medium
-            ?: item.poster?.small)?.toHttpsUrl(),
+            poster = item.poster?.let { animePosterOrNull(it.small, it.medium, it.big, it.fullsize, it.mega) },
             rating = item.rating.average?.takeIf { it > 0.0 },
             year = item.year?.takeIf { it > 0 },
         )

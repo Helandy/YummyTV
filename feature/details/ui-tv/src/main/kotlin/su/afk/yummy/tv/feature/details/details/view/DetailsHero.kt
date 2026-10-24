@@ -35,15 +35,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
-import su.afk.yummy.tv.feature.details.utils.bestUrl
 
 @Composable
 internal fun DetailsHero(
@@ -231,8 +232,8 @@ internal fun DetailsHero(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     ),
                 ) {
-                    AsyncImage(
-                        model = details.poster?.bestUrl,
+                    FallbackAsyncImage(
+                        models = details.poster.urlsByQuality(LocalPosterQuality.current),
                         contentDescription = details.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),

@@ -1,17 +1,17 @@
 package su.afk.yummy.tv.data.library.storage.mapper
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.core.storage.library.LibraryPoster as StorageLibraryPoster
 
 internal fun LibraryEntry.toLibraryItem(): LibraryItem =
     LibraryItem(
         animeId = animeId,
         title = title,
-        poster = LibraryPoster(
+        poster = AnimePoster(
             small = posterSmallUrl,
             medium = posterMediumUrl,
             big = posterBigUrl,
@@ -55,7 +55,7 @@ internal fun LibraryItem.toLibraryEntry(): LibraryEntry =
         releaseStatus = releaseStatus?.slug,
     )
 
-internal fun LibraryPoster?.toStoragePoster(): StorageLibraryPoster? =
+internal fun AnimePoster?.toStoragePoster(): StorageLibraryPoster? =
     this?.let {
         StorageLibraryPoster(
             small = small,

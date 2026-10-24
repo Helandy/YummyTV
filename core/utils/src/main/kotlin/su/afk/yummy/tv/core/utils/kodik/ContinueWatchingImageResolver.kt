@@ -35,23 +35,24 @@ suspend fun resolveContinueWatchingImage(
     }
 }
 
-fun resolveContinueWatchingImageModel(
+/**
+ * Цепочка моделей картинки «продолжить просмотр» по убыванию предпочтения: превью серии
+ * (скриншот или Kodik), если оно есть, затем все версии постера из [posterUrls]. Если первая модель
+ * не загрузилась, [su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage] берёт следующую.
+ */
+fun resolveContinueWatchingImageModels(
     screenshotUrl: String,
     episodeUrl: String,
-    posterUrl: String?,
+    posterUrls: List<String>,
     kodikThumbnailModel: (iframeUrl: String) -> Any?,
-): Any? {
-    val (source, url) = pickContinueWatchingImageSource(screenshotUrl, episodeUrl, posterUrl)
-        ?: return null
-    return when (source) {
-        ContinueWatchingImageSource.KODIK_SCREENSHOT,
-        ContinueWatchingImageSource.KODIK_EPISODE,
-            -> kodikThumbnailModel(url)
-
-        ContinueWatchingImageSource.DIRECT_SCREENSHOT,
-        ContinueWatchingImageSource.POSTER,
-            -> url
+): List<Any> {
+    val episodeModel = when {
+        screenshotUrl.isKodikIframeUrl() -> kodikThumbnailModel(screenshotUrl)
+        episodeUrl.isKodikIframeUrl() -> kodikThumbnailModel(episodeUrl)
+        screenshotUrl.isLikelyImageUrl() -> screenshotUrl
+        else -> null
     }
+    return listOfNotNull(episodeModel) + posterUrls
 }
 
 fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)

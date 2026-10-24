@@ -48,12 +48,12 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.mapper.toTitleListCardUi
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.presentation.R
-import su.afk.yummy.tv.feature.library.utils.posterUrl
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -219,8 +219,8 @@ internal fun LibraryGrid(
                     }
                     val stableOnFocused =
                         remember(item.animeId, index) { { rememberFocusedItem(index) } }
-                    val posterUrl = item.posterUrl(posterQuality)
-                    val card = remember(item, tab, posterUrl) { item.toTitleListCardUi(tab, posterUrl) }
+                    val posterUrls = item.poster.urlsByQuality(posterQuality)
+                    val card = remember(item, tab, posterUrls) { item.toTitleListCardUi(tab, posterUrls) }
                     val stableOnDelete = remember(item.animeId, index) {
                         {
                           confirmRemoval(item.title) {

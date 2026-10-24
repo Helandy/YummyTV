@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
@@ -34,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleRowCard
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -174,7 +176,7 @@ fun CollectionMobileScreen(
                     if (state.titleCardLayout == TitleCardLayout.ROW) {
                         MobileTitleRowCard(
                             title = item.title,
-                            posterUrl = item.posterUrl,
+                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                             description = item.description,
                             year = item.year,
                             rating = item.rating,
@@ -183,7 +185,7 @@ fun CollectionMobileScreen(
                         )
                     } else MobilePosterCard(
                         title = item.title,
-                        posterUrl = item.posterUrl,
+                        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                         animeId = item.id,
                         rating = item.rating,
                         posterOverlay = {

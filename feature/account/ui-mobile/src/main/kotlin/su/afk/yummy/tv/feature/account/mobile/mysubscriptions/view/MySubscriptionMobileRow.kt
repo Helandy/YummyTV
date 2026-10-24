@@ -20,7 +20,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.feature.account.presentation.R
 
@@ -44,8 +46,8 @@ internal fun MySubscriptionMobileRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            AsyncImage(
-                model = subscription.posterUrl,
+            FallbackAsyncImage(
+                models = subscription.poster.urlsByQuality(LocalPosterQuality.current),
                 contentDescription = null,
                 modifier = Modifier
                     .width(52.dp)

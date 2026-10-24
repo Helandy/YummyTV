@@ -51,7 +51,6 @@ import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.dubbings.sameEpisodeDubbing
 import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLaunchVideo
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
-import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -510,7 +509,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 screenDataHandler.refreshLibraryMetadata(
                     animeId = details.id,
                     title = details.title,
-                    poster = details.poster?.toLibraryPoster(),
+                    poster = details.poster,
                     year = details.year,
                 )
             },

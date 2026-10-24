@@ -12,12 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileProgressMediaCard
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
+import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.bestUrl
 import su.afk.yummy.tv.feature.home.mobile.utils.episodeSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.timingSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.watchProgress
@@ -50,15 +51,15 @@ internal fun ContinueWatchingSection(
                 } else {
                     stringResource(R.string.home_episode_number, entry.episode)
                 }
-                val imageModel = resolveContinueWatchingImageModel(
+                val imageModels = resolveContinueWatchingImageModels(
                     screenshotUrl = entry.screenshotUrl,
                     episodeUrl = entry.episodeUrl,
-                    posterUrl = entry.poster.bestUrl(),
+                    posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
                     kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
                 )
                 MobileProgressMediaCard(
                     title = entry.animeTitle.ifBlank { episodeTitle },
-                    imageModel = imageModel,
+                    imageModels = imageModels,
                     subtitle = entry.episodeSubtitle(),
                     trailingSubtitle = entry.timingSubtitle(),
                     progress = entry.watchProgress(),

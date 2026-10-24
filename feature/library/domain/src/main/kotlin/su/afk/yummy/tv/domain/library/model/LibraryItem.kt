@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.library.model
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 
@@ -8,7 +9,7 @@ const val FAVORITE_ONLY_LIBRARY_LIST_ID = -1
 data class LibraryItem(
     val animeId: Int,
     val title: String,
-    val poster: LibraryPoster? = null,
+    val poster: AnimePoster? = null,
     /** Время добавления; 0 — запись ещё не сохранена, время проставит `UpsertLibraryItemUseCase`. */
     val addedAt: Long = 0L,
     val listId: Int = 0,

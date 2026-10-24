@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 
 internal fun String.matchesPreferredPlayer(preferred: PreferredPlayer): Boolean =
     when (preferred) {
@@ -42,7 +41,7 @@ internal fun AnimeDetails.toLibraryItem(
 ) = LibraryItem(
     animeId = id,
     title = title,
-    poster = poster?.toLibraryPoster(),
+    poster = poster,
     listId = list.id,
     isFavorite = isFavorite,
     year = year,

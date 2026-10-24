@@ -23,5 +23,10 @@ data class AccountVideoSubscriptionEntry(
     val player: String,
     val dubbing: String,
     val posterUrl: String? = null,
+    val posterSmallUrl: String? = null,
+    val posterMediumUrl: String? = null,
+    val posterBigUrl: String? = null,
+    val posterFullsizeUrl: String? = null,
+    val posterMegaUrl: String? = null,
     val title: String,
 )

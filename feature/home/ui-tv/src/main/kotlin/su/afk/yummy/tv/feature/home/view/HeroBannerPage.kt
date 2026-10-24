@@ -38,13 +38,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.feature.home.utils.posterUrl
 
 /** Ширина арта справа и длина градиента, растворяющего его в фон. */
 private val HERO_ART_WIDTH = 320.dp
@@ -125,8 +125,8 @@ internal fun HeroBannerPage(
                 .align(Alignment.CenterEnd)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
-            AsyncImage(
-                model = item.posterUrl(posterQuality),
+            FallbackAsyncImage(
+                models = item.poster.urlsByQuality(posterQuality),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.TopCenter,

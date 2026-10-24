@@ -25,7 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
@@ -43,7 +43,7 @@ private const val DESCRIPTION_MAX_LINES = 4
 @Composable
 fun MobileTitleRowCard(
     title: String,
-    posterUrl: String?,
+    posterUrls: List<String>,
     modifier: Modifier = Modifier,
     description: String = "",
     year: Int? = null,
@@ -66,9 +66,9 @@ fun MobileTitleRowCard(
                 .onSecondaryClick(onLongClick)
                 .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         ) {
-            Box(Modifier.width(PosterWidth).fillMaxHeight().seasonalCardDecor(animeId ?: posterUrl.hashCode())) {
-                AsyncImage(
-                    model = posterUrl,
+            Box(Modifier.width(PosterWidth).fillMaxHeight().seasonalCardDecor(animeId ?: posterUrls.firstOrNull().hashCode())) {
+                FallbackAsyncImage(
+                    models = posterUrls,
                     contentDescription = null,
                     modifier = Modifier
                         .matchParentSize()

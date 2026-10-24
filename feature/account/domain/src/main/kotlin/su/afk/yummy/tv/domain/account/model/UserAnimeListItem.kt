@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.account.model
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 
@@ -7,7 +8,7 @@ data class UserAnimeListItem(
     val animeId: Int,
     val title: String,
     val posterUrl: String?,
-    val poster: UserAnimePoster? = null,
+    val poster: AnimePoster? = null,
     val rating: Double?,
     val year: Int?,
     val list: UserAnimeList?,

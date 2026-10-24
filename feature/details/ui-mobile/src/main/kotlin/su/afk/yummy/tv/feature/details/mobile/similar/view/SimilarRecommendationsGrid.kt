@@ -19,12 +19,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -85,7 +86,7 @@ internal fun SimilarRecommendationsGrid(
                 items(similarState.items, key = { lazyKey("similar", it.animeId) }) { item ->
                     MobilePosterCard(
                         title = item.title,
-                        posterUrl = item.poster.bestUrl(),
+                        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                         animeId = item.animeId,
                         rating = item.rating,
                         posterOverlay = {

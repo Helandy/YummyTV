@@ -40,6 +40,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
@@ -51,6 +52,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.MobileTitleRowSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.feature.catalog.CatalogState
 import su.afk.yummy.tv.feature.catalog.mobile.view.CATALOG_SKELETON_ITEMS
@@ -254,7 +256,7 @@ fun CatalogMobileScreen(
                     if (isRowLayout) {
                         MobileTitleRowCard(
                             title = item.title,
-                            posterUrl = item.posterUrl,
+                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                             description = item.description,
                             year = item.year,
                             rating = item.rating,
@@ -263,7 +265,7 @@ fun CatalogMobileScreen(
                         )
                     } else MobilePosterCard(
                         title = item.title,
-                        posterUrl = item.posterUrl,
+                        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
                         animeId = item.id,
                         rating = item.rating,
                         posterOverlay = {

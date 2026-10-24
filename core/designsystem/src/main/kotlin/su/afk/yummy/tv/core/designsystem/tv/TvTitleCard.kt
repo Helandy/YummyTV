@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
@@ -40,7 +40,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 @Composable
 fun TvTitleCard(
     title: String,
-    posterUrl: String?,
+    posterUrls: List<String>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
@@ -79,20 +79,18 @@ fun TvTitleCard(
                     .fillMaxWidth()
                     // Высота от фактической ширины: в гриде ячейка может быть уже или шире cardWidth.
                     .aspectRatio(TITLE_POSTER_ASPECT_RATIO)
-                    .seasonalCardDecor(animeId ?: posterUrl.hashCode())
+                    .seasonalCardDecor(animeId ?: posterUrls.firstOrNull().hashCode())
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                val imageUrl = posterUrl
-
-                AsyncImage(
-                    model = imageUrl,
+                FallbackAsyncImage(
+                    models = posterUrls,
                     contentDescription = title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                if (imageUrl == null) {
+                if (posterUrls.isEmpty()) {
                     Text(
                         text = title.take(1),
                         style = MaterialTheme.typography.displayLarge,

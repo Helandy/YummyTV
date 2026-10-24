@@ -417,3 +417,41 @@ internal val MIGRATION_66_67 = object : Migration(66, 67) {
         db.execSQL("DELETE FROM collection_anime_items")
     }
 }
+
+/**
+ * Все версии постера в кэше каталога, тайтлов коллекций, расписания и подписок (раньше одна ссылка):
+ * по ним выбирается версия под настройку качества и запасная при ошибке загрузки. Кэши
+ * сбрасываем, чтобы они заполнились заново.
+ */
+internal val MIGRATION_67_68 = object : Migration(67, 68) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE search_items ADD COLUMN posterSmallUrl TEXT")
+        db.execSQL("ALTER TABLE search_items ADD COLUMN posterMediumUrl TEXT")
+        db.execSQL("ALTER TABLE search_items ADD COLUMN posterBigUrl TEXT")
+        db.execSQL("ALTER TABLE search_items ADD COLUMN posterFullsizeUrl TEXT")
+        db.execSQL("ALTER TABLE search_items ADD COLUMN posterMegaUrl TEXT")
+        db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN posterSmallUrl TEXT")
+        db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN posterMediumUrl TEXT")
+        db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN posterBigUrl TEXT")
+        db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN posterFullsizeUrl TEXT")
+        db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN posterMegaUrl TEXT")
+        db.execSQL("ALTER TABLE anime_schedule_items ADD COLUMN posterSmallUrl TEXT")
+        db.execSQL("ALTER TABLE anime_schedule_items ADD COLUMN posterMediumUrl TEXT")
+        db.execSQL("ALTER TABLE anime_schedule_items ADD COLUMN posterBigUrl TEXT")
+        db.execSQL("ALTER TABLE anime_schedule_items ADD COLUMN posterFullsizeUrl TEXT")
+        db.execSQL("ALTER TABLE anime_schedule_items ADD COLUMN posterMegaUrl TEXT")
+        db.execSQL("ALTER TABLE account_video_subscriptions ADD COLUMN posterSmallUrl TEXT")
+        db.execSQL("ALTER TABLE account_video_subscriptions ADD COLUMN posterMediumUrl TEXT")
+        db.execSQL("ALTER TABLE account_video_subscriptions ADD COLUMN posterBigUrl TEXT")
+        db.execSQL("ALTER TABLE account_video_subscriptions ADD COLUMN posterFullsizeUrl TEXT")
+        db.execSQL("ALTER TABLE account_video_subscriptions ADD COLUMN posterMegaUrl TEXT")
+        db.execSQL("DELETE FROM search_items")
+        db.execSQL("DELETE FROM search_pages")
+        db.execSQL("DELETE FROM collection_details")
+        db.execSQL("DELETE FROM collection_anime_items")
+        db.execSQL("DELETE FROM anime_schedule_items")
+        db.execSQL("DELETE FROM anime_schedule_caches")
+        db.execSQL("DELETE FROM account_video_subscriptions")
+        db.execSQL("DELETE FROM account_video_subscription_caches")
+    }
+}

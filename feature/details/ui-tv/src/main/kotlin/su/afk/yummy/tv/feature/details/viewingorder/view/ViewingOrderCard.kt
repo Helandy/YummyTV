@@ -11,12 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.feature.details.utils.bestUrl
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCardWidth
 import su.afk.yummy.tv.feature.details.view.common.TvPosterIndex
 
@@ -38,7 +39,7 @@ internal fun ViewingOrderCard(
 
     TvTitleCard(
         title = item.title,
-        posterUrl = item.poster?.bestUrl,
+        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
         onClick = onClick,
         modifier = modifier
             .onFocusChanged { focused = it.hasFocus }

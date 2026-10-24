@@ -12,7 +12,6 @@ import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
 import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
 import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.domain.library.usecase.UpsertLibraryItemUseCase
-import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.utils.toLibraryItem
 import javax.inject.Inject
 
@@ -109,7 +108,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         setLibraryFavorite(
             animeId = details.id,
             title = details.title,
-            poster = details.poster?.toLibraryPoster(),
+            poster = details.poster,
             year = details.year,
             favorite = favorite,
         )
@@ -125,7 +124,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         setLibraryFavorite(
             animeId = details.id,
             title = details.title,
-            poster = details.poster?.toLibraryPoster(),
+            poster = details.poster,
             year = details.year,
             favorite = previousFavorite,
         )

@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.domain.library.usecase
 
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
@@ -11,7 +11,7 @@ class SetLibraryFavoriteUseCase @Inject constructor(
     suspend operator fun invoke(
         animeId: Int,
         title: String,
-        poster: LibraryPoster?,
+        poster: AnimePoster?,
         year: Int?,
         favorite: Boolean,
     ) = repository.setFavorite(animeId, title, poster, year, favorite)

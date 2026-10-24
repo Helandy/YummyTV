@@ -2,7 +2,6 @@ package su.afk.yummy.tv.domain.home.usecase
 
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
-import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.utils.lastAiredSeconds
 import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import javax.inject.Inject
@@ -30,7 +29,7 @@ class GetRecentlyAiredScheduleUseCase @Inject constructor(
                     id = item.animeId,
                     title = item.title,
                     description = "",
-                    poster = item.posterUrl?.let { HomePoster(null, null, null, null, mega = it) },
+                    poster = item.poster,
                     rating = null,
                     year = null,
                     action = HomeFeedItemAction.OpenSeries(item.animeId),

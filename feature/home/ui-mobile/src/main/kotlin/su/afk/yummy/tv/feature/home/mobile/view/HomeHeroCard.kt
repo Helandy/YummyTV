@@ -28,10 +28,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.domain.home.model.bestUrl
 
 /** Фиксированная высота: длина названия и описания не должна менять высоту карусели. */
 private val HERO_CARD_HEIGHT = 220.dp
@@ -43,7 +44,7 @@ internal fun HomeHeroCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val posterUrl = item.poster.bestUrl()
+    val posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current)
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -58,8 +59,8 @@ internal fun HomeHeroCard(
                 .fillMaxHeight(),
         ) {
             // blur на API < 31 не работает — фон тогда просто прикрыт скримом
-            AsyncImage(
-                model = posterUrl,
+            FallbackAsyncImage(
+                models = posterUrls,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -95,8 +96,8 @@ internal fun HomeHeroCard(
                         .clip(HERO_POSTER_SHAPE)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                 ) {
-                    AsyncImage(
-                        model = posterUrl,
+                    FallbackAsyncImage(
+                        models = posterUrls,
                         contentDescription = item.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.matchParentSize(),

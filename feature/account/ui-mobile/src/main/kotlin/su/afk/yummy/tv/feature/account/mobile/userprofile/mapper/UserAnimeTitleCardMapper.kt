@@ -2,6 +2,8 @@ package su.afk.yummy.tv.feature.account.mobile.userprofile.mapper
 
 import su.afk.yummy.tv.core.designsystem.model.TitleListCardUi
 import su.afk.yummy.tv.core.model.anime.CardListStatus
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.feature.account.mobile.account.utils.formatUserListDate
@@ -9,17 +11,18 @@ import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
 /**
  * Карточка тайтла из списка профиля. Как в библиотеке: список показываем только в фильтре
- * «Любимые», сердечко — только вне его. [untitled] подставляется вместо пустого названия.
+ * «Любимые», сердечко — только вне его. [untitled] подставляется вместо пустого названия, [posterQuality] выбирает версию постера.
  */
 internal fun UserAnimeListItem.toTitleListCardUi(
     filter: UserProfileState.ListFilter,
     untitled: String,
+    posterQuality: PosterQuality,
 ): TitleListCardUi {
     val isFavoritesFilter = filter == UserProfileState.ListFilter.FAVORITES
     return TitleListCardUi(
         animeId = animeId,
         title = title.ifBlank { untitled },
-        posterUrl = posterUrl,
+        posterUrls = poster.urlsByQuality(posterQuality).ifEmpty { listOfNotNull(posterUrl) },
         siteRating = rating?.takeIf { it > 0.0 },
         userRating = userRating?.takeIf { it in 1..10 },
         year = year,

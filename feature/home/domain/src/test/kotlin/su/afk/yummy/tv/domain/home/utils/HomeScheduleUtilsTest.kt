@@ -66,7 +66,7 @@ class HomeScheduleUtilsTest : BaseUnitTest() {
     ) = AnimeScheduleItem(
         animeId = ANIME_ID,
         title = "Title",
-        posterUrl = null,
+        poster = null,
         nextDateEpochSeconds = nextDate,
         airedEpisodes = airedEpisodes,
         totalEpisodes = 12,

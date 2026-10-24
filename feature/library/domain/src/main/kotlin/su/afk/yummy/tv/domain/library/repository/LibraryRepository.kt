@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.domain.library.repository
 
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 
 interface LibraryRepository {
     fun observeAll(): Flow<List<LibraryItem>>
@@ -16,7 +16,7 @@ interface LibraryRepository {
     suspend fun setFavorite(
         animeId: Int,
         title: String,
-        poster: LibraryPoster?,
+        poster: AnimePoster?,
         year: Int?,
         favorite: Boolean,
     )
@@ -24,7 +24,7 @@ interface LibraryRepository {
     suspend fun refreshMetadata(
         animeId: Int,
         title: String,
-        poster: LibraryPoster?,
+        poster: AnimePoster?,
         year: Int?,
     )
 

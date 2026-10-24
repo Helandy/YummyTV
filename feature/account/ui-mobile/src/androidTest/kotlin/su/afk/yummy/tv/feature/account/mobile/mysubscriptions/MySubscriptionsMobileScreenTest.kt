@@ -31,7 +31,7 @@ class MySubscriptionsMobileScreenTest {
         playerId = 1,
         player = "Kodik",
         dubbing = "AniDub",
-        posterUrl = null,
+        poster = null,
         title = "Тестовое аниме",
     )
 

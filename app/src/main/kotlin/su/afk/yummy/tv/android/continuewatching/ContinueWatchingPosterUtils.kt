@@ -8,8 +8,8 @@ import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.toBitmap
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.bestUrl
 
 /** Постер для ярлыков и виджета: средний размер достаточен, крупные версии только тратят сеть. */
 internal fun HomeContinueWatchingItem.surfacePosterUrl(): String? = poster?.medium ?: poster.bestUrl()

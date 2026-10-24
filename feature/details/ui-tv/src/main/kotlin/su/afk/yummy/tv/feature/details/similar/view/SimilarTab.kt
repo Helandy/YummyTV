@@ -43,12 +43,14 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.TvCenteredCarouselBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -196,13 +198,12 @@ internal fun SimilarTab(
                                 items = state.items,
                                 key = { index, item -> lazyKey("similar", item.animeId, index) },
                             ) { index, item ->
-                                val posterUrl =
-                                    item.poster?.run { big ?: medium ?: fullsize ?: small }
+                                val posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current)
                                 val meta =
                                     listOfNotNull(item.type).joinToString(" · ")
                                 TvTitleCard(
                                     title = item.title,
-                                    posterUrl = posterUrl,
+                                    posterUrls = posterUrls,
                                     onClick = { onAnimeSelected(item.animeId) },
                                     width = RelatedTitleCardWidth,
                                     subtitle = meta,

@@ -44,7 +44,7 @@ fun TvTitleListCard(
     val year = item.yearText(showYear)
     TvTitleCard(
         title = item.title,
-        posterUrl = item.posterUrl,
+        posterUrls = item.posterUrls,
         onClick = onClick,
         onFocused = onFocused,
         modifier = modifier,

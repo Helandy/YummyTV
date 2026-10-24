@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.collection.storage.mapper
 
+import su.afk.yummy.tv.core.model.anime.urlFor
+import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionCatalogItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageCache
@@ -7,6 +9,7 @@ import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailCache
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
+import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailDto
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionPosterDto
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
@@ -42,6 +45,7 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
             val animeId = item.animeId ?: return@mapNotNull null
             animeId to item
         }.mapIndexed { index, (animeId, item) ->
+            val poster = item.poster?.let { animePosterOrNull(it.small, it.medium, it.big, it.fullsize, it.mega) }
             CollectionAnimeItemEntry(
                 collectionId = id ?: fallbackId,
                 language = language,
@@ -49,7 +53,12 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
                 animeId = animeId,
                 title = item.title,
                 description = item.description,
-                posterUrl = item.poster?.toUrl(),
+                posterUrl = poster.urlFor(PosterQuality.STANDARD),
+                posterSmallUrl = poster?.small,
+                posterMediumUrl = poster?.medium,
+                posterBigUrl = poster?.big,
+                posterFullsizeUrl = poster?.fullsize,
+                posterMegaUrl = poster?.mega,
                 rating = item.rating?.average?.takeIf { it > 0.0 },
                 year = item.year?.takeIf { it > 0 },
             )
@@ -80,7 +89,13 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
                     id = it.animeId,
                     title = it.title,
                     description = it.description,
-                    posterUrl = it.posterUrl,
+                    poster = animePosterOrNull(
+                        small = it.posterSmallUrl,
+                        medium = it.posterMediumUrl,
+                        big = it.posterBigUrl,
+                        fullsize = it.posterFullsizeUrl,
+                        mega = it.posterMegaUrl,
+                    ),
                     rating = it.rating,
                     year = it.year,
                 )

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.account.storage.mapper
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
 import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
@@ -22,10 +23,10 @@ import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserReviewsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCache
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
+import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
 import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.utils.fromLinksJson
 import su.afk.yummy.tv.data.account.utils.toWideBannerUrl
-import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
@@ -34,7 +35,6 @@ import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
-import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
 import su.afk.yummy.tv.domain.account.model.UserFriend
 import su.afk.yummy.tv.domain.account.model.UserGenreStat
@@ -158,7 +158,13 @@ internal fun AccountVideoSubscriptionsCache.toVideoSubscriptions(): List<VideoSu
             playerId = it.playerId,
             player = it.player,
             dubbing = it.dubbing,
-            posterUrl = it.posterUrl,
+            poster = animePosterOrNull(
+                small = it.posterSmallUrl,
+                medium = it.posterMediumUrl,
+                big = it.posterBigUrl,
+                fullsize = it.posterFullsizeUrl,
+                mega = it.posterMegaUrl,
+            ),
             title = it.title,
         )
     }
@@ -355,7 +361,7 @@ private fun AccountCollectionItemEntry.toCollectionSummary(): AnimeCollectionSum
     )
 }
 
-private fun AccountUserListItemEntry.userAnimePosterOrNull(): UserAnimePoster? {
+private fun AccountUserListItemEntry.userAnimePosterOrNull(): AnimePoster? {
     if (posterSmallUrl == null &&
         posterMediumUrl == null &&
         posterBigUrl == null &&
@@ -364,7 +370,7 @@ private fun AccountUserListItemEntry.userAnimePosterOrNull(): UserAnimePoster? {
     ) {
         return null
     }
-    return UserAnimePoster(
+    return AnimePoster(
         small = posterSmallUrl,
         medium = posterMediumUrl,
         big = posterBigUrl,
@@ -373,7 +379,7 @@ private fun AccountUserListItemEntry.userAnimePosterOrNull(): UserAnimePoster? {
     )
 }
 
-private fun AccountCollectionItemEntry.collectionPosterOrNull(): AnimeCollectionPoster? {
+private fun AccountCollectionItemEntry.collectionPosterOrNull(): AnimePoster? {
     if (posterSmallUrl == null &&
         posterMediumUrl == null &&
         posterBigUrl == null &&
@@ -382,7 +388,7 @@ private fun AccountCollectionItemEntry.collectionPosterOrNull(): AnimeCollection
     ) {
         return null
     }
-    return AnimeCollectionPoster(
+    return AnimePoster(
         small = posterSmallUrl,
         medium = posterMediumUrl,
         big = posterBigUrl,
@@ -391,8 +397,5 @@ private fun AccountCollectionItemEntry.collectionPosterOrNull(): AnimeCollection
     )
 }
 
-private val UserAnimePoster.standardUrl: String?
-    get() = big ?: medium ?: fullsize ?: small
-
-private val AnimeCollectionPoster.standardUrl: String?
+private val AnimePoster.standardUrl: String?
     get() = big ?: medium ?: fullsize ?: small

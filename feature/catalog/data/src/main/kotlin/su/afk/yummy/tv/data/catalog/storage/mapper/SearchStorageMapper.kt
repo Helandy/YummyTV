@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.catalog.storage.mapper
 
+import su.afk.yummy.tv.core.model.anime.urlFor
+import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsCache
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsEntry
@@ -9,7 +11,7 @@ import su.afk.yummy.tv.core.storage.search.SearchItemEntry
 import su.afk.yummy.tv.core.storage.search.SearchPageCache
 import su.afk.yummy.tv.core.storage.search.SearchPageEntry
 import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
-import su.afk.yummy.tv.core.utils.network.toHttpsUrl
+import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchItemDto
@@ -41,13 +43,19 @@ internal fun List<YaniSearchItemDto>.toSearchPageCache(
             val animeId = item.animeId ?: return@mapNotNull null
             animeId to item
         }.mapIndexed { index, (animeId, item) ->
+            val poster = item.poster?.let { animePosterOrNull(it.small, it.medium, it.big, it.fullsize, it.mega) }
             SearchItemEntry(
                 pageKey = pageKey,
                 position = index,
                 animeId = animeId,
                 title = item.title,
                 description = item.description,
-                posterUrl = item.poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
+                posterUrl = poster.urlFor(PosterQuality.LOW),
+                posterSmallUrl = poster?.small,
+                posterMediumUrl = poster?.medium,
+                posterBigUrl = poster?.big,
+                posterFullsizeUrl = poster?.fullsize,
+                posterMegaUrl = poster?.mega,
                 rating = item.rating?.average?.takeIf { it > 0.0 },
                 year = item.year,
             )
@@ -63,7 +71,13 @@ internal fun SearchPageCache.toSearchPage(): SearchPage =
                     id = it.animeId,
                     title = it.title,
                     description = it.description,
-                    posterUrl = it.posterUrl,
+                    poster = animePosterOrNull(
+                        small = it.posterSmallUrl,
+                        medium = it.posterMediumUrl,
+                        big = it.posterBigUrl,
+                        fullsize = it.posterFullsizeUrl,
+                        mega = it.posterMegaUrl,
+                    ),
                     rating = it.rating,
                     year = it.year,
                 )

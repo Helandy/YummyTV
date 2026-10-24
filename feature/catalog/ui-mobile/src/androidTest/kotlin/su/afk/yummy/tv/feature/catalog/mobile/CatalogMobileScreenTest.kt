@@ -37,7 +37,7 @@ class CatalogMobileScreenTest {
         append = LoadState.NotLoading(endOfPaginationReached = true),
     )
 
-    private val item = SearchItem(id = 90, title = "Найденное аниме", posterUrl = null, rating = 7.5, year = 2021)
+    private val item = SearchItem(id = 90, title = "Найденное аниме", poster = null, rating = 7.5, year = 2021)
 
     private fun string(id: Int): String =
         InstrumentationRegistry.getInstrumentation().targetContext.getString(id)

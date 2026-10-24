@@ -9,7 +9,6 @@ import su.afk.yummy.tv.core.common.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.common.episode.releaseCountdown
 import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
-import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -64,9 +63,6 @@ private fun AnimeEpisodes.formatReleaseCountdown(): String? {
     }
     return pluralStringResource(resource, countdown.value, countdown.value)
 }
-
-internal val AnimePoster.bestUrl: String?
-    get() = big ?: medium ?: fullsize ?: small
 
 
 internal fun AnimeVideo.isAlloha(): Boolean =

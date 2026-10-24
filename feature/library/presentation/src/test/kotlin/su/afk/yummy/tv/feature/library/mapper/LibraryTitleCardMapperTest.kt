@@ -14,7 +14,7 @@ class LibraryTitleCardMapperTest {
 
     @Test
     fun `favorites tab shows the user list and hides the heart`() {
-        val card = item().toTitleListCardUi(LibraryTab.FAVORITES, posterUrl = null)
+        val card = item().toTitleListCardUi(LibraryTab.FAVORITES, posterUrls = emptyList())
 
         assertEquals(CardListStatus.PLANNED, card.listStatus)
         assertFalse(card.isFavorite)
@@ -22,16 +22,16 @@ class LibraryTitleCardMapperTest {
 
     @Test
     fun `list tab shows the heart and hides the redundant list`() {
-        val card = item().toTitleListCardUi(LibraryTab.PLANNED, posterUrl = "poster")
+        val card = item().toTitleListCardUi(LibraryTab.PLANNED, posterUrls = listOf("poster"))
 
         assertNull(card.listStatus)
         assertTrue(card.isFavorite)
-        assertEquals("poster", card.posterUrl)
+        assertEquals(listOf("poster"), card.posterUrls)
     }
 
     @Test
     fun `invalid ratings are dropped`() {
-        val card = item(userRating = 0, rating = 0.0).toTitleListCardUi(LibraryTab.PLANNED, posterUrl = null)
+        val card = item(userRating = 0, rating = 0.0).toTitleListCardUi(LibraryTab.PLANNED, posterUrls = emptyList())
 
         assertNull(card.userRating)
         assertNull(card.siteRating)

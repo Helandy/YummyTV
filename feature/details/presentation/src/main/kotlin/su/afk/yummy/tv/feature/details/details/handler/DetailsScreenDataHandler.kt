@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.details.handler
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -12,7 +13,6 @@ import su.afk.yummy.tv.domain.account.usecase.ObserveAnimeUserRatingUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.usecase.ObserveAnimeLibraryStateUseCase
 import su.afk.yummy.tv.domain.library.usecase.RefreshLibraryMetadataUseCase
 import javax.inject.Inject
@@ -53,7 +53,7 @@ class DetailsScreenDataHandler @Inject constructor(
     suspend fun refreshLibraryMetadata(
         animeId: Int,
         title: String,
-        poster: LibraryPoster?,
+        poster: AnimePoster?,
         year: Int?,
     ) {
         refreshLibraryMetadata.invoke(animeId, title, poster, year)

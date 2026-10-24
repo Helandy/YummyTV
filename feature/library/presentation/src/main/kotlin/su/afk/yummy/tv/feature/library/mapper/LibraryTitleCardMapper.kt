@@ -8,14 +8,14 @@ import su.afk.yummy.tv.feature.library.utils.dateText
 
 /**
  * Карточка тайтла библиотеки. Список показываем только на вкладке «Любимые» (на вкладке списка
- * он и так понятен), сердечко — наоборот, только вне «Любимых». [posterUrl] выбирает платформа:
+ * он и так понятен), сердечко — наоборот, только вне «Любимых». [posterUrls] выбирает платформа:
  * у мобилки и ТВ разные правила качества постера.
  */
-fun LibraryItem.toTitleListCardUi(tab: LibraryTab, posterUrl: String?): TitleListCardUi =
+fun LibraryItem.toTitleListCardUi(tab: LibraryTab, posterUrls: List<String>): TitleListCardUi =
     TitleListCardUi(
         animeId = animeId,
         title = title,
-        posterUrl = posterUrl,
+        posterUrls = posterUrls,
         siteRating = rating?.takeIf { it > 0.0 },
         userRating = userRating?.takeIf { it in 1..10 },
         year = year,

@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.domain.account.model
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
+
 /**
  * Строка списка `GET /users/{id}/lists/subs` — одна подписка на тайтл.
  *
@@ -14,6 +16,6 @@ data class VideoSubscription(
     val playerId: Int?,
     val player: String,
     val dubbing: String,
-    val posterUrl: String?,
+    val poster: AnimePoster?,
     val title: String,
 )

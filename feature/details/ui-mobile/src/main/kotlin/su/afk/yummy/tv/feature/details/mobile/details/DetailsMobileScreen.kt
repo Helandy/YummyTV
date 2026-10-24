@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -31,7 +32,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGa
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -187,7 +188,7 @@ fun DetailsMobileScreen(
             item(key = "video") {
                 DetailsVideoSection(
                     trailers = state.trailers,
-                    bloggerVideosImageModel = details.poster.bestUrl(),
+                    bloggerVideosImageModels = details.poster.urlsByQuality(LocalPosterQuality.current),
                     isTrailersLoading = state.isExtrasLoading && details.trailersCount > 0,
                     hasBloggerVideos = details.bloggerVideosCount > 0,
                     onTrailersClick = { onEvent(DetailsState.Event.TrailersSelected) },

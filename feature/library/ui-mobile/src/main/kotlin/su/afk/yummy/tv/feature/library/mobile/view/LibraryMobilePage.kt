@@ -19,11 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
@@ -31,7 +33,6 @@ import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.dateText
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTabItemCount
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTitle
-import su.afk.yummy.tv.feature.library.mobile.utils.posterUrl
 import su.afk.yummy.tv.feature.library.mobile.utils.shouldShowRemoteLoader
 import su.afk.yummy.tv.feature.library.mapper.toTitleListCardUi
 import su.afk.yummy.tv.feature.library.model.LibraryTab
@@ -120,8 +121,8 @@ internal fun LibraryMobilePage(
         }
 
         items(libraryItems, key = { lazyKey("library", it.animeId) }) { item ->
-            val posterUrl = item.posterUrl()
-            val card = remember(item, tab, posterUrl) { item.toTitleListCardUi(tab, posterUrl) }
+            val posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current)
+            val card = remember(item, tab, posterUrls) { item.toTitleListCardUi(tab, posterUrls) }
             MobileTitleListCard(
                 item = card,
                 nowEpochSeconds = nowEpochSeconds,

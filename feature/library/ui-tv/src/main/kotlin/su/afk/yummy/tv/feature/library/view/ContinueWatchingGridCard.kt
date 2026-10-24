@@ -15,11 +15,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
+import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.bestUrl
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 
 @Composable
@@ -42,10 +43,10 @@ internal fun ContinueWatchingGridCard(
     downFocusRequester: FocusRequester? = null,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
-    val imageModel = resolveContinueWatchingImageModel(
+    val imageModels = resolveContinueWatchingImageModels(
         screenshotUrl = entry.screenshotUrl,
         episodeUrl = entry.episodeUrl,
-        posterUrl = entry.poster.bestUrl(),
+        posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
         kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
     )
     val progress =
@@ -64,7 +65,7 @@ internal fun ContinueWatchingGridCard(
     ) {
         TvProgressMediaCard(
             title = entry.animeTitle.ifBlank { episodeLabel },
-            imageModel = imageModel,
+            imageModels = imageModels,
             subtitle = episodeLabel,
             trailingSubtitle = entry.timingLabel(),
             progress = progress,

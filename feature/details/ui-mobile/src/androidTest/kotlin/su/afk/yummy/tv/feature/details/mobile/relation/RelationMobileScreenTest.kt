@@ -29,8 +29,8 @@ class RelationMobileScreenTest {
     private val relation = AnimeRelation(
         title = "Kyoto Animation",
         anime = listOf(
-            AnimeRelationItem(animeId = 1, title = "Violet Evergarden", posterUrl = null, rating = 8.7, year = 2018),
-            AnimeRelationItem(animeId = 2, title = "K-On!", posterUrl = null, rating = 8.1, year = 2009),
+            AnimeRelationItem(animeId = 1, title = "Violet Evergarden", poster = null, rating = 8.7, year = 2018),
+            AnimeRelationItem(animeId = 2, title = "K-On!", poster = null, rating = 8.1, year = 2009),
         ),
     )
 

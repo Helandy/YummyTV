@@ -27,7 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 
 /** Карточка блока «Видео»: превью (или градиент), иконка в углу, подпись и необязательный счётчик. */
@@ -37,7 +37,7 @@ internal fun DetailsVideoCard(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    imageModel: Any? = null,
+    imageModels: List<Any> = emptyList(),
     subtitle: String? = null,
     badge: String? = null,
     /** Цветная тонировка поверх превью — чтобы карточка не сливалась с соседней. */
@@ -54,9 +54,9 @@ internal fun DetailsVideoCard(
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainer),
     ) {
-        if (imageModel != null) {
-            AsyncImage(
-                model = imageModel,
+        if (imageModels.isNotEmpty()) {
+            FallbackAsyncImage(
+                models = imageModels,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),

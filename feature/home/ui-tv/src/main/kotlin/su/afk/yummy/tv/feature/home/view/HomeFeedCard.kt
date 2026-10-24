@@ -30,7 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
@@ -39,9 +39,9 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
+import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
-import su.afk.yummy.tv.feature.home.utils.posterUrl
 
 @Composable
 internal fun HomeFeedCard(
@@ -108,16 +108,16 @@ internal fun HomeFeedCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                val imageUrl = item.posterUrl(LocalPosterQuality.current)
+                val posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current)
 
-                AsyncImage(
-                    model = imageUrl,
+                FallbackAsyncImage(
+                    models = posterUrls,
                     contentDescription = item.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                if (imageUrl == null) {
+                if (posterUrls.isEmpty()) {
                     Text(
                         text = item.title.take(1),
                         style = MaterialTheme.typography.displayLarge,

@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.domain.library.utils
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 
 internal fun UserAnimeListItem.updatedAtMillis(fallback: Long): Long =
     updatedAtSeconds?.takeIf { it > 0L }?.let { it * 1_000L } ?: fallback
@@ -27,7 +27,7 @@ internal fun UserAnimeListItem.toLibraryItem(
 ): LibraryItem = LibraryItem(
     animeId = animeId,
     title = title.ifBlank { current?.title.orEmpty() },
-    poster = LibraryPoster(
+    poster = AnimePoster(
         small = poster?.small ?: current?.poster?.small,
         medium = poster?.medium ?: posterUrl ?: current?.poster?.medium,
         big = poster?.big ?: current?.poster?.big,

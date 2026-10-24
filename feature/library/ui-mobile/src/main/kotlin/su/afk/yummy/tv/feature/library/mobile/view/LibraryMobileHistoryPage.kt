@@ -44,7 +44,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
+import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.presentation.R
@@ -113,12 +113,12 @@ internal fun LibraryMobileHistoryPage(
                                 model = entry.screenshotUrl
                                     ?: localProgress[entry.historyProgressKey]
                                         ?.let {
-                                            resolveContinueWatchingImageModel(
+                                            resolveContinueWatchingImageModels(
                                                 screenshotUrl = it.screenshotUrl,
                                                 episodeUrl = it.episodeUrl,
-                                                posterUrl = null,
+                                                posterUrls = emptyList(),
                                                 kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
-                                            )
+                                            ).firstOrNull()
                                         }
                                     ?: HistoryEpisodeThumbnail(entry.animeId, entry.episode),
                                 contentDescription = entry.title,

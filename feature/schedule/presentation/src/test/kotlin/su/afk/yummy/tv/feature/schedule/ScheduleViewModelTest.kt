@@ -171,7 +171,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
                 AnimeScheduleItem(
                     animeId = 1,
                     title = "anime",
-                    posterUrl = null,
+                    poster = null,
                     nextDateEpochSeconds = epochSeconds,
                     airedEpisodes = 3,
                     totalEpisodes = 12,

@@ -198,6 +198,11 @@ internal fun List<YaniVideoSubscriptionDto>.toVideoSubscriptionsCache(
                 player = sub.player,
                 dubbing = sub.dubbing,
                 posterUrl = item.poster?.bestUrl(),
+                posterSmallUrl = item.poster?.small?.toHttpsUrl(),
+                posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
+                posterBigUrl = item.poster?.big?.toHttpsUrl(),
+                posterFullsizeUrl = item.poster?.fullsize?.toHttpsUrl(),
+                posterMegaUrl = item.poster?.mega?.toHttpsUrl(),
                 title = item.title,
             )
         },

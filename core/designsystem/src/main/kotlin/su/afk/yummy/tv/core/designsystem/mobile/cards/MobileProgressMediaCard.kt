@@ -25,14 +25,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 
 @Composable
 fun MobileProgressMediaCard(
     title: String,
-    imageModel: Any?,
+    imageModels: List<Any>,
     subtitle: String?,
     trailingSubtitle: String? = null,
     progress: Float,
@@ -65,8 +65,8 @@ fun MobileProgressMediaCard(
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
-            AsyncImage(
-                model = imageModel,
+            FallbackAsyncImage(
+                models = imageModels,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize(),

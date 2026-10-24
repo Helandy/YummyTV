@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleListCard
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.feature.account.mobile.userprofile.mapper.toTitleListCardUi
@@ -22,7 +23,10 @@ internal fun UserAnimeListRow(
     onClick: () -> Unit,
 ) {
     val untitled = stringResource(R.string.user_profile_untitled)
-    val card = remember(item, filter, untitled) { item.toTitleListCardUi(filter, untitled) }
+    val posterQuality = LocalPosterQuality.current
+    val card = remember(item, filter, untitled, posterQuality) {
+        item.toTitleListCardUi(filter, untitled, posterQuality)
+    }
     MobileTitleListCard(
         item = card,
         nowEpochSeconds = nowEpochSeconds,
