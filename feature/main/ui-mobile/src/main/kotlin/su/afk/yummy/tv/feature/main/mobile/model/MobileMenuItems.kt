@@ -28,6 +28,7 @@ internal fun mobileMenuItems(unreadNotificationsCount: Int): List<MobileMenuItem
         stringResource(R.string.main_tab_home),
         RootTab.HOME,
         Icons.Default.Home,
+        hasSeasonalDecor = true,
     ),
     MobileMenuItem(
         stringResource(R.string.main_tab_library),

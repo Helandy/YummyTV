@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberAnimationsEnabled
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
@@ -31,7 +32,11 @@ private const val BulbsPerSegment = 3
  * фокус и касания не затрагивает.
  */
 @Composable
-fun Modifier.seasonalSideMenuDecor(expandProgress: () -> Float = { 0f }): Modifier {
+fun Modifier.seasonalSideMenuDecor(
+    topOffset: Dp = 0.dp,
+    bottomOffset: Dp? = null,
+    expandProgress: () -> Float = { 0f },
+): Modifier {
     val theme = rememberSeasonalTheme()
     val animationsEnabled = rememberAnimationsEnabled()
     val phase: State<Float> = if (theme == SeasonalTheme.NEW_YEAR && animationsEnabled) {
@@ -52,7 +57,7 @@ fun Modifier.seasonalSideMenuDecor(expandProgress: () -> Float = { 0f }): Modifi
         }
         SeasonalTheme.HALLOWEEN -> drawWithContent {
             drawContent()
-            drawHalloweenSideMenu(expandProgress())
+            drawHalloweenSideMenu(expandProgress(), topOffset.toPx(), bottomOffset?.toPx())
         }
     }
 }
@@ -91,22 +96,27 @@ private fun DrawScope.drawVerticalGarland(phase: Float) {
     }
 }
 
-private fun DrawScope.drawHalloweenSideMenu(expandProgress: Float) {
+private fun DrawScope.drawHalloweenSideMenu(expandProgress: Float, topOffset: Float, pumpkinInset: Float?) {
     val web = minOf(size.width * 0.6f, 44.dp.toPx())
-    drawCornerWeb(Offset(size.width, 0f), -1f, web)
-    // Нижняя паутина — зеркало верхней по горизонтальной оси.
-    scale(scaleX = 1f, scaleY = -1f, pivot = Offset(size.width / 2f, size.height / 2f)) {
-        drawCornerWeb(Offset(size.width, 0f), -1f, web)
+    drawCornerWeb(Offset(size.width, topOffset), -1f, web)
+    if (pumpkinInset != null) {
+        // Вместо нижней паутины — тыква (рейка на фолде, где снизу свободное место).
+        drawPumpkin(Offset(size.width / 2f, size.height - pumpkinInset - 12.dp.toPx()), 28.dp.toPx())
+    } else {
+        // Нижняя паутина — зеркало верхней по горизонтальной оси.
+        scale(scaleX = 1f, scaleY = -1f, pivot = Offset(size.width / 2f, size.height / 2f)) {
+            drawCornerWeb(Offset(size.width, 0f), -1f, web)
+        }
     }
     val threadX = size.width - 12.dp.toPx()
     val threadLength = 46.dp.toPx()
     drawLine(
         androidx.compose.ui.graphics.Color(0x99B8B8C8),
-        Offset(threadX, 0f),
-        Offset(threadX, threadLength),
+        Offset(threadX, topOffset),
+        Offset(threadX, topOffset + threadLength),
         strokeWidth = 0.8.dp.toPx(),
     )
-    drawSpider(Offset(threadX, threadLength + 4.dp.toPx()), 4.dp.toPx())
+    drawSpider(Offset(threadX, topOffset + threadLength + 4.dp.toPx()), 4.dp.toPx())
     // Тыквы, надгробие и дерево живут в свободной части раскрытой панели и проявляются вместе с ней.
     if (expandProgress > 0f) {
         val bottom = size.height - 16.dp.toPx()
