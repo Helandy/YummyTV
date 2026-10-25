@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -39,7 +40,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
@@ -57,6 +57,7 @@ import su.afk.yummy.tv.feature.messages.mobile.view.DialogMobileAvatar
 import su.afk.yummy.tv.feature.messages.mobile.view.EditMessageMobileDialog
 import su.afk.yummy.tv.feature.messages.mobile.view.MessageHistoryMobileDialog
 import su.afk.yummy.tv.feature.messages.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +69,7 @@ fun ChatMobileScreen(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    var previousLastMessageId by remember { mutableIntStateOf(0) }
+    var previousLastMessageId by rememberSaveable { mutableIntStateOf(0) }
     var highlightedMessageId by remember { mutableStateOf<Int?>(null) }
     ChatMobileLifecycleEffect(onEvent)
 
