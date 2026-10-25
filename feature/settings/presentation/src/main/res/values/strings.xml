@@ -86,7 +86,9 @@
     <string name="settings_watch_next_label">Continue watching</string>
     <string name="settings_watch_next_enabled">Synced with TV Home</string>
     <string name="settings_seasonal_decorations">Seasonal decorations</string>
-    <string name="settings_seasonal_decorations_enabled">Garland and pumpkins during holidays</string>
+    <string name="settings_seasonal_decorations_halloween">Halloween decorations: Oct 20 – Nov 2</string>
+    <string name="settings_seasonal_decorations_new_year">New Year decorations: Dec 15 – Jan 10</string>
+    <string name="settings_seasonal_decorations_off_season">No holiday right now — decorations will appear on their own in season</string>
     <string name="settings_disabled">Disabled</string>
     <string name="settings_save_last_search_label">Save last search</string>
     <string name="settings_save_last_search_enabled">Query and filters are restored when search opens</string>

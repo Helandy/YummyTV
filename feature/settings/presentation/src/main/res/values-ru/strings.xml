@@ -86,7 +86,9 @@
     <string name="settings_watch_next_label">Продолжить просмотр</string>
     <string name="settings_watch_next_enabled">Синхронизируется с TV Home</string>
     <string name="settings_seasonal_decorations">Праздничное оформление</string>
-    <string name="settings_seasonal_decorations_enabled">Гирлянда и тыквы в сезон</string>
+    <string name="settings_seasonal_decorations_halloween">Хэллоуинское оформление: с 20.10 по 02.11</string>
+    <string name="settings_seasonal_decorations_new_year">Новогоднее оформление: с 15.12 по 10.01</string>
+    <string name="settings_seasonal_decorations_off_season">Сейчас неподходящая дата для праздничного оформления — оно включится само в сезон</string>
     <string name="settings_disabled">Отключено</string>
     <string name="settings_save_last_search_label">Сохранять последний поиск</string>
     <string name="settings_save_last_search_enabled">Запрос и фильтры восстанавливаются при открытии поиска</string>

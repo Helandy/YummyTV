@@ -13,6 +13,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
+import su.afk.yummy.tv.feature.settings.common.utils.enabledHint
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
@@ -44,7 +45,7 @@ internal fun SettingsTvAppearanceContent(
     ToggleRow(
         label = stringResource(R.string.settings_seasonal_decorations),
         hint = if (state.seasonalDecorationsEnabled) {
-            stringResource(R.string.settings_seasonal_decorations_enabled)
+            state.seasonalTheme.enabledHint()
         } else {
             stringResource(R.string.settings_disabled)
         },

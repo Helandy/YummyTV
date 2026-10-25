@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsDeviceIdProvider
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
@@ -73,6 +74,7 @@ class SettingsViewModel @Inject internal constructor(
                         showCatalogTitleYear = snapshot.showCatalogTitleYear,
                         newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
+                        seasonalTheme = seasonalThemeAt(System.currentTimeMillis()),
                         newEpisodesSources = snapshot.newEpisodesSources,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,

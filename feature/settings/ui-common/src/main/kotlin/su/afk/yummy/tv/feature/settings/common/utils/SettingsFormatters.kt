@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
+import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
@@ -21,6 +22,15 @@ import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.presentation.R
+
+@Composable
+fun SeasonalTheme.enabledHint(): String = stringResource(
+    when (this) {
+        SeasonalTheme.HALLOWEEN -> R.string.settings_seasonal_decorations_halloween
+        SeasonalTheme.NEW_YEAR -> R.string.settings_seasonal_decorations_new_year
+        SeasonalTheme.NONE -> R.string.settings_seasonal_decorations_off_season
+    },
+)
 
 @Composable
 fun AppInterfaceMode.label(): String = stringResource(

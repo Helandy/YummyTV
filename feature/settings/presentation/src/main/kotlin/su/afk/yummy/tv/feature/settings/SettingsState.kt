@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
@@ -27,10 +28,10 @@ import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
+import su.afk.yummy.tv.core.utils.system.PlatformInfo
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
-import su.afk.yummy.tv.core.utils.system.PlatformInfo
 
 class SettingsState {
     @Immutable
@@ -44,6 +45,7 @@ class SettingsState {
         val showCatalogTitleYear: Boolean = false,
         val newEpisodesSectionEnabled: Boolean = true,
         val seasonalDecorationsEnabled: Boolean = true,
+        val seasonalTheme: SeasonalTheme = SeasonalTheme.NONE,
         val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
         val showLibraryTitleYear: Boolean = false,
         val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
@@ -135,8 +137,6 @@ class SettingsState {
 
         /** Пользователь добавил или убрал список из тех, по которым ищутся новые серии. */
         data class NewEpisodesSourceToggled(val source: NewEpisodesSource) : Event
-
-        /** Пользователь переключил, скрывать ли из блока уже просмотренные серии. */
 
         /** Пользователь переключил отображение года у тайтлов в библиотеке. */
         data object ShowLibraryTitleYearToggled : Event

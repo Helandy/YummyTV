@@ -22,6 +22,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.common.utils.enabledHint
 import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
@@ -47,7 +48,7 @@ internal fun SettingsMobileAppearanceContent(
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_seasonal_decorations),
                 hint = if (state.seasonalDecorationsEnabled) {
-                    stringResource(R.string.settings_seasonal_decorations_enabled)
+                    state.seasonalTheme.enabledHint()
                 } else {
                     stringResource(R.string.settings_disabled)
                 },
