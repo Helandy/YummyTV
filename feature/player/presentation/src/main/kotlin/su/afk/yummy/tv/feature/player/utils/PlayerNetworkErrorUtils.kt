@@ -16,6 +16,16 @@ private val NETWORK_ERROR_TYPE_PREFIXES = listOf(
     "EOFException",
 )
 
+private val NETWORK_ERROR_MESSAGE_MARKERS = listOf(
+    "timeout has expired",
+    "timed out",
+    "unable to resolve host",
+    "failed to connect",
+    "connection reset",
+    "connection refused",
+    "unexpected end of stream",
+)
+
 /**
  * Сбой резолва потока вызван сетью пользователя, а не багом приложения. Экстракторы кладут
  * исключение в [Throwable] только иногда; чаще оно уже свёрнуто в строку вида
@@ -24,5 +34,6 @@ private val NETWORK_ERROR_TYPE_PREFIXES = listOf(
 fun isNetworkResolveFailure(throwable: Throwable?, message: String?): Boolean =
     throwable?.isNetworkError() == true ||
         message?.trimStart()?.let { text ->
-            NETWORK_ERROR_TYPE_PREFIXES.any { text.startsWith("$it:") || text == it }
+            NETWORK_ERROR_TYPE_PREFIXES.any { text.startsWith("$it:") || text == it } ||
+                NETWORK_ERROR_MESSAGE_MARKERS.any { text.contains(it, ignoreCase = true) }
         } == true

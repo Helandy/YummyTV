@@ -22,6 +22,17 @@ class PlayerNetworkErrorUtilsTest {
     }
 
     @Test
+    fun `parser-prefixed timeout message is a network failure`() {
+        assertTrue(
+            isNetworkResolveFailure(
+                null,
+                "kp2: Connect timeout has expired [url=https://kodikplayer.com/season/1/abc/720p, c",
+            ),
+        )
+        assertTrue(isNetworkResolveFailure(null, "Unable to resolve host \"kodikplayer.com\""))
+    }
+
+    @Test
     fun `parsing failure is not a network failure`() {
         assertFalse(isNetworkResolveFailure(null, "missing anime_id"))
         assertFalse(isNetworkResolveFailure(IllegalStateException("boom"), null))
