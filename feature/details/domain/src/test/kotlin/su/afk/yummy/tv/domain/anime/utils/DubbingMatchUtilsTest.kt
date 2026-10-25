@@ -49,6 +49,13 @@ class DubbingMatchUtilsTest {
     }
 
     @Test
+    fun `jam club balancer attaches to yani jam`() {
+        val pool = listOf("Озвучка JAM", "Озвучка AniStar")
+        assertEquals("Озвучка JAM", matchDubbingName("JAM CLUB", pool))
+        assertEquals("Озвучка JAM", matchDubbingName("Озвучка JAM CLUB", pool))
+    }
+
+    @Test
     fun `studio twins all get the balancer`() {
         val pool = listOf("Озвучка AniMedia", "Озвучка Animedia", "Озвучка AniStar")
         assertEquals(listOf("Озвучка AniMedia", "Озвучка Animedia"), matchDubbingNames("Amedia", pool))

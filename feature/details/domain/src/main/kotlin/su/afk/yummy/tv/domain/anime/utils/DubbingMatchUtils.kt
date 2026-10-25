@@ -30,6 +30,7 @@ private val ALIASES = mapOf(
     "амедиа" to "animedia",
     "анимедиа" to "animedia",
     "анистар" to "anistar",
+    "jam" to "jamclub",
 )
 
 /** Тип озвучки: озвучка и субтитры одной студии — разные дорожки, их сливать нельзя. */
