@@ -43,7 +43,7 @@
     <string name="account_profile_list_duration_title">Продолжительность по спискам</string>
     <string name="account_profile_genres_title">Жанры</string>
     <string name="account_profile_genres_other">Другие</string>
-    <string name="account_profile_ratings_title">Поставленные оценки (Средняя %1$s)</string>
+    <string name="account_profile_ratings_title">Оценки (Средняя %1$s)</string>
     <string name="account_profile_stats_empty">Данных пока нет</string>
     <string name="account_profile_duration_hours">%1$d ч</string>
     <string name="account_profile_duration_less_hour">&lt;1 ч</string>

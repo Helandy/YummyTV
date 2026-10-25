@@ -44,7 +44,7 @@
     <string name="account_profile_list_duration_title">Duration by lists</string>
     <string name="account_profile_genres_title">Genres</string>
     <string name="account_profile_genres_other">Other</string>
-    <string name="account_profile_ratings_title">Rated titles (Average %1$s)</string>
+    <string name="account_profile_ratings_title">Ratings (Average %1$s)</string>
     <string name="account_profile_stats_empty">No data yet</string>
     <string name="account_profile_duration_hours">%1$d h</string>
     <string name="account_profile_duration_less_hour">&lt;1 h</string>

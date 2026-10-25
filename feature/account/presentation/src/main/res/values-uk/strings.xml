@@ -43,7 +43,7 @@
     <string name="account_profile_list_duration_title">Тривалість за списками</string>
     <string name="account_profile_genres_title">Жанри</string>
     <string name="account_profile_genres_other">Інші</string>
-    <string name="account_profile_ratings_title">Оцінені тайтли (Середня %1$s)</string>
+    <string name="account_profile_ratings_title">Оцінки (Середня %1$s)</string>
     <string name="account_profile_stats_empty">Даних поки немає</string>
     <string name="account_profile_duration_hours">%1$d год</string>
     <string name="account_profile_duration_less_hour">&lt;1 год</string>
