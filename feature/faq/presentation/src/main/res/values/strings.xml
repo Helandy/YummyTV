@@ -18,8 +18,8 @@
     <string name="faq_not_official_answer">I am not affiliated with the website’s owners and develop YummyTV independently, so the app is not official. In the future, though, it would be great to establish a partnership and perhaps become official one day.</string>
     <string name="faq_why_feedback_title">Why is feedback important?</string>
     <string name="faq_why_feedback_answer">Your messages help me discover scenarios and errors that I cannot reproduce myself. The more precise the report, the easier it is to understand the cause and prioritize improvements that really matter.</string>
-    <string name="faq_feedback_button">GitHub — questions and bugs</string>
-    <string name="faq_community_telegram_button">Questions, ideas, and suggestions in Telegram</string>
+    <string name="faq_feedback_button">Questions/Ideas/Suggestions</string>
+    <string name="faq_community_telegram_button">Telegram community</string>
     <string name="faq_open_telegram">Open Telegram</string>
     <string name="faq_expand">Expand answer</string>
     <string name="faq_collapse">Collapse answer</string>

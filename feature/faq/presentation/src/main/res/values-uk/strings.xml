@@ -18,8 +18,8 @@
     <string name="faq_not_official_answer">Я не пов\'язаний з власниками сайту і розробляю YummyTV самостійно, тому застосунок не є офіційним. Але в перспективі було б чудово налагодити співпрацю і одного дня отримати офіційний статус.</string>
     <string name="faq_why_feedback_title">Чому важливий зворотний зв\'язок</string>
     <string name="faq_why_feedback_answer">Ваші повідомлення допомагають мені дізнаватися про сценарії та помилки, які я не можу відтворити сам. Що точніший опис проблеми, то простіше зрозуміти її причину і вибрати справді важливі покращення.</string>
-    <string name="faq_feedback_button">GitHub — питання та баги</string>
-    <string name="faq_community_telegram_button">Питання, ідеї та пропозиції в Telegram</string>
+    <string name="faq_feedback_button">Питання/Ідеї/Пропозиції</string>
+    <string name="faq_community_telegram_button">Telegram спільнота</string>
     <string name="faq_open_telegram">Відкрити Telegram</string>
     <string name="faq_expand">Розгорнути відповідь</string>
     <string name="faq_collapse">Згорнути відповідь</string>
