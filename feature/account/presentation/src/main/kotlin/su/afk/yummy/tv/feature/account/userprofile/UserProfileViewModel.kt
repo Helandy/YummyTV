@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.launchIn
 import su.afk.yummy.tv.feature.account.userprofile.utils.visibleProfileTabs
@@ -316,10 +317,14 @@ class UserProfileViewModel @AssistedInject internal constructor(
         }
     }
 
+    /** Текущая загрузка списков: при смене фильтра старый ответ не должен перетереть новый. */
+    private var listsJob: Job? = null
+
     private fun loadLists(force: Boolean = false) {
         val content = currentState.lists
         if (content.isLoading || (!force && content.loaded)) return
-        viewModelScope.launch {
+        listsJob?.cancel()
+        listsJob = viewModelScope.launch {
             setState { copy(lists = content.startLoading()) }
             contentHandler.loadLists(userId, currentState.selectedList, force).fold(
                 onSuccess = { items -> setState { copy(lists = lists.finish(items)) } },

@@ -186,9 +186,9 @@ private fun TitleListCardChips(item: TitleListCardUi, year: String?, ownerRating
     ) {
         year?.let { YearChip(year = it) }
         releaseStatus?.let { ReleaseStatusChip(status = it) }
-        if (item.isFavorite) FavoriteMarker()
-        item.listStatus?.let { ListStatusChip(status = it) }
         ownerRating?.let { UserRatingTag(rating = it) }
+        item.listStatus?.let { ListStatusChip(status = it) }
+        if (item.isFavorite) FavoriteMarker()
     }
 }
 
