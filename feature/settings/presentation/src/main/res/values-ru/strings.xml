@@ -253,7 +253,7 @@
                 <string name="settings_new_episodes_source_postponed">Отложено</string>
     <string name="settings_new_episodes_source_dropped">Брошено</string>
     <string name="settings_new_episodes_source_favorites">Избранное</string>
-    <string name="settings_new_episodes_sources_title">Списки для блока</string>
+    <string name="settings_new_episodes_sources_title">Учитывать списки</string>
     <string name="settings_new_episodes_sources_empty">Ничего не выбрано</string>
     <string name="settings_section_general_appearance">Общее оформление</string>
     <string name="settings_section_posters">Постеры</string>
