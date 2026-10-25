@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.seasonal.seasonalAnnouncementKey
 import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -169,8 +170,11 @@ class MainViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    private var updateCheckJob: Job? = null
+
     private fun checkForUpdates() {
-        viewModelScope.launch {
+        if (updateCheckJob?.isActive == true) return
+        updateCheckJob = viewModelScope.launch {
             when (val result = mainSideEffectsHandler.checkForUpdates()) {
                 is MainUpdateCheckResult.Available -> {
                     val destination = UpdateDestination(

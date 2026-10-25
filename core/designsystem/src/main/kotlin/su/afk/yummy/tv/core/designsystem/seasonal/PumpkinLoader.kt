@@ -2,14 +2,14 @@ package su.afk.yummy.tv.core.designsystem.seasonal
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.runtime.State
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,7 +37,7 @@ fun PumpkinLoader(modifier: Modifier = Modifier) {
     } else {
         remember { mutableFloatStateOf(0f) }
     }
-    Canvas(modifier.defaultMinSize(48.dp, 48.dp)) {
+    Canvas(modifier.size(48.dp)) {
         val base = Offset(size.width / 2f, size.height * 0.95f)
         rotate(degrees = swing.value * SwingDegrees, pivot = base) {
             drawPumpkin(base, size.minDimension * 0.7f)

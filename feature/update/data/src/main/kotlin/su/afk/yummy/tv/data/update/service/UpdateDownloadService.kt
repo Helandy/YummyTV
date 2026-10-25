@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.data.update.notification.UpdateDownloadNotificationService
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadState
@@ -38,7 +40,7 @@ internal class UpdateDownloadService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> intent.getStringExtra(EXTRA_URL)?.let(::startDownload) ?: stopSelf()
+            ACTION_START -> intent.getStringExtra(EXTRA_URL)?.let { startDownload(it) } ?: stopSelf()
             ACTION_CANCEL -> cancelDownload()
             else -> stopSelf()
         }
@@ -50,13 +52,17 @@ internal class UpdateDownloadService : Service() {
         startInForeground(notifications.createProgress(progressPercent = 0))
         if (downloadJob?.isActive == true && downloadUrl == url) return
 
-        downloadJob?.cancel()
+        val previous = downloadJob
         downloadUrl = url
         downloadJob = scope.launch {
+            // Старая загрузка делит с новой update.apk.part: ждём её выхода, иначе она удалит чужой файл.
+            previous?.cancelAndJoin()
+            val self = currentCoroutineContext()[Job]
             val result = runner.run(url) { percent ->
                 notifications.notify(notifications.createProgress(percent))
             }
-            finish()
+            // Пришла более новая загрузка — сервис и уведомление теперь её, не гасим.
+            if (downloadJob === self) finish()
             if (result is UpdateDownloadState.Downloaded) notifications.showDownloaded()
         }
     }

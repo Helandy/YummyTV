@@ -9,6 +9,7 @@ import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+private const val TAG = "ApkInstaller"
+
 private const val URI_GRANT_FLAGS =
     Intent.FLAG_GRANT_READ_URI_PERMISSION or
         Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
@@ -36,23 +39,41 @@ internal class ApkInstallerImpl @Inject constructor(
 
     override suspend fun install(apkFile: File) = withContext(Dispatchers.IO) {
         if (!canInstallPackages()) {
-            context.startActivity(unknownSourcesSettingsIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            runCatching {
+                context.startActivity(unknownSourcesSettingsIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.onFailure { Log.w(TAG, "Не удалось открыть настройки неизвестных источников", it) }
             throw UpdatePermissionRequiredException(
                 context.getString(R.string.update_install_unknown_sources_required),
             )
         }
 
         val packageInstaller = context.packageManager.packageInstaller
+        abandonStaleSessions(packageInstaller)
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
         val sessionId = packageInstaller.createSession(params)
 
-        packageInstaller.openSession(sessionId).use { session ->
-            session.openWrite("package", 0, apkFile.length()).use { output ->
-                apkFile.inputStream().use { it.copyTo(output) }
-                session.fsync(output)
-            }
+        try {
+            packageInstaller.openSession(sessionId).use { session ->
+                session.openWrite("package", 0, apkFile.length()).use { output ->
+                    apkFile.inputStream().use { it.copyTo(output) }
+                    session.fsync(output)
+                }
 
-            session.commitAndAwaitResult(sessionId)
+                session.commitAndAwaitResult(sessionId)
+            }
+        } catch (e: Throwable) {
+            // Брошенная сессия на старых Android блокирует следующую установку.
+            runCatching { packageInstaller.abandonSession(sessionId) }
+            throw e
+        }
+    }
+
+    /** Незавершённые сессии прошлых попыток (отмена, падение) не должны копиться. */
+    private fun abandonStaleSessions(packageInstaller: PackageInstaller) {
+        runCatching {
+            packageInstaller.mySessions.forEach { info ->
+                runCatching { packageInstaller.abandonSession(info.sessionId) }
+            }
         }
     }
 
@@ -76,6 +97,7 @@ internal class ApkInstallerImpl @Inject constructor(
         suspendCancellableCoroutine { continuation ->
             val action = "${context.packageName}.INSTALL_STATUS.$sessionId"
             val isReceiverRegistered = AtomicBoolean(true)
+            val isConfirmShown = AtomicBoolean(false)
 
             fun unregisterReceiver(receiver: BroadcastReceiver) {
                 if (isReceiverRegistered.compareAndSet(true, false)) {
@@ -86,8 +108,11 @@ internal class ApkInstallerImpl @Inject constructor(
             lateinit var receiver: BroadcastReceiver
             receiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context, intent: Intent) {
-                    when (val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
+                    val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
+                    Log.d(TAG, "Статус установки=$status: ${intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)}")
+                    when (status) {
                         PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                            if (!isConfirmShown.compareAndSet(false, true)) return
                             val confirmIntent = intent.confirmIntent()?.takeIf { it.isSafeToLaunch() }
                             if (confirmIntent == null) {
                                 unregisterReceiver(this)
@@ -99,9 +124,17 @@ internal class ApkInstallerImpl @Inject constructor(
                                 return
                             }
 
-                            confirmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            confirmIntent.removeFlags(URI_GRANT_FLAGS)
-                            context.startActivity(confirmIntent)
+                            // Intent.removeFlags появился только в API 26: на Android 7 он падал NoSuchMethodError.
+                            confirmIntent.flags = (confirmIntent.flags or Intent.FLAG_ACTIVITY_NEW_TASK) and URI_GRANT_FLAGS.inv()
+                            runCatching { context.startActivity(confirmIntent) }.onFailure { e ->
+                                Log.w(TAG, "Не удалось открыть подтверждение установки", e)
+                                unregisterReceiver(this)
+                                continuation.resumeWithException(
+                                    IllegalStateException(
+                                        context.getString(R.string.update_install_confirmation_error),
+                                    ),
+                                )
+                            }
                         }
 
                         PackageInstaller.STATUS_SUCCESS -> {

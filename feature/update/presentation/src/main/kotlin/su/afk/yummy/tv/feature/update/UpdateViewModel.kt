@@ -54,6 +54,7 @@ class UpdateViewModel @Inject internal constructor(
             }
 
             is UpdateState.Event.ConfirmUpdate -> {
+                if (currentState.status.isBusy()) return
                 analytics.eventConfirm(currentUpdateVersion())
                 downloadAndInstall(event.apkUrl)
             }
@@ -92,6 +93,7 @@ class UpdateViewModel @Inject internal constructor(
 
     private fun downloadAndInstall(apkUrl: String) {
         userStartedDownload = true
+        installTriggered = false
         setState { copy(status = UpdateState.State.Status.Downloading(0f)) }
         updateInstallHandler.startDownload(apkUrl)
         observeDownload(apkUrl)
@@ -123,6 +125,11 @@ class UpdateViewModel @Inject internal constructor(
 
     private suspend fun installDownloaded(file: File, apkUrl: String) {
         if (installTriggered) return
+        if (!file.exists()) {
+            installTriggered = false
+            downloadAndInstall(apkUrl)
+            return
+        }
         installTriggered = true
         downloadedApk = file
         setState { copy(status = UpdateState.State.Status.Installing) }
@@ -138,12 +145,15 @@ class UpdateViewModel @Inject internal constructor(
     }
 
     private fun retryInstall(apkUrl: String) {
+        if (currentState.status.isBusy()) return
+        installTriggered = false
         val file = downloadedApk
         if (file == null || !file.exists()) {
             downloadAndInstall(apkUrl)
             return
         }
 
+        installTriggered = true
         viewModelScope.launch {
             setState { copy(status = UpdateState.State.Status.Installing) }
             applyInstallResult(updateInstallHandler.install(file, currentUpdateVersion()), apkUrl)
@@ -153,9 +163,15 @@ class UpdateViewModel @Inject internal constructor(
     private fun applyInstallResult(result: UpdateInstallResult, apkUrl: String) {
         when (result) {
             is UpdateInstallResult.Success -> Unit
-            is UpdateInstallResult.Failure -> setUpdateError(result.error, apkUrl)
+            is UpdateInstallResult.Failure -> {
+                installTriggered = false
+                setUpdateError(result.error, apkUrl)
+            }
         }
     }
+
+    private fun UpdateState.State.Status.isBusy() =
+        this is UpdateState.State.Status.Downloading || this is UpdateState.State.Status.Installing
 
     private fun setUpdateError(error: Throwable, apkUrl: String) {
         setState {

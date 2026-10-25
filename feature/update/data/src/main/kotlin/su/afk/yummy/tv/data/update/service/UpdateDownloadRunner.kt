@@ -3,6 +3,8 @@ package su.afk.yummy.tv.data.update.service
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.data.update.R
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadState
 import su.afk.yummy.tv.domain.update.repository.ApkDownloadRepository
@@ -53,6 +55,7 @@ internal class UpdateDownloadRunner @Inject constructor(
             val percent = (progress * PERCENT_MAX).roundToInt()
             if (percent == lastPercent) return@download
             lastPercent = percent
+            currentCoroutineContext().ensureActive()
             stateHolder.update(stateKey, UpdateDownloadState.Downloading(progress))
             onPercent(percent)
         }
