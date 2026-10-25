@@ -20,7 +20,6 @@ data class SettingsSnapshot(
     val autoSkipDelaySeconds: Int,
     val showOpeningOnTimeline: Boolean,
     val autoPlayNextEpisode: Boolean,
-    val screenOffAfterEnd: Boolean,
     val nextEpisodeSwitchDelaySeconds: Int,
     val playerControlsAutoHideSeconds: Int,
     val askDubbingOnWatch: Boolean,

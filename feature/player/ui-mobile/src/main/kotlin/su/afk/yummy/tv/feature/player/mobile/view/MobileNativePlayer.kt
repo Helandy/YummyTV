@@ -243,7 +243,6 @@ internal fun MobileNativePlayer(
     }
 
     PlayerKeepScreenOnEffect(
-        releaseWhenEnded = state.screenOffAfterEnd,
         ended = endFlow.ended,
     )
 

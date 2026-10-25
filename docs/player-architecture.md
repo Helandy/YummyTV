@@ -192,7 +192,7 @@ PlayerDestination ──► PlayerViewModel ──► PlayerState (url, headers,
 | `PlayerLifecycleEffect`       | Пауза и сохранение прогресса на `ON_PAUSE`, возобновление, выгрузка при уходе  |
 | `PlayerStallWatchdogEffect`   | 15 с буферизации при запрошенном воспроизведении → `PlaybackStalled`           |
 | `PlayerProgressPollingEffect` | Опрос позиции                                                                  |
-| `PlayerKeepScreenOnEffect`    | Экран не гаснет во время воспроизведения                                       |
+| `PlayerKeepScreenOnEffect`    | Экран не гаснет во время воспроизведения; через минуту после конца видео отпускается |
 | `PlayerVolumeEffect`          | Громкость плеера и системы                                                     |
 
 Порядок эффектов в `PlayerLifecycleEffect` важен: Compose освобождает эффекты в обратном порядке, а

@@ -140,7 +140,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         autoSkipDelaySeconds = 1,
         showOpeningOnTimeline = false,
         autoPlayNextEpisode = autoPlay,
-        screenOffAfterEnd = false,
         nextEpisodeSwitchDelaySeconds = 1,
         playerControlsAutoHideSeconds = 1,
         askDubbingOnWatch = false,

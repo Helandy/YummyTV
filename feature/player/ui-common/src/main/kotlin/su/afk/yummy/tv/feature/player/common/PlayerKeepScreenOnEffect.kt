@@ -12,13 +12,13 @@ private const val SCREEN_OFF_AFTER_END_DELAY_MS = 60_000L
 /**
  * Держит экран включённым, пока играет плеер.
  *
- * @param releaseWhenEnded через минуту после конца видео отпустить экран, чтобы он погас
- *   по системному таймауту (юзеры засыпают под видео).
+ * После конца видео через минуту отпускает экран, чтобы он погас по системному таймауту
+ * (юзеры засыпают под видео).
+ *
  * @param ended серия досмотрена до конца.
  */
 @Composable
 fun PlayerKeepScreenOnEffect(
-    releaseWhenEnded: Boolean = false,
     ended: Boolean = false,
 ) {
     val hostView = LocalView.current
@@ -27,8 +27,8 @@ fun PlayerKeepScreenOnEffect(
         hostView.keepScreenOn = true
         onDispose { hostView.keepScreenOn = wasKeepingScreenOn }
     }
-    LaunchedEffect(hostView, releaseWhenEnded, ended) {
-        if (!releaseWhenEnded || !ended) return@LaunchedEffect
+    LaunchedEffect(hostView, ended) {
+        if (!ended) return@LaunchedEffect
         delay(SCREEN_OFF_AFTER_END_DELAY_MS)
         hostView.keepScreenOn = false
         try {

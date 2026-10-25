@@ -39,7 +39,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerZo
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.screenOffAfterEndKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleBackgroundKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleOffsetKey
@@ -82,9 +81,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val autoPlayNextEpisode: Flow<Boolean> =
         store.boolean(autoPlayNextEpisodeKey, false)
-
-    override val screenOffAfterEnd: Flow<Boolean> =
-        store.boolean(screenOffAfterEndKey, false)
 
     // coerceIn и на чтении тоже: значение могло быть записано более старой версией без клампа.
     override val nextEpisodeSwitchDelaySeconds: Flow<Int> = store.data.map { prefs ->
@@ -218,9 +214,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setAutoPlayNextEpisode(enabled: Boolean) =
         store.setBoolean(autoPlayNextEpisodeKey, enabled)
-
-    override suspend fun setScreenOffAfterEnd(enabled: Boolean) =
-        store.setBoolean(screenOffAfterEndKey, enabled)
 
     override suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int) {
         store.edit { prefs ->

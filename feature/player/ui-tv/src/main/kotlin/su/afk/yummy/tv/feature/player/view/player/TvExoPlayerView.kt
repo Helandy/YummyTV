@@ -208,7 +208,6 @@ internal fun TvExoPlayerView(
     }
 
     PlayerKeepScreenOnEffect(
-        releaseWhenEnded = state.screenOffAfterEnd,
         ended = prompts.ended,
     )
 

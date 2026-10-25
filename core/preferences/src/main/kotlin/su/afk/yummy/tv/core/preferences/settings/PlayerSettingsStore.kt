@@ -30,9 +30,6 @@ interface PlayerSettingsStore {
     val showOpeningOnTimeline: Flow<Boolean>
     val autoPlayNextEpisode: Flow<Boolean>
 
-    /** Через минуту после конца видео снимать удержание экрана, чтобы он погас по таймауту системы. */
-    val screenOffAfterEnd: Flow<Boolean>
-
     /** Задержка перед авто-переключением на следующую серию, сек. 0 = мгновенно. */
     val nextEpisodeSwitchDelaySeconds: Flow<Int>
 
@@ -99,7 +96,6 @@ interface PlayerSettingsStore {
     suspend fun setAutoSkipDelaySeconds(seconds: Int)
     suspend fun setShowOpeningOnTimeline(enabled: Boolean)
     suspend fun setAutoPlayNextEpisode(enabled: Boolean)
-    suspend fun setScreenOffAfterEnd(enabled: Boolean)
     suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int)
     suspend fun setPlayerControlsAutoHideSeconds(seconds: Int)
     suspend fun setAskDubbingOnWatch(enabled: Boolean)

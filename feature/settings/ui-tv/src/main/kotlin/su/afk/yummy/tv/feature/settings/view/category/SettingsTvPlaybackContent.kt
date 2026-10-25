@@ -113,19 +113,6 @@ internal fun SettingsTvPlaybackContent(
             onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it.fromControlsAutoHideSlider()))
         },
     )
-    SettingsDivider()
-    ToggleRow(
-        label = stringResource(R.string.settings_screen_off_after_end_label),
-        hint = if (state.screenOffAfterEnd) {
-            stringResource(R.string.settings_screen_off_after_end_enabled)
-        } else {
-            stringResource(R.string.settings_disabled)
-        },
-        enabled = state.screenOffAfterEnd,
-        onClick = {
-            onEvent(SettingsState.Event.ScreenOffAfterEndToggled)
-        },
-    )
 }
 
 // В debug у слайдера есть лишний последний пункт, который означает 30000 с.
