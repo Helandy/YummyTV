@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleStyleOptions
@@ -71,6 +72,14 @@ internal fun MobilePlayerSubtitleStyleSection(
                 icon = { it.icon() },
                 label = { it.label() },
                 onSelected = { onStyleChange(style.copy(background = it)) },
+            )
+            MobilePlayerSidePanelLabel(stringResource(R.string.player_subtitle_edge_title))
+            MobilePlayerIconChoiceRow(
+                options = PlayerSubtitleEdge.entries,
+                selected = style.edge,
+                icon = { it.icon() },
+                label = { it.label() },
+                onSelected = { onStyleChange(style.copy(edge = it)) },
             )
         }
     }

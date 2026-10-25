@@ -1,7 +1,10 @@
 package su.afk.yummy.tv.feature.settings.common.utils
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.FormatColorReset
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material.icons.filled.FormatColorText
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Opacity
@@ -19,6 +22,7 @@ import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
@@ -64,3 +68,9 @@ fun PlayerSubtitleBackground.icon(): ImageVector = when (this) {
 /** Один значок на все цвета: различаются они тоном, который накладывается через `color`. */
 @Suppress("UnusedReceiverParameter")
 fun PlayerSubtitleTextColor.icon(): ImageVector = Icons.Filled.FormatColorText
+
+fun PlayerSubtitleEdge.icon(): ImageVector = when (this) {
+    PlayerSubtitleEdge.NONE -> Icons.Filled.Block
+    PlayerSubtitleEdge.OUTLINE -> Icons.Filled.Title
+    PlayerSubtitleEdge.SHADOW -> Icons.Filled.Layers
+}

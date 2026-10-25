@@ -69,6 +69,12 @@ internal fun SettingsMobileSubtitlesContent(
                 valueIcon = state.subtitleStyle.background.icon(),
                 onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_BACKGROUND) },
             )
+            SettingsMobileOptionRow(
+                label = stringResource(R.string.settings_subtitle_edge_title),
+                value = state.subtitleStyle.edge.label(),
+                valueIcon = state.subtitleStyle.edge.icon(),
+                onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_EDGE) },
+            )
         }
     }
 }

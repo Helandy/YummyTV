@@ -1,13 +1,17 @@
 package su.afk.yummy.tv.feature.player.common
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.FormatColorReset
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Square
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -35,6 +39,11 @@ fun PlayerSubtitleTextColor.label(): String = stringResource(
         PlayerSubtitleTextColor.YELLOW -> R.string.player_subtitle_color_yellow
         PlayerSubtitleTextColor.CYAN -> R.string.player_subtitle_color_cyan
         PlayerSubtitleTextColor.GREEN -> R.string.player_subtitle_color_green
+        PlayerSubtitleTextColor.ORANGE -> R.string.player_subtitle_color_orange
+        PlayerSubtitleTextColor.RED -> R.string.player_subtitle_color_red
+        PlayerSubtitleTextColor.PINK -> R.string.player_subtitle_color_pink
+        PlayerSubtitleTextColor.PURPLE -> R.string.player_subtitle_color_purple
+        PlayerSubtitleTextColor.BLUE -> R.string.player_subtitle_color_blue
     },
 )
 
@@ -51,4 +60,19 @@ fun PlayerSubtitleBackground.icon(): ImageVector = when (this) {
     PlayerSubtitleBackground.NONE -> Icons.Filled.FormatColorReset
     PlayerSubtitleBackground.TRANSLUCENT -> Icons.Filled.Opacity
     PlayerSubtitleBackground.SOLID -> Icons.Filled.Square
+}
+
+@Composable
+fun PlayerSubtitleEdge.label(): String = stringResource(
+    when (this) {
+        PlayerSubtitleEdge.NONE -> R.string.player_subtitle_edge_none
+        PlayerSubtitleEdge.OUTLINE -> R.string.player_subtitle_edge_outline
+        PlayerSubtitleEdge.SHADOW -> R.string.player_subtitle_edge_shadow
+    },
+)
+
+fun PlayerSubtitleEdge.icon(): ImageVector = when (this) {
+    PlayerSubtitleEdge.NONE -> Icons.Filled.Block
+    PlayerSubtitleEdge.OUTLINE -> Icons.Filled.Title
+    PlayerSubtitleEdge.SHADOW -> Icons.Filled.Layers
 }

@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
@@ -269,6 +270,11 @@ fun PlayerSubtitleTextColor.label(): String = stringResource(
         PlayerSubtitleTextColor.YELLOW -> R.string.settings_subtitle_color_yellow
         PlayerSubtitleTextColor.CYAN -> R.string.settings_subtitle_color_cyan
         PlayerSubtitleTextColor.GREEN -> R.string.settings_subtitle_color_green
+        PlayerSubtitleTextColor.ORANGE -> R.string.settings_subtitle_color_orange
+        PlayerSubtitleTextColor.RED -> R.string.settings_subtitle_color_red
+        PlayerSubtitleTextColor.PINK -> R.string.settings_subtitle_color_pink
+        PlayerSubtitleTextColor.PURPLE -> R.string.settings_subtitle_color_purple
+        PlayerSubtitleTextColor.BLUE -> R.string.settings_subtitle_color_blue
     },
 )
 
@@ -373,5 +379,14 @@ fun LibraryTabKind.label(): String = stringResource(
         LibraryTabKind.COMPLETED -> R.string.settings_library_tab_completed
         LibraryTabKind.POSTPONED -> R.string.settings_library_tab_postponed
         LibraryTabKind.DROPPED -> R.string.settings_library_tab_dropped
+    },
+)
+
+@Composable
+fun PlayerSubtitleEdge.label(): String = stringResource(
+    when (this) {
+        PlayerSubtitleEdge.NONE -> R.string.settings_subtitle_edge_none
+        PlayerSubtitleEdge.OUTLINE -> R.string.settings_subtitle_edge_outline
+        PlayerSubtitleEdge.SHADOW -> R.string.settings_subtitle_edge_shadow
     },
 )

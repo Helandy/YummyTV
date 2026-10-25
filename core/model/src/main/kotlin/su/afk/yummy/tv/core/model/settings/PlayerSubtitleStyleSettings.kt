@@ -9,6 +9,11 @@ enum class PlayerSubtitleTextColor(val argb: Int) {
     YELLOW(0xFFFFEB3B.toInt()),
     CYAN(0xFF80DEEA.toInt()),
     GREEN(0xFF9CCC65.toInt()),
+    ORANGE(0xFFFFB74D.toInt()),
+    RED(0xFFEF5350.toInt()),
+    PINK(0xFFF48FB1.toInt()),
+    PURPLE(0xFFCE93D8.toInt()),
+    BLUE(0xFF64B5F6.toInt()),
 }
 
 enum class PlayerSubtitleBackground(val argb: Int) {
@@ -25,4 +30,5 @@ data class PlayerSubtitleStyleSettings(
     val background: PlayerSubtitleBackground = PlayerSubtitleBackground.TRANSLUCENT,
     /** Отступ субтитров от низа кадра в процентах от его высоты, 0..20. */
     val offset: Int = 6,
+    val edge: PlayerSubtitleEdge = PlayerSubtitleEdge.OUTLINE,
 )

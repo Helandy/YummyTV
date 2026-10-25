@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
@@ -41,6 +42,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptive
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleBackgroundKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleEdgeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleOffsetKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleTextColorKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleTextSizeKey
@@ -159,6 +161,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             background = prefs.enum(subtitleBackgroundKey, PlayerSubtitleBackground.TRANSLUCENT),
             offset = (prefs[subtitleOffsetKey] ?: DEFAULT_SUBTITLE_OFFSET_PERCENT)
                 .coerceIn(MIN_SUBTITLE_OFFSET_PERCENT, MAX_SUBTITLE_OFFSET_PERCENT),
+            edge = prefs.enum(subtitleEdgeKey, PlayerSubtitleEdge.OUTLINE),
         )
     }
 
@@ -308,6 +311,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
                 .coerceIn(MIN_SUBTITLE_TEXT_SIZE_PERCENT, MAX_SUBTITLE_TEXT_SIZE_PERCENT)
             prefs[subtitleTextColorKey] = settings.textColor.name
             prefs[subtitleBackgroundKey] = settings.background.name
+            prefs[subtitleEdgeKey] = settings.edge.name
             prefs[subtitleOffsetKey] = settings.offset
                 .coerceIn(MIN_SUBTITLE_OFFSET_PERCENT, MAX_SUBTITLE_OFFSET_PERCENT)
         }

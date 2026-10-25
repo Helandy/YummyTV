@@ -110,6 +110,11 @@ internal fun TvPlayerSettingsRoot(
         label = stringResource(R.string.player_subtitle_background_title),
         value = subtitleStyle.background.label(),
     )
+    PageRow(
+        page = TvPlayerSettingsPage.SubtitleEdge,
+        label = stringResource(R.string.player_subtitle_edge_title),
+        value = subtitleStyle.edge.label(),
+    )
 
     if (showVolume || showStabilization) {
         TvPlayerSettingsHeader(stringResource(R.string.player_settings_section_sound))

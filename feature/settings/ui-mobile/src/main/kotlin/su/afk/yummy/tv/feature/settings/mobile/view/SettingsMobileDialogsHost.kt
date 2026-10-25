@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
@@ -205,6 +206,23 @@ internal fun SettingsMobileDialogsHost(
                 onEvent(
                     SettingsState.Event.SubtitleStyleSelected(
                         state.subtitleStyle.copy(background = it),
+                    ),
+                )
+                dialogs.activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.SUBTITLE_EDGE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_subtitle_edge_title),
+            selectedValue = state.subtitleStyle.edge,
+            options = PlayerSubtitleEdge.entries.map {
+                SettingsMobilePickerOption(it, it.label(), icon = it.icon())
+            },
+            onDismiss = { dialogs.activePicker = null },
+            onSelected = {
+                onEvent(
+                    SettingsState.Event.SubtitleStyleSelected(
+                        state.subtitleStyle.copy(edge = it),
                     ),
                 )
                 dialogs.activePicker = null

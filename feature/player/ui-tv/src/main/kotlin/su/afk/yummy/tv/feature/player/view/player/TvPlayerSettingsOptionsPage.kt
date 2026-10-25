@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
@@ -122,6 +123,15 @@ internal fun TvPlayerSettingsOptionsPage(
             icons = values.map { it.icon() }
             selectedIndex = values.indexOf(subtitleStyle.background)
             onSelect = { onSubtitleStyleChange(subtitleStyle.copy(background = values[it])) }
+        }
+
+        TvPlayerSettingsPage.SubtitleEdge -> {
+            val values = PlayerSubtitleEdge.entries
+            title = stringResource(R.string.player_subtitle_edge_title)
+            labels = values.map { it.label() }
+            icons = values.map { it.icon() }
+            selectedIndex = values.indexOf(subtitleStyle.edge)
+            onSelect = { onSubtitleStyleChange(subtitleStyle.copy(edge = values[it])) }
         }
     }
     // Значение могло прийти не из списка (размер с шагом 1% из экрана «Настройки») — тогда

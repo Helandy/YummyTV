@@ -71,4 +71,6 @@ internal fun SettingsTvSubtitlesContent(
     pickerRow(SettingsTvPicker.SUBTITLE_COLOR, Modifier)
     SettingsDivider()
     pickerRow(SettingsTvPicker.SUBTITLE_BACKGROUND, Modifier)
+    SettingsDivider()
+    pickerRow(SettingsTvPicker.SUBTITLE_EDGE, Modifier)
 }

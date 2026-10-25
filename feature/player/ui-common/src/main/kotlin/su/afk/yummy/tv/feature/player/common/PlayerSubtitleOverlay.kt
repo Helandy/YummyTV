@@ -14,6 +14,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.text.CueGroup
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
+import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 
 /**
@@ -68,11 +69,17 @@ fun PlayerSubtitleOverlay(
                     style.textColor.argb,
                     style.background.argb,
                     Color.TRANSPARENT,
-                    CaptionStyleCompat.EDGE_TYPE_OUTLINE,
+                    style.edge.toCaptionEdgeType(),
                     Color.BLACK,
                     null,
                 )
             )
         },
     )
+}
+
+private fun PlayerSubtitleEdge.toCaptionEdgeType(): Int = when (this) {
+    PlayerSubtitleEdge.NONE -> CaptionStyleCompat.EDGE_TYPE_NONE
+    PlayerSubtitleEdge.OUTLINE -> CaptionStyleCompat.EDGE_TYPE_OUTLINE
+    PlayerSubtitleEdge.SHADOW -> CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW
 }
