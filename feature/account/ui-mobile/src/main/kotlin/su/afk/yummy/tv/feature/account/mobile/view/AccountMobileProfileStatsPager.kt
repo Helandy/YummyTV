@@ -24,8 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.collections.immutable.toPersistentList
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.feature.account.common.utils.averageRatingLabel
+import su.afk.yummy.tv.feature.account.common.utils.genreAllSlices
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsChartType
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
@@ -33,9 +36,6 @@ import su.afk.yummy.tv.feature.account.mobile.account.utils.listDurationSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.ratingCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.watchStatSlices
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.common.utils.averageRatingLabel
-import su.afk.yummy.tv.feature.account.common.utils.genreAllSlices
-import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 internal fun AccountMobileProfileStatsPager(
@@ -50,7 +50,8 @@ internal fun AccountMobileProfileStatsPager(
                 icon = Icons.Filled.Schedule,
                 slices = summary.watchStatSlices(),
                 valueType = AccountMobileProfileStatsValueType.DURATION,
-            )
+                legendColumns = 1,
+            ),
         )
         stats?.let {
             add(
@@ -60,7 +61,7 @@ internal fun AccountMobileProfileStatsPager(
                     slices = it.listDurationSlices(),
                     valueType = AccountMobileProfileStatsValueType.DURATION,
                     legendColumns = 1,
-                )
+                ),
             )
             add(
                 AccountMobileProfileStatsPageModel(
@@ -70,20 +71,20 @@ internal fun AccountMobileProfileStatsPager(
                         .toPersistentList(),
                     valueType = AccountMobileProfileStatsValueType.COUNT,
                     legendColumns = 1,
-                )
+                ),
             )
             add(
                 AccountMobileProfileStatsPageModel(
                     title = stringResource(
                         R.string.account_profile_ratings_title,
-                        it.averageRatingLabel()
+                        it.averageRatingLabel(),
                     ),
                     icon = Icons.Filled.Star,
                     slices = it.ratingCountSlices(),
                     valueType = AccountMobileProfileStatsValueType.COUNT,
                     legendColumns = 3,
                     chartType = AccountMobileProfileStatsChartType.HISTOGRAM,
-                )
+                ),
             )
         }
     }
@@ -118,7 +119,7 @@ internal fun AccountMobileProfileStatsPager(
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f)
-                                }
+                                },
                             ),
                     )
                 }
