@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.feature.settings.common.utils.highlightNumbers
 import su.afk.yummy.tv.feature.settings.common.utils.label
 
 /**
@@ -60,7 +61,7 @@ internal fun SettingsMobileSliderRow(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = valueLabel(shownValue),
+                text = valueLabel(shownValue).highlightNumbers(MaterialTheme.colorScheme.primary),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

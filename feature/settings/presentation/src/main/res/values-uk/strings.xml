@@ -231,10 +231,10 @@
     <string name="settings_browser_user_agent_windows_chrome">Windows · Chrome</string>
     <string name="settings_browser_user_agent_linux_chrome">Linux · Chrome</string>
     <string name="settings_browser_user_agent_android_chrome">Android · Chrome</string>
-    <string name="settings_watched_short_label">Переглянуто · серії до 10 хв</string>
-    <string name="settings_watched_medium_label">Переглянуто · серії до години</string>
-    <string name="settings_watched_long_label">Переглянуто · серії довше години</string>
-    <string name="settings_watched_minutes_value">За %d хв до кінця</string>
+    <string name="settings_watched_short_label">Серії до 10 хв</string>
+    <string name="settings_watched_medium_label">Серії до години</string>
+    <string name="settings_watched_long_label">Серії довше години</string>
+    <string name="settings_watched_minutes_value">Зараховувати за %d хв до кінця</string>
     <string name="settings_release_notes_label">Що нового</string>
     <string name="settings_release_notes_hint">Зміни в попередніх версіях</string>
         <string name="settings_release_notes_error">Не вдалося завантажити історію релізів</string>

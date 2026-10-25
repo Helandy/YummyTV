@@ -231,10 +231,10 @@
     <string name="settings_browser_user_agent_windows_chrome">Windows · Chrome</string>
     <string name="settings_browser_user_agent_linux_chrome">Linux · Chrome</string>
     <string name="settings_browser_user_agent_android_chrome">Android · Chrome</string>
-    <string name="settings_watched_short_label">Watched · episodes up to 10 min</string>
-    <string name="settings_watched_medium_label">Watched · episodes up to 1 hour</string>
-    <string name="settings_watched_long_label">Watched · episodes over 1 hour</string>
-    <string name="settings_watched_minutes_value">%d min before the end</string>
+    <string name="settings_watched_short_label">Episodes up to 10 min</string>
+    <string name="settings_watched_medium_label">Episodes up to 1 hour</string>
+    <string name="settings_watched_long_label">Episodes over 1 hour</string>
+    <string name="settings_watched_minutes_value">Count as watched %d min before the end</string>
     <string name="settings_release_notes_label">What\'s new</string>
     <string name="settings_release_notes_hint">Changes in previous versions</string>
         <string name="settings_release_notes_error">Couldn\'t load the release history</string>

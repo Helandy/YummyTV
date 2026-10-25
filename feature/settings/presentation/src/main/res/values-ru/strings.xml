@@ -231,10 +231,10 @@
     <string name="settings_browser_user_agent_windows_chrome">Windows · Chrome</string>
     <string name="settings_browser_user_agent_linux_chrome">Linux · Chrome</string>
     <string name="settings_browser_user_agent_android_chrome">Android · Chrome</string>
-    <string name="settings_watched_short_label">Просмотрено · серии до 10 мин</string>
-    <string name="settings_watched_medium_label">Просмотрено · серии до часа</string>
-    <string name="settings_watched_long_label">Просмотрено · серии дольше часа</string>
-    <string name="settings_watched_minutes_value">За %d мин до конца</string>
+    <string name="settings_watched_short_label">Серии до 10 мин</string>
+    <string name="settings_watched_medium_label">Серии до часа</string>
+    <string name="settings_watched_long_label">Серии дольше часа</string>
+    <string name="settings_watched_minutes_value">Засчитывать за %d мин до конца</string>
     <string name="settings_release_notes_label">Что нового</string>
     <string name="settings_release_notes_hint">Изменения в прошлых версиях</string>
         <string name="settings_release_notes_error">Не удалось загрузить историю релизов</string>
