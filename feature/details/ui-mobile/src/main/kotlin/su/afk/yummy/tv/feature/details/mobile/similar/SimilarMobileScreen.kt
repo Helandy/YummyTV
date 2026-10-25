@@ -102,7 +102,6 @@ fun SimilarMobileScreen(
                         }
                     }
                 },
-                modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
             )
 
             MobileSimilarRecommendationVisibilityButton(

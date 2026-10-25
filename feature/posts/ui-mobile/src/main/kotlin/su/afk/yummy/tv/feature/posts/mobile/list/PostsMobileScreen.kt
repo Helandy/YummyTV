@@ -4,21 +4,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -27,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -40,9 +34,11 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
+import su.afk.yummy.tv.core.designsystem.mobile.MobileSortDropdown
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileHideOnScrollState
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTextTabs
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -63,26 +59,17 @@ fun PostsMobileScreen(
 ) {
     val posts = state.posts.collectAsLazyPagingItems()
     val sorts = PostSort.entries
+    // Страница 0 — «Все», дальше по порядку категории.
+    val selectedPage = state.selectedCategory
+        ?.let { uri -> state.categories.indexOfFirst { it.uri == uri } + 1 }
+        ?.coerceAtLeast(0)
+        ?: 0
     val tabsState = rememberMobileSwipeableTabsState(
-        selectedPage = sorts.indexOf(state.sort).coerceAtLeast(0),
-        pageCount = sorts.size,
+        selectedPage = selectedPage,
+        pageCount = state.categories.size + 1,
         onPageSelected = { page ->
-            sorts.getOrNull(page)?.let { onEvent(PostsListState.Event.SortSelected(it)) }
+            onEvent(PostsListState.Event.CategorySelected(state.categories.getOrNull(page - 1)?.uri))
         },
-    )
-    val categoryChipColors = FilterChipDefaults.filterChipColors(
-        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f),
-        labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        selectedContainerColor = MaterialTheme.colorScheme.primary,
-        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-    )
-    val sortTabColors = SegmentedButtonDefaults.colors(
-        activeContainerColor = MaterialTheme.colorScheme.primary,
-        activeContentColor = MaterialTheme.colorScheme.onPrimary,
-        activeBorderColor = MaterialTheme.colorScheme.primary,
-        inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f),
-        inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        inactiveBorderColor = MaterialTheme.colorScheme.outlineVariant,
     )
     val chipsScrollState = rememberMobileHideOnScrollState()
     BaseScreen(
@@ -94,57 +81,31 @@ fun PostsMobileScreen(
                 .navigationBarsPadding()
                 .nestedScroll(chipsScrollState.nestedScrollConnection),
         ) {
-            Column(modifier = Modifier.padding(vertical = 12.dp)) {
-                SingleChoiceSegmentedButtonRow(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                ) {
-                    sorts.forEachIndexed { index, sort ->
-                        SegmentedButton(
-                            selected = state.sort == sort,
-                            onClick = { tabsState.selectPage(index) },
-                            shape = SegmentedButtonDefaults.itemShape(index, sorts.size),
-                            colors = sortTabColors,
-                            icon = {},
-                        ) { Text(stringResource(sort.labelRes())) }
-                    }
-                }
-                AnimatedVisibility(visible = chipsScrollState.isVisible) {
-                    LazyRow(
-                        modifier = Modifier.padding(top = 14.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        item(key = "all") {
-                            FilterChip(
-                                selected = state.selectedCategory == null,
-                                onClick = { onEvent(PostsListState.Event.CategorySelected(null)) },
-                                label = { Text(stringResource(R.string.posts_all)) },
-                                shape = RoundedCornerShape(6.dp),
-                                colors = categoryChipColors,
-                            )
-                        }
-                        items(state.categories, key = { it.uri }) { category ->
-                            FilterChip(
-                                selected = state.selectedCategory == category.uri,
-                                onClick = {
-                                    onEvent(PostsListState.Event.CategorySelected(category.uri))
-                                },
-                                label = { Text(category.title) },
-                                shape = RoundedCornerShape(6.dp),
-                                colors = categoryChipColors,
-                            )
-                        }
-                    }
+            AnimatedVisibility(visible = chipsScrollState.isVisible) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    MobileTextTabs(
+                        titles = listOf(stringResource(R.string.posts_all)) + state.categories.map { it.title },
+                        selectedIndex = selectedPage,
+                        onSelected = tabsState::selectPage,
+                        modifier = Modifier.weight(1f),
+                        scrollable = true,
+                    )
+                    MobileSortDropdown(
+                        items = sorts,
+                        selected = state.sort,
+                        label = { stringResource(it.labelRes()) },
+                        onSelected = { onEvent(PostsListState.Event.SortSelected(it)) },
+                        modifier = Modifier.padding(end = 8.dp),
+                        compact = true,
+                    )
                 }
             }
             MobileSwipeableTabsPager(
                 state = tabsState,
                 modifier = Modifier.weight(1f),
-                key = { page -> sorts[page].name },
-            ) { _ ->
-                PostsList(posts, onEvent)
+                key = { page -> state.categories.getOrNull(page - 1)?.uri ?: "all" },
+            ) { page ->
+                if (page == selectedPage) PostsList(posts, onEvent) else MobileSectionLoading()
             }
         }
     }

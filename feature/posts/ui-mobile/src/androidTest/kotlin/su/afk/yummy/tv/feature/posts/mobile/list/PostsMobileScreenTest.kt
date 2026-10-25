@@ -66,12 +66,10 @@ class PostsMobileScreenTest {
     }
 
     @Test
-    fun showsSortTabsAndEmptyMessage() {
+    fun showsSortDropdownAndEmptyMessage() {
         setScreen()
 
         composeRule.onNodeWithText(string(R.string.posts_new)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.posts_old)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.posts_best)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.posts_empty)).assertIsDisplayed()
     }
 
@@ -111,9 +109,10 @@ class PostsMobileScreenTest {
     }
 
     @Test
-    fun bestTabSendsSortSelected() {
+    fun bestSortSendsSortSelected() {
         setScreen()
 
+        composeRule.onNodeWithText(string(R.string.posts_new)).performClick()
         composeRule.onNodeWithText(string(R.string.posts_best)).performClick()
         composeRule.waitForIdle()
 

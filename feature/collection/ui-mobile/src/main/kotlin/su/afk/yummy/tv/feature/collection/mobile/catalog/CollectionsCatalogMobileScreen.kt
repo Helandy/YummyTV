@@ -29,12 +29,16 @@ import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
+import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.domain.collection.model.CollectionSort
 import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogState
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionsSortSelector
 import su.afk.yummy.tv.feature.collection.mobile.view.CreateCollectionDialog
@@ -64,6 +68,14 @@ fun CollectionsCatalogMobileScreen(
         ?.error
         ?.uiMessage()
     val gridState = rememberLazyGridState()
+    val sorts = CollectionSort.entries
+    val tabsState = rememberMobileSwipeableTabsState(
+        selectedPage = sorts.indexOf(state.sort).coerceAtLeast(0),
+        pageCount = sorts.size,
+        onPageSelected = { page ->
+            sorts.getOrNull(page)?.let { onEvent(CollectionsCatalogState.Event.SortSelected(it)) }
+        },
+    )
 
     LaunchedEffect(Unit) {
         effect.collect { event ->
@@ -104,7 +116,7 @@ fun CollectionsCatalogMobileScreen(
             )
             CollectionsSortSelector(
                 selectedSort = state.sort,
-                onSortSelected = { onEvent(CollectionsCatalogState.Event.SortSelected(it)) },
+                onSortSelected = { tabsState.selectPage(sorts.indexOf(it)) },
             )
         },
         isLoading = refreshState is LoadState.Loading && pagingItems.itemCount == 0,
@@ -123,50 +135,59 @@ fun CollectionsCatalogMobileScreen(
             }
         },
     ) {
-        MobilePosterGrid(
-            contentPadding = PaddingValues(bottom = 80.dp),
-            state = gridState,
-            minCellWidth = 300.dp,
-        ) {
-            val error = (appendState as? LoadState.Error)?.error
-            if (error != null && pagingItems.itemCount > 0) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    ErrorBanner(
-                        message = error.uiMessage(),
-                        onRetry = { pagingItems.retry() },
-                    )
-                }
+        MobileSwipeableTabsPager(
+            state = tabsState,
+            key = { page -> sorts[page].name },
+        ) { page ->
+            if (page != sorts.indexOf(state.sort)) {
+                MobileSectionLoading()
+                return@MobileSwipeableTabsPager
             }
-            items(
-                count = pagingItems.itemCount,
-                key = pagingItems.itemKey { it.id },
-            ) { index ->
-                pagingItems[index]?.let { item ->
-                    MobileCollectionCard(
-                        title = item.title,
-                        posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },
-                        badge = {
-                            CollectionStatBadges(
-                                likes = item.likesCount,
-                                views = item.viewsCount,
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(8.dp),
-                            )
-                        },
-                        onClick = {
-                            onEvent(CollectionsCatalogState.Event.CollectionSelected(item.id))
-                        },
-                    )
+            MobilePosterGrid(
+                contentPadding = PaddingValues(bottom = 80.dp),
+                state = gridState,
+                minCellWidth = 300.dp,
+            ) {
+                val error = (appendState as? LoadState.Error)?.error
+                if (error != null && pagingItems.itemCount > 0) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        ErrorBanner(
+                            message = error.uiMessage(),
+                            onRetry = { pagingItems.retry() },
+                        )
+                    }
                 }
-            }
-            if (appendState is LoadState.Loading) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                items(
+                    count = pagingItems.itemCount,
+                    key = pagingItems.itemKey { it.id },
+                ) { index ->
+                    pagingItems[index]?.let { item ->
+                        MobileCollectionCard(
+                            title = item.title,
+                            posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },
+                            badge = {
+                                CollectionStatBadges(
+                                    likes = item.likesCount,
+                                    views = item.viewsCount,
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp),
+                                )
+                            },
+                            onClick = {
+                                onEvent(CollectionsCatalogState.Event.CollectionSelected(item.id))
+                            },
+                        )
+                    }
+                }
+                if (appendState is LoadState.Loading) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        }
                     }
                 }
             }

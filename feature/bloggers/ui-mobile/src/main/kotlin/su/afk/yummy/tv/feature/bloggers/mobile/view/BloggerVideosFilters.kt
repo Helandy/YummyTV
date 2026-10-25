@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.bloggers.mobile.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -22,16 +22,9 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTextTabs
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
 import su.afk.yummy.tv.feature.bloggers.presentation.R
@@ -54,67 +48,40 @@ internal fun BloggerVideosFilters(
     onSortSelected: (BloggerVideoSort) -> Unit,
     onOpenBlogger: (Int) -> Unit,
     onReset: () -> Unit,
+    showFilters: Boolean,
+    onFiltersDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var showFilters by remember { mutableStateOf(false) }
     val selectedCategory = state.categories.firstOrNull { it.id == state.selectedCategory }
     val selectedBlogger = state.bloggers.firstOrNull { it.id == state.selectedBloggerId }
     val activeFilters = listOfNotNull(selectedCategory?.title, selectedBlogger?.nickname)
-    val sortTabColors = SegmentedButtonDefaults.colors(
-        activeContainerColor = MaterialTheme.colorScheme.primary,
-        activeContentColor = MaterialTheme.colorScheme.onPrimary,
-        activeBorderColor = MaterialTheme.colorScheme.primary,
-        inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f),
-        inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        inactiveBorderColor = MaterialTheme.colorScheme.outlineVariant,
-    )
+    Column(modifier = modifier) {
+        val sorts = BloggerVideoSort.entries
+        MobileTextTabs(
+            titles = sorts.map { stringResource(it.labelRes()) },
+            selectedIndex = sorts.indexOf(state.sort).coerceAtLeast(0),
+            onSelected = { onSortSelected(sorts[it]) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface),
+        )
 
-    Column(
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            BloggerVideoSort.entries.forEachIndexed { index, sort ->
-                SegmentedButton(
-                    selected = state.sort == sort,
-                    onClick = { onSortSelected(sort) },
-                    shape = SegmentedButtonDefaults.itemShape(index, BloggerVideoSort.entries.size),
-                    colors = sortTabColors,
-                    icon = {},
-                    label = { Text(stringResource(sort.labelRes())) },
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        if (activeFilters.isNotEmpty()) {
             Text(
                 text = activeFilters.joinToString(" · "),
-                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
-            FilledTonalButton(onClick = { showFilters = true }) {
-                Icon(Icons.Default.FilterList, contentDescription = null)
-                Text(
-                    text = if (activeFilters.isEmpty()) {
-                        stringResource(R.string.blogger_filters)
-                    } else {
-                        stringResource(R.string.blogger_filters_count, activeFilters.size)
-                    },
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
         }
     }
 
     if (showFilters) {
         BloggerVideosFiltersSheet(
             state = state,
-            onDismiss = { showFilters = false },
+            onDismiss = onFiltersDismiss,
             onCategorySelected = onCategorySelected,
             onBloggerSelected = onBloggerSelected,
             onOpenBlogger = onOpenBlogger,
