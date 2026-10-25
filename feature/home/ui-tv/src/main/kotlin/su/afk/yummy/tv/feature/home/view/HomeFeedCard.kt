@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvHomeFeedCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.currentTvPosterBadgeScale
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
@@ -144,6 +145,7 @@ internal fun HomeFeedCard(
                 item.rating?.takeIf { it > 0.0 }?.let { rating ->
                     RatingBadge(
                         rating = rating,
+                        scale = currentTvPosterBadgeScale(),
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(4.dp),

@@ -21,3 +21,11 @@ private fun posterCardDimensions(width: Dp): PosterCardDimensions = PosterCardDi
     width = width,
     posterHeight = width / TITLE_POSTER_ASPECT_RATIO,
 )
+
+/** Ширина стандартной карточки: от неё считается масштаб плашек на постере. */
+private val TvStandardPosterWidth = 180.dp
+
+/** Множитель размера плашек на постере (рейтинг, год): растёт с шириной карточки, но мельче 1 не бывает. */
+@Composable
+fun currentTvPosterBadgeScale(): Float =
+    (currentTvTitleCardDimensions().width / TvStandardPosterWidth).coerceAtLeast(1f)
