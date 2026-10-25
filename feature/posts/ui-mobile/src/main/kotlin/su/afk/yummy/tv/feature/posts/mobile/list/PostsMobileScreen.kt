@@ -106,6 +106,7 @@ fun PostsMobileScreen(
                             onClick = { tabsState.selectPage(index) },
                             shape = SegmentedButtonDefaults.itemShape(index, sorts.size),
                             colors = sortTabColors,
+                            icon = {},
                         ) { Text(stringResource(sort.labelRes())) }
                     }
                 }

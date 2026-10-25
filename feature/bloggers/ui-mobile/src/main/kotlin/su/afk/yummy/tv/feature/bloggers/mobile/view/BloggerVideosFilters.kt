@@ -38,12 +38,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
 import su.afk.yummy.tv.feature.bloggers.presentation.R
 import su.afk.yummy.tv.feature.bloggers.utils.labelRes
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,6 +80,7 @@ internal fun BloggerVideosFilters(
                     onClick = { onSortSelected(sort) },
                     shape = SegmentedButtonDefaults.itemShape(index, BloggerVideoSort.entries.size),
                     colors = sortTabColors,
+                    icon = {},
                     label = { Text(stringResource(sort.labelRes())) },
                 )
             }

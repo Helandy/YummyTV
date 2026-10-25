@@ -42,6 +42,7 @@ internal fun ReviewsSortSelector(
                 onClick = { onSortSelected(sort) },
                 shape = SegmentedButtonDefaults.itemShape(index, sorts.size),
                 colors = sortTabColors,
+                icon = {},
                 label = { Text(stringResource(sort.labelRes())) },
             )
         }

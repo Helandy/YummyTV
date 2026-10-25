@@ -44,6 +44,7 @@ internal fun CollectionsSortSelector(
                 onClick = { onSortSelected(sort) },
                 shape = SegmentedButtonDefaults.itemShape(index, sorts.size),
                 colors = colors,
+                icon = {},
                 label = { Text(stringResource(sort.labelRes())) },
             )
         }
