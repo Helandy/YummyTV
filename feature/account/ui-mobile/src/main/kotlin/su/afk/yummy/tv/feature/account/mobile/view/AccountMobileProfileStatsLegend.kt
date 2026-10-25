@@ -16,13 +16,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.PersistentList
+import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
 import su.afk.yummy.tv.feature.account.mobile.account.utils.valueLabel
-import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
 @Composable
 internal fun AccountMobileProfileStatsLegend(
@@ -34,8 +39,11 @@ internal fun AccountMobileProfileStatsLegend(
     val rows = remember(slices, columns) { slices.chunked(columns) }
     // Шесть рядов при 8dp не помещаются в высоту кольца.
     val rowSpacing = if (rows.size > 5) 4.dp else 8.dp
+    val scrollGuard = rememberVerticalScrollGuard()
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (rows.size > LEGEND_FIT_ROWS) Modifier.nestedScroll(scrollGuard) else Modifier),
         verticalArrangement = if (rows.size > LEGEND_FIT_ROWS) {
             Arrangement.spacedBy(rowSpacing)
         } else {
@@ -61,6 +69,24 @@ internal fun AccountMobileProfileStatsLegend(
 
 /** Рядов легенды, которые помещаются в высоту кольца без прокрутки. */
 private const val LEGEND_FIT_ROWS = 6
+
+/**
+ * Гасит вертикальный остаток scroll/fling, когда легенда доскроллена до края: без этого он уходит
+ * через nested scroll в родительскую страницу профиля, и та уезжает вслед за списком.
+ */
+@Composable
+private fun rememberVerticalScrollGuard(): NestedScrollConnection = remember {
+    object : NestedScrollConnection {
+        override fun onPostScroll(
+            consumed: Offset,
+            available: Offset,
+            source: NestedScrollSource,
+        ): Offset = Offset(0f, available.y)
+
+        override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity =
+            Velocity(0f, available.y)
+    }
+}
 
 @Composable
 private fun AccountMobileProfileStatsLegendItem(
