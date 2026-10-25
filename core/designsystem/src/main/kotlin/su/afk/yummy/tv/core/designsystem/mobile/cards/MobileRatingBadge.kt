@@ -9,10 +9,12 @@ fun MobileRatingBadge(
     rating: Double,
     modifier: Modifier = Modifier,
     showStar: Boolean = true,
+    scale: Float = 1f,
 ) {
     RatingBadge(
         rating = rating,
         modifier = modifier,
         showStar = showStar,
+        scale = scale,
     )
 }

@@ -32,3 +32,12 @@ fun currentMobilePosterTextPadding(): Dp = when (LocalPosterCardSize.current) {
     PosterCardSize.LARGE,
     -> 8.dp
 }
+
+/** Множитель размера плашек на постере (рейтинг, год): крупные карточки получают пропорционально крупные плашки. */
+@Composable
+fun currentMobilePosterBadgeScale(): Float = when (LocalPosterCardSize.current) {
+    PosterCardSize.COMPACT,
+    PosterCardSize.STANDARD,
+    -> 1f
+    PosterCardSize.LARGE -> 1.35f
+}

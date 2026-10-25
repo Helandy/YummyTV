@@ -28,6 +28,7 @@ import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadge
 import su.afk.yummy.tv.core.designsystem.components.ListStatusBadgeHeight
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterBadgeScale
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTextPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTitleStyle
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTitleWeight
@@ -102,6 +103,7 @@ fun MobilePosterCard(
                 rating?.takeIf { it > 0.0 }?.let { value ->
                     MobileRatingBadge(
                         rating = value,
+                        scale = currentMobilePosterBadgeScale(),
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(4.dp),

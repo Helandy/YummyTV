@@ -9,15 +9,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterBadgeScale
 
 /** Год выхода в правом нижнем углу постера; для слота `posterOverlay` у [MobilePosterCard]. */
 @Composable
 fun BoxScope.MobilePosterYear(year: Int) {
+    val scale = currentMobilePosterBadgeScale()
     Text(
         text = year.toString(),
-        style = MaterialTheme.typography.labelMedium,
+        // Размер как у RatingBadge: карточки в сетке узкие, крупный год их перебивает.
+        style = MaterialTheme.typography.labelSmall.let { it.copy(fontSize = it.fontSize * scale) },
+        fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.inverseSurface,
+        maxLines = 1,
+        softWrap = false,
         modifier = Modifier
             .align(Alignment.BottomEnd)
             .padding(4.dp)
@@ -25,6 +32,6 @@ fun BoxScope.MobilePosterYear(year: Int) {
                 MaterialTheme.colorScheme.inverseOnSurface,
                 RoundedCornerShape(4.dp),
             )
-            .padding(horizontal = 6.dp, vertical = 3.dp),
+            .padding(horizontal = 5.dp * scale, vertical = 2.dp * scale),
     )
 }
