@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.error.asString
-import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
@@ -31,9 +30,8 @@ internal fun EpisodesSection(
     onRetry: (() -> Unit)? = null,
 ) {
     when (state) {
-        VideosUiState.Loading -> TvLoadingScreen()
+        VideosUiState.Loading, VideosUiState.NotLoaded -> EpisodesTvSkeleton()
 
-        VideosUiState.NotLoaded -> Unit
         VideosUiState.Empty -> TvStateMessage(
             title = stringResource(R.string.details_episodes_empty),
             icon = Icons.Filled.PlayArrow,

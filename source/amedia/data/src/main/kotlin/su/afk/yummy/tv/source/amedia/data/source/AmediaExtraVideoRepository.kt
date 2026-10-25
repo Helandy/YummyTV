@@ -21,6 +21,8 @@ internal class AmediaExtraVideoRepository @Inject constructor(
     private val getEpisodes: GetAmediaEpisodesUseCase,
 ) : ExtraVideoRepository {
 
+    override val sourceId: String = "amedia"
+
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val malId = details.malId ?: return emptyList()
         val lookup = AmediaLookup(

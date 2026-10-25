@@ -6,6 +6,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.minus
 import kotlinx.collections.immutable.plus
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentSet
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -34,7 +36,7 @@ import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
@@ -77,7 +79,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
-    private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val observeAnimeVideos: ObserveAnimeVideosUseCase,
     private val getAnimeEpisodeInfo: GetAnimeEpisodeInfoUseCase,
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
@@ -414,20 +416,28 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     private suspend fun loadVideos() {
         setState { copy(videosState = VideosUiState.Loading) }
-        runSuspendCatching { getAnimeVideos(animeId) }.fold(
-            onSuccess = { videos ->
+        var latest: List<AnimeVideo>? = null
+        runSuspendCatching {
+            observeAnimeVideos(animeId).collect { videos ->
+                latest = videos
                 setVideos(videos)
-                consumePendingEpisode(videos)
+            }
+        }.fold(
+            onSuccess = {
+                // Автопереход ждёт полный список: на неполном пикер озвучек не показал бы модули-источники
+                latest?.let(::consumePendingEpisode)
                 if (isSignedIn) {
                     refreshVideosFromNetwork()
                 }
             },
             onFailure = {
-                setState {
-                    copy(
-                        videosState = VideosUiState.Error(UiText.Failure(it)),
-                        watchProgress = DetailsWatchProgressIndex.Empty,
-                    )
+                if (latest == null) {
+                    setState {
+                        copy(
+                            videosState = VideosUiState.Error(UiText.Failure(it)),
+                            watchProgress = DetailsWatchProgressIndex.Empty,
+                        )
+                    }
                 }
             },
         )
@@ -456,9 +466,21 @@ class EpisodesViewModel @AssistedInject internal constructor(
             .onSuccess { videos -> setVideos(videos) }
     }
 
-    private fun setVideos(videos: List<AnimeVideo>) {
+    /**
+     * Тяжёлая часть (группы серий, индекс прогресса, самая смотримая озвучка) считается на Default,
+     * а в состояние уходит готовым значением. Если локальный прогресс изменился за время расчёта,
+     * индекс пересобирается уже в [setState].
+     */
+    private suspend fun setVideos(videos: List<AnimeVideo>) {
+        val localProgress = localWatchProgress
+        val derived = withContext(Dispatchers.Default) {
+            VideosDerived(
+                groups = buildEpisodeGroups(videos),
+                progress = buildWatchProgressIndex(videos, localProgress),
+                bestDubbing = videos.mostWatchedDubbing(),
+            )
+        }
         setState {
-            val groups = buildEpisodeGroups(videos)
             copy(
                 videosState = if (videos.isEmpty()) {
                     VideosUiState.Empty
@@ -467,10 +489,14 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         videos.toImmutableList(),
                     )
                 },
-                watchProgress = buildWatchProgressIndex(videos),
-                episodeGroups = groups,
-                bestDubbing = videos.mostWatchedDubbing(),
-                resolvedDownloadStatuses = resolveDownloadStatuses(groups, downloadStatuses),
+                watchProgress = if (localProgress === localWatchProgress) {
+                    derived.progress
+                } else {
+                    buildWatchProgressIndex(videos)
+                },
+                episodeGroups = derived.groups,
+                bestDubbing = derived.bestDubbing,
+                resolvedDownloadStatuses = resolveDownloadStatuses(derived.groups, downloadStatuses),
             )
         }
     }
@@ -481,12 +507,21 @@ class EpisodesViewModel @AssistedInject internal constructor(
         setState { copy(watchProgress = buildWatchProgressIndex(serverVideos)) }
     }
 
-    private fun buildWatchProgressIndex(videos: List<AnimeVideo>): DetailsWatchProgressIndex =
+    private fun buildWatchProgressIndex(
+        videos: List<AnimeVideo>,
+        localEntries: List<AnimeWatchProgress> = localWatchProgress,
+    ): DetailsWatchProgressIndex =
         DetailsWatchProgressIndex.merge(
             animeId = animeId,
-            localEntries = localWatchProgress,
+            localEntries = localEntries,
             videos = videos,
         )
+
+    private class VideosDerived(
+        val groups: ImmutableList<EpisodesState.EpisodeGroup>,
+        val progress: DetailsWatchProgressIndex,
+        val bestDubbing: String,
+    )
 
     private fun showDownloadDubbingPicker(
         videos: List<AnimeVideo>,

@@ -7,8 +7,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
@@ -34,6 +37,8 @@ import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationsDto
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 import su.afk.yummy.tv.data.details.mapper.AnimeRelationCachePayload
+import su.afk.yummy.tv.data.details.mapper.ExtraVideosCachePayload
+import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
@@ -60,6 +65,9 @@ import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideos as toStoredAnim
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 5 * 60 * 1000L
+private const val EXTRA_VIDEOS_TTL_MS = 5 * 60 * 1000L
+private const val EXTRA_VIDEOS_TIMEOUT_MS = 8_000L
+private const val EXTRA_VIDEOS_CACHE_NAMESPACE = "extra-videos"
 private const val ANIME_PUBLIC_EXTRAS_TTL_MS = 6 * 60 * 60 * 1000L
 private const val ANIME_RELATION_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
@@ -102,15 +110,29 @@ class YaniAnimeRepository(
     override suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo> =
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
-            withExtraVideos(animeId, allowNetwork = true) {
-                offlineFirstCache(
-                    read = { animeStorage.getVideos(animeId, languageCode) },
-                    isFresh = { it.isFresh(ANIME_VIDEOS_TTL_MS) },
-                    toDomain = { it.toStoredAnimeVideos() },
-                    fetchAndSave = { fetchVideosFromNetwork(animeId, languageCode) },
-                )
+            withExtraVideos(animeId, allowNetwork = true) { loadBaseVideos(animeId, languageCode) }
+        }
+
+    override fun observeAnimeVideos(animeId: Int): Flow<List<AnimeVideo>> = flow {
+        coroutineScope {
+            val languageCode = settingsStore.currentLanguageCode()
+            val extras = async { fetchExtraVideos(animeId, allowNetwork = true, forceExtras = false) }
+            val base = loadBaseVideos(animeId, languageCode)
+            emit(base)
+            if (extraVideoRepositories.isNotEmpty()) {
+                val merged = mergeExtraVideos(base, extras.await())
+                if (merged.size != base.size) emit(merged)
             }
         }
+    }.flowOn(Dispatchers.IO)
+
+    private suspend fun loadBaseVideos(animeId: Int, languageCode: String): List<AnimeVideo> =
+        offlineFirstCache(
+            read = { animeStorage.getVideos(animeId, languageCode) },
+            isFresh = { it.isFresh(ANIME_VIDEOS_TTL_MS) },
+            toDomain = { it.toStoredAnimeVideos() },
+            fetchAndSave = { fetchVideosFromNetwork(animeId, languageCode) },
+        )
 
     override suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo> =
         withContext(Dispatchers.IO) {
@@ -128,7 +150,7 @@ class YaniAnimeRepository(
 
     override suspend fun fetchAnimeVideos(animeId: Int): List<AnimeVideo> =
         withContext(Dispatchers.IO) {
-            withExtraVideos(animeId, allowNetwork = true) {
+            withExtraVideos(animeId, allowNetwork = true, forceExtras = true) {
                 fetchVideosFromNetwork(animeId, settingsStore.currentLanguageCode()).toStoredAnimeVideos()
             }
         }
@@ -149,14 +171,22 @@ class YaniAnimeRepository(
     private suspend fun withExtraVideos(
         animeId: Int,
         allowNetwork: Boolean,
+        forceExtras: Boolean = false,
         loadBase: suspend () -> List<AnimeVideo>,
     ): List<AnimeVideo> {
         if (extraVideoRepositories.isEmpty()) return loadBase()
         val (base, fetched) = coroutineScope {
-            val extras = async { fetchExtraVideos(animeId, allowNetwork) }
+            val extras = async { fetchExtraVideos(animeId, allowNetwork, forceExtras) }
             val base = loadBase()
             base to extras.await()
         }
+        return mergeExtraVideos(base, fetched)
+    }
+
+    private fun mergeExtraVideos(
+        base: List<AnimeVideo>,
+        fetched: List<Pair<ExtraVideoRepository, List<AnimeVideo>>>,
+    ): List<AnimeVideo> {
         val extras = fetched.flatMap { (repository, videos) ->
             val merged = mergeExtraDubbings(base, videos)
             if (repository.requiresMatchingDubbing) retainBaseDubbings(base, merged) else merged
@@ -167,6 +197,7 @@ class YaniAnimeRepository(
     private suspend fun fetchExtraVideos(
         animeId: Int,
         allowNetwork: Boolean,
+        forceExtras: Boolean,
     ): List<Pair<ExtraVideoRepository, List<AnimeVideo>>> {
         val details = runSuspendCatching {
             if (allowNetwork) getAnimeDetails(animeId) else getCachedAnimeDetails(animeId)
@@ -174,11 +205,33 @@ class YaniAnimeRepository(
         return coroutineScope {
             extraVideoRepositories.map { repository ->
                 async {
-                    repository to runSuspendCatching { repository.videos(details) }.getOrDefault(emptyList())
+                    repository to runSuspendCatching {
+                        withTimeoutOrNull(EXTRA_VIDEOS_TIMEOUT_MS) {
+                            cachedExtraVideos(animeId, repository, details, forceRefresh = forceExtras)
+                        }
+                    }.getOrNull().orEmpty()
                 }
             }.awaitAll()
         }
     }
+
+    /**
+     * Видео одного модуля через Room-кэш [EXTRA_VIDEOS_TTL_MS]: свежая запись отдаётся без сети.
+     * Ошибка модуля не кэшируется (при ошибке отдаётся просроченная запись, если она есть),
+     * поэтому сбой не залипает на время TTL; успешный пустой ответ кэшируется.
+     */
+    private suspend fun cachedExtraVideos(
+        animeId: Int,
+        repository: ExtraVideoRepository,
+        details: AnimeDetails,
+        forceRefresh: Boolean,
+    ): List<AnimeVideo> = documentCache.getOrFetchJson<ExtraVideosCachePayload>(
+        cacheKey = extraVideosCacheKey(animeId, repository, settingsStore.currentLanguageCode()),
+        ttlMs = EXTRA_VIDEOS_TTL_MS,
+        forceRefresh = forceRefresh,
+    ) {
+        repository.videos(details).toExtraVideosCachePayload()
+    }.toDomain()
 
     override suspend fun getAnimeRecommendations(
         animeId: Int,
@@ -419,6 +472,12 @@ class YaniAnimeRepository(
         val userId = settingsStore.yaniUserId.first().coerceAtLeast(0)
         documentCache.deleteByPrefix("user:$userId:$ANIME_RECOMMENDATIONS_CACHE_NAMESPACE:")
     }
+
+    private fun extraVideosCacheKey(
+        animeId: Int,
+        repository: ExtraVideoRepository,
+        language: String,
+    ): String = "$EXTRA_VIDEOS_CACHE_NAMESPACE:$language:$animeId:${repository.sourceId}"
 
     private fun recommendationCacheKey(
         userId: Int,

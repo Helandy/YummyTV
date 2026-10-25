@@ -43,6 +43,7 @@ import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadQuali
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadedActionSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDubbingDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeMobileCard
+import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodesMobileSkeleton
 import su.afk.yummy.tv.feature.details.presentation.R
 
 private val DownloadResolvingColor = Color(0xFFFFC107)
@@ -82,13 +83,17 @@ fun EpisodesMobileScreen(
         },
     ) {
         MobileStateContent(
-            isLoading = state.videosState is VideosUiState.Loading,
+            isLoading = false,
             error = (state.videosState as? VideosUiState.Error)?.message?.asString(),
             onRetry = { onEvent(EpisodesState.Event.RetryVideosSelected) },
             empty = state.videosState is VideosUiState.Empty,
             emptyText = stringResource(R.string.details_episodes_empty),
             emptyIcon = Icons.Filled.PlayArrow,
         ) {
+            if (state.videosState is VideosUiState.Loading) {
+                EpisodesMobileSkeleton(modifier = Modifier.mobileContentMaxWidth())
+                return@MobileStateContent
+            }
             LazyColumn(
                 modifier = Modifier
                     .mobileContentMaxWidth()

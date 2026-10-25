@@ -18,6 +18,8 @@ internal class AniboomExtraVideoRepository @Inject constructor(
     private val findTitle: FindAniboomTitleUseCase,
 ) : ExtraVideoRepository {
 
+    override val sourceId: String = "aniboom"
+
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val malId = details.malId ?: return emptyList()
         val lookup = AniboomLookup(

@@ -18,6 +18,8 @@ internal class AniLibriaExtraVideoRepository @Inject constructor(
     private val findReleases: FindAniLibriaReleasesUseCase,
 ) : ExtraVideoRepository {
 
+    override val sourceId: String = "anilibria"
+
     override val requiresMatchingDubbing: Boolean = true
 
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {

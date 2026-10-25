@@ -21,6 +21,8 @@ internal class Anime4kExtraVideoRepository @Inject constructor(
     private val signer: RequestSigner,
 ) : ExtraVideoRepository {
 
+    override val sourceId: String = "anime4k"
+
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         if (!featureGate.isEnabled() || !ads.isAvailable || !signer.isAvailable) {
             return emptyList()

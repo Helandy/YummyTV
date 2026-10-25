@@ -16,6 +16,12 @@ interface AnimeRepository {
     suspend fun getAnimeDetails(animeId: Int): AnimeDetails
     suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails?
     suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo>
+
+    /**
+     * Видео поэтапно: сначала основная выдача Yani, затем (если модули-источники что-то добавили)
+     * она же с их озвучками. Ошибка основной выдачи завершает поток исключением.
+     */
+    fun observeAnimeVideos(animeId: Int): Flow<List<AnimeVideo>>
     suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo>
 
     /** Видео только из сети (с сохранением в кеш); ошибка сети пробрасывается, без отката на кеш. */

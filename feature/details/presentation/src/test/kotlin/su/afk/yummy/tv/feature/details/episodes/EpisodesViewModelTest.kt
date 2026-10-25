@@ -10,6 +10,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -37,7 +38,7 @@ import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
@@ -99,7 +100,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         } returns playerKey
         every { playerNavigationHandler.getDownloadedPlayerDestination(any()) } returns navKey
         coEvery { animeRepository.getAnimeDetails(ANIME_ID) } returns animeDetails(id = ANIME_ID, title = "Anime")
-        coEvery { animeRepository.getAnimeVideos(ANIME_ID) } returns listOf(v1, v2, v3)
+        every { animeRepository.observeAnimeVideos(ANIME_ID) } returns flowOf(listOf(v1, v2, v3))
         coEvery { animeRepository.refreshAnimeVideos(ANIME_ID) } returns listOf(v1, v2, v3)
         coEvery { animeRepository.getAnimeEpisodeInfo(ANIME_ID) } returns emptyMap()
     }
@@ -113,7 +114,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         appLifecycleSettingsStore = appLifecycleSettingsStore,
         videoDownloadNavigator = videoDownloadNavigator,
         getAnimeDetails = GetAnimeDetailsUseCase(animeRepository),
-        getAnimeVideos = GetAnimeVideosUseCase(animeRepository),
+        observeAnimeVideos = ObserveAnimeVideosUseCase(animeRepository),
         getAnimeEpisodeInfo = GetAnimeEpisodeInfoUseCase(animeRepository),
         refreshAnimeVideos = RefreshAnimeVideosUseCase(animeRepository),
         observeAnimeWatchProgress = ObserveAnimeWatchProgressUseCase(animeRepository),
@@ -139,9 +140,19 @@ class EpisodesViewModelTest : BaseUnitTest() {
         durationSeconds = 1_400,
     )
 
+    /** Группы считаются на реальном `Dispatchers.Default`, поэтому состояние ждём с таймаутом. */
+    private fun EpisodesViewModel.awaitState(
+        timeoutMs: Long = 2_000,
+        predicate: (EpisodesState.State) -> Boolean,
+    ): EpisodesState.State {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (!predicate(currentState) && System.currentTimeMillis() < deadline) Thread.sleep(10)
+        return currentState
+    }
+
     @Test
     fun `loads the videos grouped by episode`() {
-        val state = createViewModel().currentState
+        val state = createViewModel().awaitState { it.videosState is VideosUiState.Content }
 
         assertTrue(state.videosState is VideosUiState.Content)
         assertEquals(listOf("1", "2"), state.episodeGroups.map { it.episode })
@@ -149,21 +160,24 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
     @Test
     fun `empty answer is an empty state`() {
-        coEvery { animeRepository.getAnimeVideos(ANIME_ID) } returns emptyList()
+        every { animeRepository.observeAnimeVideos(ANIME_ID) } returns flowOf(emptyList())
 
-        assertEquals(VideosUiState.Empty, createViewModel().currentState.videosState)
+        assertEquals(
+            VideosUiState.Empty,
+            createViewModel().awaitState { it.videosState == VideosUiState.Empty }.videosState,
+        )
     }
 
     @Test
     fun `failed load is an error state and retry recovers`() {
-        coEvery { animeRepository.getAnimeVideos(ANIME_ID) } throws IllegalStateException("boom")
+        every { animeRepository.observeAnimeVideos(ANIME_ID) } returns flow { throw IllegalStateException("boom") }
         val vm = createViewModel()
         assertEquals("boom", ((vm.currentState.videosState as VideosUiState.Error).message as UiText.Failure).cause.message)
-        coEvery { animeRepository.getAnimeVideos(ANIME_ID) } returns listOf(v1)
+        every { animeRepository.observeAnimeVideos(ANIME_ID) } returns flowOf(listOf(v1))
 
         vm.setEvent(Event.RetryVideosSelected)
 
-        assertTrue(vm.currentState.videosState is VideosUiState.Content)
+        assertTrue(vm.awaitState { it.videosState is VideosUiState.Content }.videosState is VideosUiState.Content)
     }
 
     @Test
@@ -178,14 +192,14 @@ class EpisodesViewModelTest : BaseUnitTest() {
     fun `pending episode with one candidate opens the player`() {
         createViewModel(pendingEpisode = "2")
 
-        verify(exactly = 1) { nav.navigate(playerKey) }
+        verify(exactly = 1, timeout = 2_000) { nav.navigate(playerKey) }
     }
 
     @Test
     fun `pending episode with several candidates shows the dubbing picker`() {
         val vm = createViewModel(pendingEpisode = "1")
 
-        assertNotNull(vm.currentState.pendingEpisodeDubbingSelection)
+        assertNotNull(vm.awaitState { it.pendingEpisodeDubbingSelection != null }.pendingEpisodeDubbingSelection)
         verify(exactly = 0) { nav.navigate(any()) }
     }
 
@@ -216,7 +230,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
         vm.setEvent(Event.BalancerConfirmed(v1))
 
-        verify(exactly = 1) { nav.navigate(playerKey) }
+        verify(exactly = 1, timeout = 2_000) { nav.navigate(playerKey) }
         assertNull(vm.currentState.pendingBalancerSelection)
     }
 

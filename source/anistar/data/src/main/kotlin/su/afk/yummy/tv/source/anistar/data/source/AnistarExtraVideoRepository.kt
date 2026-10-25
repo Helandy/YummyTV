@@ -20,6 +20,8 @@ internal class AnistarExtraVideoRepository @Inject constructor(
     private val getEpisodes: GetAnistarEpisodesUseCase,
 ) : ExtraVideoRepository {
 
+    override val sourceId: String = "anistar"
+
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val malId = details.malId ?: return emptyList()
         val lookup = AnistarLookup(
