@@ -36,6 +36,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun EpisodeActionsTvDialog(
     action: EpisodesState.EpisodeAction,
     onToggleWatched: () -> Unit,
+    onClearWatched: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val dismissFocusRequester = remember { FocusRequester() }
@@ -92,6 +93,12 @@ internal fun EpisodeActionsTvDialog(
                         },
                         onClick = onToggleWatched,
                     )
+                    if (!action.isWatched && action.hasProgress) {
+                        TvRetryButton(
+                            text = stringResource(R.string.details_tv_unmark_episode_watched),
+                            onClick = onClearWatched,
+                        )
+                    }
                 }
             }
         }

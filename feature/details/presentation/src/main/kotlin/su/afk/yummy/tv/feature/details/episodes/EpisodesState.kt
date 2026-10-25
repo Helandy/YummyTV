@@ -62,6 +62,8 @@ class EpisodesState {
         val videos: ImmutableList<AnimeVideo>,
         /** Текущий статус серии — от него зависит направление действия. */
         val isWatched: Boolean,
+        /** Есть хоть какой-то прогресс (в том числе неполный) — его можно сбросить. */
+        val hasProgress: Boolean,
         /** Серия уже отложена — от этого зависит направление действия. */
         val isInWatchLater: Boolean,
     )
@@ -229,6 +231,9 @@ class EpisodesState {
 
         /** Пользователь переключил отметку "просмотрено" у серии. */
         data object EpisodeWatchedToggled : Event
+
+        /** Пользователь сбросил отметку/прогресс у серии, даже не досмотренной до конца. */
+        data object EpisodeWatchedCleared : Event
 
         /** Пользователь отложил серию или снял пометку. */
         data object EpisodeWatchLaterToggled : Event

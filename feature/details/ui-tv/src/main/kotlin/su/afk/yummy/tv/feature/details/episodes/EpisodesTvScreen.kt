@@ -127,6 +127,10 @@ fun EpisodesTvScreen(
                     onEvent(EpisodesState.Event.EpisodeWatchedToggled)
                     restoreEpisodesFocusRequest += 1
                 },
+                onClearWatched = {
+                    onEvent(EpisodesState.Event.EpisodeWatchedCleared)
+                    restoreEpisodesFocusRequest += 1
+                },
                 onDismiss = ::dismissEpisodeActions,
             )
         }

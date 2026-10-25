@@ -40,6 +40,8 @@ import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
 import su.afk.yummy.tv.domain.watchlater.usecase.ObserveWatchLaterEpisodesUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
@@ -207,6 +209,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                             episode = episode,
                             videos = videos,
                             isWatched = watchProgress.bestFor(videos)?.isWatchedProgress() == true,
+                            hasProgress = videos.watchStatus(watchProgress) != EpisodeWatchStatus.None,
                             isInWatchLater = episode.episodeGroupKey() in watchLaterEpisodes,
                         ),
                     )
@@ -217,6 +220,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 val action = currentState.pendingEpisodeAction ?: return
                 setState { copy(pendingEpisodeAction = null) }
                 viewModelScope.launch { toggleEpisodeWatched(action) }
+            }
+
+            EpisodesState.Event.EpisodeWatchedCleared -> {
+                val action = currentState.pendingEpisodeAction ?: return
+                setState { copy(pendingEpisodeAction = null) }
+                viewModelScope.launch { toggleEpisodeWatched(action.copy(isWatched = true)) }
             }
 
             EpisodesState.Event.EpisodeWatchLaterToggled -> {

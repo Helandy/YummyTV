@@ -181,7 +181,7 @@ internal fun DetailsMediaCard(
                     .weight(contentWeight)
                     .then(if (subtitleAtBottom) Modifier.fillMaxHeight() else Modifier)
                     // Внизу базовая линия текста приподнята на высоту полосы прогресса у края превью.
-                    .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (subtitleAtBottom) 2.dp else 10.dp),
+                    .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (subtitleAtBottom) 3.dp else 10.dp),
                 verticalAlignment = Alignment.Top,
             ) {
                 Column(
