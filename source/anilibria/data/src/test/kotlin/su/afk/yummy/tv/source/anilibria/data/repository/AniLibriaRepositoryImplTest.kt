@@ -9,32 +9,37 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaCatalogEpisodeDto
-import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaCatalogReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaEpisodeDto
-import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaLookupResponseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.network.AniLibriaApi
+import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
+import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
+import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
+import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
+import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import java.io.IOException
 
 class AniLibriaRepositoryImplTest : BaseUnitTest() {
 
     private val api: AniLibriaApi = mockk()
+    private val findAvailability: FindSourceAvailabilityUseCase = mockk()
 
-    private fun createRepository() = AniLibriaRepositoryImpl(api)
+    private fun createRepository() = AniLibriaRepositoryImpl(api, findAvailability)
 
-    private fun release(id: Int, dubbing: Boolean = false, vararg episodes: Int) = AniLibriaCatalogReleaseDto(
-        id = id,
-        dubbing = dubbing,
-        episodes = episodes.map { AniLibriaCatalogEpisodeDto(ordinal = it, durationSec = 1440, openingStartSec = 5, openingEndSec = 95) },
+    private fun variant(id: Int, dubbing: Boolean = false, vararg episodes: Int) = SourceVariant(
+        key = id.toString(),
+        isDubbing = dubbing,
+        episodes = episodes.map { SourceEpisode(number = it, durationSec = 1440, openingStartSec = 5, openingEndSec = 95) },
+    )
+
+    private fun availability(vararg variants: SourceVariant) = SourceAvailability(
+        sourceId = "anilibria", key = variants.first().key, url = "https://x", episodesAvailable = 2,
+        episodesTotal = null, ongoing = false, qualities = emptyList(), variants = variants.toList(),
     )
 
     @Test
-    fun `releases come from the server catalog with episodes and without stream links`() = runTest {
-        coEvery { api.findReleases(any()) } returns AniLibriaLookupResponseDto(
-            releaseIds = listOf(1, 2),
-            releases = listOf(release(1, false, 2, 1), release(2, true, 1)),
-        )
+    fun `releases come from the availability answer with episodes and without stream links`() = runTest {
+        coEvery { findAvailability("anilibria", any()) } returns availability(variant(1, false, 2, 1), variant(2, true, 1))
 
         val releases = createRepository().findReleases(52991, listOf("Фрирен", "Sousou no Frieren"), 2023)
 
@@ -49,26 +54,32 @@ class AniLibriaRepositoryImplTest : BaseUnitTest() {
     }
 
     @Test
-    fun `empty server answer means no releases`() = runTest {
-        coEvery { api.findReleases(any()) } returns AniLibriaLookupResponseDto()
+    fun `lookup carries mal id, the latin title first and the year`() = runTest {
+        coEvery { findAvailability("anilibria", any()) } returns null
+
+        createRepository().findReleases(52991, listOf("Фрирен", "Sousou no Frieren"), 2023)
+
+        coVerify { findAvailability("anilibria", AvailabilityLookup(52991, "Sousou no Frieren", listOf("Фрирен"), 2023, null, null)) }
+    }
+
+    @Test
+    fun `source without the title means no releases`() = runTest {
+        coEvery { findAvailability(any(), any()) } returns null
 
         assertEquals(emptyList<Any>(), createRepository().findReleases(1, listOf("Some Show"), 2020))
     }
 
     @Test
     fun `unreachable server is a failure without any fallback to AniLibria`() = runTest {
-        coEvery { api.findReleases(any()) } throws IOException("offline")
+        coEvery { findAvailability(any(), any()) } throws IOException("offline")
 
         assertTrue(runCatching { createRepository().findReleases(1, listOf("Some Show"), 2020) }.exceptionOrNull() is IOException)
         coVerify(exactly = 0) { api.getRelease(any()) }
     }
 
     @Test
-    fun `release whose episodes the server has not read yet is not cached as empty`() = runTest {
-        coEvery { api.findReleases(any()) } returnsMany listOf(
-            AniLibriaLookupResponseDto(releaseIds = listOf(1, 2), releases = listOf(release(1, false, 1))),
-            AniLibriaLookupResponseDto(releaseIds = listOf(1, 2), releases = listOf(release(1, false, 1), release(2, true, 1))),
-        )
+    fun `source that did not answer is not cached as empty`() = runTest {
+        coEvery { findAvailability(any(), any()) } throws IOException("не ответил") andThen availability(variant(1, false, 1), variant(2, true, 1))
         val repository = createRepository()
 
         assertTrue(runCatching { repository.findReleases(5, listOf("Show"), null) }.exceptionOrNull() is IOException)
@@ -78,13 +89,20 @@ class AniLibriaRepositoryImplTest : BaseUnitTest() {
 
     @Test
     fun `result is cached per mal id`() = runTest {
-        coEvery { api.findReleases(any()) } returns AniLibriaLookupResponseDto(listOf(1), listOf(release(1, false, 1)))
+        coEvery { findAvailability(any(), any()) } returns availability(variant(1, false, 1))
         val repository = createRepository()
 
         repository.findReleases(5, listOf("Show"), null)
         repository.findReleases(5, listOf("Show"), null)
 
-        coVerify(exactly = 1) { api.findReleases(any()) }
+        coVerify(exactly = 1) { findAvailability(any(), any()) }
+    }
+
+    @Test
+    fun `variant whose key is not a release id is skipped`() = runTest {
+        coEvery { findAvailability(any(), any()) } returns availability(variant(1, false, 1), SourceVariant("abc", false, emptyList()))
+
+        assertEquals(listOf(1), createRepository().findReleases(5, listOf("Show"), null).map { it.id })
     }
 
     @Test

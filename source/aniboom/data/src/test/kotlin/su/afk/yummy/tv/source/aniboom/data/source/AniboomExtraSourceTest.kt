@@ -11,18 +11,20 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.source.aniboom.domain.model.AniboomDubbing
-import su.afk.yummy.tv.source.aniboom.domain.model.AniboomLookup
 import su.afk.yummy.tv.source.aniboom.domain.model.AniboomStreams
-import su.afk.yummy.tv.source.aniboom.domain.model.AniboomTitle
 import su.afk.yummy.tv.source.aniboom.domain.repository.AniboomRepository
-import su.afk.yummy.tv.source.aniboom.domain.usecase.FindAniboomTitleUseCase
 import su.afk.yummy.tv.source.aniboom.domain.usecase.ResolveAniboomStreamsUseCase
+import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
+import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
+import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
+import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
+import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import java.io.IOException
 
 class AniboomExtraSourceTest : BaseUnitTest() {
 
     private val repository: AniboomRepository = mockk()
+    private val findAvailability: FindSourceAvailabilityUseCase = mockk()
     private val messages = object : AniboomMessages {
         override val notFound = "nf-text"
     }
@@ -34,16 +36,23 @@ class AniboomExtraSourceTest : BaseUnitTest() {
         creators = emptyList(), studios = emptyList(), viewingOrder = emptyList(), screenshots = emptyList(), malId = malId,
     )
 
-    private val title = AniboomTitle("0BzM07Pq71J", 2, listOf(AniboomDubbing("JAM CLUB", 16), AniboomDubbing("Dream Cast", 30)))
+    private fun variant(key: String, title: String?, vararg episodes: Int) =
+        SourceVariant(key, isDubbing = false, episodes = episodes.map { SourceEpisode(it, null, null, null) }, title = title)
+
+    private val availability = SourceAvailability(
+        sourceId = "aniboom", key = "0BzM07Pq71J", url = "https://animego.me/anime/x", episodesAvailable = 2, episodesTotal = 28,
+        ongoing = false, qualities = emptyList(),
+        variants = listOf(variant("16", "JAM CLUB", 1, 2), variant("30", "Dream Cast", 1, 2), variant("x", "Bad", 1), variant("5", null, 1)),
+    )
 
     private fun videoRepository() =
-        AniboomExtraVideoRepository(FindAniboomTitleUseCase(repository))
+        AniboomExtraVideoRepository(findAvailability)
 
     private fun streamRepository() = AniboomExtraStreamRepository(ResolveAniboomStreamsUseCase(repository), messages)
 
     @Test
-    fun `videos are built per dubbing and episode and lookup carries the app data`() = runTest {
-        coEvery { repository.findTitle(AniboomLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28)) } returns title
+    fun `videos are built per dubbing and episode, unusable variants are skipped`() = runTest {
+        coEvery { findAvailability("aniboom", AvailabilityLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28)) } returns availability
 
         val videos = videoRepository().videos(details(52991))
 
@@ -57,9 +66,8 @@ class AniboomExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
-    fun `no mal id or no title gives no videos`() = runTest {
-        assertTrue(videoRepository().videos(details(null)).isEmpty())
-        coEvery { repository.findTitle(any()) } returns null
+    fun `no title gives no videos`() = runTest {
+        coEvery { findAvailability(any(), any()) } returns null
         assertTrue(videoRepository().videos(details(1)).isEmpty())
     }
 

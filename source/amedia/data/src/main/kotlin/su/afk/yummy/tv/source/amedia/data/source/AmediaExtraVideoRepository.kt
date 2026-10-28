@@ -3,12 +3,13 @@ package su.afk.yummy.tv.source.amedia.data.source
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
+import su.afk.yummy.tv.source.amedia.data.mapper.AmediaMapper
 import su.afk.yummy.tv.source.amedia.data.utils.toSourceUrl
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
-import su.afk.yummy.tv.source.amedia.domain.model.AmediaLookup
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTarget
-import su.afk.yummy.tv.source.amedia.domain.usecase.FindAmediaTitleUseCase
 import su.afk.yummy.tv.source.amedia.domain.usecase.GetAmediaEpisodesUseCase
+import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
+import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import javax.inject.Inject
 
 /**
@@ -17,15 +18,15 @@ import javax.inject.Inject
  * открытии), а серия, вместо которой сайт вставил Rutube, — самой Rutube-ссылкой: её разбирает штатный Rutube-экстрактор.
  */
 internal class AmediaExtraVideoRepository @Inject constructor(
-    private val findTitle: FindAmediaTitleUseCase,
+    private val findAvailability: FindSourceAvailabilityUseCase,
     private val getEpisodes: GetAmediaEpisodesUseCase,
 ) : ExtraVideoRepository {
 
-    override val sourceId: String = "amedia"
+    override val sourceId: String = SOURCE_ID
 
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val malId = details.malId ?: return emptyList()
-        val lookup = AmediaLookup(
+        val lookup = AvailabilityLookup(
             malId = malId,
             title = details.title,
             otherTitles = details.otherTitles,
@@ -33,7 +34,7 @@ internal class AmediaExtraVideoRepository @Inject constructor(
             type = details.type,
             episodes = details.episodes?.count,
         )
-        val title = findTitle(lookup) ?: return emptyList()
+        val title = findAvailability(SOURCE_ID, lookup)?.let(AmediaMapper::toTitle) ?: return emptyList()
 
         return getEpisodes(title).map { episode ->
             val url = when (val source = episode.source) {
@@ -54,6 +55,7 @@ internal class AmediaExtraVideoRepository @Inject constructor(
     }
 
     private companion object {
+        const val SOURCE_ID = "amedia"
         const val PLAYER_NAME = "Amedia"
         const val DUBBING_NAME = "Amedia"
     }

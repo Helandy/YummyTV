@@ -1,12 +1,12 @@
 package su.afk.yummy.tv.source.anilibria.data.mapper
 
-import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaCatalogReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaEpisodeDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaReleaseDto
 import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaSkipDto
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaEpisode
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaRelease
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaSkip
+import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
 
 internal object AniLibriaMapper {
 
@@ -22,14 +22,18 @@ internal object AniLibriaMapper {
             isDubbing = dto.name?.main?.contains(DUBBING_MARK, ignoreCase = true) == true,
         )
 
-    /** Релиз из ответа сервера: серии без ссылок на потоки, их [AniLibriaRepository.getRelease] берёт у AniLibria при запуске серии. */
-    fun toRelease(malId: Int, dto: AniLibriaCatalogReleaseDto): AniLibriaRelease =
-        AniLibriaRelease(
-            id = dto.id,
+    /**
+     * Релиз из варианта общей ручки наличия: серии без ссылок на потоки, их [AniLibriaRepository.getRelease] берёт у AniLibria при
+     * запуске серии. `null`, если ключ варианта не id релиза.
+     */
+    fun toRelease(malId: Int, variant: SourceVariant): AniLibriaRelease? {
+        val id = variant.key.toIntOrNull() ?: return null
+        return AniLibriaRelease(
+            id = id,
             malId = malId,
-            episodes = dto.episodes.filter { it.ordinal > 0 }.distinctBy { it.ordinal }.sortedBy { it.ordinal }.map { episode ->
+            episodes = variant.episodes.filter { it.number > 0 }.distinctBy { it.number }.sortedBy { it.number }.map { episode ->
                 AniLibriaEpisode(
-                    ordinal = episode.ordinal,
+                    ordinal = episode.number,
                     name = null,
                     hls480 = null,
                     hls720 = null,
@@ -38,8 +42,9 @@ internal object AniLibriaMapper {
                     opening = toSkip(episode.openingStartSec, episode.openingEndSec),
                 )
             },
-            isDubbing = dto.dubbing,
+            isDubbing = variant.isDubbing,
         )
+    }
 
     private fun toEpisode(dto: AniLibriaEpisodeDto): AniLibriaEpisode? {
         val ordinal = dto.ordinal?.takeIf { it > 0 && it % 1.0 == 0.0 }?.toInt() ?: return null

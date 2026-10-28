@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mikai_not_found_message">Эта серия недоступна на Mikai</string>
+    <string name="mikai_region_blocked_message">Это видео недоступно в вашем регионе (плеер Ashdi, который использует Mikai, закрыт для вашей страны). Включите VPN или выберите другой источник</string>
+    <string name="mikai_subs_suffix"> (субтитры)</string>
+</resources>

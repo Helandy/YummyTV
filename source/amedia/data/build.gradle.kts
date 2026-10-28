@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(project(":source:amedia:domain"))
+    implementation(project(":source:availability:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":feature:details:domain"))

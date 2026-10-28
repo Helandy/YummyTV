@@ -3,12 +3,12 @@ package su.afk.yummy.tv.source.anilibria.data.repository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
-import su.afk.yummy.tv.source.anilibria.data.dto.AniLibriaLookupRequestDto
 import su.afk.yummy.tv.source.anilibria.data.mapper.AniLibriaMapper
 import su.afk.yummy.tv.source.anilibria.data.network.AniLibriaApi
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaRelease
 import su.afk.yummy.tv.source.anilibria.domain.repository.AniLibriaRepository
-import java.io.IOException
+import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
+import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,6 +16,7 @@ import javax.inject.Singleton
 @Singleton
 internal class AniLibriaRepositoryImpl @Inject constructor(
     private val api: AniLibriaApi,
+    private val findAvailability: FindSourceAvailabilityUseCase,
 ) : AniLibriaRepository {
 
     private data class Cached(val release: AniLibriaRelease?, val fetchedAtMs: Long)
@@ -32,17 +33,16 @@ internal class AniLibriaRepositoryImpl @Inject constructor(
             if (now - cached.fetchedAtMs < ttl) return cached.releases
         }
 
-        // Только копия каталога на сервере YummyTV: AniLibria не опрашивается, пока пользователь не запустил серию. Сбой сервера
-        // в кэш не попадает: исключение уйдёт наверх, источник просто не появится в этот раз.
+        // Только копия каталога на сервере YummyTV (общая ручка наличия): AniLibria не опрашивается, пока пользователь не запустил
+        // серию. Сбой сервера и «источник не ответил» (серии релизов ещё не прочитаны) в кэш не попадают: исключение уйдёт наверх,
+        // источник просто не появится в этот раз.
         val sorted = prioritizeAnimeTitles("", titles, MAX_TITLES)
         val title = sorted.firstOrNull()
         val releases = if (title == null) {
             emptyList()
         } else {
-            val response = api.findReleases(AniLibriaLookupRequestDto(malId, title, sorted.drop(1), year))
-            // Релиз найден, а серии сервер ещё не прочитал: это не «релизов нет», пустой ответ не кэшируем.
-            if (response.releases.size < response.releaseIds.size) throw IOException("AniLibria catalog: серии релизов ещё не прочитаны")
-            response.releases.map { AniLibriaMapper.toRelease(malId, it) }
+            val lookup = AvailabilityLookup(malId, title, sorted.drop(1), year, type = null, episodes = null)
+            findAvailability(SOURCE_ID, lookup)?.variants.orEmpty().mapNotNull { AniLibriaMapper.toRelease(malId, it) }
         }
         byMalId[malId] = CachedList(releases, System.currentTimeMillis())
         return releases
@@ -75,5 +75,6 @@ internal class AniLibriaRepositoryImpl @Inject constructor(
         const val EMPTY_TTL_MS = 5 * 60 * 1000L
         const val RETRY_DELAY_MS = 400L
         const val MAX_TITLES = 30
+        const val SOURCE_ID = "anilibria"
     }
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="animeon_not_found_message">Эта серия недоступна на AnimeON</string>
+    <string name="animeon_region_blocked_message">Это видео недоступно в вашем регионе (плеер AnimeON закрыт для вашей страны). Включите VPN или выберите другой источник</string>
+</resources>

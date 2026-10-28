@@ -63,7 +63,6 @@ include(":feature:main:ui-mobile")
 include(":feature:commonScreen:api")
 include(":feature:commonScreen:presenter")
 
-
 include(":feature:home:api")
 include(":feature:catalog:api")
 include(":feature:library:api")
@@ -124,7 +123,6 @@ include(":feature:catalog:presentation")
 include(":feature:catalog:ui-tv")
 include(":feature:catalog:ui-mobile")
 include(":feature:catalog:android")
-
 
 include(":feature:player:domain")
 include(":feature:player:data")
@@ -206,6 +204,57 @@ if (file("source/anime4k").isDirectory) {
     include(":source:anime4k:data")
 }
 
+if (file("source/availability").isDirectory) {
+    include(":source:availability:domain")
+    include(":source:availability:data")
+}
+
+if (file("source/ailiberty").isDirectory && file("source/availability").isDirectory) {
+    include(":source:ailiberty:domain")
+    include(":source:ailiberty:data")
+}
+
+if (file("source/anidub").isDirectory && file("source/availability").isDirectory) {
+    include(":source:anidub:domain")
+    include(":source:anidub:data")
+}
+
+if (file("source/ashdi").isDirectory) {
+    include(":source:ashdi:domain")
+    include(":source:ashdi:data")
+}
+
+if (file("source/fenix").isDirectory) {
+    include(":source:fenix:domain")
+    include(":source:fenix:data")
+}
+
+if (file("source/animeon").isDirectory && file("source/availability").isDirectory) {
+    include(":source:animeon:domain")
+    include(":source:animeon:data")
+}
+
+if (file("source/animevost").isDirectory && file("source/availability").isDirectory) {
+    include(":source:animevost:domain")
+    include(":source:animevost:data")
+}
+
+if (file("source/mikai").isDirectory && file("source/availability").isDirectory && file("source/ashdi").isDirectory &&
+    file("source/fenix").isDirectory
+) {
+    include(":source:mikai:data")
+}
+
+if (file("source/animebesst").isDirectory && file("source/availability").isDirectory) {
+    include(":source:animebesst:domain")
+    include(":source:animebesst:data")
+}
+
+if (file("source/dreamerscast").isDirectory && file("source/availability").isDirectory) {
+    include(":source:dreamerscast:domain")
+    include(":source:dreamerscast:data")
+}
+
 if (file("source/aniboom").isDirectory) {
     include(":source:aniboom:domain")
     include(":source:aniboom:data")
@@ -216,12 +265,12 @@ if (file("source/anistar").isDirectory) {
     include(":source:anistar:data")
 }
 
-if (file("source/amedia").isDirectory) {
+if (file("source/amedia").isDirectory && file("source/availability").isDirectory) {
     include(":source:amedia:domain")
     include(":source:amedia:data")
 }
 
-if (file("source/anilibria").isDirectory) {
+if (file("source/anilibria").isDirectory && file("source/availability").isDirectory) {
     include(":source:anilibria:domain")
     include(":source:anilibria:data")
 }

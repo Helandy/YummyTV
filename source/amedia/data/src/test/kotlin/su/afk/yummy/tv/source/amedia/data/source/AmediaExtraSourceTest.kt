@@ -13,21 +13,22 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisode
-import su.afk.yummy.tv.source.amedia.domain.model.AmediaEpisodeSource
-import su.afk.yummy.tv.source.amedia.domain.model.AmediaLookup
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaStreams
 import su.afk.yummy.tv.source.amedia.domain.model.AmediaTarget
-import su.afk.yummy.tv.source.amedia.domain.model.AmediaTitle
 import su.afk.yummy.tv.source.amedia.domain.repository.AmediaRepository
-import su.afk.yummy.tv.source.amedia.domain.usecase.FindAmediaTitleUseCase
 import su.afk.yummy.tv.source.amedia.domain.usecase.GetAmediaEpisodesUseCase
 import su.afk.yummy.tv.source.amedia.domain.usecase.ResolveAmediaStreamsUseCase
+import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
+import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
+import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
+import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
+import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import java.io.IOException
 
 class AmediaExtraSourceTest : BaseUnitTest() {
 
     private val repository: AmediaRepository = mockk()
+    private val findAvailability: FindSourceAvailabilityUseCase = mockk()
     private val messages = object : AmediaMessages {
         override val notFound = "nf-text"
     }
@@ -39,18 +40,23 @@ class AmediaExtraSourceTest : BaseUnitTest() {
         creators = emptyList(), studios = emptyList(), viewingOrder = emptyList(), screenshots = emptyList(), malId = malId,
     )
 
-    private fun title(vararg episodes: AmediaEpisode) = AmediaTitle("https://amd.online/5753-x.html", episodes.toList())
+    private fun availability(vararg episodes: SourceEpisode, url: String = "https://amd.online/5753-x.html") = SourceAvailability(
+        sourceId = "amedia", key = "5753-x", url = url, episodesAvailable = episodes.size, episodesTotal = 12, ongoing = true,
+        qualities = emptyList(), variants = listOf(SourceVariant("5753", false, episodes.toList())),
+    )
 
-    private fun videoRepository() = AmediaExtraVideoRepository(FindAmediaTitleUseCase(repository), GetAmediaEpisodesUseCase())
+    private fun vod(number: Int, vodId: Long) = SourceEpisode(number, null, null, null, id = vodId.toString())
+
+    private fun rutube(number: Int, url: String) = SourceEpisode(number, null, null, null, url = url)
+
+    private fun videoRepository() = AmediaExtraVideoRepository(findAvailability, GetAmediaEpisodesUseCase())
 
     private fun streamRepository() = AmediaExtraStreamRepository(ResolveAmediaStreamsUseCase(repository), messages)
 
     @Test
     fun `videos are built per episode and lookup carries the app data`() = runTest {
-        coEvery { repository.findTitle(AmediaLookup(59088, "Мстители", listOf("Revengers"), 2026, "tv", 12)) } returns title(
-            AmediaEpisode(2, AmediaEpisodeSource.Vod(48111)),
-            AmediaEpisode(1, AmediaEpisodeSource.Vod(47997)),
-        )
+        coEvery { findAvailability("amedia", AvailabilityLookup(59088, "Мстители", listOf("Revengers"), 2026, "tv", 12)) } returns
+            availability(vod(2, 48111), vod(1, 47997))
 
         val videos = videoRepository().videos(details(59088))
 
@@ -63,10 +69,7 @@ class AmediaExtraSourceTest : BaseUnitTest() {
     @Test
     fun `rutube episode keeps the rutube embed as its url`() = runTest {
         val embed = "https://rutube.ru/play/embed/be753fcea5b1c586363cf8a220c47167"
-        coEvery { repository.findTitle(any()) } returns title(
-            AmediaEpisode(1, AmediaEpisodeSource.Rutube(embed)),
-            AmediaEpisode(2, AmediaEpisodeSource.Vod(30296)),
-        )
+        coEvery { findAvailability(any(), any()) } returns availability(rutube(1, embed), vod(2, 30296))
 
         val videos = videoRepository().videos(details(1))
 
@@ -75,10 +78,19 @@ class AmediaExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
-    fun `no mal id or no title gives no videos`() = runTest {
+    fun `no mal id, no title or a foreign page gives no videos`() = runTest {
         assertTrue(videoRepository().videos(details(null)).isEmpty())
-        coEvery { repository.findTitle(any()) } returns null
+        coEvery { findAvailability(any(), any()) } returns null
         assertTrue(videoRepository().videos(details(1)).isEmpty())
+        coEvery { findAvailability(any(), any()) } returns availability(vod(1, 1), url = "https://evil.example/1.html")
+        assertTrue(videoRepository().videos(details(1)).isEmpty())
+    }
+
+    @Test
+    fun `a failed source is not swallowed so the old list stays cached`() = runTest {
+        coEvery { findAvailability(any(), any()) } throws IOException("amedia не ответил")
+
+        assertTrue(runCatching { videoRepository().videos(details(1)) }.exceptionOrNull() is IOException)
     }
 
     @Test

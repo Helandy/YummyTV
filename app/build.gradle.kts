@@ -91,6 +91,25 @@ androidComponents {
 dependencies {
     // Необязательный источник «4K»: нет каталога source/anime4k, нет и зависимости.
     findProject(":source:anime4k:data")?.let { implementation(it) }
+    // Необязательный источник «AiLiberty» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:availability:data")?.let { implementation(it) }
+    findProject(":source:ailiberty:data")?.let { implementation(it) }
+    // Необязательный источник «AniDub» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:anidub:data")?.let { implementation(it) }
+    // Общий разбор плеера Ashdi для AnimeON и Mikai: нет каталога source/ashdi, нет и зависимости.
+    findProject(":source:ashdi:data")?.let { implementation(it) }
+    // Общий разбор плеера Fenix для AnimeON и Mikai: нет каталога source/fenix, нет и зависимости.
+    findProject(":source:fenix:data")?.let { implementation(it) }
+    // Необязательный источник «AnimeON» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:animeon:data")?.let { implementation(it) }
+    // Необязательный источник «AnimeVost» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:animevost:data")?.let { implementation(it) }
+    // Необязательный источник «Mikai» (нужны source/availability, source/ashdi и source/fenix): нет каталога, нет и зависимости.
+    findProject(":source:mikai:data")?.let { implementation(it) }
+    // Необязательный источник «Animebesst» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:animebesst:data")?.let { implementation(it) }
+    // Необязательный источник «Dream Cast» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:dreamerscast:data")?.let { implementation(it) }
     // Необязательный источник «AniBoom»: нет каталога source/aniboom, нет и зависимости.
     findProject(":source:aniboom:data")?.let { implementation(it) }
     // Необязательный источник «AniStar»: нет каталога source/anistar, нет и зависимости.

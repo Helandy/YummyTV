@@ -4,6 +4,11 @@
 необязательные (как `source/anime4k`): нет каталога — приложение собирается без них.
 
 ## Как работает
+- **Релизы тайтла приходят из общей ручки наличия** (`source/availability`, `FindSourceAvailabilityUseCase("anilibria", …)`): один
+  запрос на все балансеры вместо отдельного `POST /anilibria/title`. Сервер отдаёт варианты (`variants`): релиз озвучки и релиз нового
+  дубляжа с номерами серий, длительностью и опенингом (`AniLibriaMapper.toRelease(malId, variant)`). Если сервер не дочитал серии части
+  релизов или не смог опросить источник, это `IOException`: результат не кэшируется, балансер просто не появится в этот раз.
+  Старый `POST /anilibria/title` остаётся на сервере для прежних версий приложения. Модуль требует `source/availability`.
 - `AniLibriaExtraVideoRepository` (`ExtraVideoRepository`) ищет релиз: `GET aniliberty.top/api/v1/app/search/releases`
   по названиям тайтла (до 3 запросов), берёт запись с `mal.id == details.malId` без гео/копирайт-блокировки,
   затем `GET /anime/releases/{id}` → серии. Видео получают `iframeUrl = source://anilibria/{releaseId}/{ordinal}`,

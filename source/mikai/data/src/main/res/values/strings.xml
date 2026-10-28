@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mikai_not_found_message">This episode is unavailable on Mikai</string>
+    <string name="mikai_region_blocked_message">This video is not available in your region (the Ashdi player used by Mikai blocks it). Try a VPN or another source</string>
+    <string name="mikai_subs_suffix"> (subtitles)</string>
+</resources>

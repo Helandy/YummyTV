@@ -1,0 +1,9 @@
+#EXTM3U
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2312172,RESOLUTION=1920x1080,FRAME-RATE=24.390,CODECS="av01.0.09M.08,mp4a.40.29"
+https://play.dreamerscast.com/hls/312db18b/88a30fac_,1080,720,low,aac,.mp4.urlset/index-f1-v1-f4-a1.m3u8
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1335146,RESOLUTION=1280x720,FRAME-RATE=24.390,CODECS="av01.0.09M.08,mp4a.40.29"
+https://play.dreamerscast.com/hls/312db18b/88a30fac_,1080,720,low,aac,.mp4.urlset/index-f2-v1-f4-a1.m3u8
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=874541,RESOLUTION=854x480,FRAME-RATE=24.390,CODECS="av01.0.06M.08,mp4a.40.29"
+https://play.dreamerscast.com/hls/312db18b/88a30fac_,1080,720,low,aac,.mp4.urlset/index-f3-v1-f4-a1.m3u8
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=144003,CODECS="mp4a.40.29"
+https://play.dreamerscast.com/hls/312db18b/88a30fac_aac.mp4/index-a1.m3u8
