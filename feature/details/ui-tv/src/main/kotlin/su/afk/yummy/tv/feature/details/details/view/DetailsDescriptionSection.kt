@@ -1,13 +1,14 @@
 package su.afk.yummy.tv.feature.details.details.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Business
@@ -27,13 +28,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Column
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.presentation.R
 
 /** Описание с раскрытием по OK, жанры, студии и создатели как фокусируемые чипы. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DetailsDescriptionSection(
     details: AnimeDetails,
@@ -97,9 +96,12 @@ internal fun DetailsDescriptionSection(
             }
         }
         if (chips.isNotEmpty()) {
-            FlowRow(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 chips.forEachIndexed { index, chip ->
                     val shape = RoundedCornerShape(16.dp)
