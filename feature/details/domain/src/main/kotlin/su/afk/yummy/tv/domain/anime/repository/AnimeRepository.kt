@@ -30,8 +30,11 @@ interface AnimeRepository {
     suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>?
     suspend fun getAnimeEpisodeInfo(animeId: Int): Map<String, AnimeEpisodeInfo>
 
-    /** Пометки филлер/рекап по номеру серии (MyAnimeList); пустая мапа, если данных нет. */
-    suspend fun getAnimeEpisodeFlags(animeId: Int): Map<String, EpisodeFlags>
+    /**
+     * Пометки филлер/рекап по номеру серии (MyAnimeList). У длинных тайтлов сначала приходит первая страница серий,
+     * затем полный список; пустая мапа, если данных нет.
+     */
+    fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>>
 
     /** Ссылки на превью серий по номеру серии (Tenrai); пустая мапа, если данных нет. */
     suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String>

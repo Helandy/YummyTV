@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -70,6 +71,7 @@ import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAni
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailers as toStoredAnimeTrailers
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideos as toStoredAnimeVideos
+import java.util.concurrent.ConcurrentHashMap
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 5 * 60 * 1000L
@@ -99,7 +101,7 @@ class YaniAnimeRepository(
     private val extraVideoRepositories: Set<@JvmSuppressWildcards ExtraVideoRepository> = emptySet(),
 ) : AnimeRepository {
 
-    private val malEpisodesMutex = Mutex()
+    private val malEpisodesLocks = ConcurrentHashMap<Int, Mutex>()
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
@@ -341,30 +343,37 @@ class YaniAnimeRepository(
             }
         }
 
-    override suspend fun getAnimeEpisodeFlags(animeId: Int): Map<String, EpisodeFlags> =
+    override fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>> = channelFlow {
         // Пометки — необязательная надстройка: экран должен работать и без них.
-        loadMalEpisodes(animeId)?.toEpisodeFlagsByNumber().orEmpty()
+        val episodes = loadMalEpisodes(animeId) { firstPage -> send(firstPage.toEpisodeFlagsByNumber()) }
+        send(episodes?.toEpisodeFlagsByNumber().orEmpty())
+    }
 
     override suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String> =
         // Превью — необязательная надстройка: есть запасной источник.
         loadMalEpisodes(animeId)?.toThumbnailUrlByNumber().orEmpty()
 
     /**
-     * Серии тайтла из MyAnimeList (пометки и картинки в одном документе). Пометки и превью просит один и тот же экран
-     * одновременно, а лимит API — 4 запроса в секунду, поэтому загрузки идут по очереди: второй вызов уже читает кэш.
+     * Серии тайтла из MyAnimeList (пометки и картинки в одном документе). Пометки и превью одного тайтла просит один и тот же
+     * экран одновременно, поэтому загрузки одного тайтла идут по очереди — второй вызов уже читает кэш; разные тайтлы
+     * друг друга не ждут (скорость запросов ограничивает сам API-клиент). [onFirstPage] вызывается, только если этот вызов
+     * сам качает длинный список с сети.
      */
-    private suspend fun loadMalEpisodes(animeId: Int): MalEpisodesDto? =
+    private suspend fun loadMalEpisodes(
+        animeId: Int,
+        onFirstPage: suspend (MalEpisodesDto) -> Unit = {},
+    ): MalEpisodesDto? =
         withContext(Dispatchers.IO) {
             runSuspendCatching {
                 val details = getAnimeDetails(animeId)
                 val malId = details.malId ?: return@withContext null
                 // Статус в ключе: когда тайтл дошёл до последней серии, неполный кэш идущего не залёживается на полгода.
                 val finished = details.episodes.isFullyAired()
-                malEpisodesMutex.withLock {
+                malEpisodesLocks.getOrPut(malId) { Mutex() }.withLock {
                     documentCache.getOrFetchJson<MalEpisodesDto>(
                         cacheKey = "$MAL_EPISODES_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
                         ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
-                        fetch = { episodeFlagsApi.getEpisodes(malId) },
+                        fetch = { episodeFlagsApi.getEpisodes(malId, onFirstPage) },
                     )
                 }
             }.getOrNull()

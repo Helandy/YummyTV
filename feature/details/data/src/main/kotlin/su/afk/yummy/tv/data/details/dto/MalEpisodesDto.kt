@@ -24,4 +24,5 @@ data class MalEpisodeDto(
 @Serializable
 data class MalPaginationDto(
     @SerialName("has_next_page") val hasNextPage: Boolean = false,
+    @SerialName("last_visible_page") val lastVisiblePage: Int = 0,
 )

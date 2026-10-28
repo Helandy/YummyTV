@@ -19,6 +19,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.async
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
@@ -39,7 +42,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeFlagsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
@@ -86,7 +89,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val observeAnimeVideos: ObserveAnimeVideosUseCase,
     private val getAnimeEpisodeInfo: GetAnimeEpisodeInfoUseCase,
-    private val getAnimeEpisodeFlags: GetAnimeEpisodeFlagsUseCase,
+    private val observeAnimeEpisodeFlags: ObserveAnimeEpisodeFlagsUseCase,
     private val appearanceSettingsStore: AppearanceSettingsStore,
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
@@ -127,12 +130,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var isSignedIn = false
     private var pendingEpisodeHandled = false
-    private val episodeFlagsDeferred by lazy {
-        viewModelScope.async {
-            runSuspendCatching { getAnimeEpisodeFlags(animeId) }
-                .getOrDefault(emptyMap())
-                .mapKeys { (episode, _) -> episode.episodeGroupKey() }
-        }
+    private var episodeFlagsJob: Job? = null
+    private val episodeFlags by lazy {
+        observeAnimeEpisodeFlags(animeId)
+            .map { flags -> flags.mapKeys { (episode, _) -> episode.episodeGroupKey() } }
+            .catch { emit(emptyMap()) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
     }
 
     init {
@@ -432,14 +435,19 @@ class EpisodesViewModel @AssistedInject internal constructor(
         }
     }
 
-    /** Пометки грузим один раз и только при включённой настройке; выключение лишь прячет их. */
-    private suspend fun applyEpisodeFlags(enabled: Boolean) {
+    /**
+     * Пометки грузим один раз и только при включённой настройке; выключение лишь прячет их. У длинных тайтлов
+     * первые пометки приходят до окончания загрузки всех серий.
+     */
+    private fun applyEpisodeFlags(enabled: Boolean) {
+        episodeFlagsJob?.cancel()
         if (!enabled) {
             setState { copy(episodeFlags = persistentMapOf()) }
             return
         }
-        val flags = episodeFlagsDeferred.await()
-        setState { copy(episodeFlags = flags.toImmutableMap()) }
+        episodeFlagsJob = viewModelScope.launch {
+            episodeFlags.collect { flags -> setState { copy(episodeFlags = flags.toImmutableMap()) } }
+        }
     }
 
     private suspend fun loadVideos() {

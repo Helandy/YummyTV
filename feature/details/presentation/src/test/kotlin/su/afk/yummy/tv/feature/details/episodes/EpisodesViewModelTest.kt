@@ -40,7 +40,7 @@ import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeFlagsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
@@ -108,7 +108,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         every { animeRepository.observeAnimeVideos(ANIME_ID) } returns flowOf(listOf(v1, v2, v3))
         coEvery { animeRepository.refreshAnimeVideos(ANIME_ID) } returns listOf(v1, v2, v3)
         coEvery { animeRepository.getAnimeEpisodeInfo(ANIME_ID) } returns emptyMap()
-        coEvery { animeRepository.getAnimeEpisodeFlags(ANIME_ID) } returns emptyMap()
+        every { animeRepository.observeAnimeEpisodeFlags(ANIME_ID) } returns flowOf(emptyMap())
         every { appearanceSettingsStore.showEpisodeFlags } returns flowOf(true)
     }
 
@@ -123,7 +123,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         getAnimeDetails = GetAnimeDetailsUseCase(animeRepository),
         observeAnimeVideos = ObserveAnimeVideosUseCase(animeRepository),
         getAnimeEpisodeInfo = GetAnimeEpisodeInfoUseCase(animeRepository),
-        getAnimeEpisodeFlags = GetAnimeEpisodeFlagsUseCase(animeRepository),
+        observeAnimeEpisodeFlags = ObserveAnimeEpisodeFlagsUseCase(animeRepository),
         appearanceSettingsStore = appearanceSettingsStore,
         refreshAnimeVideos = RefreshAnimeVideosUseCase(animeRepository),
         observeAnimeWatchProgress = ObserveAnimeWatchProgressUseCase(animeRepository),
@@ -169,8 +169,8 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
     @Test
     fun `episode flags are keyed by the episode group key`() {
-        coEvery { animeRepository.getAnimeEpisodeFlags(ANIME_ID) } returns
-            mapOf("1" to EpisodeFlags(filler = true, recap = false))
+        every { animeRepository.observeAnimeEpisodeFlags(ANIME_ID) } returns
+            flowOf(mapOf("1" to EpisodeFlags(filler = true, recap = false)))
 
         val state = createViewModel().awaitState { it.episodeFlags.isNotEmpty() }
 
@@ -184,7 +184,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         val state = createViewModel().awaitState { it.videosState is VideosUiState.Content }
 
         assertTrue(state.episodeFlags.isEmpty())
-        coVerify(exactly = 0) { animeRepository.getAnimeEpisodeFlags(any()) }
+        verify(exactly = 0) { animeRepository.observeAnimeEpisodeFlags(any()) }
     }
 
     @Test
