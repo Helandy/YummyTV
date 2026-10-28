@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -56,13 +56,13 @@ import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
+import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.feature.home.utils.communityPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
-import su.afk.yummy.tv.feature.home.utils.communityPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
-import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.home.utils.withoutScheduleSection
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -207,6 +207,8 @@ class HomeViewModel @Inject internal constructor(
             HomeState.Event.ScreenResumed -> {
                 refreshRemoteContinueWatching()
                 syncCachedContinueWatching()
+                // На ТВ главная живёт в стеке и не пересоздаётся — без этого «Новые серии» не обновятся.
+                loadRecentlyAired()
             }
 
             HomeState.Event.RefreshRequested -> refresh()
