@@ -41,16 +41,16 @@
     <string name="core_list_status_postponed">Postponed</string>
     <string name="core_list_status_dropped">Dropped</string>
     <plurals name="core_release_in_days">
-        <item quantity="one">Next episode in %1$d day</item>
-        <item quantity="other">Next episode in %1$d days</item>
+        <item quantity="one">In %1$d day</item>
+        <item quantity="other">In %1$d days</item>
     </plurals>
     <plurals name="core_release_in_hours">
-        <item quantity="one">Next episode in %1$d hour</item>
-        <item quantity="other">Next episode in %1$d hours</item>
+        <item quantity="one">In %1$d hour</item>
+        <item quantity="other">In %1$d hours</item>
     </plurals>
     <plurals name="core_release_in_minutes">
-        <item quantity="one">Next episode in %1$d minute</item>
-        <item quantity="other">Next episode in %1$d minutes</item>
+        <item quantity="one">In %1$d minute</item>
+        <item quantity="other">In %1$d minutes</item>
     </plurals>
     <string name="core_release_status_ongoing">Ongoing</string>
     <string name="core_release_status_released">Released</string>

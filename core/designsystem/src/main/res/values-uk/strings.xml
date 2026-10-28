@@ -41,22 +41,22 @@
     <string name="core_list_status_postponed">Відкладено</string>
     <string name="core_list_status_dropped">Кинуто</string>
     <plurals name="core_release_in_days">
-        <item quantity="one">До виходу серії %1$d день</item>
-        <item quantity="few">До виходу серії %1$d дні</item>
-        <item quantity="many">До виходу серії %1$d днів</item>
-        <item quantity="other">До виходу серії %1$d дня</item>
+        <item quantity="one">До виходу %1$d день</item>
+        <item quantity="few">До виходу %1$d дні</item>
+        <item quantity="many">До виходу %1$d днів</item>
+        <item quantity="other">До виходу %1$d дня</item>
     </plurals>
     <plurals name="core_release_in_hours">
-        <item quantity="one">До виходу серії %1$d година</item>
-        <item quantity="few">До виходу серії %1$d години</item>
-        <item quantity="many">До виходу серії %1$d годин</item>
-        <item quantity="other">До виходу серії %1$d години</item>
+        <item quantity="one">До виходу %1$d година</item>
+        <item quantity="few">До виходу %1$d години</item>
+        <item quantity="many">До виходу %1$d годин</item>
+        <item quantity="other">До виходу %1$d години</item>
     </plurals>
     <plurals name="core_release_in_minutes">
-        <item quantity="one">До виходу серії %1$d хвилина</item>
-        <item quantity="few">До виходу серії %1$d хвилини</item>
-        <item quantity="many">До виходу серії %1$d хвилин</item>
-        <item quantity="other">До виходу серії %1$d хвилини</item>
+        <item quantity="one">До виходу %1$d хвилина</item>
+        <item quantity="few">До виходу %1$d хвилини</item>
+        <item quantity="many">До виходу %1$d хвилин</item>
+        <item quantity="other">До виходу %1$d хвилини</item>
     </plurals>
     <string name="core_release_status_ongoing">Онгоїнг</string>
     <string name="core_release_status_released">Вийшов</string>

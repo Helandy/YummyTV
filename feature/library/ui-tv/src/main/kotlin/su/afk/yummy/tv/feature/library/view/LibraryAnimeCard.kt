@@ -20,6 +20,7 @@ internal fun LibraryAnimeCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onFocused: () -> Unit,
+    deleteButton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -29,6 +30,7 @@ internal fun LibraryAnimeCard(
         onClick = onClick,
         onLongClick = onLongClick,
         showYear = showYear,
+        trailingAction = deleteButton,
         modifier = modifier.onFocusChanged { state ->
             val focused = state.isFocused || state.hasFocus
             if (focused && !isFocused) onFocused()

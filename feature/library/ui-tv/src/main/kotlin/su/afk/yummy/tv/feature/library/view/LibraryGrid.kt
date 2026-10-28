@@ -75,6 +75,7 @@ internal fun LibraryGrid(
     val gridState = rememberLazyGridState()
     val itemIds = remember(items) { items.map { it.animeId } }
     val focusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
+    val deleteFocusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
     val itemFocusRequesters = remember(itemIds, focusRequesters) {
         itemIds.zip(focusRequesters).toMap()
     }
@@ -255,6 +256,28 @@ internal fun LibraryGrid(
                         onClick = stableOnClick,
                         onLongClick = stableOnLongClick,
                         onFocused = stableOnFocused,
+                        deleteButton = {
+                            LibraryTvDeleteButton(
+                                onClick = stableOnDelete,
+                                modifier = Modifier
+                                    .focusRequester(deleteFocusRequesters[index])
+                                    .focusProperties {
+                                        left = focusRequesters[index]
+                                        if (index < gridColumnCount) {
+                                            up = selectedTabFocusRequester
+                                        }
+                                    }
+                                    // Вертикаль — по крестикам, чтобы колонка не прыгала на карточки.
+                                    .tvLazyGridRowFocusNavigation(
+                                        index = index,
+                                        columnCount = gridColumnCount,
+                                        itemCount = items.size,
+                                        gridState = gridState,
+                                        scope = scope,
+                                        focusRequesterAt = deleteFocusRequesters::getOrNull,
+                                    ),
+                            )
+                        },
                         modifier = Modifier
                             .tvWholeItemBringIntoView()
                             .onFocusChanged { state ->
@@ -270,6 +293,7 @@ internal fun LibraryGrid(
                                 if (index < gridColumnCount) {
                                     up = selectedTabFocusRequester
                                 }
+                                right = deleteFocusRequesters[index]
                             }
                             // Карточка — единственная цель фокуса в ячейке: колонку при DPAD-вниз
                             // страхуем здесь, иначе Compose теряет её на несобранном ряду.

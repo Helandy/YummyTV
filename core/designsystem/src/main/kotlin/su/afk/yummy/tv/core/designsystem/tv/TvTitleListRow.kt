@@ -47,6 +47,8 @@ fun TvTitleListRow(
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
     showYear: Boolean = true,
+    /** Действие в правом верхнем углу (крестик удаления), как `trailingAction` на мобилке. */
+    trailingAction: (@Composable () -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val year = item.yearText(showYear)
@@ -101,14 +103,21 @@ fun TvTitleListRow(
                 .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = item.title,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                trailingAction?.invoke()
+            }
             TitleListCardChips(item = item, year = year, ownerRating = null, scale = 1.25f)
             Spacer(modifier = Modifier.weight(1f))
             Row(
