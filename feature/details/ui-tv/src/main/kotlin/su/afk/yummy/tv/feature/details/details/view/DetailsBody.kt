@@ -109,6 +109,8 @@ internal fun DetailsBody(
 
     // Чипы живут внутри хиро: оно блокирует фокус на время восстановления, поэтому чип разрешает его себе сам,
     // а ключ сбрасывает при уходе, чтобы после кнопок не остался устаревший.
+    // «Вверх» из описания возвращает на последний чип, а не мимо чипов к кнопкам.
+    var lastChipIndex by remember { mutableIntStateOf(0) }
     val heroChipFocus: @Composable (Int) -> Modifier = { index ->
         val key = "chips:$index"
         Modifier
@@ -116,6 +118,7 @@ internal fun DetailsBody(
             .focusRequester(requesterFor(key))
             .onFocusChanged {
                 if (it.isFocused) {
+                    lastChipIndex = index
                     lastFocusTarget = key
                 } else if (lastFocusTarget == key) {
                     lastFocusTarget = null
@@ -259,7 +262,13 @@ internal fun DetailsBody(
                 item(key = "description") {
                     DetailsDescriptionSection(
                         details = details,
-                        descriptionFocusModifier = rowItemFocus("description")(-1),
+                        descriptionFocusModifier = rowItemFocus("description")(-1).then(
+                            if (hasHeroChips) {
+                                Modifier.focusProperties { up = requesterFor("chips:$lastChipIndex") }
+                            } else {
+                                Modifier
+                            },
+                        ),
                         modifier = Modifier
                             .tvWholeItemBringIntoView()
                             .padding(horizontal = DetailsSectionHorizontalPadding),
