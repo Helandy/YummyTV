@@ -5,6 +5,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.minus
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.plus
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -12,10 +13,12 @@ import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
@@ -31,10 +34,12 @@ import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
@@ -81,6 +86,8 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val observeAnimeVideos: ObserveAnimeVideosUseCase,
     private val getAnimeEpisodeInfo: GetAnimeEpisodeInfoUseCase,
+    private val getAnimeEpisodeFlags: GetAnimeEpisodeFlagsUseCase,
+    private val appearanceSettingsStore: AppearanceSettingsStore,
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
     private val settingsStore: PlayerSettingsStore,
@@ -120,6 +127,13 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var isSignedIn = false
     private var pendingEpisodeHandled = false
+    private val episodeFlagsDeferred by lazy {
+        viewModelScope.async {
+            runSuspendCatching { getAnimeEpisodeFlags(animeId) }
+                .getOrDefault(emptyMap())
+                .mapKeys { (episode, _) -> episode.episodeGroupKey() }
+        }
+    }
 
     init {
         analytics.eventEpisodesScreenOpened(animeId)
@@ -129,6 +143,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
         viewModelScope.launch { loadMeta() }
         viewModelScope.launch { loadVideos() }
         viewModelScope.launch { loadEpisodeInfo() }
+        appearanceSettingsStore.showEpisodeFlags
+            .distinctUntilChanged()
+            .onEach { enabled -> applyEpisodeFlags(enabled) }
+            .launchIn(viewModelScope)
         observeWatchLaterEpisodes(animeId)
             .onEach { episodes ->
                 setState { copy(watchLaterEpisodes = episodes.toPersistentSet()) }
@@ -412,6 +430,16 @@ class EpisodesViewModel @AssistedInject internal constructor(
         if (info.isNotEmpty()) {
             setState { copy(episodeInfo = info.toImmutableMap()) }
         }
+    }
+
+    /** Пометки грузим один раз и только при включённой настройке; выключение лишь прячет их. */
+    private suspend fun applyEpisodeFlags(enabled: Boolean) {
+        if (!enabled) {
+            setState { copy(episodeFlags = persistentMapOf()) }
+            return
+        }
+        val flags = episodeFlagsDeferred.await()
+        setState { copy(episodeFlags = flags.toImmutableMap()) }
     }
 
     private suspend fun loadVideos() {

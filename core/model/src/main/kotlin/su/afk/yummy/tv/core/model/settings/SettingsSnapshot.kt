@@ -7,6 +7,7 @@ data class SettingsSnapshot(
     val posterCardSize: PosterCardSize,
     val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
     val showCatalogTitleYear: Boolean,
+    val showEpisodeFlags: Boolean = true,
     val newEpisodesSectionEnabled: Boolean,
     val newEpisodesSources: Set<NewEpisodesSource>,
     val showLibraryTitleYear: Boolean,

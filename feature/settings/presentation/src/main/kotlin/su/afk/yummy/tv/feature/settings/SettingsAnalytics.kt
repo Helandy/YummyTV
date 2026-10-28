@@ -312,6 +312,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил пометки «филлер» и «рекап» у серий. */
+    fun eventShowEpisodeFlagsToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_SHOW_EPISODE_FLAGS_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /** Пользователь включил или выключил отображение года у тайтлов в библиотеке. */
     fun eventShowLibraryTitleYearToggled(enabled: Boolean) {
         tracker.track(
@@ -442,6 +450,8 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_SCREEN_OPENED = "settings_screen"
         const val EVENT_SHOW_CATALOG_TITLE_YEAR_TOGGLED =
             "settings_show_top_title_year_toggled"
+        const val EVENT_SHOW_EPISODE_FLAGS_TOGGLED =
+            "settings_show_episode_flags_toggled"
         const val EVENT_SHOW_LIBRARY_TITLE_YEAR_TOGGLED =
             "settings_show_library_title_year_toggled"
         const val EVENT_LIBRARY_CONTINUE_WATCHING_CARD_SIZE_SELECTED =

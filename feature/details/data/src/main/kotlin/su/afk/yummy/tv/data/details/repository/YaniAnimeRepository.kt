@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.account.AccountStorage
@@ -35,15 +36,19 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationsDto
+import su.afk.yummy.tv.data.details.dto.MalEpisodesDto
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 import su.afk.yummy.tv.data.details.mapper.AnimeRelationCachePayload
 import su.afk.yummy.tv.data.details.mapper.ExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
+import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
+import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
+import su.afk.yummy.tv.data.details.utils.isFullyAired
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsWithReactions
@@ -74,10 +79,14 @@ private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
 private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info"
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
+private const val ANIME_EPISODE_FLAGS_CACHE_NAMESPACE = "anime-episode-flags"
+private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 30 * 24 * 60 * 60 * 1000L
+private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 24 * 60 * 60 * 1000L
 
 class YaniAnimeRepository(
     private val api: YaniAnimeApi,
     private val episodesApi: YummyEpisodesApi,
+    private val episodeFlagsApi: MalEpisodeFlagsApi,
     private val animeStorage: AnimeStorage,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
@@ -322,6 +331,24 @@ class YaniAnimeRepository(
                 ).toAnimeEpisodeInfoByNumber()
             }.getOrElse {
                 // Названия серий — необязательная надстройка: экран должен работать и без них.
+                emptyMap()
+            }
+        }
+
+    override suspend fun getAnimeEpisodeFlags(animeId: Int): Map<String, EpisodeFlags> =
+        withContext(Dispatchers.IO) {
+            runSuspendCatching {
+                val details = getAnimeDetails(animeId)
+                val malId = details.malId ?: return@withContext emptyMap()
+                // Статус в ключе: когда тайтл дошёл до последней серии, неполный кэш идущего не залёживается на полгода.
+                val finished = details.episodes.isFullyAired()
+                documentCache.getOrFetchJson<MalEpisodesDto>(
+                    cacheKey = "$ANIME_EPISODE_FLAGS_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
+                    ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
+                    fetch = { episodeFlagsApi.getEpisodes(malId) },
+                ).toEpisodeFlagsByNumber()
+            }.getOrElse {
+                // Пометки — необязательная надстройка: экран должен работать и без них.
                 emptyMap()
             }
         }

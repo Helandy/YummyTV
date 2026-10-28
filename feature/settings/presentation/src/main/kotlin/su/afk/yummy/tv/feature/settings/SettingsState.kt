@@ -43,6 +43,7 @@ class SettingsState {
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
         val showCatalogTitleYear: Boolean = false,
+        val showEpisodeFlags: Boolean = true,
         val newEpisodesSectionEnabled: Boolean = true,
         val seasonalDecorationsEnabled: Boolean = true,
         val seasonalTheme: SeasonalTheme = SeasonalTheme.NONE,
@@ -128,6 +129,9 @@ class SettingsState {
 
         /** Пользователь переключил отображение года у тайтлов в топе. */
         data object ShowCatalogTitleYearToggled : Event
+
+        /** Пользователь переключил пометки «филлер» и «рекап» у серий. */
+        data object ShowEpisodeFlagsToggled : Event
 
         /** Пользователь включил или выключил праздничное оформление. */
         data object SeasonalDecorationsToggled : Event

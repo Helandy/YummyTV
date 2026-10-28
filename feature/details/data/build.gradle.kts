@@ -18,5 +18,6 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
 
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test.network)
 }

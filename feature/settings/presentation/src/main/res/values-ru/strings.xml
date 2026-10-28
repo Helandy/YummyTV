@@ -56,6 +56,8 @@
     <string name="settings_mobile_poster_size">Размер постеров</string>
     <string name="settings_poster_quality_title">Качество постеров</string>
     <string name="settings_show_catalog_title_year">Отображать год у тайтлов в каталоге</string>
+    <string name="settings_show_episode_flags">Отмечать филлеры и рекапы у серий</string>
+    <string name="settings_show_episode_flags_enabled">Серии помечаются как филлер или рекап</string>
     <string name="settings_show_catalog_title_year_enabled">Год отображается на карточках тайтлов в каталоге</string>
     <string name="settings_show_library_title_year">Отображать год у тайтлов в библиотеке</string>
     <string name="settings_show_library_title_year_enabled">Год отображается на карточках тайтлов в библиотеке</string>

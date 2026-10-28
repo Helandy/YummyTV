@@ -228,4 +228,6 @@
     <string name="details_mobile_subscriptions_hint">New-episode alerts</string>
     <string name="details_mobile_subscriptions_locked_hint">Sign in to subscribe</string>
     <string name="details_mobile_recommended_title">Similar titles</string>
+    <string name="details_episode_flag_filler">Filler</string>
+    <string name="details_episode_flag_recap">Recap</string>
 </resources>

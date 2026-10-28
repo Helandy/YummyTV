@@ -9,6 +9,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -38,6 +39,8 @@ class EpisodesState {
         val watchLaterEpisodes: PersistentSet<String> = persistentSetOf(),
         /** Названия и описания серий из YummyTV API по номеру серии. */
         val episodeInfo: ImmutableMap<String, AnimeEpisodeInfo> = persistentMapOf(),
+        /** Пометки филлер/рекап по номеру серии (ключ — episodeGroupKey); пусто, если выключено в настройках. */
+        val episodeFlags: ImmutableMap<String, EpisodeFlags> = persistentMapOf(),
         /** Серии с раскрытым описанием (мобильная карточка). */
         val expandedEpisodeDescriptions: PersistentSet<String> = persistentSetOf(),
         /** Видео, сгруппированные по серии и отсортированные по номеру. */

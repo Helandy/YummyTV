@@ -21,14 +21,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
@@ -37,6 +40,7 @@ import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
@@ -62,6 +66,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true)
+    private val appearanceSettingsStore: AppearanceSettingsStore = mockk()
     private val videoDownloadNavigator: IVideoDownloadNavigator = mockk()
     private val animeRepository: AnimeRepository = mockk()
     private val settingsStore: PlayerSettingsStore = mockk()
@@ -103,6 +108,8 @@ class EpisodesViewModelTest : BaseUnitTest() {
         every { animeRepository.observeAnimeVideos(ANIME_ID) } returns flowOf(listOf(v1, v2, v3))
         coEvery { animeRepository.refreshAnimeVideos(ANIME_ID) } returns listOf(v1, v2, v3)
         coEvery { animeRepository.getAnimeEpisodeInfo(ANIME_ID) } returns emptyMap()
+        coEvery { animeRepository.getAnimeEpisodeFlags(ANIME_ID) } returns emptyMap()
+        every { appearanceSettingsStore.showEpisodeFlags } returns flowOf(true)
     }
 
     private fun createViewModel(pendingEpisode: String? = null) = EpisodesViewModel(
@@ -116,6 +123,8 @@ class EpisodesViewModelTest : BaseUnitTest() {
         getAnimeDetails = GetAnimeDetailsUseCase(animeRepository),
         observeAnimeVideos = ObserveAnimeVideosUseCase(animeRepository),
         getAnimeEpisodeInfo = GetAnimeEpisodeInfoUseCase(animeRepository),
+        getAnimeEpisodeFlags = GetAnimeEpisodeFlagsUseCase(animeRepository),
+        appearanceSettingsStore = appearanceSettingsStore,
         refreshAnimeVideos = RefreshAnimeVideosUseCase(animeRepository),
         observeAnimeWatchProgress = ObserveAnimeWatchProgressUseCase(animeRepository),
         settingsStore = settingsStore,
@@ -156,6 +165,26 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
         assertTrue(state.videosState is VideosUiState.Content)
         assertEquals(listOf("1", "2"), state.episodeGroups.map { it.episode })
+    }
+
+    @Test
+    fun `episode flags are keyed by the episode group key`() {
+        coEvery { animeRepository.getAnimeEpisodeFlags(ANIME_ID) } returns
+            mapOf("1" to EpisodeFlags(filler = true, recap = false))
+
+        val state = createViewModel().awaitState { it.episodeFlags.isNotEmpty() }
+
+        assertEquals(EpisodeFlags(filler = true, recap = false), state.episodeFlags["1".episodeGroupKey()])
+    }
+
+    @Test
+    fun `episode flags are not loaded while the setting is off`() {
+        every { appearanceSettingsStore.showEpisodeFlags } returns flowOf(false)
+
+        val state = createViewModel().awaitState { it.videosState is VideosUiState.Content }
+
+        assertTrue(state.episodeFlags.isEmpty())
+        coVerify(exactly = 0) { animeRepository.getAnimeEpisodeFlags(any()) }
     }
 
     @Test

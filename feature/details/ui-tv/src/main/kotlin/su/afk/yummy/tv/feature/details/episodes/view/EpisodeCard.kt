@@ -33,6 +33,7 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.durationLabel
@@ -48,6 +49,7 @@ internal fun EpisodeCard(
     video: AnimeVideo,
     watchStatus: EpisodeWatchStatus = EpisodeWatchStatus.None,
     episodeTitle: String? = null,
+    flags: EpisodeFlags? = null,
     thumbnail: KodikThumbnail?,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
@@ -89,33 +91,40 @@ internal fun EpisodeCard(
                     )
                 }
 
-                // Watch status indicator (top-right)
-                when (watchStatus) {
-                    is EpisodeWatchStatus.Watched -> Box(
+                // Пометка серии и статус просмотра (top-right)
+                if (flags != null || watchStatus != EpisodeWatchStatus.None) {
+                    Row(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(6.dp)
-                            .size(24.dp)
-                            .background(Color.Black.copy(alpha = 0.72f), CircleShape),
-                        contentAlignment = Alignment.Center,
+                            .padding(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.VisibilityOff,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp),
-                        )
+                        if (flags != null) EpisodeTvFlagBadge(flags = flags)
+                        when (watchStatus) {
+                            is EpisodeWatchStatus.Watched -> Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(Color.Black.copy(alpha = 0.72f), CircleShape),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.VisibilityOff,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
+
+                            is EpisodeWatchStatus.InProgress -> Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(InProgressColor, CircleShape),
+                            )
+
+                            EpisodeWatchStatus.None -> Unit
+                        }
                     }
-
-                    is EpisodeWatchStatus.InProgress -> Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(7.dp)
-                            .size(8.dp)
-                            .background(InProgressColor, CircleShape),
-                    )
-
-                    EpisodeWatchStatus.None -> Unit
                 }
 
                 // Progress bar at bottom of thumbnail

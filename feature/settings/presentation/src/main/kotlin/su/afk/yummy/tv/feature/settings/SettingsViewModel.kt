@@ -72,6 +72,7 @@ class SettingsViewModel @Inject internal constructor(
                         posterCardSize = snapshot.posterCardSize,
                         titleCardLayout = snapshot.titleCardLayout,
                         showCatalogTitleYear = snapshot.showCatalogTitleYear,
+                        showEpisodeFlags = snapshot.showEpisodeFlags,
                         newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         seasonalTheme = seasonalThemeAt(System.currentTimeMillis()),
@@ -229,6 +230,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.showCatalogTitleYear
                 analytics.eventShowCatalogTitleYearToggled(enabled)
                 settingsStore.setShowCatalogTitleYear(enabled)
+            }
+
+            SettingsState.Event.ShowEpisodeFlagsToggled -> viewModelScope.launch {
+                val enabled = !currentState.showEpisodeFlags
+                analytics.eventShowEpisodeFlagsToggled(enabled)
+                settingsStore.setShowEpisodeFlags(enabled)
             }
 
             SettingsState.Event.ShowLibraryTitleYearToggled -> viewModelScope.launch {

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.domain.anime.repository
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationReaction
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
@@ -28,6 +29,9 @@ interface AnimeRepository {
     suspend fun fetchAnimeVideos(animeId: Int): List<AnimeVideo>
     suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>?
     suspend fun getAnimeEpisodeInfo(animeId: Int): Map<String, AnimeEpisodeInfo>
+
+    /** Пометки филлер/рекап по номеру серии (MyAnimeList); пустая мапа, если данных нет. */
+    suspend fun getAnimeEpisodeFlags(animeId: Int): Map<String, EpisodeFlags>
     suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer>
     suspend fun getAnimeRelation(reference: AnimeRelationReference): AnimeRelation
     suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation>

@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
@@ -48,6 +49,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
@@ -65,6 +67,7 @@ internal fun EpisodesGrid(
     watchProgress: DetailsWatchProgressIndex,
     restoreFocusRequest: Int,
     episodeInfo: Map<String, AnimeEpisodeInfo>,
+    episodeFlags: Map<String, EpisodeFlags>,
     onVideoSelected: (AnimeVideo) -> Unit,
     onVideoLongPressed: (List<AnimeVideo>) -> Unit,
     modifier: Modifier = Modifier,
@@ -197,6 +200,7 @@ internal fun EpisodesGrid(
                             episodeNumber = episode,
                             watchStatus = groupVideos.watchStatus(watchProgress),
                             episodeTitle = episodeInfo[episode]?.title,
+                            flags = episodeFlags[episode.episodeGroupKey()],
                             thumbnail = groupVideos.kodikThumbnailIframeUrl(bestDubbing)
                                 ?.let { KodikThumbnail(it, animeId, episode) },
                             onClick = {

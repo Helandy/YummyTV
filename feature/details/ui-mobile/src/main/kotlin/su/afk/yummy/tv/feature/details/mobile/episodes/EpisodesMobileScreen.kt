@@ -126,6 +126,7 @@ fun EpisodesMobileScreen(
                         episodeNumber = group.episode,
                         watchStatus = group.videos.watchStatus(state.watchProgress),
                         isInWatchLater = group.episode.episodeGroupKey() in state.watchLaterEpisodes,
+                        flags = state.episodeFlags[group.episode.episodeGroupKey()],
                         thumbnail = thumbnail,
                         episodeTitle = episodeInfo?.title,
                         episodeDescription = episodeInfo?.description,

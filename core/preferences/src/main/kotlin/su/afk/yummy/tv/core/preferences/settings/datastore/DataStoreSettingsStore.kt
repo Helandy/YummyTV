@@ -50,6 +50,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewC
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showCatalogTitleYearKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showEpisodeFlagsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoManageLibraryListsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
@@ -102,6 +103,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
             titleCardLayout = prefs.enum(titleCardLayoutKey, TitleCardLayout.TILE),
             showCatalogTitleYear = prefs[showCatalogTitleYearKey] ?: false,
+            showEpisodeFlags = prefs[showEpisodeFlagsKey] ?: true,
             newEpisodesSectionEnabled = prefs[newEpisodesSectionEnabledKey] ?: true,
             newEpisodesSources = prefs[newEpisodesSourcesKey].toNewEpisodesSources(),
             showLibraryTitleYear = prefs[showLibraryTitleYearKey] ?: false,

@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
@@ -27,6 +28,7 @@ internal fun EpisodesSection(
     onVideoSelected: (AnimeVideo) -> Unit,
     onVideoLongPressed: (List<AnimeVideo>) -> Unit,
     episodeInfo: Map<String, AnimeEpisodeInfo> = emptyMap(),
+    episodeFlags: Map<String, EpisodeFlags> = emptyMap(),
     onRetry: (() -> Unit)? = null,
 ) {
     when (state) {
@@ -50,6 +52,7 @@ internal fun EpisodesSection(
             watchProgress = watchProgress,
             restoreFocusRequest = restoreFocusRequest,
             episodeInfo = episodeInfo,
+            episodeFlags = episodeFlags,
             onVideoSelected = onVideoSelected,
             onVideoLongPressed = onVideoLongPressed,
             modifier = Modifier.fillMaxSize(),

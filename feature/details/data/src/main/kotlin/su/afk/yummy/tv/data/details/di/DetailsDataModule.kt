@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
+import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
@@ -42,6 +43,7 @@ object DetailsDataModule {
     fun provideAnimeRepository(
         api: YaniAnimeApi,
         episodesApi: YummyEpisodesApi,
+        episodeFlagsApi: MalEpisodeFlagsApi,
         animeStorage: AnimeStorage,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
@@ -52,6 +54,7 @@ object DetailsDataModule {
         YaniAnimeRepository(
             api,
             episodesApi,
+            episodeFlagsApi,
             animeStorage,
             accountStorage,
             settingsStore,

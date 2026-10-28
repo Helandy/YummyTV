@@ -101,6 +101,7 @@ fun EpisodesTvScreen(
             watchProgress = state.watchProgress,
             restoreFocusRequest = restoreEpisodesFocusRequest,
             episodeInfo = state.episodeInfo,
+            episodeFlags = state.episodeFlags,
             onVideoSelected = { video -> onEvent(EpisodesState.Event.EpisodeSelected(video)) },
             onVideoLongPressed = { videos ->
                 onEvent(EpisodesState.Event.EpisodeActionsRequested(videos))

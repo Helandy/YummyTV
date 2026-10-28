@@ -56,6 +56,8 @@
     <string name="settings_mobile_poster_size">Poster size</string>
     <string name="settings_poster_quality_title">Poster quality</string>
     <string name="settings_show_catalog_title_year">Show title year in Catalog</string>
+    <string name="settings_show_episode_flags">Show filler and recap marks on episodes</string>
+    <string name="settings_show_episode_flags_enabled">Episodes are marked as filler or recap</string>
     <string name="settings_show_catalog_title_year_enabled">Year is shown on Catalog title cards</string>
     <string name="settings_show_library_title_year">Show title year in Library</string>
     <string name="settings_show_library_title_year_enabled">Year is shown on Library title cards</string>

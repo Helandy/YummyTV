@@ -12,6 +12,7 @@ internal object SettingsPreferenceKeys {
     val posterCardSizeKey = stringPreferencesKey("poster_card_size")
     val titleCardLayoutKey = stringPreferencesKey("title_card_layout")
     val showCatalogTitleYearKey = booleanPreferencesKey("show_top_title_year")
+    val showEpisodeFlagsKey = booleanPreferencesKey("show_episode_flags")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
     val seasonalDecorationsEnabledKey = booleanPreferencesKey("seasonal_decorations_enabled")
     val seasonalAnnouncedKey = stringPreferencesKey("seasonal_announced_key")

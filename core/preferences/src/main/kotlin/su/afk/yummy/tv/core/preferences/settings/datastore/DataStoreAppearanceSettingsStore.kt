@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.titleCar
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showCatalogTitleYearKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showEpisodeFlagsKey
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,6 +48,7 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
         store.enumFlow(titleCardLayoutKey, TitleCardLayout.TILE)
 
     override val showCatalogTitleYear: Flow<Boolean> = store.boolean(showCatalogTitleYearKey, false)
+    override val showEpisodeFlags: Flow<Boolean> = store.boolean(showEpisodeFlagsKey, true)
 
     override val seasonalDecorationsEnabled: Flow<Boolean> =
         store.boolean(seasonalDecorationsEnabledKey, true)
@@ -119,6 +121,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setShowCatalogTitleYear(enabled: Boolean) =
         store.setBoolean(showCatalogTitleYearKey, enabled)
+
+    override suspend fun setShowEpisodeFlags(enabled: Boolean) =
+        store.setBoolean(showEpisodeFlagsKey, enabled)
 
     override suspend fun setShowLibraryTitleYear(enabled: Boolean) =
         store.setBoolean(showLibraryTitleYearKey, enabled)
