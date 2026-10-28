@@ -19,7 +19,6 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryUserRatings
 import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.seasonal.LocalSeasonalDecorationsEnabled
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
@@ -28,7 +27,6 @@ import su.afk.yummy.tv.core.navigation.manager.BackStackHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.main.MainViewModel
 import su.afk.yummy.tv.feature.main.api.MainGraph
@@ -48,7 +46,6 @@ class MobileMainGraph @Inject internal constructor(
     private val navManager: INavigationManager,
     private val backStackHost: BackStackHost,
     private val navigationHolder: MobileNavigationHolder,
-    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) : MainGraph {
 
     @Composable
@@ -96,7 +93,6 @@ class MobileMainGraph @Inject internal constructor(
                     LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,
                     LocalLibraryUserRatings provides state.libraryUserRatings,
-                    LocalResolveKodikThumbnailUrl provides resolveKodikThumbnailUrl::invoke,
                     LocalMobileBottomBarUpFocusRequester provides accountSettingsFocusRequester.takeIf {
                         atTabRoot && navManager.currentRoot == RootTab.ACCOUNT
                     },

@@ -618,7 +618,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     /**
      * Kodik-iframe превью серии — тот же, что рисует сетка серий, чтобы в «Отложенных» была та же
-     * картинка (общий ключ кэша [su.afk.yummy.tv.core.utils.kodik.KodikThumbnail]).
+     * картинка (общий ключ кэша [su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail]).
      */
     private fun episodeThumbnailIframeUrl(episode: String): String =
         (currentState.videosState as? VideosUiState.Content)

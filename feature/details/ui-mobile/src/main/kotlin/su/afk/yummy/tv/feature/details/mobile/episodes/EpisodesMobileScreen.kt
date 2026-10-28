@@ -29,7 +29,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
@@ -108,7 +108,7 @@ fun EpisodesMobileScreen(
             ) {
                 items(state.episodeGroups, key = { it.episode }) { group ->
                     val video = group.videos.representativeVideo(state.bestDubbing)
-                    val thumbnail = KodikThumbnail(
+                    val thumbnail = EpisodeThumbnail(
                         iframeUrl = group.videos.kodikThumbnailIframeUrl(state.bestDubbing).orEmpty(),
                         animeId = state.animeId,
                         episode = group.episode,

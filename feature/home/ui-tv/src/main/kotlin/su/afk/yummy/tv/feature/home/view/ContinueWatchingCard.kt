@@ -8,8 +8,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.feature.home.presentation.R
@@ -38,11 +38,9 @@ internal fun ContinueWatchingCard(
     val timingLabel =
         if (entry.durationMs > 0L) "$positionLabel / $durationLabel" else positionLabel
 
-    val imageModels = resolveContinueWatchingImageModels(
-        screenshotUrl = entry.screenshotUrl,
-        episodeUrl = entry.episodeUrl,
+    val imageModels = episodeThumbnailModels(
+        thumbnail = episodeThumbnailOf(entry.animeId, entry.episode, entry.screenshotUrl, entry.episodeUrl),
         posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
-        kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
     )
     val episodeLabel = if (entry.episode.isNotBlank()) {
         stringResource(R.string.home_episode_number, entry.episode)

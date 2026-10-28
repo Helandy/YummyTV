@@ -34,7 +34,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.durationLabel
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -50,7 +50,7 @@ internal fun EpisodeCard(
     watchStatus: EpisodeWatchStatus = EpisodeWatchStatus.None,
     episodeTitle: String? = null,
     flags: EpisodeFlags? = null,
-    thumbnail: KodikThumbnail?,
+    thumbnail: EpisodeThumbnail?,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,

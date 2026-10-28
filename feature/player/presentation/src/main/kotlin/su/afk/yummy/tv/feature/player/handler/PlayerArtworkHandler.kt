@@ -1,25 +1,19 @@
 package su.afk.yummy.tv.feature.player.handler
 
-import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImage
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
+import su.afk.yummy.tv.core.utils.episode.resolveArtworkUrl
 import su.afk.yummy.tv.feature.player.model.PlayerArtworkSource
 import javax.inject.Inject
 
 internal class PlayerArtworkHandler @Inject constructor(
-    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
-    private val episodePreviews: EpisodePreviewProvider,
+    private val thumbnailResolver: EpisodeThumbnailResolver,
 ) {
     /** Обложка серии для медиа-уведомления; если превью не получилось — постер тайтла. */
-    suspend fun resolve(source: PlayerArtworkSource): String? {
-        val poster = source.posterUrl.takeIf(String::isNotBlank)
-        episodePreviews.previewUrl(source.animeId, source.episode)?.let { return it }
-        return resolveContinueWatchingImage(
-            screenshotUrl = source.screenshotUrl,
-            episodeUrl = source.episodeUrl,
-            // Пустой постер — «постера нет»: иначе резолвер вернул бы "" вместо null.
-            posterUrl = poster,
-            resolveKodikThumbnail = { resolveKodikThumbnailUrl(it) },
-        ) ?: poster
-    }
+    suspend fun resolve(source: PlayerArtworkSource): String? =
+        thumbnailResolver.resolveArtworkUrl(
+            thumbnail = episodeThumbnailOf(source.animeId, source.episode, source.screenshotUrl, source.episodeUrl),
+            // Пустой постер — «постера нет»: иначе обложкой стала бы пустая строка.
+            posterUrl = source.posterUrl.takeIf(String::isNotBlank),
+        )
 }

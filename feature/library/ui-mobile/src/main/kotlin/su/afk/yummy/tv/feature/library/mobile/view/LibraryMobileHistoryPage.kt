@@ -43,12 +43,10 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.presentation.R
-import su.afk.yummy.tv.feature.library.model.HistoryEpisodeThumbnail
 import su.afk.yummy.tv.feature.library.utils.historyProgressKey
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 import su.afk.yummy.tv.feature.library.utils.watchedAtLabel
@@ -110,17 +108,15 @@ internal fun LibraryMobileHistoryPage(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             SubcomposeAsyncImage(
-                                model = entry.screenshotUrl
-                                    ?: localProgress[entry.historyProgressKey]
-                                        ?.let {
-                                            resolveContinueWatchingImageModels(
-                                                screenshotUrl = it.screenshotUrl,
-                                                episodeUrl = it.episodeUrl,
-                                                posterUrls = emptyList(),
-                                                kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, entry.animeId, entry.episode) },
-                                            ).firstOrNull()
-                                        }
-                                    ?: HistoryEpisodeThumbnail(entry.animeId, entry.episode),
+                                model = localProgress[entry.historyProgressKey].let { progress ->
+                                    // Серверный скриншот истории — подсказка: Tenrai и Kodik резолвер пробует сам.
+                                    episodeThumbnailOf(
+                                        animeId = entry.animeId,
+                                        episode = entry.episode,
+                                        screenshotUrl = entry.screenshotUrl ?: progress?.screenshotUrl.orEmpty(),
+                                        episodeUrl = progress?.episodeUrl.orEmpty(),
+                                    )
+                                },
                                 contentDescription = entry.title,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

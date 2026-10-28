@@ -7,7 +7,8 @@ import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -33,7 +34,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
     private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
     private val enqueueVideoDownload: EnqueueVideoDownloadUseCase,
     private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
-    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
+    private val thumbnailResolver: EpisodeThumbnailResolver,
     private val strings: StringProvider,
 ) {
     private var pendingCandidate: DownloadCandidate? = null
@@ -183,9 +184,13 @@ internal class EpisodeDownloadHandler @Inject constructor(
             it.label == option.label && it.url == option.url
         } ?: return EpisodeDownloadEnqueueResult.MissingCandidate
         val video = candidate.video
-        val screenshotUrl = episodeVideos.kodikThumbnailIframeUrl()
-            ?.let { resolveKodikThumbnailUrl(it) }
-            .orEmpty()
+        val screenshotUrl = thumbnailResolver.resolveUrl(
+            EpisodeThumbnail(
+                animeId = animeId,
+                episode = video.episode,
+                iframeUrl = episodeVideos.kodikThumbnailIframeUrl().orEmpty(),
+            ),
+        ).orEmpty()
         val request = VideoDownloadRequest(
             animeId = animeId,
             animeTitle = animeTitle,

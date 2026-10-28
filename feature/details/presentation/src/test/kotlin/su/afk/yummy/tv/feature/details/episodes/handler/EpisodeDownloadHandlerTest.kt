@@ -16,7 +16,7 @@ import org.junit.Test
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRequest
@@ -32,7 +32,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
     private val resolvePlayerStream: ResolvePlayerStreamUseCase = mockk()
     private val enqueueVideoDownload: EnqueueVideoDownloadUseCase = mockk(relaxed = true)
     private val cancelOrDelete: CancelOrDeleteVideoDownloadUseCase = mockk(relaxed = true)
-    private val resolveKodikThumbnail: ResolveKodikThumbnailUrlUseCase = mockk()
+    private val thumbnailResolver: EpisodeThumbnailResolver = mockk()
     private val strings: StringProvider = mockk()
 
     private val kodik = video(id = 1, dubbing = "AniLibria", player = "Kodik", views = 10, url = KODIK_URL)
@@ -42,7 +42,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { strings.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
-        coEvery { resolveKodikThumbnail(any()) } returns THUMBNAIL
+        coEvery { thumbnailResolver.resolveUrl(any()) } returns THUMBNAIL
     }
 
     // ---------------- pickers ----------------
@@ -276,7 +276,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
         prepareDownloadQualities = PrepareVideoDownloadQualityOptionsUseCase(),
         enqueueVideoDownload = enqueueVideoDownload,
         cancelOrDeleteVideoDownload = cancelOrDelete,
-        resolveKodikThumbnailUrl = resolveKodikThumbnail,
+        thumbnailResolver = thumbnailResolver,
         strings = strings,
     )
 

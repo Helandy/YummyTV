@@ -7,21 +7,18 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.feature.player.model.PlayerArtworkSource
 
 class PlayerArtworkHandlerTest : BaseUnitTest() {
 
-    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase = mockk()
-    private val episodePreviews: EpisodePreviewProvider = mockk {
-        coEvery { previewUrl(any(), any()) } returns null
-    }
+    private val thumbnailResolver: EpisodeThumbnailResolver = mockk()
 
     @Test
-    fun `kodik episode gets its thumbnail`() = runTest {
-        coEvery { resolveKodikThumbnailUrl(KODIK_URL) } returns THUMBNAIL
+    fun `episode thumbnail from the resolver becomes the artwork`() = runTest {
+        coEvery { thumbnailResolver.resolveUrl(any()) } returns THUMBNAIL
 
         val artwork = createHandler().resolve(source(episodeUrl = KODIK_URL))
 
@@ -29,38 +26,38 @@ class PlayerArtworkHandlerTest : BaseUnitTest() {
     }
 
     @Test
-    fun `unresolved kodik thumbnail falls back to the poster`() = runTest {
-        coEvery { resolveKodikThumbnailUrl(KODIK_URL) } returns null
+    fun `resolver gets the episode with anime id and kodik iframe hint`() = runTest {
+        coEvery { thumbnailResolver.resolveUrl(any()) } returns THUMBNAIL
 
-        val artwork = createHandler().resolve(source(episodeUrl = KODIK_URL))
+        createHandler().resolve(source(episodeUrl = KODIK_URL).copy(animeId = 7, episode = "3"))
 
-        assertEquals(POSTER, artwork)
+        coVerify { thumbnailResolver.resolveUrl(EpisodeThumbnail(7, "3", iframeUrl = KODIK_URL)) }
     }
 
     @Test
-    fun `direct screenshot is used without a kodik request`() = runTest {
+    fun `direct screenshot is passed as an image hint`() = runTest {
+        coEvery { thumbnailResolver.resolveUrl(any()) } returns SCREENSHOT
+
         val artwork = createHandler().resolve(source(screenshotUrl = SCREENSHOT))
 
         assertEquals(SCREENSHOT, artwork)
-        coVerify(exactly = 0) { resolveKodikThumbnailUrl(any()) }
+        coVerify { thumbnailResolver.resolveUrl(EpisodeThumbnail(imageUrl = SCREENSHOT)) }
     }
 
     @Test
-    fun `no screenshot gives the poster and no poster gives nothing`() = runTest {
+    fun `unresolved thumbnail falls back to the poster`() = runTest {
+        coEvery { thumbnailResolver.resolveUrl(any()) } returns null
+
+        assertEquals(POSTER, createHandler().resolve(source(episodeUrl = KODIK_URL)))
+    }
+
+    @Test
+    fun `nothing to resolve gives the poster and no poster gives nothing`() = runTest {
         val handler = createHandler()
 
         assertEquals(POSTER, handler.resolve(source()))
         assertNull(handler.resolve(source(posterUrl = "")))
-    }
-
-    @Test
-    fun `tenrai preview wins over kodik`() = runTest {
-        coEvery { episodePreviews.previewUrl(7, "3") } returns TENRAI
-
-        val artwork = createHandler().resolve(source(episodeUrl = KODIK_URL).copy(animeId = 7, episode = "3"))
-
-        assertEquals(TENRAI, artwork)
-        coVerify(exactly = 0) { resolveKodikThumbnailUrl(any()) }
+        coVerify(exactly = 0) { thumbnailResolver.resolveUrl(any()) }
     }
 
     private fun source(
@@ -69,12 +66,11 @@ class PlayerArtworkHandlerTest : BaseUnitTest() {
         posterUrl: String = POSTER,
     ) = PlayerArtworkSource(screenshotUrl = screenshotUrl, episodeUrl = episodeUrl, posterUrl = posterUrl)
 
-    private fun createHandler() = PlayerArtworkHandler(resolveKodikThumbnailUrl, episodePreviews)
+    private fun createHandler() = PlayerArtworkHandler(thumbnailResolver)
 
     private companion object {
         const val KODIK_URL = "https://kodik.info/seria/1/hash/720p"
         const val THUMBNAIL = "https://kodik.info/thumb.jpg"
-        const val TENRAI = "https://img.example/tenrai.jpg"
         const val SCREENSHOT = "https://img.example/shot.webp"
         const val POSTER = "https://img.example/poster.jpg"
     }

@@ -28,8 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModels
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.domain.watchlater.model.WatchLaterItem
 import su.afk.yummy.tv.feature.watchlater.presentation.R
 
@@ -40,11 +40,9 @@ internal fun WatchLaterMobileCard(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val imageModels = resolveContinueWatchingImageModels(
-        screenshotUrl = item.screenshotUrl,
-        episodeUrl = "",
+    val imageModels = episodeThumbnailModels(
+        thumbnail = episodeThumbnailOf(item.animeId, item.episode, item.screenshotUrl, ""),
         posterUrls = listOfNotNull(item.posterUrl.takeIf { it.isNotBlank() }),
-        kodikThumbnailModel = { iframeUrl -> KodikThumbnail(iframeUrl, item.animeId, item.episode) },
     )
     Card(
         modifier = modifier

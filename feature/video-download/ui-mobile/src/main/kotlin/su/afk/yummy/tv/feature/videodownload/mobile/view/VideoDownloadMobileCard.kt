@@ -38,7 +38,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -69,7 +71,10 @@ internal fun VideoDownloadMobileCard(
     modifier: Modifier = Modifier,
     waitingForWifi: Boolean = false,
 ) {
-    val imageUrl = item.screenshotUrl.ifBlank { item.posterUrl }
+    val imageModels = episodeThumbnailModels(
+        thumbnail = episodeThumbnailOf(item.animeId, item.episode, item.screenshotUrl),
+        posterUrls = listOfNotNull(item.posterUrl.takeIf { it.isNotBlank() }),
+    )
     val statusText = item.statusText(waitingForWifi)
     val diskSizeText = item.diskSizeText()
     val statusColor = when {
@@ -102,8 +107,8 @@ internal fun VideoDownloadMobileCard(
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White.copy(alpha = 0.15f),
                 )
-                AsyncImage(
-                    model = imageUrl.takeIf { it.isNotBlank() },
+                FallbackAsyncImage(
+                    models = imageModels,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),

@@ -22,21 +22,18 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailFetcher
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailKeyer
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailCacheIO
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailFetcher
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailKeyer
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
-import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnailFetcher
-import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnailKeyer
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Собирает и устанавливает singleton Coil [ImageLoader]: размер кэша считаем от пользовательских
  * настроек и типа устройства (урезаем memory cache на low-RAM), плюс регистрируем кастомные
- * компоненты — Kodik fetcher/keyer и Ktor network fetcher поверх общего OkHttpClient приложения.
- * Kodik-превью серий читаются/пишутся не в этот кэш, а в собственный маленький [DiskCache] через
+ * компоненты — fetcher/keyer превью серий и Ktor network fetcher поверх общего OkHttpClient приложения.
+ * Превью серий читаются/пишутся не в этот кэш, а в собственный маленький [DiskCache] через
  * [KodikThumbnailCacheIO] (см. su.afk.yummy.tv.core.utils.kodik.di.KodikNetworkModule).
  */
 @Singleton
@@ -45,9 +42,8 @@ class CoilImageLoaderInstaller @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val settingsStore: CacheSettingsStore,
     private val interfaceModePreferences: AppInterfaceModePreferences,
-    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
+    private val episodeThumbnailResolver: EpisodeThumbnailResolver,
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
-    private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
 ) {
 
     @OptIn(ExperimentalCoilApi::class)
@@ -81,21 +77,8 @@ class CoilImageLoaderInstaller @Inject constructor(
                         .build()
                 }
                 .components {
-                    add(KodikThumbnailKeyer())
-                    add(
-                        KodikThumbnailFetcher.Factory(
-                            resolveKodikThumbnailUrl,
-                            kodikThumbnailCacheIO,
-                        ),
-                    )
-                    add(HistoryEpisodeThumbnailKeyer())
-                    add(
-                        HistoryEpisodeThumbnailFetcher.Factory(
-                            getCachedAnimeVideos,
-                            resolveKodikThumbnailUrl,
-                            kodikThumbnailCacheIO,
-                        ),
-                    )
+                    add(EpisodeThumbnailKeyer())
+                    add(EpisodeThumbnailFetcher.Factory(episodeThumbnailResolver, kodikThumbnailCacheIO))
                     add(KtorNetworkFetcherFactory(httpClient = imageHttpClient))
                     // yani отдаёт картинки новостей только в AVIF. Системный декодер на части ТВ-приставок
                     // (Google TV Streamer) уходит в аппаратный AV1-кодек: ~3 с на картинку, а кадры

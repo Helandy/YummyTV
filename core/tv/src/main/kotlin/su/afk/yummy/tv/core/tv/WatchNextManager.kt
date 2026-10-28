@@ -5,9 +5,9 @@ import android.content.Context
 import androidx.tvprovider.media.tv.TvContractCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
-import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
-import su.afk.yummy.tv.core.utils.kodik.isKodikIframeUrl
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
+import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
+import su.afk.yummy.tv.core.utils.episode.resolveArtworkUrl
 import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,8 +26,7 @@ private const val COLUMN_INTENT_URI = "intent_uri"
 @Singleton
 internal class WatchNextManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
-    private val episodePreviews: EpisodePreviewProvider,
+    private val thumbnailResolver: EpisodeThumbnailResolver,
 ) {
     private val resolver = context.contentResolver
 
@@ -68,13 +67,11 @@ internal class WatchNextManager @Inject constructor(
         }
     }
 
-    private suspend fun resolveEpisodeThumbnail(entry: AnimeWatchProgress): String? {
-        episodePreviews.previewUrl(entry.animeId, entry.episode)?.let { return it }
-        val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikIframeUrl() }
-        return screenshotSource?.let { resolveKodikThumbnailUrl(it) }
-            ?: entry.episodeUrl.takeIf { it.isKodikIframeUrl() }
-                ?.let { resolveKodikThumbnailUrl(it) }
-    }
+    private suspend fun resolveEpisodeThumbnail(entry: AnimeWatchProgress): String? =
+        thumbnailResolver.resolveArtworkUrl(
+            thumbnail = episodeThumbnailOf(entry.animeId, entry.episode, entry.screenshotUrl, entry.episodeUrl),
+            posterUrl = null,
+        )
 }
 
 /** Последняя по времени запись на каждое аниме, от новых к старым. */

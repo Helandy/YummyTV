@@ -50,7 +50,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
-import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
+import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
@@ -201,7 +201,7 @@ internal fun EpisodesGrid(
                             watchStatus = groupVideos.watchStatus(watchProgress),
                             episodeTitle = episodeInfo[episode]?.title,
                             flags = episodeFlags[episode.episodeGroupKey()],
-                            thumbnail = KodikThumbnail(
+                            thumbnail = EpisodeThumbnail(
                                 iframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing).orEmpty(),
                                 animeId = animeId,
                                 episode = episode,

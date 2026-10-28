@@ -1,11 +1,10 @@
-package su.afk.yummy.tv.data.details.repository
+package su.afk.yummy.tv.data.details.thumbnail
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
-import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeThumbnailsUseCase
 import java.util.concurrent.ConcurrentHashMap
@@ -19,17 +18,18 @@ import javax.inject.Singleton
  * (сбой или нет данных) помнится только [EMPTY_TTL_MS], чтобы один таймаут не лишал тайтл кадров до перезапуска.
  */
 @Singleton
-class TenraiEpisodePreviewProvider @Inject constructor(
+class TenraiEpisodeThumbnails @Inject constructor(
     private val getAnimeEpisodeThumbnails: GetAnimeEpisodeThumbnailsUseCase,
     @IoApplicationScope private val scope: CoroutineScope,
     private val clock: AppClock,
-) : EpisodePreviewProvider {
+) {
 
     private class Entry(val thumbnails: Deferred<Map<String, String>>, val createdAtMs: Long)
 
     private val entries = ConcurrentHashMap<Int, Entry>()
 
-    override suspend fun previewUrl(animeId: Int, episode: String): String? =
+    /** Ссылка на кадр серии или `null`, если серия не опознана, кадра нет или он не загрузился. */
+    suspend fun previewUrl(animeId: Int, episode: String): String? =
         if (animeId > 0 && episode.isNotBlank()) thumbnailsOf(animeId)[episode.episodeGroupKey()] else null
 
     private suspend fun thumbnailsOf(animeId: Int): Map<String, String> {
