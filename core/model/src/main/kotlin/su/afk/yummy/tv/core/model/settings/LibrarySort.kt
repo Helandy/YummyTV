@@ -14,6 +14,9 @@ enum class LibrarySort {
 
     /** Название тайтла по алфавиту. */
     TITLE,
+
+    /** Ближайший выход новой серии; тайтлы без будущей даты — в конце. */
+    NEXT_EPISODE,
 }
 
 enum class LibrarySortDirection {

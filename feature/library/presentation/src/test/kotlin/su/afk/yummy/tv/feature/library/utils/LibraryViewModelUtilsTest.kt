@@ -32,6 +32,26 @@ class LibraryViewModelUtilsTest : BaseUnitTest() {
     }
 
     @Test
+    fun `next episode sort puts the nearest release first and drops stale dates to the end`() {
+        val listId = LibraryTab.WATCHING.userAnimeList()!!.id
+        val now = 1_000L
+        val soon = LibraryItem(animeId = 1, title = "B", listId = listId, nextEpisodeAtSeconds = now + 100)
+        val later = LibraryItem(animeId = 2, title = "A", listId = listId, nextEpisodeAtSeconds = now + 500)
+        val stale = LibraryItem(animeId = 3, title = "C", listId = listId, nextEpisodeAtSeconds = now - 50)
+        val none = LibraryItem(animeId = 4, title = "D", listId = listId)
+
+        fun order(direction: LibrarySortDirection) = buildLibraryTabItems(
+            items = listOf(none, later, stale, soon),
+            sort = LibrarySort.NEXT_EPISODE,
+            direction = direction,
+            nowEpochSeconds = now,
+        )[LibraryTab.WATCHING]?.map { it.animeId }
+
+        assertEquals(listOf(1, 2, 3, 4), order(LibrarySortDirection.DESC))
+        assertEquals(listOf(2, 1, 3, 4), order(LibrarySortDirection.ASC))
+    }
+
+    @Test
     fun `tab is loading until its local source emits`() {
         val initial = LibraryState.State()
         val libraryOnly = initial.copy(isLibraryLoaded = true)

@@ -42,6 +42,7 @@ internal fun buildLibraryTabItems(
     items: List<LibraryItem>,
     sort: LibrarySort,
     direction: LibrarySortDirection,
+    nowEpochSeconds: Long = System.currentTimeMillis() / MILLIS_PER_SECOND,
 ): ImmutableMap<LibraryTab, ImmutableList<LibraryItem>> =
     LibraryTab.entries.associateWith { tab ->
         when (tab) {
@@ -58,7 +59,7 @@ internal fun buildLibraryTabItems(
         }
             // Синк списков может отдать два ряда на один тайтл — в гриде это дубль ключа и краш.
             .distinctBy { it.animeId }
-            .sortedWith(librarySortComparator(tab, sort, direction))
+            .sortedWith(librarySortComparator(tab, sort, direction, nowEpochSeconds))
             .toImmutableList()
     }.toImmutableMap()
 
@@ -66,7 +67,11 @@ internal fun buildLibraryTabItems(
  * Значение, по которому упорядочен список. `null` означает «данных нет» — такие элементы всегда
  * уезжают в конец, иначе при возрастающем порядке список начинался бы с пустых карточек.
  */
-private fun LibraryItem.librarySortKey(tab: LibraryTab, sort: LibrarySort): Double? = when (sort) {
+private fun LibraryItem.librarySortKey(
+    tab: LibraryTab,
+    sort: LibrarySort,
+    nowEpochSeconds: Long,
+): Double? = when (sort) {
     LibrarySort.ADDED_DATE -> {
         val addedAt = if (tab == LibraryTab.FAVORITES) favoriteUpdatedAt else listUpdatedAt
         addedAt.takeIf { it > 0L }?.toDouble()
@@ -75,6 +80,12 @@ private fun LibraryItem.librarySortKey(tab: LibraryTab, sort: LibrarySort): Doub
     LibrarySort.YEAR -> year?.toDouble()
     LibrarySort.RATING -> rating?.takeIf { it > 0.0 }
     LibrarySort.USER_RATING -> userRating?.takeIf { it in 1..10 }?.toDouble()
+    // «Сначала главное» для выхода серии — ближайшая дата, поэтому ключ отрицательный.
+    // Уже прошедшая дата устарела (серия вышла) и ключа не даёт.
+    LibrarySort.NEXT_EPISODE -> nextEpisodeAtSeconds
+        ?.takeIf { it > nowEpochSeconds }
+        ?.let { -it.toDouble() }
+
     LibrarySort.TITLE -> null
 }
 
@@ -83,6 +94,7 @@ private fun librarySortComparator(
     tab: LibraryTab,
     sort: LibrarySort,
     direction: LibrarySortDirection,
+    nowEpochSeconds: Long,
 ): Comparator<LibraryItem> = Comparator { first, second ->
     val byTitle = first.title.compareTo(second.title, ignoreCase = true)
     if (sort == LibrarySort.TITLE) {
@@ -90,8 +102,8 @@ private fun librarySortComparator(
         // и для названия это начало алфавита, а не его конец.
         return@Comparator if (direction == LibrarySortDirection.DESC) byTitle else -byTitle
     }
-    val firstKey = first.librarySortKey(tab, sort)
-    val secondKey = second.librarySortKey(tab, sort)
+    val firstKey = first.librarySortKey(tab, sort, nowEpochSeconds)
+    val secondKey = second.librarySortKey(tab, sort, nowEpochSeconds)
     val byKey = when {
         firstKey == null && secondKey == null -> 0
         firstKey == null -> 1
@@ -101,3 +113,5 @@ private fun librarySortComparator(
     }
     if (byKey != 0) byKey else byTitle
 }
+
+private const val MILLIS_PER_SECOND = 1_000L

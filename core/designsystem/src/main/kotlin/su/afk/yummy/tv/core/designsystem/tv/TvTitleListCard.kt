@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.components.ReleaseStatusChip
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.core.designsystem.components.releaseCountdownText
+import su.afk.yummy.tv.core.designsystem.components.releaseDateText
 import su.afk.yummy.tv.core.designsystem.components.yearText
 import su.afk.yummy.tv.core.designsystem.model.TitleListCardUi
 import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
@@ -38,19 +39,24 @@ fun TvTitleListCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onFocused: () -> Unit = {},
+    onLongClick: (() -> Unit)? = null,
     width: Dp? = null,
     showYear: Boolean = true,
 ) {
     val year = item.yearText(showYear)
+    val countdown = releaseCountdownText(item.nextEpisodeAtSeconds, nowEpochSeconds)
+    val releaseDate = releaseDateText(item.nextEpisodeAtSeconds, nowEpochSeconds)
     TvTitleCard(
         title = item.title,
         posterUrls = item.posterUrls,
         onClick = onClick,
         onFocused = onFocused,
+        onLongClick = onLongClick,
         modifier = modifier,
         width = width,
         subtitle = item.dateText?.takeIf { it.isNotBlank() },
-        caption = releaseCountdownText(item.nextEpisodeAtSeconds, nowEpochSeconds),
+        // Две строки: сколько осталось и когда именно выйдет серия.
+        caption = listOfNotNull(countdown, releaseDate).joinToString("\n").ifBlank { null },
         posterOverlay = {
             Column(
                 modifier = Modifier

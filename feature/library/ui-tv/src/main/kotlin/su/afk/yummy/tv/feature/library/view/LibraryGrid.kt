@@ -53,6 +53,7 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.mapper.toTitleListCardUi
 import su.afk.yummy.tv.feature.library.model.LibraryTab
+import su.afk.yummy.tv.feature.library.model.LibraryTvCardActions
 import su.afk.yummy.tv.feature.library.presentation.R
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -66,6 +67,7 @@ internal fun LibraryGrid(
     showTitleYear: Boolean,
     onAnimeSelected: (Int) -> Unit,
     onRemoveEntry: (Int) -> Unit,
+    onCardActions: (LibraryTvCardActions) -> Unit,
     /** Спрашивает подтверждение; переданное действие (фокус + удаление) выполняется только после «Удалить». */
     confirmRemoval: (title: String, proceed: () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
@@ -239,13 +241,24 @@ internal fun LibraryGrid(
                           }
                         }
                     }
+                    val stableOnLongClick = remember(item.animeId, index, stableOnClick, stableOnDelete) {
+                        {
+                            onCardActions(
+                                LibraryTvCardActions(
+                                    title = item.title,
+                                    open = stableOnClick,
+                                    remove = stableOnDelete,
+                                ),
+                            )
+                        }
+                    }
                     LibraryAnimeCard(
                         item = card,
                         nowEpochSeconds = nowEpochSeconds,
                         showYear = showTitleYear,
                         onClick = stableOnClick,
+                        onLongClick = stableOnLongClick,
                         onFocused = stableOnFocused,
-                        onDelete = stableOnDelete,
                         cardWidth = adaptiveCardWidth,
                         modifier = Modifier
                             .tvWholeItemBringIntoView()
@@ -254,8 +267,6 @@ internal fun LibraryGrid(
                                     rememberFocusedItem(index)
                                 }
                             }
-                            .tvFocusRestorer(fallback = focusRequesters[index]),
-                        cardModifier = Modifier
                             .focusRequester(focusRequesters[index])
                             .focusProperties {
                                 if (index % gridColumnCount == 0) {
@@ -264,16 +275,9 @@ internal fun LibraryGrid(
                                 if (index < gridColumnCount) {
                                     up = selectedTabFocusRequester
                                 }
-                            },
-                        // Под постером стоит кнопка удаления: DPAD-вниз с карточки ведёт в неё,
-                        // а на следующий ряд уходит уже с кнопки — страховка колонки здесь.
-                        deleteModifier = Modifier
-                            .focusProperties {
-                                if (index % gridColumnCount == 0) {
-                                    mainMenuFocusRequester?.let { left = it }
-                                }
-                                up = focusRequesters[index]
                             }
+                            // Карточка — единственная цель фокуса в ячейке: колонку при DPAD-вниз
+                            // страхуем здесь, иначе Compose теряет её на несобранном ряду.
                             .tvLazyGridRowFocusNavigation(
                                 index = index,
                                 columnCount = gridColumnCount,

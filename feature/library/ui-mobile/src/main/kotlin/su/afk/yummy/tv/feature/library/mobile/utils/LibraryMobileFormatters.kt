@@ -26,6 +26,7 @@ internal fun LibrarySort.mobileLabel(): String = when (this) {
     LibrarySort.RATING -> stringResource(R.string.library_mobile_sort_rating)
     LibrarySort.USER_RATING -> stringResource(R.string.library_mobile_sort_user_rating)
     LibrarySort.TITLE -> stringResource(R.string.library_mobile_sort_title)
+    LibrarySort.NEXT_EPISODE -> stringResource(R.string.library_mobile_sort_next_episode)
 }
 
 internal fun HomeContinueWatchingItem.watchProgress(): Float =

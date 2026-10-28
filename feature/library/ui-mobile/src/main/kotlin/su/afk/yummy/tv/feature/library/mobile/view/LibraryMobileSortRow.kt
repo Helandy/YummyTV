@@ -36,6 +36,7 @@ private val librarySortOrder = listOf(
     LibrarySort.RATING,
     LibrarySort.USER_RATING,
     LibrarySort.TITLE,
+    LibrarySort.NEXT_EPISODE,
 )
 
 /**
