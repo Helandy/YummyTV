@@ -124,8 +124,12 @@ class MobileMainGraph @Inject internal constructor(
                             extraSceneStrategies = listOf(
                                 rememberMobileListDetailSceneStrategy(currentDestination),
                             ),
-                            transitionSpec = mobileNavTransitionSpec,
-                            popTransitionSpec = mobileNavPopTransitionSpec,
+                            transitionSpec = remember(state.navTransitionStyle) {
+                                mobileNavTransitionSpec(state.navTransitionStyle)
+                            },
+                            popTransitionSpec = remember(state.navTransitionStyle) {
+                                mobileNavPopTransitionSpec(state.navTransitionStyle)
+                            },
                         )
                     }
                 }

@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
@@ -101,6 +102,24 @@ fun BackgroundStyle.hint(): String = stringResource(
         BackgroundStyle.LIGHT -> R.string.settings_background_light_hint
         BackgroundStyle.DARK -> R.string.settings_background_dark_hint
         BackgroundStyle.AMOLED -> R.string.settings_background_amoled_hint
+    },
+)
+
+@Composable
+fun NavTransitionStyle.label(): String = stringResource(
+    when (this) {
+        NavTransitionStyle.SLIDE -> R.string.settings_nav_transition_slide
+        NavTransitionStyle.FADE_SCALE -> R.string.settings_nav_transition_fade_scale
+        NavTransitionStyle.NONE -> R.string.settings_nav_transition_none
+    },
+)
+
+@Composable
+fun NavTransitionStyle.hint(): String = stringResource(
+    when (this) {
+        NavTransitionStyle.SLIDE -> R.string.settings_nav_transition_slide_hint
+        NavTransitionStyle.FADE_SCALE -> R.string.settings_nav_transition_fade_scale_hint
+        NavTransitionStyle.NONE -> R.string.settings_nav_transition_none_hint
     },
 )
 

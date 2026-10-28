@@ -78,6 +78,7 @@ internal object SettingsPreferenceKeys {
     val hiddenRecommendationIdsKey = stringSetPreferencesKey("hidden_recommendation_ids")
     val appThemeKey = stringPreferencesKey("app_theme")
     val backgroundStyleKey = stringPreferencesKey("background_style")
+    val navTransitionStyleKey = stringPreferencesKey("nav_transition_style")
     val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
     val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
     val yaniUserIdKey = intPreferencesKey("yani_user_id")

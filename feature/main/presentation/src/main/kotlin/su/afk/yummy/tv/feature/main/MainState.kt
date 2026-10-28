@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.model.anime.CardListStatus
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.mvi.UiEffect
@@ -16,6 +17,7 @@ class MainState {
     data class State(
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
+        val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
         val seasonalDecorationsEnabled: Boolean = true,
         /** Праздничная тема, включившаяся автоматически, о которой пользователю ещё не сообщили. */
         val seasonalPrompt: SeasonalTheme? = null,

@@ -45,6 +45,12 @@ internal fun SettingsMobileAppearanceContent(
                 hint = state.backgroundStyle.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.BACKGROUND) },
             )
+            SettingsMobileOptionRow(
+                label = stringResource(R.string.settings_nav_transition_title),
+                value = state.navTransitionStyle.label(),
+                hint = state.navTransitionStyle.hint(),
+                onClick = { onPickerRequested(SettingsMobilePicker.NAV_TRANSITION) },
+            )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_seasonal_decorations),
                 hint = if (state.seasonalDecorationsEnabled) {

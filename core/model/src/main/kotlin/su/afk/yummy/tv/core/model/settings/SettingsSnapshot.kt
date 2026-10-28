@@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.model.settings
 data class SettingsSnapshot(
     val appTheme: AppTheme,
     val backgroundStyle: BackgroundStyle,
+    val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
     val posterQuality: PosterQuality,
     val posterCardSize: PosterCardSize,
     val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,

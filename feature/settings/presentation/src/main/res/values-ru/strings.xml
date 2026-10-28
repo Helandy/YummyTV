@@ -44,6 +44,13 @@
     <string name="settings_background_dark_hint">Тёмный фон</string>
     <string name="settings_background_amoled">AMOLED</string>
     <string name="settings_background_amoled_hint">Чисто чёрный фон для OLED-экранов</string>
+    <string name="settings_nav_transition_title">Анимация переходов</string>
+    <string name="settings_nav_transition_slide">Слайд</string>
+    <string name="settings_nav_transition_slide_hint">Новый экран выезжает сбоку</string>
+    <string name="settings_nav_transition_fade_scale">Затухание и масштаб</string>
+    <string name="settings_nav_transition_fade_scale_hint">Плавное проявление с лёгким увеличением</string>
+    <string name="settings_nav_transition_none">Без анимации</string>
+    <string name="settings_nav_transition_none_hint">Экраны меняются мгновенно</string>
     <string name="settings_interface_type">Тип интерфейса</string>
     <string name="settings_interface_mobile">Мобильный</string>
     <string name="settings_interface_mobile_hint">Управление с сенсорного экрана</string>

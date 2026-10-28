@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
@@ -28,6 +29,7 @@ interface AppearanceSettingsStore {
     val librarySortDirection: Flow<LibrarySortDirection>
     val appTheme: Flow<AppTheme>
     val backgroundStyle: Flow<BackgroundStyle>
+    val navTransitionStyle: Flow<NavTransitionStyle>
 
     /** Порядок вкладок на экране библиотеки. */
     val libraryTabOrder: Flow<List<LibraryTabKind>>
@@ -69,6 +71,7 @@ interface AppearanceSettingsStore {
     suspend fun setLibrarySortDirection(direction: LibrarySortDirection)
     suspend fun setAppTheme(theme: AppTheme)
     suspend fun setBackgroundStyle(style: BackgroundStyle)
+    suspend fun setNavTransitionStyle(style: NavTransitionStyle)
     suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
     suspend fun setSeasonalDecorationsEnabled(enabled: Boolean)

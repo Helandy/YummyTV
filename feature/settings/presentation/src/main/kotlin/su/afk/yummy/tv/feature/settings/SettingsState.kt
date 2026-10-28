@@ -7,6 +7,7 @@ import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
@@ -39,6 +40,7 @@ class SettingsState {
         val interfaceMode: AppInterfaceMode = AppInterfaceMode.MOBILE,
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
+        val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
@@ -114,6 +116,7 @@ class SettingsState {
 
         /** Пользователь выбрал цвет фона интерфейса. */
         data class BackgroundStyleSelected(val style: BackgroundStyle) : Event
+        data class NavTransitionStyleSelected(val style: NavTransitionStyle) : Event
 
         /** Пользователь подтвердил смену типа интерфейса. */
         data class InterfaceModeSelected(val mode: AppInterfaceMode) : Event

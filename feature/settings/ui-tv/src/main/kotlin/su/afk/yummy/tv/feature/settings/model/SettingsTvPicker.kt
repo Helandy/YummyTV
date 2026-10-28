@@ -9,6 +9,7 @@ internal enum class SettingsTvPicker(@param:StringRes val titleRes: Int) {
     CONTENT_LANGUAGE(R.string.settings_content_language_title),
     THEME(R.string.settings_tab_theme),
     BACKGROUND(R.string.settings_tab_background),
+    NAV_TRANSITION(R.string.settings_nav_transition_title),
     POSTER_QUALITY(R.string.settings_poster_quality_title),
     NEW_EPISODES_SOURCES(R.string.settings_new_episodes_sources_title),
     LIBRARY_TAB_ORDER(R.string.settings_library_tabs_order),

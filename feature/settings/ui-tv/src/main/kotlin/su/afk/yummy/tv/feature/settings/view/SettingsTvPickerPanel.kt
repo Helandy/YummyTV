@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
@@ -47,6 +48,7 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.CONTENT_LANGUAGE -> state.contentLanguage.label()
     SettingsTvPicker.THEME -> state.appTheme.label()
     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
+    SettingsTvPicker.NAV_TRANSITION -> state.navTransitionStyle.label()
     SettingsTvPicker.POSTER_QUALITY -> state.posterQuality.label()
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
@@ -136,6 +138,15 @@ internal fun SettingsTvPickerPanel(
                 hintOf = { it.hint() },
                 focusRequester = entryFocusRequester,
                 onSelected = { select(SettingsState.Event.BackgroundStyleSelected(it)) },
+            )
+
+            SettingsTvPicker.NAV_TRANSITION -> PickerOptions(
+                values = NavTransitionStyle.entries,
+                selected = state.navTransitionStyle,
+                labelOf = { it.label() },
+                hintOf = { it.hint() },
+                focusRequester = entryFocusRequester,
+                onSelected = { select(SettingsState.Event.NavTransitionStyleSelected(it)) },
             )
 
             SettingsTvPicker.POSTER_QUALITY -> PickerOptions(

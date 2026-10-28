@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
@@ -17,6 +18,7 @@ import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
@@ -75,6 +77,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override val backgroundStyle: Flow<BackgroundStyle> =
         store.enumFlow(backgroundStyleKey, BackgroundStyle.DARK)
+
+    override val navTransitionStyle: Flow<NavTransitionStyle> =
+        store.enumFlow(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE)
 
     override val libraryTabOrder: Flow<List<LibraryTabKind>> =
         store.data.map { prefs -> prefs[libraryTabOrderKey].toLibraryTabOrder() }
@@ -141,6 +146,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setBackgroundStyle(style: BackgroundStyle) =
         store.setEnum(backgroundStyleKey, style)
+
+    override suspend fun setNavTransitionStyle(style: NavTransitionStyle) =
+        store.setEnum(navTransitionStyleKey, style)
 
     override suspend fun setLibraryTabOrder(order: List<LibraryTabKind>) {
         store.edit { prefs ->

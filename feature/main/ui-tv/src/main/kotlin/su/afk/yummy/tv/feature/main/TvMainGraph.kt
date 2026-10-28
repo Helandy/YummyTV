@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.common.coroutines.AppClock
@@ -97,8 +98,12 @@ class TvMainGraph @Inject constructor(
                             backStackHost = backStackHost,
                             registrars = navigationHolder.registrars,
                             modifier = Modifier.fillMaxSize(),
-                            transitionSpec = tvNavTransitionSpec,
-                            popTransitionSpec = tvNavPopTransitionSpec,
+                            transitionSpec = remember(state.navTransitionStyle) {
+                                tvNavTransitionSpec(state.navTransitionStyle)
+                            },
+                            popTransitionSpec = remember(state.navTransitionStyle) {
+                                tvNavPopTransitionSpec(state.navTransitionStyle)
+                            },
                         )
                     }
                 }

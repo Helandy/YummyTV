@@ -42,6 +42,8 @@ internal fun SettingsTvAppearanceContent(
     SettingsDivider()
     pickerRow(SettingsTvPicker.BACKGROUND, Modifier)
     SettingsDivider()
+    pickerRow(SettingsTvPicker.NAV_TRANSITION, Modifier)
+    SettingsDivider()
     ToggleRow(
         label = stringResource(R.string.settings_seasonal_decorations),
         hint = if (state.seasonalDecorationsEnabled) {

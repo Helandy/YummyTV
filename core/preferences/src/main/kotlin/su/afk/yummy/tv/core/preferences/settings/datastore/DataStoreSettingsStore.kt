@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
@@ -28,6 +29,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlay
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
@@ -99,6 +101,7 @@ internal class DataStoreSettingsStore @Inject constructor(
         SettingsSnapshot(
             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
+            navTransitionStyle = prefs.enum(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE),
             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
             titleCardLayout = prefs.enum(titleCardLayoutKey, TitleCardLayout.TILE),
@@ -158,6 +161,7 @@ internal class DataStoreSettingsStore @Inject constructor(
         MainSettingsSnapshot(
             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
+            navTransitionStyle = prefs.enum(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE),
             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
             yaniNickname = prefs[yaniNicknameKey].orEmpty(),

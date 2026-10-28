@@ -44,6 +44,13 @@
     <string name="settings_background_dark_hint">Dark background</string>
     <string name="settings_background_amoled">AMOLED</string>
     <string name="settings_background_amoled_hint">Pure black background for OLED screens</string>
+    <string name="settings_nav_transition_title">Screen transitions</string>
+    <string name="settings_nav_transition_slide">Slide</string>
+    <string name="settings_nav_transition_slide_hint">New screen slides in from the side</string>
+    <string name="settings_nav_transition_fade_scale">Fade and scale</string>
+    <string name="settings_nav_transition_fade_scale_hint">Smooth fade with a slight zoom</string>
+    <string name="settings_nav_transition_none">None</string>
+    <string name="settings_nav_transition_none_hint">No animation</string>
     <string name="settings_interface_type">Interface type</string>
     <string name="settings_interface_mobile">Mobile</string>
     <string name="settings_interface_mobile_hint">Optimized for touchscreen controls</string>

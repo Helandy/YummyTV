@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
@@ -58,6 +59,18 @@ internal class SettingsAnalytics @Inject constructor(
     fun eventBackgroundStyleSelected(style: BackgroundStyle) {
         tracker.track(
             EVENT_BACKGROUND_STYLE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to style.name.lowercase()),
+        )
+    }
+
+    /**
+     * Пользователь изменил стиль анимации переходов между экранами.
+     *
+     * Параметры: value.
+     */
+    fun eventNavTransitionStyleSelected(style: NavTransitionStyle) {
+        tracker.track(
+            EVENT_NAV_TRANSITION_STYLE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to style.name.lowercase()),
         )
     }
@@ -439,6 +452,7 @@ internal class SettingsAnalytics @Inject constructor(
 
         const val EVENT_APP_THEME_SELECTED = "settings_app_theme_selected"
         const val EVENT_BACKGROUND_STYLE_SELECTED = "settings_background_style_selected"
+        const val EVENT_NAV_TRANSITION_STYLE_SELECTED = "settings_nav_transition_style_selected"
         const val EVENT_AUTO_SKIP_OPENINGS_ENDINGS_TOGGLED =
             "settings_auto_skip_openings_endings_toggled"
         const val EVENT_AUTO_SKIP_DELAY_CHANGED = "settings_auto_skip_delay_changed"

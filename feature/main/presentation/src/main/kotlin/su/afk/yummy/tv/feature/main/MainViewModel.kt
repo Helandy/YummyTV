@@ -125,6 +125,7 @@ class MainViewModel @Inject internal constructor(
                         seasonalPrompt = seasonalPrompt,
                         appTheme = snapshot.appTheme,
                         backgroundStyle = snapshot.backgroundStyle,
+                        navTransitionStyle = snapshot.navTransitionStyle,
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
