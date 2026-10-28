@@ -150,6 +150,8 @@
     <string name="settings_auto_skip_delay_label">Затримка автопропуску</string>
     <string name="settings_show_opening_on_timeline_label">Показувати опенінг на таймлайні</string>
     <string name="settings_show_opening_on_timeline_enabled">Ділянка опенінгу підсвічується на смузі прогресу</string>
+    <string name="settings_auto_manage_library_lists_label">Авто-додавання в Дивлюсь / Переглянуто</string>
+    <string name="settings_auto_manage_library_lists_hint">Тайтл потрапляє в «Дивлюсь» після 2 серій, переглянутих більш ніж на 50%, і в «Переглянуто» — коли переглянуто всі серії завершеного тайтлу</string>
     <string name="settings_suggest_next_episode_on_watched_label">Пропонувати наступну серію</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Показувати на головній після завершення поточної</string>
     <string name="settings_auto_play_next_episode_label">Автовідтворення наступної серії</string>

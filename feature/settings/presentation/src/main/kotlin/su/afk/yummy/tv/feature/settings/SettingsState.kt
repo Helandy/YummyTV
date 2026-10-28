@@ -69,6 +69,7 @@ class SettingsState {
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val tvPlayerControlsTutorialDismissed: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
+        val autoManageLibraryLists: Boolean = true,
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
@@ -216,6 +217,9 @@ class SettingsState {
 
         /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event
+
+        /** Пользователь переключил автоматическое добавление в «Смотрю» / «Просмотрено». */
+        data object AutoManageLibraryListsToggled : Event
 
         /** Пользователь изменил пороги "просмотрено" (минуты до конца по длине серии). */
         data class WatchedThresholdsChanged(val thresholds: WatchedThresholds) : Event

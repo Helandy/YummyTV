@@ -29,6 +29,7 @@ import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerLibraryAutoListHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerProgressSaveRequest
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
@@ -57,6 +58,7 @@ class PlayerViewModelTest : BaseUnitTest() {
     private val navigation: PlayerNavigationDelegate = mockk(relaxed = true)
     private val strings: StringProvider = mockk()
     private val analytics: PlayerAnalytics = mockk(relaxed = true)
+    private val libraryAutoListHandler: PlayerLibraryAutoListHandler = mockk(relaxed = true)
     private val allohaSource: AllohaSourceBehavior = mockk(relaxed = true)
     private val defaultSource: DefaultSourceBehavior = mockk(relaxed = true)
 
@@ -92,6 +94,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         preferences = preferences,
         displaySettings = displaySettings,
         finalEpisodeActionHandler = finalEpisodeActionHandler,
+        libraryAutoListHandler = libraryAutoListHandler,
         artworkHandler = artworkHandler,
         destinationStateMapper = PlayerDestinationStateMapper(),
         sourceSelectionHandler = PlayerSourceSelectionHandler(),

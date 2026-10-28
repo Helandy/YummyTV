@@ -7,6 +7,9 @@ interface WatchProgressRepository {
 
     suspend fun get(animeId: Int, episode: String): AnimeWatchProgress?
 
+    /** Локальный прогресс всех серий тайтла. */
+    suspend fun getByAnime(animeId: Int): List<AnimeWatchProgress>
+
     suspend fun save(
         animeId: Int,
         episode: String,

@@ -333,6 +333,18 @@ internal class SettingsAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь включил или выключил автоматическое добавление в «Смотрю» / «Просмотрено».
+     *
+     * Параметры: target_state.
+     */
+    fun eventAutoManageLibraryListsToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_AUTO_MANAGE_LIBRARY_LISTS_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
+    /**
      * Пользователь изменил язык контента Yani.
      *
      * Параметры: value.
@@ -447,6 +459,8 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_request_preview_channel_browsable"
         const val EVENT_SUGGEST_NEXT_EPISODE_ON_WATCHED_TOGGLED =
             "settings_suggest_next_episode_on_watched_toggled"
+        const val EVENT_AUTO_MANAGE_LIBRARY_LISTS_TOGGLED =
+            "settings_auto_manage_library_lists_toggled"
         const val EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED =
             "settings_auto_play_next_episode_toggled"
         const val EVENT_WATCHED_THRESHOLDS_CHANGED = "settings_watched_thresholds_changed"

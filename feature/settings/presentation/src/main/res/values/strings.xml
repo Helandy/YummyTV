@@ -150,6 +150,8 @@
     <string name="settings_auto_skip_delay_label">Auto-skip delay</string>
     <string name="settings_show_opening_on_timeline_label">Show opening on the timeline</string>
     <string name="settings_show_opening_on_timeline_enabled">The opening segment is highlighted on the progress bar</string>
+    <string name="settings_auto_manage_library_lists_label">Auto-add to Watching / Completed</string>
+    <string name="settings_auto_manage_library_lists_hint">Move a title to Watching after 2 episodes watched over 50%, and to Completed after the last episode of a finished title</string>
     <string name="settings_suggest_next_episode_on_watched_label">Suggest next episode</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Show on Home after finishing the current episode</string>
     <string name="settings_auto_play_next_episode_label">Autoplay next episode</string>

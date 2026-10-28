@@ -38,6 +38,20 @@ internal fun SettingsTvWatchProgressContent(
             .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_auto_manage_library_lists_label),
+        hint = if (state.autoManageLibraryLists) {
+            stringResource(R.string.settings_auto_manage_library_lists_hint)
+        } else {
+            stringResource(R.string.settings_disabled)
+        },
+        enabled = state.autoManageLibraryLists,
+        onClick = {
+            onEvent(SettingsState.Event.AutoManageLibraryListsToggled)
+        },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsDivider()
     SettingsSliderRow(
         label = stringResource(R.string.settings_watched_short_label),
         valueText = stringResource(

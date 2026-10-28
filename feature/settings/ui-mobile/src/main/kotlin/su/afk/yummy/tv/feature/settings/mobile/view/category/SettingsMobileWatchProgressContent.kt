@@ -33,6 +33,18 @@ internal fun SettingsMobileWatchProgressContent(
                     onEvent(SettingsState.Event.SuggestNextEpisodeOnWatchedToggled)
                 },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_auto_manage_library_lists_label),
+                hint = if (state.autoManageLibraryLists) {
+                    stringResource(R.string.settings_auto_manage_library_lists_hint)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.autoManageLibraryLists,
+                onClick = {
+                    onEvent(SettingsState.Event.AutoManageLibraryListsToggled)
+                },
+            )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_watched_short_label),
                 valueLabel = { stringResource(R.string.settings_watched_minutes_value, it) },

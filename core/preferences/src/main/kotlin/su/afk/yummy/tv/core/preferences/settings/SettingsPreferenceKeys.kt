@@ -44,6 +44,7 @@ internal object SettingsPreferenceKeys {
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
     val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")
+    val autoManageLibraryListsKey = booleanPreferencesKey("auto_manage_library_lists")
     val watchedShortRemainingMinutesKey = intPreferencesKey("watched_remaining_short_minutes")
     val watchedMediumRemainingMinutesKey = intPreferencesKey("watched_remaining_medium_minutes")
     val watchedLongRemainingMinutesKey = intPreferencesKey("watched_remaining_long_minutes")

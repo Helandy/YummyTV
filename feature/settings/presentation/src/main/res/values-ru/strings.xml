@@ -150,6 +150,8 @@
     <string name="settings_auto_skip_delay_label">Задержка автопропуска</string>
     <string name="settings_show_opening_on_timeline_label">Показывать опенинг на таймлайне</string>
     <string name="settings_show_opening_on_timeline_enabled">Участок опенинга подсвечивается на полосе прогресса</string>
+    <string name="settings_auto_manage_library_lists_label">Авто-добавление в Смотрю / Просмотрено</string>
+    <string name="settings_auto_manage_library_lists_hint">Тайтл попадает в «Смотрю» после 2 серий, просмотренных больше чем на 50%, и в «Просмотрено» — когда досмотрены все серии вышедшего тайтла</string>
     <string name="settings_suggest_next_episode_on_watched_label">Предлагать следующую серию</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Показывать на главной после завершения текущей</string>
     <string name="settings_auto_play_next_episode_label">Автовоспроизведение следующей серии</string>

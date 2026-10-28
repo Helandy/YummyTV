@@ -30,6 +30,7 @@ import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerLibraryAutoListHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceSelectionHandler
@@ -80,6 +81,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val preferences: PlayerPreferencesBinder,
     private val displaySettings: PlayerDisplaySettingsHandler,
     private val finalEpisodeActionHandler: PlayerFinalEpisodeActionHandler,
+    private val libraryAutoListHandler: PlayerLibraryAutoListHandler,
     private val artworkHandler: PlayerArtworkHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
@@ -552,6 +554,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                         playbackProgressHandler.saveProgress(
                             playbackProgressHandler.progressSaveRequest(s, snapshot),
                         )
+                        libraryAutoListHandler.onProgressSaved(
+                            animeId = s.animeId,
+                            positionMs = snapshot.positionMs,
+                            durationMs = snapshot.durationMs,
+                        )
                     }
                 }
             }
@@ -661,6 +668,11 @@ class PlayerViewModel @AssistedInject internal constructor(
         viewModelScope.launch {
             runSuspendCatching {
                 playbackProgressHandler.saveProgress(request)
+                libraryAutoListHandler.onProgressSaved(
+                    animeId = completionState.animeId,
+                    positionMs = request.snapshot.positionMs,
+                    durationMs = request.snapshot.durationMs,
+                )
                 val nextTargetRequest =
                     if (playbackProgressHandler.shouldSuggestNextEpisodeOnWatched()) {
                         nextState?.let(playbackProgressHandler::continueTargetRequest)

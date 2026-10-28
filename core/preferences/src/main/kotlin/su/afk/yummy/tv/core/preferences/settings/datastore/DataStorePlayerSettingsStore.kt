@@ -46,6 +46,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitle
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleOffsetKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleTextColorKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitleTextSizeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoManageLibraryListsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerControlsTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
@@ -105,6 +106,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val suggestNextEpisodeOnWatched: Flow<Boolean> =
         store.boolean(suggestNextEpisodeOnWatchedKey, true)
+
+    override val autoManageLibraryLists: Flow<Boolean> =
+        store.boolean(autoManageLibraryListsKey, true)
 
     override val watchedThresholds: Flow<WatchedThresholds> =
         store.data.map { prefs -> prefs.watchedThresholds() }.distinctUntilChanged()
@@ -243,6 +247,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) =
         store.setBoolean(suggestNextEpisodeOnWatchedKey, enabled)
+
+    override suspend fun setAutoManageLibraryLists(enabled: Boolean) =
+        store.setBoolean(autoManageLibraryListsKey, enabled)
 
     override suspend fun setWatchedThresholds(thresholds: WatchedThresholds) {
         val coerced = thresholds.coerced()

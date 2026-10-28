@@ -44,6 +44,9 @@ interface PlayerSettingsStore {
     val playerOrientationMode: Flow<PlayerOrientationMode>
     val suggestNextEpisodeOnWatched: Flow<Boolean>
 
+    /** Автоматически переносить тайтл в «Смотрю» / «Просмотрено» по прогрессу просмотра. */
+    val autoManageLibraryLists: Flow<Boolean>
+
     /** Сколько минут до конца серии может остаться, чтобы она считалась просмотренной. */
     val watchedThresholds: Flow<WatchedThresholds>
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean>
@@ -102,6 +105,7 @@ interface PlayerSettingsStore {
     suspend fun setPictureInPictureEnabled(enabled: Boolean)
     suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
+    suspend fun setAutoManageLibraryLists(enabled: Boolean)
     suspend fun setWatchedThresholds(thresholds: WatchedThresholds)
     suspend fun dismissMobilePlayerGestureTutorial()
     suspend fun resetMobilePlayerGestureTutorial()

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.player.repository
 
+import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.data.player.mapper.toDomain
@@ -12,6 +13,9 @@ internal class DefaultWatchProgressRepository @Inject constructor(
 
     override suspend fun get(animeId: Int, episode: String): AnimeWatchProgress? =
         store.get(animeId, episode)?.toDomain()
+
+    override suspend fun getByAnime(animeId: Int): List<AnimeWatchProgress> =
+        store.observeByAnimeId(animeId).first().map { it.toDomain() }
 
     override suspend fun save(
         animeId: Int,

@@ -93,6 +93,7 @@ class SettingsViewModel @Inject internal constructor(
                         pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
                         playerOrientationMode = snapshot.playerOrientationMode,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
+                        autoManageLibraryLists = snapshot.autoManageLibraryLists,
                         watchedThresholds = snapshot.watchedThresholds,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
@@ -369,6 +370,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.suggestNextEpisodeOnWatched
                 analytics.eventSuggestNextEpisodeOnWatchedToggled(enabled)
                 settingsStore.setSuggestNextEpisodeOnWatched(enabled)
+            }
+
+            SettingsState.Event.AutoManageLibraryListsToggled -> viewModelScope.launch {
+                val enabled = !currentState.autoManageLibraryLists
+                analytics.eventAutoManageLibraryListsToggled(enabled)
+                settingsStore.setAutoManageLibraryLists(enabled)
             }
 
             is SettingsState.Event.YaniApplicationTokenChanged -> {
