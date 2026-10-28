@@ -25,7 +25,7 @@ class YaniUserStatsRepository(
         val languageCode = settingsStore.currentLanguageCode()
         offlineFirstCache(
             read = { accountStorage.getUserStats(userId, languageCode) },
-            isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
+            isFresh = { it.isFresh(ACCOUNT_SHORT_TTL_MS) },
             toDomain = { it.toStoredUserStats() },
             fetchAndSave = { fetchUserStats(userId, languageCode) },
         )
