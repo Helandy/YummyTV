@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.components.scoreDistributionColor
 import su.afk.yummy.tv.core.utils.formatting.toGroupedCount
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -85,7 +86,7 @@ private fun MobileRatingDistributionRow(
                 modifier = Modifier
                     .fillMaxWidth(fraction)
                     .height(10.dp)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(5.dp)),
+                    .background(scoreDistributionColor(bucket.rating), RoundedCornerShape(5.dp)),
             )
         }
         Text(

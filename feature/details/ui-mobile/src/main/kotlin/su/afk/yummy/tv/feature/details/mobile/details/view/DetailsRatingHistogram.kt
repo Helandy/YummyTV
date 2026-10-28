@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.components.toRatingColor
+import su.afk.yummy.tv.core.designsystem.components.scoreDistributionColor
 
 /** Мини-гистограмма голосов за оценки 1..10: индекс = оценка − 1. */
 @Composable
@@ -40,7 +40,7 @@ internal fun DetailsRatingHistogram(
                         .weight(1f)
                         .fillMaxHeight(fraction)
                         .background(
-                            color = (index + 1).toDouble().toRatingColor()
+                            color = scoreDistributionColor(index + 1)
                                 .copy(alpha = if (count > 0) 0.9f else 0.25f),
                             shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
                         ),

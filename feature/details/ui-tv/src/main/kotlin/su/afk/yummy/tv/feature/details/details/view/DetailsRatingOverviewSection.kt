@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.components.toRatingColor
+import su.afk.yummy.tv.core.designsystem.components.scoreDistributionColor
 import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.formatRating
@@ -204,7 +204,7 @@ private fun RatingHistogram(
                     .weight(1f)
                     .fillMaxHeight(fraction)
                     .background(
-                        color = (index + 1).toDouble().toRatingColor()
+                        color = scoreDistributionColor(index + 1)
                             .copy(alpha = if (count > 0) 0.9f else 0.25f),
                         shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
                     ),
