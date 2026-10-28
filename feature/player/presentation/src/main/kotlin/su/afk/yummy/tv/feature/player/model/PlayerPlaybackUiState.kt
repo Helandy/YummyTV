@@ -44,6 +44,8 @@ data class PlayerPlaybackUiState(
     val adaptiveLimitBest: Boolean,
     /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
     val playbackUrl: String,
+    /** Балансер для заголовка «X вернул ошибку»; null, если ошибка не от балансера (офлайн, нет имени). */
+    val errorBalancerLabel: String?,
     val canChangePlayer: Boolean,
     val canChangeDubbing: Boolean,
     /** Восстановление затянулось и есть куда переключиться — показать «Сменить плеер/озвучку». */

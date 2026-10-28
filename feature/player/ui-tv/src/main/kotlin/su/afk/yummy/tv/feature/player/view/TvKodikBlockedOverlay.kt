@@ -25,6 +25,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 @Composable
 internal fun TvKodikBlockedOverlay(
     message: String,
+    heading: String? = null,
     onChangePlayer: (() -> Unit)? = null,
     onChangeDubbing: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -43,11 +44,13 @@ internal fun TvKodikBlockedOverlay(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = stringResource(R.string.player_kodik_error_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White.copy(alpha = 0.60f),
-        )
+        if (heading != null) {
+            Text(
+                text = stringResource(R.string.player_balancer_error_title, heading),
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White.copy(alpha = 0.60f),
+            )
+        }
         Text(
             text = stringResource(R.string.player_quoted_message, message),
             style = MaterialTheme.typography.titleLarge,

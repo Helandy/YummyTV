@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 @Composable
 internal fun TvStreamErrorOverlay(
     message: String,
+    heading: String? = null,
     onRetry: (() -> Unit)?,
     onChangePlayer: (() -> Unit)? = null,
     onChangeDubbing: (() -> Unit)? = null,
@@ -46,6 +47,14 @@ internal fun TvStreamErrorOverlay(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        if (heading != null) {
+            Text(
+                text = stringResource(R.string.player_balancer_error_title, heading),
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White.copy(alpha = 0.60f),
+                textAlign = TextAlign.Center,
+            )
+        }
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,

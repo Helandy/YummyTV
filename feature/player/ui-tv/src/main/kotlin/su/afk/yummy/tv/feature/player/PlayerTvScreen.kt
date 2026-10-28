@@ -176,6 +176,7 @@ fun PlayerTvScreen(
             ) {
                 TvKodikBlockedOverlay(
                     message = kodikBlockedError,
+                    heading = uiState.errorBalancerLabel,
                     modifier = Modifier.align(Alignment.Center),
                     onChangePlayer = if (uiState.canChangePlayer) {
                         { showErrorBalancerPanel = true }
@@ -197,6 +198,7 @@ fun PlayerTvScreen(
             ) {
                 TvStreamErrorOverlay(
                     message = playerError,
+                    heading = uiState.errorBalancerLabel,
                     modifier = Modifier.align(Alignment.Center),
                     onRetry = { onEvent(PlayerState.Event.RetryStream) },
                     onChangePlayer = if (uiState.canChangePlayer) {

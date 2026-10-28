@@ -15,10 +15,10 @@ import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeEpisodeSource
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activeQuality
-import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
-import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
+import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
@@ -112,6 +112,8 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         adaptiveLimitLabel = adaptiveLimitLabel(qualities.keys, adaptiveCeilingHeight),
         adaptiveLimitBest = adaptiveCeilingHeight >= QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
+        errorBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix)
+            .takeIf { it.isNotBlank() && !isOfflinePlayback },
         canChangePlayer = canChangePlayer,
         canChangeDubbing = canChangeDubbing,
         showRecoveryHint = isPlaybackRecovering && showChangePlayerHint &&

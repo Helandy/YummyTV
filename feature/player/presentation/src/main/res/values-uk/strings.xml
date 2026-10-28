@@ -9,7 +9,7 @@
     <string name="player_info_title_episode">%1$s • Серія %2$s</string>
         <string name="player_notification_details">%1$s • %2$s</string>
     <string name="player_loading_stream">Отримуємо потік…</string>
-    <string name="player_kodik_error_title">Kodik повернув помилку</string>
+    <string name="player_balancer_error_title">%1$s повернув помилку</string>
     <string name="player_quoted_message">«%1$s»</string>
     <string name="player_change_player">Змінити плеєр</string>
     <string name="player_change_dubbing">Змінити озвучення</string>

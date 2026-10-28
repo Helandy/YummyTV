@@ -129,7 +129,7 @@ fun PlayerMobileScreen(
     Box(modifier = Modifier.fillMaxSize().testTag("player_screen")) {
         when {
             kodikBlockedError != null -> MobilePlayerMessage(
-                heading = stringResource(R.string.player_kodik_error_title),
+                heading = uiState.errorBalancerLabel?.let { stringResource(R.string.player_balancer_error_title, it) },
                 title = stringResource(R.string.player_quoted_message, kodikBlockedError),
                 secondaryActionLabel = if (uiState.canChangePlayer) {
                     stringResource(R.string.player_change_player)
@@ -155,6 +155,7 @@ fun PlayerMobileScreen(
             )
 
             state.playerError != null -> MobilePlayerMessage(
+                heading = uiState.errorBalancerLabel?.let { stringResource(R.string.player_balancer_error_title, it) },
                 title = state.playerError,
                 actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(PlayerState.Event.RetryStream) },
