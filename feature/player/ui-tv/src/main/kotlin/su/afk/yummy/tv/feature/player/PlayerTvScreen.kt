@@ -177,6 +177,16 @@ fun PlayerTvScreen(
                 TvKodikBlockedOverlay(
                     message = kodikBlockedError,
                     modifier = Modifier.align(Alignment.Center),
+                    onChangePlayer = if (uiState.canChangePlayer) {
+                        { showErrorBalancerPanel = true }
+                    } else {
+                        null
+                    },
+                    onChangeDubbing = if (uiState.canChangeDubbing) {
+                        { showErrorDubbingPanel = true }
+                    } else {
+                        null
+                    },
                 )
             }
 

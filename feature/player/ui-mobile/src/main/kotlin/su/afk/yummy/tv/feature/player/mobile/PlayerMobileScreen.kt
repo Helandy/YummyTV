@@ -37,7 +37,6 @@ import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -54,6 +53,7 @@ import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerSkipToast
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @OptIn(UnstableApi::class)
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -125,10 +125,32 @@ fun PlayerMobileScreen(
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val uiState = rememberPlayerPlaybackUiState(state, playerNamePrefix)
     val streamUrl = state.streamUrl
+    val kodikBlockedError = state.kodikBlockedError
     Box(modifier = Modifier.fillMaxSize().testTag("player_screen")) {
         when {
-            state.kodikBlockedError != null -> MobilePlayerMessage(
-                title = state.kodikBlockedError,
+            kodikBlockedError != null -> MobilePlayerMessage(
+                heading = stringResource(R.string.player_kodik_error_title),
+                title = stringResource(R.string.player_quoted_message, kodikBlockedError),
+                secondaryActionLabel = if (uiState.canChangePlayer) {
+                    stringResource(R.string.player_change_player)
+                } else {
+                    null
+                },
+                onSecondaryAction = if (uiState.canChangePlayer) {
+                    { showErrorBalancerSheet = true }
+                } else {
+                    null
+                },
+                tertiaryActionLabel = if (uiState.canChangeDubbing) {
+                    stringResource(R.string.player_change_dubbing)
+                } else {
+                    null
+                },
+                onTertiaryAction = if (uiState.canChangeDubbing) {
+                    { showErrorDubbingSheet = true }
+                } else {
+                    null
+                },
                 onBack = { onEvent(PlayerState.Event.Back) },
             )
 

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 internal fun MobilePlayerMessage(
     title: String?,
     onBack: () -> Unit,
+    heading: String? = null,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
     secondaryActionLabel: String? = null,
@@ -53,6 +54,15 @@ internal fun MobilePlayerMessage(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            if (heading != null) {
+                Text(
+                    text = heading,
+                    color = Color.White.copy(alpha = 0.60f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(6.dp))
+            }
             Text(
                 text = title.orEmpty(),
                 color = Color.White,
