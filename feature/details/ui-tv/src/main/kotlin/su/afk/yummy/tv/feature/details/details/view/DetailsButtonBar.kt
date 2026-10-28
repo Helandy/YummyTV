@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -97,6 +98,7 @@ internal fun DetailsButtonBar(
     hiddenActions: Set<DetailsButtonAction>,
     focusOnResume: Boolean,
     firstFocusRequester: FocusRequester,
+    bottomFocusRequester: FocusRequester?,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFavoriteToggle: () -> Unit,
@@ -338,6 +340,12 @@ internal fun DetailsButtonBar(
             verticalArrangement = Arrangement.spacedBy(ButtonRowSpacing),
         ) {
             buttonRows.forEach { row ->
+                // Из нижнего ряда «вниз» ведёт прямо на чипы: поиск фокуса сам их не находит.
+                val rowDown = if (row === buttonRows.last() && bottomFocusRequester != null) {
+                    Modifier.focusProperties { down = bottomFocusRequester }
+                } else {
+                    Modifier
+                }
                 key(row.key) {
                     when (row) {
                         is ButtonRowData.Single -> {
@@ -351,6 +359,7 @@ internal fun DetailsButtonBar(
                                     index = row.index,
                                     focusRequester = focusRequesters[row.index],
                                     onFocused = { focusedAction = row.button.action },
+                                    modifier = rowDown,
                                 )
                             }
                         }
@@ -368,7 +377,7 @@ internal fun DetailsButtonBar(
                                     index = row.firstIndex,
                                     focusRequester = focusRequesters[row.firstIndex],
                                     onFocused = { focusedAction = row.first.action },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).then(rowDown),
                                 )
                                 if (row.second != null && row.secondIndex != null) {
                                     DetailsActionButton(
@@ -376,7 +385,7 @@ internal fun DetailsButtonBar(
                                         index = row.secondIndex,
                                         focusRequester = focusRequesters[row.secondIndex],
                                         onFocused = { focusedAction = row.second.action },
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.weight(1f).then(rowDown),
                                     )
                                 } else {
                                     Spacer(modifier = Modifier.weight(1f))

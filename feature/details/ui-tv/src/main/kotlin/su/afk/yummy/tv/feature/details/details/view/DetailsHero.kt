@@ -79,6 +79,11 @@ internal fun DetailsHero(
     onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
+    onGenreSelected: (Int) -> Unit,
+    onStudioSelected: (id: Int, url: String?) -> Unit,
+    onDirectorSelected: (Int) -> Unit,
+    chipFocusModifier: @Composable (index: Int) -> Modifier,
+    chipsEntryFocusRequester: FocusRequester?,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -176,7 +181,6 @@ internal fun DetailsHero(
                 }
 
                 HeroMetaRow(details)
-                HeroGenresRow(details)
                 HeroEpisodesRow(details)
 
                 DetailsButtonBar(
@@ -192,6 +196,7 @@ internal fun DetailsHero(
                     hiddenActions = hiddenActions,
                     focusOnResume = focusOnResume,
                     firstFocusRequester = downFocusRequester,
+                    bottomFocusRequester = chipsEntryFocusRequester,
                     onWatchSelected = onWatchSelected,
                     onLibraryToggle = onLibraryToggle,
                     onFavoriteToggle = onFavoriteToggle,
@@ -208,6 +213,14 @@ internal fun DetailsHero(
                     onReviewsSelected = onReviewsSelected,
                     onBloggerVideosSelected = onBloggerVideosSelected,
                     modifier = Modifier.padding(top = 8.dp),
+                )
+
+                HeroChipsRow(
+                    details = details,
+                    onGenreSelected = onGenreSelected,
+                    onStudioSelected = onStudioSelected,
+                    onDirectorSelected = onDirectorSelected,
+                    chipFocusModifier = chipFocusModifier,
                 )
 
                 if (showSectionsHint) {

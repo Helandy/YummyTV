@@ -107,6 +107,22 @@ internal fun DetailsBody(
             .onFocusChanged { if (it.isFocused) lastFocusTarget = key }
     }
 
+    // Чипы живут внутри хиро: оно блокирует фокус на время восстановления, поэтому чип разрешает его себе сам,
+    // а ключ сбрасывает при уходе, чтобы после кнопок не остался устаревший.
+    val heroChipFocus: @Composable (Int) -> Modifier = { index ->
+        val key = "chips:$index"
+        Modifier
+            .focusProperties { canFocus = true }
+            .focusRequester(requesterFor(key))
+            .onFocusChanged {
+                if (it.isFocused) {
+                    lastFocusTarget = key
+                } else if (lastFocusTarget == key) {
+                    lastFocusTarget = null
+                }
+            }
+    }
+
     val scope = rememberCoroutineScope()
     // Позиция ленты запоминается по мере прокрутки и применяется при создании состояния, чтобы экран сразу
     // открывался на нужном месте, а не прокручивался на глазах после восстановления фокуса.
@@ -148,6 +164,9 @@ internal fun DetailsBody(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     val ratingOverview = state.ratingOverview
+    val hasHeroChips = details.genres.any { it.id != null && it.title.isNotBlank() } ||
+        details.studios.any { it.id != null && it.title.isNotBlank() } ||
+        details.creators.any { it.id != null && it.title.isNotBlank() }
     val hasScreenshots = details.screenshots.isNotEmpty()
     val hasUniverse = details.viewingOrder.size > 1
     val hasBloggerVideos = details.bloggerVideosCount > 0
@@ -195,7 +214,9 @@ internal fun DetailsBody(
                         modifier = Modifier
                             .height(heroHeight)
                             .focusProperties { canFocus = !isRestoringFocus }
-                            .onFocusChanged { if (it.hasFocus) lastFocusTarget = null }
+                            .onFocusChanged {
+                                if (it.hasFocus && lastFocusTarget?.startsWith("chips:") != true) lastFocusTarget = null
+                            }
                             .tvWholeItemBringIntoView(),
                         details = details,
                         downFocusRequester = barFocusRequester,
@@ -228,16 +249,17 @@ internal fun DetailsBody(
                         onCommentsSelected = onCommentsSelected,
                         onReviewsSelected = onReviewsSelected,
                         onBloggerVideosSelected = onBloggerVideosSelected,
+                        onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
+                        onStudioSelected = { id, url -> onEvent(DetailsState.Event.StudioSelected(id, url)) },
+                        onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
+                        chipFocusModifier = heroChipFocus,
+                        chipsEntryFocusRequester = if (hasHeroChips) requesterFor("chips:0") else null,
                     )
                 }
                 item(key = "description") {
                     DetailsDescriptionSection(
                         details = details,
-                        onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
-                        onStudioSelected = { id, url -> onEvent(DetailsState.Event.StudioSelected(id, url)) },
-                        onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
                         descriptionFocusModifier = rowItemFocus("description")(-1),
-                        chipFocusModifier = rowItemFocus("description"),
                         modifier = Modifier
                             .tvWholeItemBringIntoView()
                             .padding(horizontal = DetailsSectionHorizontalPadding),
