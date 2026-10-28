@@ -11,6 +11,8 @@ internal data class MobilePickerItem(
     val title: String,
     val subtitle: String? = null,
     val views: Int? = null,
+    /** Внешний источник (`source://`): счётчика просмотров нет, вместо числа пишется «Внешний». */
+    val isExternal: Boolean = false,
     /** Число серий у озвучки — если задано, мета-строка рисуется как в плеере. */
     val episodeCount: Int? = null,
     val color: Color? = null,

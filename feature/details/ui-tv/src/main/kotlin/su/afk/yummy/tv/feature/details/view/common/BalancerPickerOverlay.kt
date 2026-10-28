@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
@@ -152,6 +153,7 @@ internal fun BalancerPickerOverlay(
                             label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),
                             dubbing = option.video.dubbing,
                             views = option.video.views,
+                            isExternal = option.video.iframeUrl.isExtraSourceUrl(),
                             episodeCount = option.episodeCount,
                             focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
                             isSupported = option.isSupported,
@@ -170,6 +172,7 @@ private fun BalancerOptionItem(
     label: String,
     dubbing: String,
     views: Int?,
+    isExternal: Boolean,
     episodeCount: Int,
     focusRequester: FocusRequester?,
     isSupported: Boolean,
@@ -229,7 +232,11 @@ private fun BalancerOptionItem(
                         modifier = Modifier.size(13.dp),
                     )
                     Text(
-                        text = (views ?: 0).formatCompactCount(),
+                        text = if (isExternal) {
+                            stringResource(R.string.details_balancer_external)
+                        } else {
+                            (views ?: 0).formatCompactCount()
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = textColor.copy(alpha = 0.62f),
                         maxLines = 1,

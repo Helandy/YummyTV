@@ -77,6 +77,7 @@
     <string name="details_balancer_title">Серія %1$s · Плеєр</string>
     <string name="details_mobile_unsupported_player">%1$s · не підтримується</string>
     <string name="details_balancer_preferred_unavailable">Бажаного плеєра немає в цього озвучення — виберіть із доступних</string>
+    <string name="details_balancer_external">Зовнішній</string>
     <string name="details_mobile_aired">Вийшло: %1$d із %2$s</string>
     <string name="details_released_episodes">Кількість серій: %1$d</string>
     <string name="details_aired_progress">%1$d із %2$s</string>

@@ -138,6 +138,7 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
                 // как в шторке настроек плеера.
                 MobileDubbingMeta(
                     views = item.views ?: 0,
+                    isExternal = item.isExternal,
                     episodeCount = episodeCount,
                     color = subtitleColor,
                     modifier = Modifier.padding(top = 5.dp),

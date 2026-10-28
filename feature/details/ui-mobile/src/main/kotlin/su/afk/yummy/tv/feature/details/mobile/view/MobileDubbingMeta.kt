@@ -14,8 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.mobile.utils.formatCompactCount
+import su.afk.yummy.tv.feature.details.presentation.R
 
 /** Просмотры и число серий озвучки — такой же блок, как в шторке настроек плеера. */
 @Composable
@@ -24,6 +26,7 @@ internal fun MobileDubbingMeta(
     episodeCount: Int,
     color: Color,
     modifier: Modifier = Modifier,
+    isExternal: Boolean = false,
 ) {
     Row(
         modifier = modifier,
@@ -37,7 +40,11 @@ internal fun MobileDubbingMeta(
             modifier = Modifier.size(13.dp),
         )
         Text(
-            text = views.formatCompactCount(),
+            text = if (isExternal) {
+                stringResource(R.string.details_balancer_external)
+            } else {
+                views.formatCompactCount()
+            },
             style = MaterialTheme.typography.labelSmall,
             color = color,
             maxLines = 1,
