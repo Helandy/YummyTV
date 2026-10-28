@@ -17,6 +17,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
@@ -105,7 +107,6 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
@@ -146,6 +147,19 @@ internal fun MobileNativePlayer(
     var settingsTrackTab by rememberSaveable { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
     var sidePanelOpen by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
+    // Замок управления: гасит жесты и панели, чтобы свайп к статус-бару не перематывал видео.
+    var locked by rememberSaveable { mutableStateOf(false) }
+    var unlockTouchToken by remember { mutableIntStateOf(0) }
+    var unlockVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(unlockVisible, unlockTouchToken) {
+        if (unlockVisible) {
+            delay(MOBILE_PLAYER_UNLOCK_VISIBLE_DURATION)
+            unlockVisible = false
+        }
+    }
+    LaunchedEffect(locked) {
+        if (!locked) unlockVisible = false
+    }
     val endFlow = rememberPlayerEndFlowState(ui.activeIframeUrl, streamUrl)
     LaunchedEffect(nextEpisodeUnavailable) {
         if (nextEpisodeUnavailable != null) {
@@ -540,7 +554,15 @@ internal fun MobileNativePlayer(
 
         MobilePlayerGestureLayer(
             enabled = !isInPictureInPictureMode && !tutorialBlocksPlayback,
-            onTap = { if (!castConnection.isCasting) overlay.toggle() },
+            locked = locked,
+            onTap = {
+                if (locked) {
+                    unlockVisible = true
+                    unlockTouchToken++
+                } else if (!castConnection.isCasting) {
+                    overlay.toggle()
+                }
+            },
             onDoubleTap = seekController::stepSeek,
             onTransformStart = gestures::startTransformGesture,
             onTransform = gestures::applyVideoTransform,
@@ -560,6 +582,11 @@ internal fun MobileNativePlayer(
             onBack = { onEvent(PlayerState.Event.Back) },
             onDetails = { onEvent(PlayerState.Event.OpenDetails) },
             onPictureInPicture = { activity?.let(pipSession::enter) },
+            onLockClick = {
+                locked = true
+                overlay.cancelHide()
+                overlay.visible = false
+            },
             orientationMode = state.playerOrientationMode,
             onOrientationSelected = { onEvent(PlayerState.Event.OrientationModeSelected(it)) },
             showDetails = state.animeId > 0,
@@ -568,12 +595,12 @@ internal fun MobileNativePlayer(
                 !isInPictureInPictureMode &&
                 !castConnection.isCasting,
             showCast = castSupported && !isInPictureInPictureMode,
-            visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
+            visible = overlay.visible && !locked && !isInPictureInPictureMode && !tutorialBlocksPlayback,
         )
 
         MobilePlayerOverlay(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
+            visible = overlay.visible && !locked && !isInPictureInPictureMode && !tutorialBlocksPlayback,
             wantsPlay = wantsPlay,
             progress = progress,
             openingStartMs = ui.activeSkips.opening?.startMs?.takeIf { state.showOpeningOnTimeline },
@@ -624,7 +651,7 @@ internal fun MobileNativePlayer(
 
         MobilePlayerSkipButton(
             skip = activeSkip.takeUnless {
-                isInPictureInPictureMode || tutorialBlocksPlayback || !overlay.visible
+                isInPictureInPictureMode || tutorialBlocksPlayback || !overlay.visible || locked
             },
             countdownSeconds = skipUi.autoSkipRemainingSeconds(activeSkip?.key),
             countdownProgress = skipUi.autoSkipProgress(activeSkip?.key),
@@ -890,6 +917,16 @@ internal fun MobileNativePlayer(
             )
         }
 
+        MobilePlayerUnlockButton(
+            visible = locked && unlockVisible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
+            onUnlock = {
+                locked = false
+                overlay.show()
+            },
+            onTouched = { unlockTouchToken++ },
+            modifier = Modifier.align(Alignment.CenterStart),
+        )
+
         // Последний ребёнок Box - только так кнопка отключения гарантированно получает тапы
         // (иначе их перехватывает MobilePlayerGestureLayer выше по дереву). Сам индикатор не
         // перехватывает тапы вне кнопки, поэтому жесты и таймлайн/контролы под ним не глушатся.
@@ -904,3 +941,4 @@ internal fun MobileNativePlayer(
 }
 
 private const val MOBILE_PLAYER_SPEED_BOOST = 2f
+private val MOBILE_PLAYER_UNLOCK_VISIBLE_DURATION = 3.seconds

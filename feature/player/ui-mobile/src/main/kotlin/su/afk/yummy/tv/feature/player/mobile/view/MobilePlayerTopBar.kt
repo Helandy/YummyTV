@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +50,7 @@ internal fun MobilePlayerTopBar(
     onBack: () -> Unit,
     onDetails: () -> Unit,
     onPictureInPicture: () -> Unit,
+    onLockClick: () -> Unit,
     orientationMode: PlayerOrientationMode,
     onOrientationSelected: (PlayerOrientationMode) -> Unit,
     showDetails: Boolean,
@@ -129,21 +132,40 @@ internal fun MobilePlayerTopBar(
                     }
                     // Круглая подложка с обводкой, как у кнопок управления внизу: голые точки
                     // терялись на светлом кадре.
-                    IconButton(
-                        onClick = { showActionsSheet = true },
-                        modifier = Modifier
-                            .padding(top = 6.dp)
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.36f))
-                            .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(top = 6.dp),
                     ) {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.player_mobile_actions),
-                            tint = Color.White,
-                            modifier = Modifier.size(26.dp),
-                        )
+                        IconButton(
+                            onClick = onLockClick,
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.36f))
+                                .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
+                        ) {
+                            Icon(
+                                Icons.Filled.LockOpen,
+                                contentDescription = stringResource(R.string.player_mobile_lock),
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                        IconButton(
+                            onClick = { showActionsSheet = true },
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.36f))
+                                .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
+                        ) {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.player_mobile_actions),
+                                tint = Color.White,
+                                modifier = Modifier.size(26.dp),
+                            )
+                        }
                     }
                 }
             }

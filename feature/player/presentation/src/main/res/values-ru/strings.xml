@@ -97,6 +97,9 @@
     <string name="player_mobile_next_episode">Следующая</string>
     <string name="player_mobile_details">Детали</string>
     <string name="player_mobile_actions">Ещё</string>
+    <string name="player_mobile_lock">Заблокировать управление</string>
+    <string name="player_mobile_unlock">Разблокировать управление</string>
+    <string name="player_mobile_unlock_hint">Удерживайте, чтобы разблокировать</string>
     <string name="player_mobile_cast">Трансляция</string>
     <string name="player_mobile_pip">Картинка в картинке</string>
     <string name="player_mobile_forward">Дальше</string>

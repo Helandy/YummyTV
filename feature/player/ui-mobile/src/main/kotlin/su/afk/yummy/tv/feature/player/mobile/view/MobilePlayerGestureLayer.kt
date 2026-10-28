@@ -26,6 +26,8 @@ private val VERTICAL_GESTURE_SIDE_SAFE_AREA = 32.dp
 @Composable
 internal fun MobilePlayerGestureLayer(
     enabled: Boolean,
+    /** Заблокированное управление: живёт только одиночный тап (показать кнопку разблокировки). */
+    locked: Boolean,
     onTap: () -> Unit,
     onDoubleTap: (StepSeekDirection) -> Unit,
     onTransformStart: () -> Unit,
@@ -52,8 +54,8 @@ internal fun MobilePlayerGestureLayer(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .pointerInput(enabled) {
-                if (!enabled) return@pointerInput
+            .pointerInput(enabled, locked) {
+                if (!enabled || locked) return@pointerInput
 
                 awaitEachGesture {
                     var transforming = false
@@ -94,20 +96,24 @@ internal fun MobilePlayerGestureLayer(
                     }
                 }
             }
-            .pointerInput(enabled) {
+            .pointerInput(enabled, locked) {
                 if (!enabled) return@pointerInput
 
                 detectTapGestures(
                     onTap = { currentOnTap() },
-                    onDoubleTap = { offset ->
-                        val direction = if (offset.x < size.width / 2f) {
-                            StepSeekDirection.Backward
-                        } else {
-                            StepSeekDirection.Forward
+                    onDoubleTap = if (locked) {
+                        null
+                    } else {
+                        { offset ->
+                            val direction = if (offset.x < size.width / 2f) {
+                                StepSeekDirection.Backward
+                            } else {
+                                StepSeekDirection.Forward
+                            }
+                            currentOnDoubleTap(direction)
                         }
-                        currentOnDoubleTap(direction)
                     },
-                    onLongPress = { currentOnLongPressStart() },
+                    onLongPress = if (locked) null else ({ currentOnLongPressStart() }),
                     onPress = {
                         try {
                             tryAwaitRelease()
@@ -117,8 +123,8 @@ internal fun MobilePlayerGestureLayer(
                     },
                 )
             }
-            .pointerInput(enabled) {
-                if (!enabled) return@pointerInput
+            .pointerInput(enabled, locked) {
+                if (!enabled || locked) return@pointerInput
 
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)

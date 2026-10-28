@@ -97,6 +97,9 @@
     <string name="player_mobile_next_episode">Next</string>
     <string name="player_mobile_details">Details</string>
     <string name="player_mobile_actions">More</string>
+    <string name="player_mobile_lock">Lock controls</string>
+    <string name="player_mobile_unlock">Unlock controls</string>
+    <string name="player_mobile_unlock_hint">Hold to unlock</string>
     <string name="player_mobile_cast">Cast</string>
     <string name="player_mobile_pip">Picture-in-Picture</string>
     <string name="player_mobile_forward">Forward</string>
