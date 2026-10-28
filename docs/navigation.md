@@ -152,12 +152,7 @@ Activity.onCreate / onNewIntent
   схемы.
 - Резолвер — `DeepLinkResolver`, регистрируется как `@Binds @IntoSet`. Он возвращает `NavKey` или
   `null`. Порядок обхода набора не определён, поэтому резолверы не должны пересекаться.
-- Сейчас хосты: `home` (`RootTabDeepLinkResolver`), `details/{animeId}` (`DetailsDeepLinkResolver`),
-  `downloads` (`VideoDownloadDeepLinkResolver`), локальное видео (`LocalVideoDeepLinkResolver`).
+- Полный список ссылок, хостов и источников — в [deeplinks.md](deeplinks.md).
 - `intent-filter` объявлены в `app/src/main/AndroidManifest.xml` на `InterfaceRouterActivity`
-  (он пробрасывает исходный Intent в `MobileActivity` / `TvActivity`): `yummytv://details`,
-  `yummytv://home`, `yummytv://downloads` и MIME `video/*`.
-- `LocalVideoDeepLinkResolver` ловит `ACTION_VIEW` с `video/*` или схемами `content://` / `file://`
-  и открывает плеер с локальным файлом. Имя в заголовок берётся из `DISPLAY_NAME` (для `content://`)
-  или последнего сегмента пути, ошибка запроса даёт пустое имя и не ломает воспроизведение.
+  (он пробрасывает исходный Intent в `MobileActivity` / `TvActivity`).
 - `core:deeplink` не знает, какие схемы существуют: фичи регистрируют свои резолверы сами.

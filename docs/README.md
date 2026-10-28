@@ -9,6 +9,8 @@
   попадает в навигацию. Точка входа в остальные доки.
 - [navigation.md](navigation.md) — Navigation3: два уровня back stack, сцены, как добавить экран,
   диплинки.
+- [deeplinks.md](deeplinks.md) — таблица всех диплинков: схема `yummytv://`, ссылки сайта, поиск,
+  локальное видео, кто их порождает.
 - [mvi-presentation.md](mvi-presentation.md) — `State` / `Event` / `Effect`, `BaseViewModel`,
   handler'ы, одноразовые события, связь с Compose.
 - [mobile-tv-ui-sharing.md](mobile-tv-ui-sharing.md) — один APK для двух интерфейсов: коллизии
