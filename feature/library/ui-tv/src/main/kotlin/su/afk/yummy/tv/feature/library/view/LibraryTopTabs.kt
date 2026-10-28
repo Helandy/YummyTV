@@ -30,8 +30,6 @@ internal fun LibraryTopTabs(
     contentFocusRequester: FocusRequester,
     tabFocusRequesters: Map<LibraryTab, FocusRequester>,
     mainMenuFocusRequester: FocusRequester?,
-    /** Кнопка справа от вкладок (сортировка): куда уходит RIGHT с последней вкладки. */
-    trailingFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
 ) {
     val selectedIndex = tabs.indexOf(selectedTab).coerceAtLeast(0)
@@ -81,7 +79,6 @@ internal fun LibraryTopTabs(
                 leftFocusRequester = effectiveFocusRequesters.getOrNull(index - 1)
                     ?: mainMenuFocusRequester.takeIf { index == 0 },
                 rightFocusRequester = effectiveFocusRequesters.getOrNull(index + 1)
-                    ?: trailingFocusRequester
                     ?: contentFocusRequester.takeIf { contentCanFocus },
                 onFocused = {
                     if (selectedTab != tab) onTabSelected(tab)

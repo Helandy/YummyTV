@@ -4,14 +4,10 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -27,12 +23,9 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -41,14 +34,12 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
-import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
-import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.model.PendingLibraryTvRemoval
@@ -56,17 +47,14 @@ import su.afk.yummy.tv.feature.library.model.LibraryTvCardActions
 import su.afk.yummy.tv.feature.library.model.LibraryTvChoice
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.focusStateKey
-import su.afk.yummy.tv.feature.library.utils.LibraryTvSortOrder
 import su.afk.yummy.tv.feature.library.utils.isLocalLoading
 import su.afk.yummy.tv.feature.library.utils.label
 import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
-import su.afk.yummy.tv.feature.library.utils.tvLabel
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
 import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
 import su.afk.yummy.tv.feature.library.view.LibraryTvRemoveConfirmDialog
 import su.afk.yummy.tv.feature.library.view.LibraryTvChoiceOverlay
-import su.afk.yummy.tv.feature.library.view.LibraryTvSortButton
 
 @Preview(
     name = "Default",
@@ -110,9 +98,6 @@ fun LibraryTvScreen(
     var restoreGridFocusOnResume by rememberSaveable { mutableStateOf(false) }
     var pendingRemoval by remember { mutableStateOf<PendingLibraryTvRemoval?>(null) }
     var cardActions by remember { mutableStateOf<LibraryTvCardActions?>(null) }
-    var showSortPicker by rememberSaveable { mutableStateOf(false) }
-    val sortButtonFocusRequester = remember { FocusRequester() }
-    val showSortButton = selectedTab != LibraryTab.CONTINUE_WATCHING
     val selectedTabTitle = selectedTab.label()
     val confirmRemoval: (String, () -> Unit) -> Unit = remember(selectedTabTitle) {
         { title, proceed ->
@@ -181,33 +166,16 @@ fun LibraryTvScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            LibraryTopTabs(
-                tabs = tvTabs,
-                selectedTab = selectedTab,
-                tabCounts = tabCounts,
-                contentCanFocus = hasFocusableGridContent,
-                onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
-                contentFocusRequester = gridFocusRequester,
-                tabFocusRequesters = tabFocusRequesters,
-                mainMenuFocusRequester = mainMenuFocusRequester,
-                trailingFocusRequester = sortButtonFocusRequester.takeIf { showSortButton },
-                modifier = Modifier.weight(1f),
-            )
-            if (showSortButton) {
-                LibraryTvSortButton(
-                    sort = state.sort,
-                    direction = state.sortDirection,
-                    onClick = { showSortPicker = true },
-                    modifier = Modifier
-                        .padding(top = 14.dp, end = TvScreenPadding.Horizontal)
-                        .focusRequester(sortButtonFocusRequester)
-                        .focusProperties {
-                            if (hasFocusableGridContent) down = gridFocusRequester
-                        },
-                )
-            }
-        }
+        LibraryTopTabs(
+            tabs = tvTabs,
+            selectedTab = selectedTab,
+            tabCounts = tabCounts,
+            contentCanFocus = hasFocusableGridContent,
+            onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
+            contentFocusRequester = gridFocusRequester,
+            tabFocusRequesters = tabFocusRequesters,
+            mainMenuFocusRequester = mainMenuFocusRequester,
+        )
 
         state.remoteError?.let { error ->
             ErrorBanner(
@@ -348,34 +316,6 @@ fun LibraryTvScreen(
                 }
             },
             onDismiss = { cardActions = null },
-        )
-    }
-
-    if (showSortPicker) {
-        val directionIcon = when (state.sortDirection) {
-            LibrarySortDirection.DESC -> Icons.Filled.KeyboardArrowDown
-            LibrarySortDirection.ASC -> Icons.Filled.KeyboardArrowUp
-        }
-        val sortChoices = LibraryTvSortOrder.map { option ->
-            LibraryTvChoice(label = option.tvLabel(), selected = option == state.sort)
-        } + LibraryTvChoice(
-            label = stringResource(R.string.library_mobile_sort_direction_content_description),
-            icon = directionIcon,
-        )
-        LibraryTvChoiceOverlay(
-            title = stringResource(R.string.library_tv_sort_title),
-            choices = sortChoices,
-            initialIndex = LibraryTvSortOrder.indexOf(state.sort).coerceAtLeast(0),
-            onSelected = { index ->
-                if (index < LibraryTvSortOrder.size) {
-                    showSortPicker = false
-                    onEvent(LibraryState.Event.SortSelected(LibraryTvSortOrder[index]))
-                } else {
-                    // Направление переключается на месте: оверлей остаётся для проверки результата.
-                    onEvent(LibraryState.Event.SortDirectionToggled)
-                }
-            },
-            onDismiss = { showSortPicker = false },
         )
     }
 

@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -82,7 +81,7 @@ internal fun LibraryGrid(
     val focusRestoreState = rememberTvLazyFocusRestoreState<Int>(focusStateKey)
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val posterQuality = LocalPosterQuality.current
-    val cardWidth = currentTvTitleCardDimensions().width
+    val cardWidth = LibraryCardPreferredWidth
     val nowEpochSeconds = rememberNowEpochSeconds()
     var gridHasFocus by remember { mutableStateOf(false) }
     var restoringFromMainMenu by remember { mutableStateOf(false) }
@@ -173,9 +172,6 @@ internal fun LibraryGrid(
             cardWidth = cardWidth,
             spacing = horizontalSpacing,
         )
-        val gridSpacingWidth = horizontalSpacing * (gridColumnCount - 1).coerceAtLeast(0)
-        val adaptiveCardWidth =
-            (maxWidth - gridHorizontalPadding - gridSpacingWidth) / gridColumnCount
 
         CompositionLocalProvider(
             LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
@@ -259,7 +255,6 @@ internal fun LibraryGrid(
                         onClick = stableOnClick,
                         onLongClick = stableOnLongClick,
                         onFocused = stableOnFocused,
-                        cardWidth = adaptiveCardWidth,
                         modifier = Modifier
                             .tvWholeItemBringIntoView()
                             .onFocusChanged { state ->
