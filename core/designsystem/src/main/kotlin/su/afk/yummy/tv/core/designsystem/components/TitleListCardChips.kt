@@ -21,7 +21,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeReleaseStatus
 
 /**
  * Ряд чипов карточки тайтла из списка: год, статус выхода, оценка владельца, список, «любимое».
- * Общий для мобильной строки и ТВ-строки; [scale] увеличивает текст чипов под ТВ.
+ * Общий для мобильной строки и ТВ-строки.
  */
 @Composable
 fun TitleListCardChips(
@@ -29,25 +29,17 @@ fun TitleListCardChips(
     year: String?,
     ownerRating: Int?,
     modifier: Modifier = Modifier,
-    scale: Float = 1f,
 ) {
     // «Вышел» — состояние большинства тайтлов, подпись о нём только шумит.
     val releaseStatus = item.releaseStatus?.takeIf { it != AnimeReleaseStatus.RELEASED }
     if (year == null && releaseStatus == null && !item.isFavorite && item.listStatus == null && ownerRating == null) return
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp * scale),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        year?.let { YearChip(year = it, scale = scale) }
-        releaseStatus?.let {
-            ReleaseStatusChip(
-                status = it,
-                textStyle = MaterialTheme.typography.labelSmall.let { style ->
-                    style.copy(fontSize = style.fontSize * scale)
-                },
-            )
-        }
+        year?.let { YearChip(year = it) }
+        releaseStatus?.let { ReleaseStatusChip(status = it) }
         ownerRating?.let { UserRatingTag(rating = it) }
         item.listStatus?.let { ListStatusChip(status = it) }
         if (item.isFavorite) FavoriteMarker()
@@ -56,7 +48,7 @@ fun TitleListCardChips(
 
 /** Год выхода плашкой, чтобы не сливался с фоном карточки, как обычный серый текст. */
 @Composable
-private fun YearChip(year: String, scale: Float) {
+private fun YearChip(year: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(3.dp),
@@ -68,11 +60,11 @@ private fun YearChip(year: String, scale: Float) {
             imageVector = Icons.Filled.CalendarToday,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(11.dp * scale),
+            modifier = Modifier.size(11.dp),
         )
         Text(
             text = year,
-            style = MaterialTheme.typography.labelSmall.let { it.copy(fontSize = it.fontSize * scale) },
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,

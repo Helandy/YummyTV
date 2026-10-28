@@ -28,7 +28,7 @@ internal fun LibraryTvDeleteButton(onClick: () -> Unit, modifier: Modifier = Mod
     val error = MaterialTheme.colorScheme.error
     Box(
         modifier = modifier
-            .size(40.dp)
+            .size(34.dp)
             .clip(CircleShape)
             .tvFocusableClick(
                 onClick = onClick,
@@ -42,7 +42,7 @@ internal fun LibraryTvDeleteButton(onClick: () -> Unit, modifier: Modifier = Mod
             imageVector = Icons.Filled.Close,
             contentDescription = stringResource(R.string.library_mobile_remove_content_description),
             tint = if (focused) error else error.copy(alpha = 0.72f),
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(18.dp),
         )
     }
 }

@@ -38,7 +38,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.tvPosterGridColumns
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
-import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
+import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredExtraRowGap
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -175,7 +175,10 @@ internal fun LibraryGrid(
         )
 
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(
+                rowSpacing = TvCardSpacing.Vertical,
+                topContentPadding = LibraryGridTopPadding,
+            ),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -203,10 +206,10 @@ internal fun LibraryGrid(
                 contentPadding = PaddingValues(
                     start = TvScreenPadding.Horizontal,
                     end = TvScreenPadding.Horizontal,
-                    top = 16.dp,
+                    top = LibraryGridTopPadding,
                     bottom = TvScreenPadding.Vertical,
                 ),
-                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
+                verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredExtraRowGap),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
             ) {
                 itemsIndexed(items, key = { index, item -> lazyKey("library", item.animeId, index) }) { index, item ->
@@ -263,9 +266,13 @@ internal fun LibraryGrid(
                                     .focusRequester(deleteFocusRequesters[index])
                                     .focusProperties {
                                         left = focusRequesters[index]
+                                        // Колонка крестиков: без явных цепочек поиск уходит на карточку ряда ниже.
                                         if (index < gridColumnCount) {
                                             up = selectedTabFocusRequester
+                                        } else {
+                                            deleteFocusRequesters.getOrNull(index - gridColumnCount)?.let { up = it }
                                         }
+                                        deleteFocusRequesters.getOrNull(index + gridColumnCount)?.let { down = it }
                                     }
                                     // Вертикаль — по крестикам, чтобы колонка не прыгала на карточки.
                                     .tvLazyGridRowFocusNavigation(
@@ -311,3 +318,6 @@ internal fun LibraryGrid(
         }
     }
 }
+
+/** Верхний отступ сетки; тот же отступ передаётся в якорь прокрутки, иначе из-за кромки торчит низ предыдущего ряда. */
+private val LibraryGridTopPadding = 8.dp
