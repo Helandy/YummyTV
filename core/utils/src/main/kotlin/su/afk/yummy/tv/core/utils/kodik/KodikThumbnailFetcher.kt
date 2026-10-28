@@ -9,6 +9,7 @@ import coil3.request.Options
  * Резолвит URL Kodik-превью и читает/пишет картинку через [KodikThumbnailCacheIO] —
  * отдельный, небольшой disk cache (не общий кэш постеров). Ключ — [KodikThumbnail.cacheKey]
  * (общий для серии), при промахе — прежний ключ по iframe-урлу, и только потом сеть.
+ * Если известны серия и тайтл, сначала пробуется Tenrai ([KodikThumbnailCacheIO.fetchTenrai]), Kodik — запасной.
  */
 class KodikThumbnailFetcher(
     private val data: KodikThumbnail,
@@ -16,11 +17,15 @@ class KodikThumbnailFetcher(
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) : Fetcher {
 
-    override suspend fun fetch(): FetchResult? =
-        cacheIO.fetch(
+    override suspend fun fetch(): FetchResult? {
+        cacheIO.fetchTenrai(data.animeId, data.episode)?.let { return it }
+        // Пустой iframe — Kodik-видео у серии нет, остаётся только Tenrai.
+        if (data.iframeUrl.isBlank()) return null
+        return cacheIO.fetch(
             cacheKey = data.cacheKey,
             fallbackKeys = listOf(data.legacyCacheKey).filter { it != data.cacheKey },
         ) { resolveKodikThumbnailUrl(data.iframeUrl) }
+    }
 
     class Factory(
         private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,

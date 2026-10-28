@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.tvprovider.media.tv.TvContractCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.core.utils.kodik.isKodikIframeUrl
 import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
@@ -26,6 +27,7 @@ private const val COLUMN_INTENT_URI = "intent_uri"
 internal class WatchNextManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
+    private val episodePreviews: EpisodePreviewProvider,
 ) {
     private val resolver = context.contentResolver
 
@@ -67,6 +69,7 @@ internal class WatchNextManager @Inject constructor(
     }
 
     private suspend fun resolveEpisodeThumbnail(entry: AnimeWatchProgress): String? {
+        episodePreviews.previewUrl(entry.animeId, entry.episode)?.let { return it }
         val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikIframeUrl() }
         return screenshotSource?.let { resolveKodikThumbnailUrl(it) }
             ?: entry.episodeUrl.takeIf { it.isKodikIframeUrl() }

@@ -290,4 +290,6 @@ internal fun PlayerState.State.artworkSource(): PlayerArtworkSource = PlayerArtw
     screenshotUrl = activeScreenshotUrl(this),
     episodeUrl = activeIframeUrl(this),
     posterUrl = posterUrl,
+    animeId = animeId,
+    episode = activeEpisode(this),
 )

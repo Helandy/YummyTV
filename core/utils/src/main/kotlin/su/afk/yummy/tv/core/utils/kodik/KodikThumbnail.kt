@@ -5,6 +5,8 @@ import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 /**
  * Модель для Coil: превью серии по kodik-iframe.
  *
+ * Пустой [iframeUrl] — у серии нет Kodik-видео: превью берётся только из Tenrai (нужны [animeId] и [episode]).
+ *
  * Если известны [animeId] и [episode], ключ кэша — общий для серии ([episodeThumbnailCacheKey]):
  * у одной серии на разных экранах разные iframe (просмотренная озвучка, лучшая, самая популярная),
  * а превью должно быть одно и скачиваться один раз. [legacyCacheKey] — прежний ключ по iframe:
@@ -25,6 +27,10 @@ data class KodikThumbnail(
             legacyCacheKey
         }
 }
+
+/** Ключ превью серии из Tenrai: отдельный от Kodik, чтобы смена источника в настройках не отдавала чужой кадр. */
+fun tenraiThumbnailCacheKey(animeId: Int, episode: String): String =
+    "tenrai_thumb:$animeId:${episode.episodeGroupKey()}"
 
 /** Ключ превью серии, не зависящий от озвучки: `"01"` и `"1"` — одна серия. */
 fun episodeThumbnailCacheKey(animeId: Int, episode: String): String =

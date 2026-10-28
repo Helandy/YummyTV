@@ -15,6 +15,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import okio.Buffer
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.kodik.di.KodikThumbnailDiskCache
 import javax.inject.Inject
@@ -31,7 +32,17 @@ import javax.inject.Singleton
 class KodikThumbnailCacheIO @Inject constructor(
     @KodikThumbnailDiskCache private val diskCache: DiskCache,
     @KodikHttpClient private val httpClient: HttpClient,
+    private val episodePreviews: EpisodePreviewProvider,
 ) {
+
+    /**
+     * Кадр серии из Tenrai: `null` — серия не опознана или кадра нет;
+     * тогда вызывающий падает на Kodik. Скачанное лежит на диске под своим ключом ([tenraiThumbnailCacheKey]).
+     */
+    suspend fun fetchTenrai(animeId: Int, episode: String): FetchResult? {
+        if (animeId <= 0 || episode.isBlank()) return null
+        return fetch(tenraiThumbnailCacheKey(animeId, episode)) { episodePreviews.previewUrl(animeId, episode) }
+    }
 
     /**
      * Сначала отдаёт снапшот с диска — по [cacheKey], затем по [fallbackKeys] (ключи, под которыми

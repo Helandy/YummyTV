@@ -32,6 +32,9 @@ interface AnimeRepository {
 
     /** Пометки филлер/рекап по номеру серии (MyAnimeList); пустая мапа, если данных нет. */
     suspend fun getAnimeEpisodeFlags(animeId: Int): Map<String, EpisodeFlags>
+
+    /** Ссылки на превью серий по номеру серии (Tenrai); пустая мапа, если данных нет. */
+    suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String>
     suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer>
     suspend fun getAnimeRelation(reference: AnimeRelationReference): AnimeRelation
     suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation>

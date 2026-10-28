@@ -108,8 +108,11 @@ fun EpisodesMobileScreen(
             ) {
                 items(state.episodeGroups, key = { it.episode }) { group ->
                     val video = group.videos.representativeVideo(state.bestDubbing)
-                    val thumbnail = group.videos.kodikThumbnailIframeUrl(state.bestDubbing)
-                        ?.let { KodikThumbnail(it, state.animeId, group.episode) }
+                    val thumbnail = KodikThumbnail(
+                        iframeUrl = group.videos.kodikThumbnailIframeUrl(state.bestDubbing).orEmpty(),
+                        animeId = state.animeId,
+                        episode = group.episode,
+                    )
                     val downloadStatus = state.resolvedDownloadStatuses[group.episode]
                     val downloadKeys = remember(group.videos) {
                         group.videos.map { video ->

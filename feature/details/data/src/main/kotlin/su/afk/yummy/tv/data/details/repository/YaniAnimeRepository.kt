@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
@@ -45,6 +47,7 @@ import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
 import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
+import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
@@ -79,7 +82,8 @@ private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
 private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info"
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
-private const val ANIME_EPISODE_FLAGS_CACHE_NAMESPACE = "anime-episode-flags"
+// v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
+private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v2"
 private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 30 * 24 * 60 * 60 * 1000L
 private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 24 * 60 * 60 * 1000L
 
@@ -94,6 +98,8 @@ class YaniAnimeRepository(
     private val documentCache: DocumentCacheStorage,
     private val extraVideoRepositories: Set<@JvmSuppressWildcards ExtraVideoRepository> = emptySet(),
 ) : AnimeRepository {
+
+    private val malEpisodesMutex = Mutex()
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
@@ -336,21 +342,32 @@ class YaniAnimeRepository(
         }
 
     override suspend fun getAnimeEpisodeFlags(animeId: Int): Map<String, EpisodeFlags> =
+        // Пометки — необязательная надстройка: экран должен работать и без них.
+        loadMalEpisodes(animeId)?.toEpisodeFlagsByNumber().orEmpty()
+
+    override suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String> =
+        // Превью — необязательная надстройка: есть запасной источник.
+        loadMalEpisodes(animeId)?.toThumbnailUrlByNumber().orEmpty()
+
+    /**
+     * Серии тайтла из MyAnimeList (пометки и картинки в одном документе). Пометки и превью просит один и тот же экран
+     * одновременно, а лимит API — 4 запроса в секунду, поэтому загрузки идут по очереди: второй вызов уже читает кэш.
+     */
+    private suspend fun loadMalEpisodes(animeId: Int): MalEpisodesDto? =
         withContext(Dispatchers.IO) {
             runSuspendCatching {
                 val details = getAnimeDetails(animeId)
-                val malId = details.malId ?: return@withContext emptyMap()
+                val malId = details.malId ?: return@withContext null
                 // Статус в ключе: когда тайтл дошёл до последней серии, неполный кэш идущего не залёживается на полгода.
                 val finished = details.episodes.isFullyAired()
-                documentCache.getOrFetchJson<MalEpisodesDto>(
-                    cacheKey = "$ANIME_EPISODE_FLAGS_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
-                    ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
-                    fetch = { episodeFlagsApi.getEpisodes(malId) },
-                ).toEpisodeFlagsByNumber()
-            }.getOrElse {
-                // Пометки — необязательная надстройка: экран должен работать и без них.
-                emptyMap()
-            }
+                malEpisodesMutex.withLock {
+                    documentCache.getOrFetchJson<MalEpisodesDto>(
+                        cacheKey = "$MAL_EPISODES_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
+                        ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
+                        fetch = { episodeFlagsApi.getEpisodes(malId) },
+                    )
+                }
+            }.getOrNull()
         }
 
     override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> =

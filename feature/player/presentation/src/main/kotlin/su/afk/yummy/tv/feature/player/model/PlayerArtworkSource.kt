@@ -5,4 +5,6 @@ internal data class PlayerArtworkSource(
     val screenshotUrl: String,
     val episodeUrl: String,
     val posterUrl: String,
+    val animeId: Int = 0,
+    val episode: String = "",
 )

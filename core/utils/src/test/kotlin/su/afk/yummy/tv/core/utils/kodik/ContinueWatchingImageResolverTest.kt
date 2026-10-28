@@ -33,8 +33,11 @@ class ContinueWatchingImageResolverTest : BaseUnitTest() {
     }
 
     @Test
-    fun `falls back to poster without screenshot and kodik source`() {
-        assertEquals(listOf<Any>(POSTER), models(episodeUrl = "https://alloha.yani.tv/?token_movie=x"))
+    fun `without kodik source the episode model has no iframe so tenrai can still serve it`() {
+        assertEquals(
+            listOf<Any>(KodikThumbnail("", ANIME_ID, "1"), POSTER),
+            models(episodeUrl = "https://alloha.yani.tv/?token_movie=x"),
+        )
     }
 
     @Test

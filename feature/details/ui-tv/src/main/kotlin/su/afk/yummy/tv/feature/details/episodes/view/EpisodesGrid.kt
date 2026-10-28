@@ -201,8 +201,11 @@ internal fun EpisodesGrid(
                             watchStatus = groupVideos.watchStatus(watchProgress),
                             episodeTitle = episodeInfo[episode]?.title,
                             flags = episodeFlags[episode.episodeGroupKey()],
-                            thumbnail = groupVideos.kodikThumbnailIframeUrl(bestDubbing)
-                                ?.let { KodikThumbnail(it, animeId, episode) },
+                            thumbnail = KodikThumbnail(
+                                iframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing).orEmpty(),
+                                animeId = animeId,
+                                episode = episode,
+                            ),
                             onClick = {
                                 lastFocusedIndex = index
                                 val kodikOpts = groupVideos.filter {

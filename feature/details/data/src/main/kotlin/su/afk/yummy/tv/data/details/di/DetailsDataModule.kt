@@ -13,7 +13,9 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
+import su.afk.yummy.tv.core.model.anime.EpisodePreviewProvider
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
+import su.afk.yummy.tv.data.details.repository.TenraiEpisodePreviewProvider
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
@@ -37,6 +39,10 @@ object DetailsDataModule {
         signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
     ): YummyEpisodesApi =
         YummyEpisodesApi(clientProvider, siteApiConfig, signers)
+
+    @Provides
+    @Singleton
+    fun provideEpisodePreviewProvider(impl: TenraiEpisodePreviewProvider): EpisodePreviewProvider = impl
 
     @Provides
     @Singleton

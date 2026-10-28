@@ -31,6 +31,7 @@ class HistoryEpisodeThumbnailFetcher(
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult? {
+        cacheIO.fetchTenrai(data.animeId, data.episode)?.let { return it }
         cacheIO.fetch(data.cacheKey) { null }?.let { return it }
         val videos = runSuspendCatching { getCachedAnimeVideos(data.animeId) }.getOrNull().orEmpty()
         val episodeVideos = videos.filter {

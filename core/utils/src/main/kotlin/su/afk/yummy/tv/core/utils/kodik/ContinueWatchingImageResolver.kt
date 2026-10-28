@@ -50,7 +50,8 @@ fun resolveContinueWatchingImageModels(
         screenshotUrl.isKodikIframeUrl() -> kodikThumbnailModel(screenshotUrl)
         episodeUrl.isKodikIframeUrl() -> kodikThumbnailModel(episodeUrl)
         screenshotUrl.isLikelyImageUrl() -> screenshotUrl
-        else -> null
+        // Kodik-ссылки нет, но серия известна — модель с пустым iframe: превью возьмётся из Tenrai.
+        else -> kodikThumbnailModel("")
     }
     return listOfNotNull(episodeModel) + posterUrls
 }
