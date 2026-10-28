@@ -67,7 +67,6 @@ fun TvTitleListCard(
             item.siteRating?.takeIf { it > 0.0 }?.let { rating ->
                 RatingBadge(
                     rating = rating,
-                    showStar = false,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp),

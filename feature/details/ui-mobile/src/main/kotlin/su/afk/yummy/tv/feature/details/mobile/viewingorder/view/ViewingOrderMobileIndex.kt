@@ -20,7 +20,8 @@ internal fun BoxScope.ViewingOrderMobileIndex(index: Int) {
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier
             .align(Alignment.TopStart)
-            .padding(8.dp)
+            // Тот же отступ от кромки, что у плашки рейтинга справа (MobilePosterCard): верхние края на одном уровне.
+            .padding(4.dp)
             .background(
                 MaterialTheme.colorScheme.surface.copy(alpha = 0.82f),
                 RoundedCornerShape(4.dp),

@@ -60,10 +60,8 @@ fun TitleListRowContent(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             )
             item.siteRating?.takeIf { it > 0.0 }?.let { rating ->
-                // Без звезды: звезда — у капсулы оценки пользователя внизу постера.
                 MobileRatingBadge(
                     rating = rating,
-                    showStar = false,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(4.dp),
