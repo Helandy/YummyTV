@@ -113,6 +113,12 @@ class DubbingMatchUtilsTest {
     }
 
     @Test
+    fun `studio band russian and latin spellings match`() {
+        assertEquals("Озвучка Студийная банда", matchDubbingName("StudioBand", listOf("Озвучка Студийная банда", "Озвучка AniLibria")))
+        assertEquals("Озвучка StudioBand", matchDubbingName("Студийная банда", listOf("Озвучка StudioBand", "Озвучка AniLibria")))
+    }
+
+    @Test
     fun `merge keeps source url and renames matched dubbing`() {
         val base = listOf(video(1, "Озвучка AniLibria", "AniLibria", "https://kodik"))
         val extras = listOf(
