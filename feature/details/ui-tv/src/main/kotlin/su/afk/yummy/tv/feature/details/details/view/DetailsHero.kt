@@ -5,12 +5,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
@@ -84,6 +86,9 @@ internal fun DetailsHero(
     onDirectorSelected: (Int) -> Unit,
     chipFocusModifier: @Composable (index: Int) -> Modifier,
     chipsEntryFocusRequester: FocusRequester?,
+    hintFocusRequester: FocusRequester,
+    onHintFocused: (Boolean) -> Unit,
+    minHeight: Dp,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -112,14 +117,16 @@ internal fun DetailsHero(
     val density = LocalDensity.current
     val infoShiftPx = with(density) { HERO_APPEAR_SHIFT.toPx() }
 
-    BoxWithConstraints(
+    // Высота хиро — минимум: если контент (длинное название, чипы, подсказка) не влезает, хиро растёт, а не наезжает на описание.
+    Box(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .heightIn(min = minHeight)
             .background(MaterialTheme.colorScheme.surface),
     ) {
-        HeroBackdrop(details)
+        Box(modifier = Modifier.matchParentSize()) { HeroBackdrop(details) }
 
-        val isCompactHeight = maxHeight < 560.dp
+        val isCompactHeight = minHeight < 560.dp
         val horizontalPadding = 20.dp
         val verticalPadding = when {
             isCompactHeight -> 20.dp
@@ -220,11 +227,25 @@ internal fun DetailsHero(
                     onGenreSelected = onGenreSelected,
                     onStudioSelected = onStudioSelected,
                     onDirectorSelected = onDirectorSelected,
-                    chipFocusModifier = chipFocusModifier,
+                    // Кнопка подсказки стоит справа, а чип слева: поиск фокуса вниз по геометрии её не находит.
+                    chipFocusModifier = { index ->
+                        chipFocusModifier(index).then(
+                            if (showSectionsHint) {
+                                Modifier.focusProperties { down = hintFocusRequester }
+                            } else {
+                                Modifier
+                            },
+                        )
+                    },
                 )
 
                 if (showSectionsHint) {
-                    DetailsSectionsHint(onDismiss = onSectionsHintDismissed)
+                    DetailsSectionsHint(
+                        onDismiss = onSectionsHintDismissed,
+                        dismissFocusModifier = Modifier
+                            .focusRequester(hintFocusRequester)
+                            .onFocusChanged { onHintFocused(it.isFocused) },
+                    )
                 }
             }
 

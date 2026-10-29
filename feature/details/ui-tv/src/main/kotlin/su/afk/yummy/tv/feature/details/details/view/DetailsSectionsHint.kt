@@ -26,6 +26,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun DetailsSectionsHint(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    dismissFocusModifier: Modifier = Modifier,
 ) {
     val buttonShape = RoundedCornerShape(6.dp)
     Row(
@@ -56,7 +57,7 @@ internal fun DetailsSectionsHint(
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
+            modifier = dismissFocusModifier
                 .tvFocusableClick(onClick = onDismiss, shape = buttonShape)
                 .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f), buttonShape)
                 .padding(horizontal = 16.dp, vertical = 6.dp),

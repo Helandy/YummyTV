@@ -215,13 +215,24 @@ internal fun DetailsBody(
                 item(key = "hero") {
                     DetailsHero(
                         modifier = Modifier
-                            .height(heroHeight)
                             .focusProperties { canFocus = !isRestoringFocus }
                             .onFocusChanged {
-                                if (it.hasFocus && lastFocusTarget?.startsWith("chips:") != true) lastFocusTarget = null
+                                if (it.hasFocus && lastFocusTarget?.startsWith("chips:") != true && lastFocusTarget != HERO_HINT_FOCUS_KEY) {
+                                    lastFocusTarget = null
+                                }
                             }
                             .tvWholeItemBringIntoView(),
                         details = details,
+                        minHeight = heroHeight,
+                        hintFocusRequester = requesterFor(HERO_HINT_FOCUS_KEY),
+                        // Без ключа уход с чипа обнулял бы цель, хиро считало бы, что фокус потерян, и возвращало его на кнопки.
+                        onHintFocused = { focused ->
+                            if (focused) {
+                                lastFocusTarget = HERO_HINT_FOCUS_KEY
+                            } else if (lastFocusTarget == HERO_HINT_FOCUS_KEY) {
+                                lastFocusTarget = null
+                            }
+                        },
                         downFocusRequester = barFocusRequester,
                         isInLibrary = isInLibrary,
                         isFavorite = isFavorite,
@@ -365,3 +376,4 @@ internal fun DetailsBody(
 }
 
 private val HeroPeekHeight = 96.dp
+private const val HERO_HINT_FOCUS_KEY = "hint"
