@@ -9,14 +9,12 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 
 /** Поведение и настройки плеера: воспроизведение, жесты, громкость, размер кадра. */
 interface PlayerSettingsStore {
 
-    val preferredPlayer: Flow<PreferredPlayer>
     val preferredVideoQuality: Flow<PreferredVideoQuality>
 
     /** Включено ли адаптивное качество видео. */
@@ -90,7 +88,6 @@ interface PlayerSettingsStore {
         playerName: String,
     ): Flow<PlayerMobileVideoTransformSettings>
 
-    suspend fun setPreferredPlayer(player: PreferredPlayer)
     suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality)
 
     /** Адаптивное качество: плеер сам понижает и повышает качество; предпочитаемое тогда не нужно. */

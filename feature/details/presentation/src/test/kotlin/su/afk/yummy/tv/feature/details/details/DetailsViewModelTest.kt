@@ -26,7 +26,6 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
@@ -108,7 +107,6 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { sourceStars.starredBalancers } returns MutableStateFlow(emptySet())
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { stringProvider.get(any<Int>()) } returns "load error"
-        every { screenDataHandler.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
         every { screenDataHandler.yaniUserId } returns flowOf(0)
         every { screenDataHandler.anime4kDubbing(any()) } returns flowOf(null)
         every { screenDataHandler.askDubbingOnWatch } returns flowOf(false)
@@ -376,7 +374,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     @Test
     fun `watch without a saved target picks the player for the first video`() {
         every { videoHandler.resolveWatchTarget(any(), any(), any()) } returns DetailsWatchTarget.Initial(video)
-        every { playerNavigationHandler.selectPlayer(any(), any(), any(), any()) } returns DetailsPlayerSelection.Navigate(video)
+        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } returns DetailsPlayerSelection.Navigate(video)
         every {
             playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
         } returns navKey

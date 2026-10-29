@@ -17,7 +17,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
@@ -53,7 +52,6 @@ class SettingsState {
         val showLibraryTitleYear: Boolean = false,
         val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,
-        val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
         val preferredVideoQuality: PreferredVideoQuality = PreferredVideoQuality.BEST,
         val adaptiveVideoQualityEnabled: Boolean = false,
         val isPreviewChannelBrowsable: Boolean = false,
@@ -154,7 +152,6 @@ class SettingsState {
         ) : Event
 
         /** Пользователь выбрал предпочитаемый плеер. */
-        data class PreferredPlayerSelected(val player: PreferredPlayer) : Event
 
         /** Пользователь выбрал предпочитаемое качество видео. */
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event

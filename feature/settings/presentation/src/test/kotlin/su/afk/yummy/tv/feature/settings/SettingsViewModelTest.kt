@@ -25,7 +25,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
@@ -132,7 +131,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         newEpisodesSources = NewEpisodesSource.DEFAULT,
         showLibraryTitleYear = false,
         libraryContinueWatchingCardSize = LibraryContinueWatchingCardSize.entries.first(),
-        preferredPlayer = PreferredPlayer.entries.first(),
         preferredVideoQuality = PreferredVideoQuality.entries.first(),
         watchNextEnabled = false,
         previewCacheSize = 1,
@@ -250,12 +248,10 @@ class SettingsViewModelTest : BaseUnitTest() {
         val vm = createViewModel()
 
         vm.setEvent(Event.AppThemeSelected(AppTheme.entries.last()))
-        vm.setEvent(Event.PreferredPlayerSelected(PreferredPlayer.entries.last()))
         vm.setEvent(Event.AutoSkipDelayChanged(7))
         vm.setEvent(Event.TitleCardLayoutSelected(TitleCardLayout.ROW))
 
         coVerify(exactly = 1) { settingsStore.setAppTheme(AppTheme.entries.last()) }
-        coVerify(exactly = 1) { settingsStore.setPreferredPlayer(PreferredPlayer.entries.last()) }
         coVerify(exactly = 1) { settingsStore.setAutoSkipDelaySeconds(7) }
         coVerify(exactly = 1) { settingsStore.setTitleCardLayout(TitleCardLayout.ROW) }
     }

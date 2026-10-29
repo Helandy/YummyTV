@@ -22,7 +22,6 @@ internal object SettingsPreferenceKeys {
         stringPreferencesKey("library_continue_watching_card_size")
     val librarySortKey = stringPreferencesKey("library_sort")
     val librarySortDirectionKey = stringPreferencesKey("library_sort_direction")
-    val preferredPlayerKey = stringPreferencesKey("preferred_player")
     val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
     val adaptiveVideoQualityEnabledKey =
         booleanPreferencesKey("adaptive_video_quality_enabled")

@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.details.details.handler
 
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
@@ -23,13 +22,11 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
     fun selectPlayer(
         video: AnimeVideo,
         allVideos: List<AnimeVideo>,
-        preferredPlayer: PreferredPlayer,
         rememberedAnime4kDubbing: String? = null,
     ): DetailsPlayerSelection =
         resolveDetailsPlayerSelection(
             video = video,
             allVideos = allVideos,
-            preferredPlayer = preferredPlayer,
             rememberedAnime4kDubbing = rememberedAnime4kDubbing,
         )
 

@@ -144,14 +144,6 @@ internal fun BalancerPickerOverlay(
                         color = Color.White.copy(alpha = 0.70f),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
-                    if (picker.preferredPlayerUnavailable) {
-                        Text(
-                            text = stringResource(R.string.details_balancer_preferred_unavailable),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.50f),
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                        )
-                    }
                     picker.options.forEachIndexed { idx, option ->
                         BalancerOptionItem(
                             label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),

@@ -13,7 +13,6 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -129,13 +128,11 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
             val candidate = dubbingVideos.selectEpisodeDubbingLaunchVideo(
                 episode = episode,
                 dubbingName = dubbingName,
-                preferredPlayer = PreferredPlayer.NONE,
             ) ?: return@launch
             when (
                 val selection = playerNavigationHandler.selectPlayer(
                     video = candidate,
                     allVideos = dubbingVideos,
-                    preferredPlayer = settingsStore.preferredPlayer.first(),
                     rememberedAnime4kDubbing = settingsStore.anime4kDubbing(animeId).first(),
                 )
             ) {

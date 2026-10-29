@@ -13,7 +13,6 @@ data class SettingsSnapshot(
     val newEpisodesSources: Set<NewEpisodesSource>,
     val showLibraryTitleYear: Boolean,
     val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize,
-    val preferredPlayer: PreferredPlayer,
     val preferredVideoQuality: PreferredVideoQuality,
     val adaptiveVideoQualityEnabled: Boolean = true,
     val watchNextEnabled: Boolean,

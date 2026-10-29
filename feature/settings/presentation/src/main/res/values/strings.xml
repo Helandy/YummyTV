@@ -68,7 +68,6 @@
     <string name="settings_show_catalog_title_year_enabled">Year is shown on Catalog title cards</string>
     <string name="settings_show_library_title_year">Show title year in Library</string>
     <string name="settings_show_library_title_year_enabled">Year is shown on Library title cards</string>
-    <string name="settings_mobile_default_player">Default player</string>
     <string name="settings_player_orientation_title">Player orientation</string>
     <string name="settings_player_orientation_system">System</string>
     <string name="settings_player_orientation_system_hint">Follow the system rotation setting</string>
@@ -145,15 +144,6 @@
     <string name="settings_poster_quality_mega_hint">~50 KB · AVIF</string>
     <string name="settings_poster_quality_high">High</string>
     <string name="settings_poster_quality_high_hint">~250 KB · JPEG</string>
-    <string name="settings_preferred_player_none">Not selected</string>
-    <string name="settings_preferred_player_none_hint">Show player selection dialog</string>
-    <string name="settings_preferred_player_kodik">Kodik</string>
-        <string name="settings_preferred_player_aksor">Aksor</string>
-    <string name="settings_preferred_player_aksor_hint">Aksorv</string>
-    <string name="settings_preferred_player_alloha">Alloha</string>
-        <string name="settings_preferred_player_cvh">CVH</string>
-        <string name="settings_preferred_player_vk">VK</string>
-        <string name="settings_preferred_player_rutube">Rutube</string>
         <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
     <string name="settings_auto_skip_delay_label">Auto-skip delay</string>
@@ -294,7 +284,6 @@
     <string name="settings_tv_section_sound">Sound</string>
     <string name="settings_tab_interface">Interface</string>
     <string name="settings_tab_search">Search</string>
-    <string name="settings_tab_player_source">Preferred player</string>
     <string name="settings_tab_top_title_year">Title year</string>
     <string name="settings_tab_account">Account</string>
             <string name="settings_poster_size_title">Poster size on screen</string>

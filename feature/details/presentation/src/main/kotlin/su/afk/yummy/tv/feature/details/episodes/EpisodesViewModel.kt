@@ -34,7 +34,6 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -114,12 +113,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
     }
 
     override fun createInitialState() = EpisodesState.State(animeId = animeId)
-
-    private val preferredPlayerState = settingsStore.preferredPlayer.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = PreferredPlayer.NONE,
-    )
 
     private val anime4kDubbingState = settingsStore.anime4kDubbing(animeId).stateIn(
         scope = viewModelScope,
@@ -701,7 +694,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
             val selection = playerNavigationHandler.selectPlayer(
                 video = video,
                 allVideos = dubbingVideos,
-                preferredPlayer = preferredPlayerState.value,
                 rememberedAnime4kDubbing = anime4kDubbingState.value,
             )
         ) {
@@ -733,7 +725,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 allVideos.selectEpisodeDubbingLaunchVideo(
                     episode = episode,
                     dubbingName = item.name,
-                    preferredPlayer = preferredPlayerState.value,
                 )
             }
             video?.let { EpisodesState.EpisodeDubbingOption(video = it, item = item) }

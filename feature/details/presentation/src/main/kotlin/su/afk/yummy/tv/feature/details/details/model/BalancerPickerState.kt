@@ -7,5 +7,4 @@ import kotlinx.collections.immutable.ImmutableList
 data class BalancerPickerState(
     val episodeNumber: String,
     val options: ImmutableList<BalancerOption>,
-    val preferredPlayerUnavailable: Boolean = false,
 )

@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
@@ -120,18 +119,6 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(
             EVENT_LIBRARY_CONTINUE_WATCHING_CARD_SIZE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to size.name.lowercase()),
-        )
-    }
-
-    /**
-     * Пользователь изменил предпочитаемый плеер.
-     *
-     * Параметры: value.
-     */
-    fun eventPreferredPlayerSelected(player: PreferredPlayer) {
-        tracker.track(
-            EVENT_PREFERRED_PLAYER_SELECTED,
-            analyticsParamsOf(PARAM_VALUE to player.name.lowercase()),
         )
     }
 
@@ -473,7 +460,6 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
         const val EVENT_TITLE_CARD_LAYOUT_SELECTED = "settings_title_card_layout_selected"
         const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
-        const val EVENT_PREFERRED_PLAYER_SELECTED = "settings_preferred_player_selected"
         const val EVENT_PLAYER_BUFFER_PROFILE_SELECTED = "settings_player_buffer_profile_selected"
         const val EVENT_BROWSER_USER_AGENT_SELECTED = "settings_browser_user_agent_selected"
         const val EVENT_PREFERRED_VIDEO_QUALITY_SELECTED =

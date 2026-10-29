@@ -30,19 +30,14 @@ internal fun SettingsTvPlayerContent(
     onEvent: (SettingsState.Event) -> Unit,
     pickerRow: SettingsTvPickerRow,
 ) {
-    pickerRow(
-        SettingsTvPicker.PREFERRED_PLAYER,
-        Modifier
-            .focusRequester(tabContentFocusRequester)
-            .restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    SettingsDivider()
     ToggleRow(
         label = stringResource(R.string.settings_adaptive_video_quality_title),
         hint = stringResource(R.string.settings_adaptive_video_quality_hint),
         enabled = state.adaptiveVideoQualityEnabled,
         onClick = { onEvent(SettingsState.Event.AdaptiveVideoQualityToggled) },
-        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        modifier = Modifier
+            .focusRequester(tabContentFocusRequester)
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
     val qualities = videoQualitySliderEntries

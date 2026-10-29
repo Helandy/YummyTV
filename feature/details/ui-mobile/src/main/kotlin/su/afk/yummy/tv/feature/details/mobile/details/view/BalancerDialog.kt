@@ -28,14 +28,6 @@ internal fun BalancerDialog(
         title = stringResource(R.string.details_balancer_title, picker.episodeNumber),
         onDismiss = onDismiss,
     ) {
-        if (picker.preferredPlayerUnavailable) {
-            Text(
-                text = stringResource(R.string.details_balancer_preferred_unavailable),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 12.dp),
-            )
-        }
         MobilePickerItems(
             items = picker.options.map { option ->
                 MobilePickerItem(

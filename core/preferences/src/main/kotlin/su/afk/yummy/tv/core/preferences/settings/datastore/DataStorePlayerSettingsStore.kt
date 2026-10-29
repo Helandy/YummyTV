@@ -16,7 +16,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -37,7 +36,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOr
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerPlaybackSpeedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerResizeModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerZoomLevelKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredPlayerKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
@@ -61,9 +59,6 @@ import javax.inject.Singleton
 internal class DataStorePlayerSettingsStore @Inject constructor(
     private val store: SettingsDataStore,
 ) : PlayerSettingsStore {
-
-    override val preferredPlayer: Flow<PreferredPlayer> =
-        store.enumFlow(preferredPlayerKey, PreferredPlayer.NONE)
 
     override val preferredVideoQuality: Flow<PreferredVideoQuality> =
         store.enumFlow(preferredVideoQualityKey, PreferredVideoQuality.BEST)
@@ -196,9 +191,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
                 ?: PlayerMobileVideoTransformSettings()
         }
     }
-
-    override suspend fun setPreferredPlayer(player: PreferredPlayer) =
-        store.setEnum(preferredPlayerKey, player)
 
     override suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality) =
         store.setEnum(preferredVideoQualityKey, quality)

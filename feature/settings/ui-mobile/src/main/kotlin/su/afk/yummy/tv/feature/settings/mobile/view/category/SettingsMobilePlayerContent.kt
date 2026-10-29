@@ -31,12 +31,6 @@ internal fun SettingsMobilePlayerContent(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         SettingsMobileSection {
-            SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_mobile_default_player),
-                value = state.preferredPlayer.label(),
-                hint = state.preferredPlayer.hint(),
-                onClick = { onPickerRequested(SettingsMobilePicker.PLAYER) },
-            )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_adaptive_video_quality_title),
                 hint = stringResource(R.string.settings_adaptive_video_quality_hint),

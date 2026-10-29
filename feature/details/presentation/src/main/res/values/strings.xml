@@ -76,7 +76,6 @@
     <string name="details_subscription_unsubscribe">Unsubscribe</string>
     <string name="details_balancer_title">Episode %1$s · Player</string>
     <string name="details_mobile_unsupported_player">%1$s · unsupported</string>
-    <string name="details_balancer_preferred_unavailable">Your preferred player is not available for this dubbing — choose one of these</string>
     <string name="details_balancer_external">External</string>
     <string name="details_mobile_aired">Aired: %1$d of %2$s</string>
     <string name="details_released_episodes">Episode count: %1$d</string>

@@ -26,7 +26,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterQuality
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -54,7 +53,6 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
 
-    SettingsTvPicker.PREFERRED_PLAYER -> state.preferredPlayer.label()
     SettingsTvPicker.SUBTITLE_COLOR -> state.subtitleStyle.textColor.label()
     SettingsTvPicker.SUBTITLE_BACKGROUND -> state.subtitleStyle.background.label()
     SettingsTvPicker.SUBTITLE_EDGE -> state.subtitleStyle.edge.label()
@@ -177,15 +175,6 @@ internal fun SettingsTvPickerPanel(
                     onEvent(SettingsState.Event.LibraryTabMoved(it, DetailsButtonMoveDirection.DOWN))
                 },
                 onReset = { onEvent(SettingsState.Event.LibraryTabOrderReset) },
-            )
-
-            SettingsTvPicker.PREFERRED_PLAYER -> PickerOptions(
-                values = PreferredPlayer.entries,
-                selected = state.preferredPlayer,
-                labelOf = { it.label() },
-                hintOf = { it.hint() },
-                focusRequester = entryFocusRequester,
-                onSelected = { select(SettingsState.Event.PreferredPlayerSelected(it)) },
             )
 
             SettingsTvPicker.SUBTITLE_COLOR -> PickerOptions(

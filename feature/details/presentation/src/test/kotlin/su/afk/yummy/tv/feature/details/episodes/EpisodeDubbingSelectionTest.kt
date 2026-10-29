@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.details.episodes
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
@@ -55,13 +54,11 @@ class EpisodeDubbingSelectionTest : BaseUnitTest() {
         val candidate = dubbingVideos.selectEpisodeDubbingLaunchVideo(
             episode = "02",
             dubbingName = MC,
-            preferredPlayer = PreferredPlayer.NONE,
         )
 
         val selection = resolveDetailsPlayerSelection(
             video = requireNotNull(candidate),
             allVideos = dubbingVideos,
-            preferredPlayer = PreferredPlayer.NONE,
         )
 
         val picker = (selection as DetailsPlayerSelection.ShowPicker).picker

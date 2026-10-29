@@ -5,7 +5,6 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -27,7 +26,6 @@ class DetailsScreenDataHandler @Inject constructor(
     private val settingsStore: SettingsStore,
 ) {
 
-    val preferredPlayer: Flow<PreferredPlayer> = settingsStore.preferredPlayer
     val yaniUserId: Flow<Int> = settingsStore.yaniUserId
 
     /** Озвучка 4K, в которой тайтл смотрели раньше. */

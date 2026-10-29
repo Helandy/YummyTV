@@ -19,7 +19,6 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -52,7 +51,6 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
         every { sourceStars.starredDubbings } returns MutableStateFlow(emptySet())
         every { sourceStars.starredBalancers } returns MutableStateFlow(emptySet())
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
-        every { settingsStore.preferredPlayer } returns MutableStateFlow(PreferredPlayer.NONE)
         every { settingsStore.anime4kDubbing(any()) } returns MutableStateFlow(null)
         every {
             playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
@@ -118,7 +116,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
 
     @Test
     fun `dubbing with a single balancer opens the player`() {
-        every { playerNavigationHandler.selectPlayer(any(), any(), any(), any()) } answers {
+        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } answers {
             DetailsPlayerSelection.Navigate(firstArg())
         }
         val vm = createViewModel()
@@ -141,7 +139,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
     @Test
     fun `several balancers show the picker that can be dismissed`() {
         val picker = BalancerPickerState(episodeNumber = "1", options = persistentListOf())
-        every { playerNavigationHandler.selectPlayer(any(), any(), any(), any()) } returns
+        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } returns
             DetailsPlayerSelection.ShowPicker(picker)
         val vm = createViewModel()
 

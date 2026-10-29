@@ -5,20 +5,17 @@ import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.isExtraSourceVideo
-import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
 import su.afk.yummy.tv.feature.details.utils.pickBalancerVideo
 
 /** Resolves whether the selected episode can open directly or needs a balancer picker. */
 internal fun resolveDetailsPlayerSelection(
     video: AnimeVideo,
     allVideos: List<AnimeVideo>,
-    preferredPlayer: PreferredPlayer,
     rememberedAnime4kDubbing: String? = null,
 ): DetailsPlayerSelection {
     val episodeVideos = allVideos.filter {
@@ -77,25 +74,12 @@ internal fun resolveDetailsPlayerSelection(
             ),
         )
         .mapIndexed { index, option -> option.copy(baseIndex = index) }
-    val supportedOptions = options.filter { it.isSupported }
-
-    if (preferredPlayer != PreferredPlayer.NONE) {
-        val preferred = supportedOptions.firstOrNull {
-            it.video.iframeUrl.matchesPreferredPlayer(preferredPlayer)
-        }
-        // Открываем напрямую только если у предпочитаемого балансера есть именно целевая
-        // озвучка, иначе показываем пикер вместо тихой подмены озвучки.
-        if (preferred != null && preferred.video.dubbing == targetVideo.dubbing) {
-            return DetailsPlayerSelection.Navigate(preferred.video)
-        }
-    }
 
     return if (options.isNotEmpty()) {
         DetailsPlayerSelection.ShowPicker(
             BalancerPickerState(
                 episodeNumber = video.episode,
                 options = options.toImmutableList(),
-                preferredPlayerUnavailable = preferredPlayer != PreferredPlayer.NONE,
             ),
         )
     } else {

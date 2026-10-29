@@ -80,7 +80,6 @@ class SettingsViewModel @Inject internal constructor(
                         newEpisodesSources = snapshot.newEpisodesSources,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
-                        preferredPlayer = snapshot.preferredPlayer,
                         preferredVideoQuality = snapshot.preferredVideoQuality,
                         adaptiveVideoQualityEnabled = snapshot.adaptiveVideoQualityEnabled,
                         watchNextEnabled = snapshot.watchNextEnabled,
@@ -255,11 +254,6 @@ class SettingsViewModel @Inject internal constructor(
                     analytics.eventLibraryContinueWatchingCardSizeSelected(event.size)
                     settingsStore.setLibraryContinueWatchingCardSize(event.size)
                 }
-
-            is SettingsState.Event.PreferredPlayerSelected -> viewModelScope.launch {
-                analytics.eventPreferredPlayerSelected(event.player)
-                settingsStore.setPreferredPlayer(event.player)
-            }
 
             is SettingsState.Event.PreferredVideoQualitySelected -> viewModelScope.launch {
                 analytics.eventPreferredVideoQualitySelected(event.quality)

@@ -18,7 +18,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
@@ -190,28 +189,6 @@ fun PosterQuality.hint(): String = stringResource(
         PosterQuality.HIGH -> R.string.settings_poster_quality_high_hint
     },
 )
-
-@Composable
-fun PreferredPlayer.label(): String = when (this) {
-    PreferredPlayer.NONE -> stringResource(R.string.settings_preferred_player_none)
-    PreferredPlayer.KODIK -> stringResource(R.string.settings_preferred_player_kodik)
-    PreferredPlayer.AKSOR -> stringResource(R.string.settings_preferred_player_aksor)
-    PreferredPlayer.ALLOHA -> stringResource(R.string.settings_preferred_player_alloha)
-    PreferredPlayer.CVH -> stringResource(R.string.settings_preferred_player_cvh)
-    PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk)
-    PreferredPlayer.RUTUBE -> stringResource(R.string.settings_preferred_player_rutube)
-}
-
-@Composable
-fun PreferredPlayer.hint(): String = when (this) {
-    PreferredPlayer.NONE -> stringResource(R.string.settings_preferred_player_none_hint)
-    PreferredPlayer.KODIK -> stringResource(R.string.settings_preferred_player_kodik)
-    PreferredPlayer.AKSOR -> stringResource(R.string.settings_preferred_player_aksor_hint)
-    PreferredPlayer.ALLOHA -> stringResource(R.string.settings_preferred_player_alloha)
-    PreferredPlayer.CVH -> stringResource(R.string.settings_preferred_player_cvh)
-    PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk)
-    PreferredPlayer.RUTUBE -> stringResource(R.string.settings_preferred_player_rutube)
-}
 
 @Composable
 fun PreferredVideoQuality.label(): String = stringResource(

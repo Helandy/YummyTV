@@ -29,7 +29,6 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
-import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
@@ -97,7 +96,6 @@ class EpisodesViewModelTest : BaseUnitTest() {
         every { sourceStars.starredDubbings } returns MutableStateFlow(emptySet())
         every { sourceStars.starredBalancers } returns MutableStateFlow(emptySet())
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
-        every { settingsStore.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
         every { settingsStore.anime4kDubbing(any()) } returns flowOf(null)
         every { stringProvider.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { accountRepository.observeSession() } returns session
