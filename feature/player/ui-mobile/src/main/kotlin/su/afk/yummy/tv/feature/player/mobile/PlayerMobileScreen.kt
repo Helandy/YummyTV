@@ -245,14 +245,12 @@ fun PlayerMobileScreen(
             MobilePlayerBalancerSheet(
                 balancerNames = uiState.balancerNames,
                 balancerAvailability = uiState.balancerAvailability,
-                balancerStarred = uiState.balancerStarred,
                 selectedIndex = uiState.currentBalancerIndex,
                 metaLabel = stringResource(R.string.player_balancer_meta),
                 onBalancerSelected = { index ->
                     showErrorBalancerSheet = false
                     onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))
                 },
-                onBalancerStarClick = { onEvent(PlayerState.Event.BalancerStarToggled(it)) },
                 onDismiss = { showErrorBalancerSheet = false },
             )
         }
@@ -263,7 +261,6 @@ fun PlayerMobileScreen(
                     showErrorDubbingSheet = false
                     onEvent(PlayerState.Event.DubbingSelected(index, uiState.errorResumePositionMs))
                 },
-                onDubbingStarClick = { onEvent(PlayerState.Event.DubbingStarToggled(it)) },
                 onDismiss = { showErrorDubbingSheet = false },
             )
         }

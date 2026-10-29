@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.feature.player.mapper
 
 import kotlinx.collections.immutable.toImmutableList
-import su.afk.yummy.tv.core.common.player.isStarredBalancer
-import su.afk.yummy.tv.core.common.player.isStarredDubbing
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
@@ -125,14 +123,5 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         errorResumePositionMs = playbackPositionMs.takeIf { it > 0L }
             ?: resumeFromMs.takeIf { it > 0L }
             ?: 0L,
-        dubbingStarred = displayedDubbingNames
-            .map { it.isStarredDubbing(starredDubbings) }
-            .toImmutableList(),
-        balancerStarred = availableBalancerIndices
-            .map { index ->
-                sourceGraph.balancers.getOrNull(index)?.name.orEmpty()
-                    .isStarredBalancer(starredBalancers)
-            }
-            .toImmutableList(),
     )
 }

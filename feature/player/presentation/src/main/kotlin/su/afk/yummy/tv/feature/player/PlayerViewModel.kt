@@ -411,19 +411,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                 applySourceSelection(nextState, sourceScopeChanged = true)
             }
 
-            is PlayerState.Event.DubbingStarToggled -> {
-                val name = globalDubbingNames(currentState).getOrNull(event.index) ?: return
-                preferences.toggleDubbingStar(host, name)
-            }
-
-            is PlayerState.Event.BalancerStarToggled -> {
-                val name = displayedBalancerIndices(currentState)
-                    .getOrNull(event.index)
-                    ?.let { currentState.sourceGraph.balancers.getOrNull(it)?.name }
-                    ?: return
-                preferences.toggleBalancerStar(host, name)
-            }
-
             is PlayerState.Event.BalancerSelected -> {
                 val balancerIndex = displayedBalancerIndices(currentState)
                     .getOrNull(event.index) ?: return

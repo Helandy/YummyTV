@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
-import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -36,8 +35,6 @@ internal fun MobilePlayerDubbingRow(
     episodeCount: Int,
     sourceNames: String,
     onClick: () -> Unit,
-    starred: Boolean = false,
-    onStarClick: (() -> Unit)? = null,
 ) {
     val shape = MaterialTheme.shapes.medium
     val background = if (selected) {
@@ -94,6 +91,5 @@ internal fun MobilePlayerDubbingRow(
                 )
             }
         }
-        if (onStarClick != null) SourceStarButton(starred = starred, onClick = onStarClick)
     }
 }

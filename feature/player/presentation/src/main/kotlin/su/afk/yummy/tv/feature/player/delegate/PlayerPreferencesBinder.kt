@@ -49,14 +49,6 @@ internal class PlayerPreferencesBinder @Inject constructor(
         }
     }
 
-    fun toggleDubbingStar(host: PlayerStateHost, name: String) {
-        host.scope.launch { sourceStars.toggleDubbing(name) }
-    }
-
-    fun toggleBalancerStar(host: PlayerStateHost, name: String) {
-        host.scope.launch { sourceStars.toggleBalancer(name) }
-    }
-
     fun selectOrientationMode(host: PlayerStateHost, mode: PlayerOrientationMode) {
         host.scope.launch { settings.saveOrientationMode(mode) }
     }

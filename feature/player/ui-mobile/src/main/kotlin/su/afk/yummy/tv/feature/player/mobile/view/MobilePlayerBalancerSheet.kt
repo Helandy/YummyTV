@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
-import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -43,11 +42,9 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerBalancerSheet(
     balancerNames: List<String>,
     balancerAvailability: List<Boolean>,
-    balancerStarred: List<Boolean>,
     selectedIndex: Int,
     metaLabel: String? = null,
     onBalancerSelected: (Int) -> Unit,
-    onBalancerStarClick: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
 
@@ -84,8 +81,6 @@ internal fun MobilePlayerBalancerSheet(
                     },
                     selected = index == selectedIndex,
                     enabled = enabled,
-                    starred = balancerStarred.getOrElse(index) { false },
-                    onStarClick = { onBalancerStarClick(index) },
                     onClick = { onBalancerSelected(index) },
                 )
             }
@@ -99,8 +94,6 @@ private fun MobilePlayerBalancerRow(
     metaLabel: String?,
     selected: Boolean,
     enabled: Boolean,
-    starred: Boolean,
-    onStarClick: () -> Unit,
     onClick: () -> Unit,
 ) {
     val shape = MaterialTheme.shapes.medium
@@ -154,6 +147,5 @@ private fun MobilePlayerBalancerRow(
                 )
             }
         }
-        SourceStarButton(starred = starred, onClick = onStarClick)
     }
 }

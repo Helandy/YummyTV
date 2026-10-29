@@ -145,12 +145,6 @@ class PlayerState {
          */
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
 
-        /** Звезда озвучки по индексу в `PlayerPlaybackUiState.dubbingNames`. */
-        data class DubbingStarToggled(val index: Int) : Event
-
-        /** Звезда балансера по индексу в `PlayerPlaybackUiState.balancerNames`. */
-        data class BalancerStarToggled(val index: Int) : Event
-
         /**
          * Выбрано качество потока с сохранением текущей позиции. [auto] — переключение адаптивным
          * режимом, а не пользователем: ручной выбор отключает адаптацию для серии.

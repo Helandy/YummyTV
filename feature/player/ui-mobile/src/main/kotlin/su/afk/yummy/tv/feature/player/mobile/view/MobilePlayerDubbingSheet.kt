@@ -29,7 +29,6 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerDubbingSheet(
     playback: PlayerPlaybackUiState,
     onDubbingSelected: (Int) -> Unit,
-    onDubbingStarClick: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -61,8 +60,6 @@ internal fun MobilePlayerDubbingSheet(
                     views = playback.dubbingViews.getOrElse(index) { 0 },
                     episodeCount = playback.dubbingEpisodeCounts.getOrElse(index) { 0 },
                     sourceNames = playback.dubbingSourceNames.getOrElse(index) { "" },
-                    starred = playback.dubbingStarred.getOrElse(index) { false },
-                    onStarClick = { onDubbingStarClick(index) },
                     onClick = { onDubbingSelected(index) },
                 )
             }

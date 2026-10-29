@@ -23,7 +23,6 @@ internal fun TvDubbingSelectionPanel(
     onItemSelected: (index: Int) -> Unit,
     onExitDown: () -> Unit,
     modifier: Modifier = Modifier,
-    onItemStarToggled: ((index: Int) -> Unit)? = null,
 ) {
     TvPlayerSelectionPanel(
         visible = visible,
@@ -45,8 +44,6 @@ internal fun TvDubbingSelectionPanel(
                 contentColor = contentColor,
             )
         },
-        starredItems = playback.dubbingStarred,
-        onItemStarToggled = onItemStarToggled,
         onItemSelected = onItemSelected,
         onExitDown = onExitDown,
     )

@@ -53,8 +53,4 @@ data class PlayerPlaybackUiState(
     val showRecoveryHint: Boolean,
     /** Позиция, с которой продолжить после смены источника с экрана ошибки. */
     val errorResumePositionMs: Long,
-    /** Параллельно [dubbingNames]: у озвучки стоит звезда. */
-    val dubbingStarred: ImmutableList<Boolean> = persistentListOf(),
-    /** Параллельно [balancerNames]: у балансера стоит звезда. */
-    val balancerStarred: ImmutableList<Boolean> = persistentListOf(),
 )
