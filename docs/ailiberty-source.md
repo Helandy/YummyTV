@@ -18,7 +18,7 @@
   и берут готовый ответ; кэш 5 минут по `malId` (или названию и году). Ответ с непустым `failed` и сетевой сбой не кэшируются.
 - Новый балансер подключается так: свой `ExtraVideoRepository`, который зовёт `FindSourceAvailabilityUseCase("<sourceId>", lookup)`.
   На общую ручку уже переведён и AniLibria (см. [anilibria-source.md](anilibria-source.md)): он берёт `variants` — релизы озвучки и
-  нового дубляжа с сериями. Amedia тоже берёт тайтл и серии из общей ручки (см. ниже). Остальные источники (anime4k, aniboom, anistar) пока ходят на свои `/title`.
+  нового дубляжа с сериями. Amedia тоже берёт тайтл и серии из общей ручки (см. ниже). Остальные источники, включая aniboom и anistar, тоже ходят в общую ручку; на свои ручки (`/title`, `/ticket`, `/streams`) ходит только anime4k.
 
 ## `source/ailiberty`
 - `AiLibertyExtraVideoRepository` берёт наличие через общий модуль и строит видео `1..episodesAvailable` с

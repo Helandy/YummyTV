@@ -1,31 +1,20 @@
 package su.afk.yummy.tv.source.anistar.data.mapper
 
-import su.afk.yummy.tv.core.model.anime.utils.originalAnimeTitle
-import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
-import su.afk.yummy.tv.source.anistar.data.dto.AnistarLookupRequestDto
-import su.afk.yummy.tv.source.anistar.data.dto.AnistarTitleResponseDto
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarEpisode
-import su.afk.yummy.tv.source.anistar.domain.model.AnistarLookup
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarTitle
+import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
 
 internal object AnistarMapper {
-    private const val MAX_OTHER_TITLES = 20
+    private val MIRROR_ORIGIN = Regex("""^(https://[^/?#]+)/""")
 
-    fun toRequest(lookup: AnistarLookup): AnistarLookupRequestDto = AnistarLookupRequestDto(
-        malId = lookup.malId,
-        title = lookup.title,
-        originalTitle = originalAnimeTitle(lookup.otherTitles),
-        otherTitles = prioritizeAnimeTitles(lookup.title, lookup.otherTitles, MAX_OTHER_TITLES),
-        year = lookup.year,
-        type = lookup.type,
-        episodes = lookup.episodes,
-    )
-
-    /** `null`, если сервер не нашёл тайтл или ответ не годится для воспроизведения (нет id или зеркала). */
-    fun toTitle(dto: AnistarTitleResponseDto): AnistarTitle? {
-        if (!dto.available) return null
-        val newsId = dto.newsId?.takeIf { it > 0 } ?: return null
-        val mirror = dto.mirror?.trim()?.trimEnd('/')?.takeIf { it.startsWith("https://") } ?: return null
-        return AnistarTitle(newsId, mirror, dto.episodes.orEmpty().filter { it > 0 }.map(::AnistarEpisode))
+    /**
+     * `null`, если ответ не годится для воспроизведения: нет положительного id новости или адрес плеер-страницы не https
+     * (зеркало берётся из её хоста). Серии берутся из единственного варианта, номера без положительного значения отбрасываются.
+     */
+    fun toTitle(availability: SourceAvailability): AnistarTitle? {
+        val newsId = availability.key.toLongOrNull()?.takeIf { it > 0 } ?: return null
+        val mirror = MIRROR_ORIGIN.find(availability.url.trim())?.groupValues?.get(1) ?: return null
+        val episodes = availability.variants.firstOrNull()?.episodes.orEmpty().filter { it.number > 0 }.map { AnistarEpisode(it.number) }
+        return AnistarTitle(newsId, mirror, episodes)
     }
 }
