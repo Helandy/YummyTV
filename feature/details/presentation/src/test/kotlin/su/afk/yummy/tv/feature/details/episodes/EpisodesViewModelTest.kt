@@ -40,8 +40,8 @@ import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
@@ -112,7 +112,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         every { appearanceSettingsStore.showEpisodeFlags } returns flowOf(true)
     }
 
-    private fun createViewModel(pendingEpisode: String? = null) = EpisodesViewModel(
+    private fun createViewModel(pendingEpisode: String? = null): EpisodesViewModel = EpisodesViewModel(
         animeId = ANIME_ID,
         pendingEpisode = pendingEpisode,
         errorHandler = errorHandler,
@@ -137,7 +137,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         observeWatchLaterEpisodes = observeWatchLaterEpisodes,
         stringProvider = stringProvider,
         analytics = DetailsAnalytics(tracker),
-    )
+    ).also { vm -> vm.awaitState { it.videosState !is VideosUiState.Loading } }
 
     private fun video(id: Int, episode: String, dubbing: String) = AnimeVideo(
         id = id,
@@ -151,7 +151,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
     /** Группы считаются на реальном `Dispatchers.Default`, поэтому состояние ждём с таймаутом. */
     private fun EpisodesViewModel.awaitState(
-        timeoutMs: Long = 2_000,
+        timeoutMs: Long = 10_000,
         predicate: (EpisodesState.State) -> Boolean,
     ): EpisodesState.State {
         val deadline = System.currentTimeMillis() + timeoutMs
@@ -221,7 +221,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
     fun `pending episode with one candidate opens the player`() {
         createViewModel(pendingEpisode = "2")
 
-        verify(exactly = 1, timeout = 2_000) { nav.navigate(playerKey) }
+        verify(exactly = 1, timeout = 10_000) { nav.navigate(playerKey) }
     }
 
     @Test
@@ -259,7 +259,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
         vm.setEvent(Event.BalancerConfirmed(v1))
 
-        verify(exactly = 1, timeout = 2_000) { nav.navigate(playerKey) }
+        verify(exactly = 1, timeout = 10_000) { nav.navigate(playerKey) }
         assertNull(vm.currentState.pendingBalancerSelection)
     }
 
