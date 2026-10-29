@@ -13,23 +13,24 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.random.Random
 
-private const val FirstDriftDelayMillis = 60_000L
-private const val DriftPauseMillis = 240_000L
+private const val MinDriftPauseMillis = 180_000L
+private const val MaxDriftPauseMillis = 600_000L
 private const val DriftSeconds = 16f
 private const val NanosPerSecond = 1_000_000_000f
 
 /**
- * Редко над экраном плывёт призрак: полупрозрачный, покачивается. Пока он не летит, кадры не
- * запрашиваются: цикл анимации живёт только на время полёта.
+ * Редко (раз в 3–10 минут, случайно) над экраном плывёт призрак: полупрозрачный, покачивается.
+ * Пока он не летит, кадры не запрашиваются: цикл анимации живёт только на время полёта.
  */
 @Composable
 internal fun GhostDrift(modifier: Modifier = Modifier) {
     val progress = remember { mutableFloatStateOf(-1f) }
     val seconds = remember { mutableFloatStateOf(0f) }
     LaunchedEffect(Unit) {
-        delay(FirstDriftDelayMillis)
         while (true) {
+            delay(Random.nextLong(MinDriftPauseMillis, MaxDriftPauseMillis + 1))
             val start = withFrameNanos { it }
             do {
                 val now = withFrameNanos { it }
@@ -37,7 +38,6 @@ internal fun GhostDrift(modifier: Modifier = Modifier) {
                 progress.floatValue = seconds.floatValue / DriftSeconds
             } while (progress.floatValue < 1f)
             progress.floatValue = -1f
-            delay(DriftPauseMillis)
         }
     }
     Canvas(modifier.fillMaxSize()) {
