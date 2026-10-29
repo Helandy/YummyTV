@@ -118,6 +118,9 @@ fun EpisodesTvScreen(
                 onConfirmed = { option ->
                     onEvent(EpisodesState.Event.BalancerConfirmed(option.video))
                 },
+                onStarToggled = { option ->
+                    onEvent(EpisodesState.Event.BalancerStarToggled(option.playerName))
+                },
                 onDismiss = ::dismissBalancerPicker,
             )
         }
@@ -140,6 +143,9 @@ fun EpisodesTvScreen(
                 selection = dubbingPicker,
                 onSelected = { option ->
                     onEvent(EpisodesState.Event.EpisodeDubbingSelected(option.video))
+                },
+                onStarToggled = { option ->
+                    onEvent(EpisodesState.Event.DubbingStarToggled(option.item.name))
                 },
                 onDismiss = ::dismissDubbingPicker,
             )

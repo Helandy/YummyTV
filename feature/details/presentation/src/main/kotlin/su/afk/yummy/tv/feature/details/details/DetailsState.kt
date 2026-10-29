@@ -167,6 +167,12 @@ class DetailsState {
         /** Пользователь закрыл диалог выбора озвучки. */
         data object DubbingPickerDismissed : Event
 
+        /** Пользователь поставил или снял звезду озвучки. */
+        data class DubbingStarToggled(val name: String) : Event
+
+        /** Пользователь поставил или снял звезду балансера. */
+        data class BalancerStarToggled(val playerName: String) : Event
+
         /** Пользователь открыл отдельный экран подписок. */
         data object SubscriptionsRouteSelected : Event
 

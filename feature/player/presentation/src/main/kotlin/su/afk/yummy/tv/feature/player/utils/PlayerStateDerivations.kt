@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.player.utils
 
+import su.afk.yummy.tv.core.common.player.isStarredBalancer
+import su.afk.yummy.tv.core.common.player.isStarredDubbing
+import su.afk.yummy.tv.core.common.player.starredFirst
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
@@ -119,6 +122,7 @@ internal fun globalDubbingNames(state: PlayerState.State): List<String> =
                 globalDubbingViews(state, dubbingName)
             }.thenBy { it }
         )
+        .starredFirst { it.isStarredDubbing(state.starredDubbings) }
 
 internal fun globalDubbingEpisodeNumbers(
     state: PlayerState.State,
@@ -178,6 +182,9 @@ internal fun activeQuality(state: PlayerState.State): String? {
 internal fun displayedBalancerIndices(state: PlayerState.State): List<Int> =
     availableBalancerIndices(state, activeDubbingName(state))
         .ifEmpty { state.sourceGraph.balancers.indices.toList() }
+        .starredFirst { index ->
+            state.sourceGraph.balancers[index].name.isStarredBalancer(state.starredBalancers)
+        }
 
 internal fun isBalancerAvailableForEpisode(
     state: PlayerState.State,

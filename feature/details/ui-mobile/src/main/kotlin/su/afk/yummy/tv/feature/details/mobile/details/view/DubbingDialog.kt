@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.details.details.model.DubbingOption
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
@@ -14,6 +15,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun DubbingDialog(
     picker: DubbingPickerState,
     onSelected: (DubbingOption) -> Unit,
+    onStarClick: (DubbingOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
     MobilePickerBottomSheet(
@@ -31,6 +33,9 @@ internal fun DubbingDialog(
                     subtitle = option.item.supportedBalancers,
                     views = option.item.views,
                     episodeCount = option.item.episodeCount,
+                    trailing = {
+                        SourceStarButton(starred = option.item.isStarred, onClick = { onStarClick(option) })
+                    },
                     onClick = { onSelected(option) },
                 )
             },

@@ -14,8 +14,10 @@ internal fun DetailsPickerSheets(
     onSubscriptionsDismiss: () -> Unit,
     onBalancerConfirmed: (su.afk.yummy.tv.core.model.anime.AnimeVideo) -> Unit,
     onBalancerDismiss: () -> Unit,
+    onBalancerStarClick: (playerName: String) -> Unit,
     onDubbingSelected: (DubbingOption) -> Unit,
     onDubbingDismiss: () -> Unit,
+    onDubbingStarClick: (DubbingOption) -> Unit,
 ) {
     if (state.showLibraryListPicker) {
         LibraryListDialog(
@@ -34,6 +36,7 @@ internal fun DetailsPickerSheets(
         DubbingDialog(
             picker = picker,
             onSelected = onDubbingSelected,
+            onStarClick = onDubbingStarClick,
             onDismiss = onDubbingDismiss,
         )
     }
@@ -41,6 +44,7 @@ internal fun DetailsPickerSheets(
         BalancerDialog(
             picker = picker,
             onConfirmed = onBalancerConfirmed,
+            onStarClick = onBalancerStarClick,
             onDismiss = onBalancerDismiss,
         )
     }

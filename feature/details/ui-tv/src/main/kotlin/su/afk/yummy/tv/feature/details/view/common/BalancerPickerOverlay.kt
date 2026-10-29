@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.details.view.common
 
+import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -72,6 +75,7 @@ import su.afk.yummy.tv.feature.details.utils.formatCompactCount
 internal fun BalancerPickerOverlay(
     picker: BalancerPickerState,
     onConfirmed: (BalancerOption) -> Unit,
+    onStarToggled: (BalancerOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -157,7 +161,9 @@ internal fun BalancerPickerOverlay(
                             episodeCount = option.episodeCount,
                             focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
                             isSupported = option.isSupported,
+                            isStarred = option.isStarred,
                             onFocused = { focusedOptionIndex = idx },
+                            onLongClick = { onStarToggled(option) },
                             onClick = { onConfirmed(option) },
                         )
                     }
@@ -167,6 +173,7 @@ internal fun BalancerPickerOverlay(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BalancerOptionItem(
     label: String,
@@ -176,7 +183,9 @@ private fun BalancerOptionItem(
     episodeCount: Int,
     focusRequester: FocusRequester?,
     isSupported: Boolean,
+    isStarred: Boolean,
     onFocused: () -> Unit,
+    onLongClick: () -> Unit,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -192,86 +201,96 @@ private fun BalancerOptionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("picker_option")
-                .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-                .onFocusChanged { if (it.isFocused) onFocused() }
                 .clip(shape)
                 .background(bgColor)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onClick,
-                )
-                .padding(horizontal = 16.dp, vertical = 13.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                .padding(end = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            LogoBadge(logoRes = balancerLogoRes(label), size = 36.dp, fallbackIcon = balancerFallbackIcon(label))
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("picker_option")
+                    .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+                    .onFocusChanged { if (it.isFocused) onFocused() }
+                    .combinedClickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onLongClick = onLongClick,
+                        onClick = onClick,
+                    )
+                    .padding(horizontal = 16.dp, vertical = 13.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    // Вне фокуса название плеера — акцентным цветом, как в мобильных шторках.
-                    color = if (focused) textColor else MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                // Просмотры и число серий отдельной строкой, озвучка под ними — как на мобилке.
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                LogoBadge(logoRes = balancerLogoRes(label), size = 36.dp, fallbackIcon = balancerFallbackIcon(label))
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Visibility,
-                        contentDescription = null,
-                        tint = textColor.copy(alpha = 0.62f),
-                        modifier = Modifier.size(13.dp),
-                    )
                     Text(
-                        text = if (isExternal) {
-                            stringResource(R.string.details_balancer_external)
-                        } else {
-                            (views ?: 0).formatCompactCount()
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.62f),
-                        maxLines = 1,
-                    )
-                    Icon(
-                        imageVector = Icons.Filled.VideoLibrary,
-                        contentDescription = null,
-                        tint = textColor.copy(alpha = 0.62f),
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .size(13.dp),
-                    )
-                    Text(
-                        text = episodeCount.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textColor.copy(alpha = 0.62f),
-                        maxLines = 1,
-                    )
-                }
-                if (dubbing.isNotBlank()) {
-                    Text(
-                        text = dubbing,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = textColor.copy(alpha = 0.62f),
+                        text = label,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        // Вне фокуса название плеера — акцентным цветом, как в мобильных шторках.
+                        color = if (focused) textColor else MaterialTheme.colorScheme.primary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    // Просмотры и число серий отдельной строкой, озвучка под ними — как на мобилке.
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Visibility,
+                            contentDescription = null,
+                            tint = textColor.copy(alpha = 0.62f),
+                            modifier = Modifier.size(13.dp),
+                        )
+                        Text(
+                            text = if (isExternal) {
+                                stringResource(R.string.details_balancer_external)
+                            } else {
+                                (views ?: 0).formatCompactCount()
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor.copy(alpha = 0.62f),
+                            maxLines = 1,
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.VideoLibrary,
+                            contentDescription = null,
+                            tint = textColor.copy(alpha = 0.62f),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(13.dp),
+                        )
+                        Text(
+                            text = episodeCount.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor.copy(alpha = 0.62f),
+                            maxLines = 1,
+                        )
+                    }
+                    if (dubbing.isNotBlank()) {
+                        Text(
+                            text = dubbing,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textColor.copy(alpha = 0.62f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
+                Text(
+                    text = stringResource(R.string.details_balancer_open),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = textColor.copy(alpha = 0.64f),
+                    maxLines = 1,
+                )
             }
-            Text(
-                text = stringResource(R.string.details_balancer_open),
-                style = MaterialTheme.typography.labelSmall,
-                color = textColor.copy(alpha = 0.64f),
-                maxLines = 1,
-            )
+            TvSourceStarButton(starred = isStarred, onClick = onLongClick, onLightCard = focused)
         }
     } else {
         Row(

@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.model
 
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.feature.player.PlayerSkips
 
 @Immutable
@@ -52,4 +53,8 @@ data class PlayerPlaybackUiState(
     val showRecoveryHint: Boolean,
     /** Позиция, с которой продолжить после смены источника с экрана ошибки. */
     val errorResumePositionMs: Long,
+    /** Параллельно [dubbingNames]: у озвучки стоит звезда. */
+    val dubbingStarred: ImmutableList<Boolean> = persistentListOf(),
+    /** Параллельно [balancerNames]: у балансера стоит звезда. */
+    val balancerStarred: ImmutableList<Boolean> = persistentListOf(),
 )

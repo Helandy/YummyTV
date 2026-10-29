@@ -87,6 +87,10 @@ class PlayerState {
         val isPlaybackRecovering: Boolean = false,
         val showChangePlayerHint: Boolean = false,
         val finalEpisodeAction: PlayerFinalEpisodeAction = PlayerFinalEpisodeAction.Loading,
+        /** Озвучки с звездой (ключи `dubbingStarKey`): в списке выбора идут первыми. */
+        val starredDubbings: Set<String> = emptySet(),
+        /** Балансеры с звездой (ключи `balancerStarKey`): в списке выбора идут первыми. */
+        val starredBalancers: Set<String> = emptySet(),
     ) : UiState {
         /**
          * Воспроизведение ждёт туториал ТВ-управления: пока настройка не прочитана (иначе видео
@@ -140,6 +144,12 @@ class PlayerState {
          * индексу графа — перевод делает ViewModel), сохранив текущую позицию.
          */
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
+
+        /** Звезда озвучки по индексу в `PlayerPlaybackUiState.dubbingNames`. */
+        data class DubbingStarToggled(val index: Int) : Event
+
+        /** Звезда балансера по индексу в `PlayerPlaybackUiState.balancerNames`. */
+        data class BalancerStarToggled(val index: Int) : Event
 
         /**
          * Выбрано качество потока с сохранением текущей позиции. [auto] — переключение адаптивным

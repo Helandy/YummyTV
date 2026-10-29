@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +61,10 @@ internal fun ColumnScope.MobilePickerItems(
     items: List<MobilePickerItem>,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    ScrollToTopOnChange(order = items.map { it.key }, state = listState)
     LazyColumn(
+        state = listState,
         // шторка — отдельное окно: теги как resource-id для сценариев профиля включаем в нём заново
         modifier = modifier
             .fillMaxWidth()

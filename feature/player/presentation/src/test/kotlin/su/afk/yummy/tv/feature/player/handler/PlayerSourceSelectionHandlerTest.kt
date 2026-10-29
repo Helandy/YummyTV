@@ -12,6 +12,8 @@ import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
+import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
+import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 
 class PlayerSourceSelectionHandlerTest : BaseUnitTest() {
 
@@ -83,6 +85,25 @@ class PlayerSourceSelectionHandlerTest : BaseUnitTest() {
             PlayerSourceSelection(0, 1, 3),
             handler.nextEpisodeInOtherDubbing(state)?.sourceSelection,
         )
+    }
+
+    @Test
+    fun `starred dubbing is listed first and selected by its index`() {
+        val state = state(PlayerSourceSelection(0, 1, 1)).copy(starredDubbings = setOf("anilibria"))
+
+        assertEquals(listOf("AniLibria", "Dream Cast"), globalDubbingNames(state))
+        assertEquals(
+            PlayerSourceSelection(0, 0, 1),
+            handler.selectDubbing(state, index = 0, currentPosMs = 0L)?.sourceSelection,
+        )
+    }
+
+    @Test
+    fun `starred balancer is displayed first and the rest keep their order`() {
+        val state = state(PlayerSourceSelection(0, 0, 0)).copy(starredBalancers = setOf("alloha"))
+
+        assertEquals(listOf(1, 0), displayedBalancerIndices(state))
+        assertEquals(listOf(0, 1), displayedBalancerIndices(state.copy(starredBalancers = emptySet())))
     }
 
     @Test

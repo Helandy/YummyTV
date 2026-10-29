@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.details
 
+import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import androidx.navigation3.runtime.NavKey
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -82,6 +84,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val videoHandler: DetailsVideoHandler = mockk()
     private val subscriptionHandler: DetailsSubscriptionHandler = mockk()
     private val playerNavigationHandler: DetailsPlayerNavigationHandler = mockk()
+    private val sourceStars: SourceStarsSettingsStore = mockk(relaxed = true)
     private val extrasHandler: DetailsExtrasHandler = mockk()
     private val userRating = MutableStateFlow<Int?>(null)
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
@@ -101,6 +104,8 @@ class DetailsViewModelTest : BaseUnitTest() {
 
     @Before
     fun setUp() {
+        every { sourceStars.starredDubbings } returns MutableStateFlow(emptySet())
+        every { sourceStars.starredBalancers } returns MutableStateFlow(emptySet())
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { stringProvider.get(any<Int>()) } returns "load error"
         every { screenDataHandler.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
@@ -151,6 +156,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         videoHandler = videoHandler,
         subscriptionHandler = subscriptionHandler,
         playerNavigationHandler = playerNavigationHandler,
+        sourceStars = SourceStarsHandler(sourceStars),
         extrasHandler = extrasHandler,
         analytics = DetailsAnalytics(tracker),
         appLifecycleSettingsStore = appLifecycleSettingsStore,

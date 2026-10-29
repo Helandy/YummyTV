@@ -108,6 +108,8 @@ internal object SettingsPreferenceKeys {
     val videoDownloadWifiOnlyKey = booleanPreferencesKey("video_download_wifi_only")
     val saveLastSearchEnabledKey = booleanPreferencesKey("save_last_search_enabled")
     val lastSearchQueryKey = stringPreferencesKey("last_search_query")
+    val starredDubbingsKey = stringSetPreferencesKey("starred_dubbings")
+    val starredBalancersKey = stringSetPreferencesKey("starred_balancers")
     val lastSearchGenresKey = stringSetPreferencesKey("last_search_genres")
     val lastSearchExcludedGenresKey = stringSetPreferencesKey("last_search_excluded_genres")
     val lastSearchTypesKey = stringSetPreferencesKey("last_search_types")

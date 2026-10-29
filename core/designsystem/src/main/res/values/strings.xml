@@ -62,4 +62,6 @@
     <string name="seasonal_prompt_new_year">The app is decorated for New Year: a garland, snow and Santa hats. Don\'t need it? Turn it off — you can bring it back in Settings → Appearance → Seasonal decorations.</string>
     <string name="seasonal_prompt_disable">Turn off</string>
     <string name="seasonal_prompt_keep">Keep</string>
+    <string name="source_star_add">Add to favorites</string>
+    <string name="source_star_remove">Remove from favorites</string>
 </resources>

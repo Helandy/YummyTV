@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
+import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
 import su.afk.yummy.tv.feature.details.mobile.view.MobileDubbingMeta
@@ -28,6 +29,7 @@ import su.afk.yummy.tv.feature.details.mobile.view.MobileDubbingMeta
 internal fun EpisodeDubbingMobileRow(
     dubbing: EpisodeDubbingsState.DubbingItem,
     onClick: () -> Unit,
+    onStarClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -50,7 +52,9 @@ internal fun EpisodeDubbingMobileRow(
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
             )
+            SourceStarButton(starred = dubbing.isStarred, onClick = onStarClick)
         }
         MobileDubbingMeta(
             views = dubbing.views,

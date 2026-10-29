@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
+import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -42,16 +43,21 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerBalancerSheet(
     balancerNames: List<String>,
     balancerAvailability: List<Boolean>,
+    balancerStarred: List<Boolean>,
     selectedIndex: Int,
     metaLabel: String? = null,
     onBalancerSelected: (Int) -> Unit,
+    onBalancerStarClick: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
 
+    val listState = rememberLazyListState()
+    ScrollToTopOnChange(order = balancerNames, state = listState)
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
         HideSheetWindowSystemBars()
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = maxHeight)
@@ -78,6 +84,8 @@ internal fun MobilePlayerBalancerSheet(
                     },
                     selected = index == selectedIndex,
                     enabled = enabled,
+                    starred = balancerStarred.getOrElse(index) { false },
+                    onStarClick = { onBalancerStarClick(index) },
                     onClick = { onBalancerSelected(index) },
                 )
             }
@@ -91,6 +99,8 @@ private fun MobilePlayerBalancerRow(
     metaLabel: String?,
     selected: Boolean,
     enabled: Boolean,
+    starred: Boolean,
+    onStarClick: () -> Unit,
     onClick: () -> Unit,
 ) {
     val shape = MaterialTheme.shapes.medium
@@ -144,8 +154,6 @@ private fun MobilePlayerBalancerRow(
                 )
             }
         }
-        if (selected) {
-            Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)
-        }
+        SourceStarButton(starred = starred, onClick = onStarClick)
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
+import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
@@ -20,6 +21,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun BalancerDialog(
     picker: BalancerPickerState,
     onConfirmed: (AnimeVideo) -> Unit,
+    onStarClick: (playerName: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     MobilePickerBottomSheet(
@@ -56,6 +58,12 @@ internal fun BalancerDialog(
                     emphasizedSubtitle = true,
                     enabled = option.isSupported,
                     accentTitle = true,
+                    trailing = {
+                        SourceStarButton(
+                            starred = option.isStarred,
+                            onClick = { onStarClick(option.playerName) },
+                        )
+                    },
                     onClick = { onConfirmed(option.video) },
                 )
             },

@@ -1,5 +1,10 @@
 package su.afk.yummy.tv.feature.details.view.common
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
+import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,11 +76,14 @@ import su.afk.yummy.tv.feature.details.utils.formatCompactCount
 internal fun DubbingPickerOverlay(
     selection: DubbingPickerState,
     onSelected: (DubbingOption) -> Unit,
+    onStarToggled: (DubbingOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val firstFocusRequester = remember { FocusRequester() }
     var focusedOptionIndex by remember(selection.options) { mutableIntStateOf(0) }
+    val listState = rememberLazyListState()
+    ScrollToTopOnChange(order = selection.options.map { it.item.name }, state = listState)
 
     LaunchedEffect(selection.options) {
         if (selection.options.isNotEmpty()) {
@@ -150,6 +158,7 @@ internal fun DubbingPickerOverlay(
                         }
                     }
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(max = 430.dp),
@@ -167,6 +176,7 @@ internal fun DubbingPickerOverlay(
                                     Modifier
                                 },
                                 onFocused = { focusedOptionIndex = index },
+                                onLongClick = { onStarToggled(option) },
                                 onClick = { onSelected(option) },
                             )
                         }
@@ -177,84 +187,96 @@ internal fun DubbingPickerOverlay(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DubbingOptionItem(
     option: DubbingOption,
     modifier: Modifier,
     onFocused: () -> Unit,
+    onLongClick: () -> Unit,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(12.dp)
     val contentColor = if (focused) Color.Black else Color.White
-    Column(
-        modifier = modifier
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
-            .testTag("picker_option")
-            .onFocusChanged { if (it.isFocused) onFocused() }
             .clip(shape)
             .background(if (focused) Color.White else Color.White.copy(alpha = 0.10f))
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+            .padding(end = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = modifier
+                .weight(1f)
+                .testTag("picker_option")
+                .onFocusChanged { if (it.isFocused) onFocused() }
+                .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onLongClick = onLongClick,
+                    onClick = onClick,
+                )
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            LogoBadge(logoRes = dubbingLogoRes(option.item.name), size = 26.dp, fallbackIcon = Icons.Filled.Mic)
-            Text(
-                text = option.item.name,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.
-                color = if (focused) contentColor else MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LogoBadge(logoRes = dubbingLogoRes(option.item.name), size = 26.dp, fallbackIcon = Icons.Filled.Mic)
+                Text(
+                    text = option.item.name,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.
+                    color = if (focused) contentColor else MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Visibility,
+                    contentDescription = null,
+                    tint = contentColor.copy(alpha = 0.62f),
+                    modifier = Modifier.size(13.dp),
+                )
+                Text(
+                    text = option.item.views.formatCompactCount(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.62f),
+                )
+                Icon(
+                    imageVector = Icons.Filled.VideoLibrary,
+                    contentDescription = null,
+                    tint = contentColor.copy(alpha = 0.62f),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(13.dp),
+                )
+                Text(
+                    text = option.item.episodeCount.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.62f),
+                )
+            }
+            if (option.item.supportedBalancers.isNotBlank()) {
+                Text(
+                    text = option.item.supportedBalancers,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.62f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Visibility,
-                contentDescription = null,
-                tint = contentColor.copy(alpha = 0.62f),
-                modifier = Modifier.size(13.dp),
-            )
-            Text(
-                text = option.item.views.formatCompactCount(),
-                style = MaterialTheme.typography.labelSmall,
-                color = contentColor.copy(alpha = 0.62f),
-            )
-            Icon(
-                imageVector = Icons.Filled.VideoLibrary,
-                contentDescription = null,
-                tint = contentColor.copy(alpha = 0.62f),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(13.dp),
-            )
-            Text(
-                text = option.item.episodeCount.toString(),
-                style = MaterialTheme.typography.labelSmall,
-                color = contentColor.copy(alpha = 0.62f),
-            )
-        }
-        if (option.item.supportedBalancers.isNotBlank()) {
-            Text(
-                text = option.item.supportedBalancers,
-                style = MaterialTheme.typography.labelSmall,
-                color = contentColor.copy(alpha = 0.62f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        TvSourceStarButton(starred = option.item.isStarred, onClick = onLongClick, onLightCard = focused)
     }
 }

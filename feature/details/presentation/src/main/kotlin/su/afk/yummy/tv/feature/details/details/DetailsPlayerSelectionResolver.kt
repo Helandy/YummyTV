@@ -76,6 +76,7 @@ internal fun resolveDetailsPlayerSelection(
                 views = { it.views },
             ),
         )
+        .mapIndexed { index, option -> option.copy(baseIndex = index) }
     val supportedOptions = options.filter { it.isSupported }
 
     if (preferredPlayer != PreferredPlayer.NONE) {

@@ -68,4 +68,6 @@
     <string name="seasonal_prompt_new_year">Застосунок прикрашено до Нового року: гірлянда, сніг і шапки Діда Мороза. Якщо оформлення не потрібне, вимкніть його — увімкнути знову можна в Налаштування → Зовнішній вигляд → «Святкове оформлення».</string>
     <string name="seasonal_prompt_disable">Вимкнути</string>
     <string name="seasonal_prompt_keep">Залишити</string>
+    <string name="source_star_add">Додати до обраного</string>
+    <string name="source_star_remove">Прибрати з обраного</string>
 </resources>

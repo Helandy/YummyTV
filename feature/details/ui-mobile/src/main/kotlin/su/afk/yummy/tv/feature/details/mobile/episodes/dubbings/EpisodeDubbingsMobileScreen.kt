@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes.dubbings
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -62,6 +64,8 @@ fun EpisodeDubbingsMobileScreen(
     effect: Flow<EpisodeDubbingsState.Effect>,
     onEvent: (EpisodeDubbingsState.Event) -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    ScrollToTopOnChange(order = state.dubbings.map { it.name }, state = listState)
     BaseBottomSheet(
         onDismissRequest = { onEvent(EpisodeDubbingsState.Event.BackSelected) },
         title = stringResource(
@@ -93,6 +97,7 @@ fun EpisodeDubbingsMobileScreen(
             )
 
             else -> LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .mobileContentMaxWidth()
                     .fillMaxWidth(),
@@ -102,6 +107,7 @@ fun EpisodeDubbingsMobileScreen(
                 items(state.dubbings, key = { it.name }) { dubbing ->
                     EpisodeDubbingMobileRow(
                         dubbing = dubbing,
+                        onStarClick = { onEvent(EpisodeDubbingsState.Event.DubbingStarToggled(dubbing.name)) },
                         onClick = {
                             onEvent(EpisodeDubbingsState.Event.DubbingSelected(dubbing.name))
                         },
@@ -115,6 +121,7 @@ fun EpisodeDubbingsMobileScreen(
         BalancerDialog(
             picker = picker,
             onConfirmed = { onEvent(EpisodeDubbingsState.Event.BalancerConfirmed(it)) },
+            onStarClick = { onEvent(EpisodeDubbingsState.Event.BalancerStarToggled(it)) },
             onDismiss = { onEvent(EpisodeDubbingsState.Event.BalancerPickerDismissed) },
         )
     }

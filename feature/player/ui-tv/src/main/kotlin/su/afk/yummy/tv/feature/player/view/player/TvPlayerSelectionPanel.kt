@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -7,7 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
+import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 
 @Composable
@@ -84,6 +87,9 @@ internal fun TvPlayerSelectionPanel(
         }
     },
     onExitDown: (() -> Unit)? = null,
+    /** Пункты со звездой (параллельно [items]); переключается долгим нажатием на пункт. */
+    starredItems: List<Boolean> = emptyList(),
+    onItemStarToggled: ((index: Int) -> Unit)? = null,
     onItemSelected: (index: Int) -> Unit,
 ) {
     AnimatedVisibility(
@@ -95,6 +101,7 @@ internal fun TvPlayerSelectionPanel(
         val maxPanelHeight = (LocalConfiguration.current.screenHeightDp * 0.7f).dp
         val listState = rememberLazyListState()
         val scrollIndex = selectedIndex.coerceIn(0, items.lastIndex)
+        ScrollToTopOnChange(order = items.toList(), state = listState)
 
         LaunchedEffect(visible, items.size, scrollIndex) {
             if (visible && items.isNotEmpty()) {
@@ -154,6 +161,8 @@ internal fun TvPlayerSelectionPanel(
                         logoFallbackIcon = logoFallbackFor?.invoke(label) ?: logoFallbackIcon,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
                         onExitDown = if (idx == lastEnabledIndex) onExitDown else null,
+                        starred = starredItems.getOrElse(idx) { false },
+                        onLongClick = onItemStarToggled?.let { toggle -> { toggle(idx) } },
                         onClick = { onItemSelected(idx) },
                     )
                 }
@@ -162,6 +171,7 @@ internal fun TvPlayerSelectionPanel(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PlayerSelectionItem(
     label: String,
@@ -182,6 +192,8 @@ internal fun PlayerSelectionItem(
     logoRes: Int? = null,
     logoFallbackIcon: ImageVector = Icons.Filled.PlayCircle,
     onExitDown: (() -> Unit)?,
+    starred: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -237,68 +249,80 @@ internal fun PlayerSelectionItem(
             .padding(vertical = 2.dp),
     ) {
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .focusProperties { canFocus = enabled }
-                .onPreviewKeyEvent { event ->
-                    if (
-                        event.type == KeyEventType.KeyDown &&
-                        event.key == Key.DirectionDown &&
-                        onExitDown != null
-                    ) {
-                        onExitDown()
-                        true
-                    } else {
-                        false
-                    }
-                }
                 .tvPlayerFocusScale(focused)
                 .clip(shape)
                 .background(background)
                 .border(2.dp, borderColor, shape)
-                .clickable(
-                    enabled = enabled,
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onClick,
-                )
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(end = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (swatchColor != null) {
-                Box(
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clip(CircleShape)
-                        .background(swatchColor)
-                        .border(1.dp, Color.Black.copy(alpha = 0.4f), CircleShape),
-                )
-            }
-            if (logoName != null) {
-                LogoBadge(logoRes = logoRes, size = 32.dp, fallbackIcon = logoFallbackIcon)
-            }
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = contentColor,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+            Row(
+                modifier = modifier
+                    .weight(1f)
+                    .focusProperties { canFocus = enabled }
+                    .onPreviewKeyEvent { event ->
+                        if (
+                            event.type == KeyEventType.KeyDown &&
+                            event.key == Key.DirectionDown &&
+                            onExitDown != null
+                        ) {
+                            onExitDown()
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    .combinedClickable(
+                        enabled = enabled,
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onLongClick = onLongClick,
+                        onClick = onClick,
+                    )
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = labelColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                metaContent(contentColor)
+                if (swatchColor != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape)
+                            .background(swatchColor)
+                            .border(1.dp, Color.Black.copy(alpha = 0.4f), CircleShape),
+                    )
+                }
+                if (logoName != null) {
+                    LogoBadge(logoRes = logoRes, size = 32.dp, fallbackIcon = logoFallbackIcon)
+                }
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = labelColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    metaContent(contentColor)
+                }
+            }
+            if (onLongClick != null) {
+                TvSourceStarButton(starred = starred, onClick = onLongClick, onLightCard = focused || selected)
             }
         }
     }

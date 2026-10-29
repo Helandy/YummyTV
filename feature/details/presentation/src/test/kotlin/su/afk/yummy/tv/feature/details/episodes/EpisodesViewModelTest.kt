@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.episodes
 
+import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import androidx.navigation3.runtime.NavKey
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -70,6 +72,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
     private val videoDownloadNavigator: IVideoDownloadNavigator = mockk()
     private val animeRepository: AnimeRepository = mockk()
     private val settingsStore: PlayerSettingsStore = mockk()
+    private val sourceStars: SourceStarsSettingsStore = mockk(relaxed = true)
     private val accountRepository: AccountRepository = mockk()
     private val playerNavigationHandler: DetailsPlayerNavigationHandler = mockk()
     private val downloadHandler: EpisodeDownloadHandler = mockk(relaxed = true)
@@ -91,6 +94,8 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
     @Before
     fun setUp() {
+        every { sourceStars.starredDubbings } returns MutableStateFlow(emptySet())
+        every { sourceStars.starredBalancers } returns MutableStateFlow(emptySet())
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.preferredPlayer } returns flowOf(PreferredPlayer.NONE)
         every { settingsStore.anime4kDubbing(any()) } returns flowOf(null)
@@ -130,6 +135,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         settingsStore = settingsStore,
         observeAccountSession = ObserveAccountSessionUseCase(accountRepository),
         playerNavigationHandler = playerNavigationHandler,
+        sourceStars = SourceStarsHandler(sourceStars),
         downloadHandler = downloadHandler,
         watchedHandler = watchedHandler,
         watchLaterHandler = watchLaterHandler,

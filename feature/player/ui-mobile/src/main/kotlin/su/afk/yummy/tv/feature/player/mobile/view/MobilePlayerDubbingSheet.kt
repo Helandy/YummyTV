@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -28,8 +29,11 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerDubbingSheet(
     playback: PlayerPlaybackUiState,
     onDubbingSelected: (Int) -> Unit,
+    onDubbingStarClick: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val scrollState = rememberScrollState()
+    ScrollToTopOnChange(order = playback.dubbingNames.toList(), state = scrollState)
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
         HideSheetWindowSystemBars()
 
@@ -37,7 +41,7 @@ internal fun MobilePlayerDubbingSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = maxHeight)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -57,6 +61,8 @@ internal fun MobilePlayerDubbingSheet(
                     views = playback.dubbingViews.getOrElse(index) { 0 },
                     episodeCount = playback.dubbingEpisodeCounts.getOrElse(index) { 0 },
                     sourceNames = playback.dubbingSourceNames.getOrElse(index) { "" },
+                    starred = playback.dubbingStarred.getOrElse(index) { false },
+                    onStarClick = { onDubbingStarClick(index) },
                     onClick = { onDubbingSelected(index) },
                 )
             }

@@ -25,6 +25,10 @@ class EpisodeDubbingsState {
         val views: Int,
         val episodeCount: Int,
         val supportedBalancers: String,
+        /** У озвучки стоит звезда: такие идут в списках первыми. */
+        val isStarred: Boolean = false,
+        /** Позиция в порядке без звёзд: по ней озвучка возвращается на место, когда звезду снимают. */
+        val baseIndex: Int = 0,
     )
 
     /** Пользовательские действия на экране озвучек эпизода. */
@@ -43,6 +47,12 @@ class EpisodeDubbingsState {
 
         /** Пользователь закрыл выбор балансера. */
         data object BalancerPickerDismissed : Event
+
+        /** Пользователь поставил или снял звезду озвучки. */
+        data class DubbingStarToggled(val name: String) : Event
+
+        /** Пользователь поставил или снял звезду балансера. */
+        data class BalancerStarToggled(val playerName: String) : Event
     }
 
     sealed interface Effect : UiEffect

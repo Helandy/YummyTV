@@ -179,6 +179,7 @@ fun EpisodesMobileScreen(
         EpisodeDubbingDialog(
             selection = selection,
             onSelected = { onEvent(EpisodesState.Event.EpisodeDubbingSelected(it)) },
+            onStarClick = { onEvent(EpisodesState.Event.DubbingStarToggled(it)) },
             onDismiss = { onEvent(EpisodesState.Event.EpisodeDubbingPickerDismissed) },
         )
     }
@@ -187,6 +188,7 @@ fun EpisodesMobileScreen(
         BalancerDialog(
             picker = picker,
             onConfirmed = { onEvent(EpisodesState.Event.BalancerConfirmed(it)) },
+            onStarClick = { onEvent(EpisodesState.Event.BalancerStarToggled(it)) },
             onDismiss = { onEvent(EpisodesState.Event.BalancerPickerDismissed) },
         )
     }

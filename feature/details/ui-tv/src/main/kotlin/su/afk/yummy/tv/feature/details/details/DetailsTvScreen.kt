@@ -160,6 +160,7 @@ fun DetailsTvScreen(
             BalancerPickerOverlay(
                 picker = balancerPicker,
                 onConfirmed = { option -> onEvent(DetailsState.Event.BalancerConfirmed(option.video)) },
+                onStarToggled = { option -> onEvent(DetailsState.Event.BalancerStarToggled(option.playerName)) },
                 onDismiss = ::dismissBalancerPicker,
             )
         }
@@ -172,6 +173,7 @@ fun DetailsTvScreen(
             DubbingPickerOverlay(
                 selection = dubbingPicker,
                 onSelected = { option -> onEvent(DetailsState.Event.DubbingSelected(option.video)) },
+                onStarToggled = { option -> onEvent(DetailsState.Event.DubbingStarToggled(option.item.name)) },
                 onDismiss = ::dismissDubbingPicker,
             )
         }

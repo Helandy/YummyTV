@@ -888,6 +888,7 @@ internal fun MobileNativePlayer(
                 dubbingViews = ui.dubbingViews,
                 dubbingSourceNames = ui.dubbingSourceNames,
                 dubbingAvailability = ui.dubbingAvailability,
+                dubbingStarred = ui.dubbingStarred,
                 selectedDubbingIndex = ui.currentDubbingIndex,
                 onDubbingSelected = {
                     onEvent(
@@ -899,10 +900,13 @@ internal fun MobileNativePlayer(
                 },
                 balancerNames = ui.balancerNames,
                 balancerAvailability = ui.balancerAvailability,
+                balancerStarred = ui.balancerStarred,
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
                     onEvent(PlayerState.Event.BalancerSelected(index, player.currentPosition))
                 },
+                onDubbingStarClick = { onEvent(PlayerState.Event.DubbingStarToggled(it)) },
+                onBalancerStarClick = { onEvent(PlayerState.Event.BalancerStarToggled(it)) },
                 onDismiss = { trackSheetOpen = false },
                 initialTrackTab = settingsTrackTab,
                 onTrackTabChanged = { settingsTrackTab = it },

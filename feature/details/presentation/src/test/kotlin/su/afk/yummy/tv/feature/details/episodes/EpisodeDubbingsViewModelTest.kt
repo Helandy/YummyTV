@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.episodes
 
+import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import androidx.navigation3.runtime.NavKey
 import io.mockk.coEvery
 import io.mockk.every
@@ -40,12 +42,15 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private val repository: AnimeRepository = mockk()
     private val settingsStore: PlayerSettingsStore = mockk()
+    private val sourceStars: SourceStarsSettingsStore = mockk(relaxed = true)
     private val playerNavigationHandler: DetailsPlayerNavigationHandler = mockk()
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
     private val playerKey: NavKey = mockk()
 
     @Before
     fun setUp() {
+        every { sourceStars.starredDubbings } returns MutableStateFlow(emptySet())
+        every { sourceStars.starredBalancers } returns MutableStateFlow(emptySet())
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.preferredPlayer } returns MutableStateFlow(PreferredPlayer.NONE)
         every { settingsStore.anime4kDubbing(any()) } returns MutableStateFlow(null)
@@ -70,6 +75,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
         getAnimeVideos = GetAnimeVideosUseCase(repository),
         settingsStore = settingsStore,
         playerNavigationHandler = playerNavigationHandler,
+        sourceStars = SourceStarsHandler(sourceStars),
         analytics = DetailsAnalytics(tracker),
     )
 

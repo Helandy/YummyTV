@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
@@ -26,6 +27,7 @@ import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreCacheSetting
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreEpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStorePlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSearchSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSourceStarsSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreVideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreVideoExportSettingsStore
@@ -95,6 +97,10 @@ internal interface PreferencesModule {
     @Binds
     @Singleton
     fun bindSearchSettingsStore(impl: DataStoreSearchSettingsStore): SearchSettingsStore
+
+    @Binds
+    @Singleton
+    fun bindSourceStarsSettingsStore(impl: DataStoreSourceStarsSettingsStore): SourceStarsSettingsStore
 
     @Binds
     @Singleton

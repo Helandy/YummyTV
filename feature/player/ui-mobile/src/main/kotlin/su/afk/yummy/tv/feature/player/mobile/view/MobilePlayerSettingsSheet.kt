@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -34,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
+import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -46,12 +49,16 @@ internal fun MobilePlayerSettingsSheet(
     dubbingViews: List<Int>,
     dubbingSourceNames: List<String>,
     dubbingAvailability: List<Boolean>,
+    dubbingStarred: List<Boolean>,
     selectedDubbingIndex: Int,
     onDubbingSelected: (Int) -> Unit,
+    onDubbingStarClick: (Int) -> Unit,
     balancerNames: List<String>,
     balancerAvailability: List<Boolean>,
+    balancerStarred: List<Boolean>,
     selectedBalancerIndex: Int,
     onBalancerSelected: (Int) -> Unit,
+    onBalancerStarClick: (Int) -> Unit,
     onDismiss: () -> Unit,
     initialTrackTab: MobilePlayerTrackSettingsTab = MobilePlayerTrackSettingsTab.Dubbing,
     onTrackTabChanged: (MobilePlayerTrackSettingsTab) -> Unit = {},
@@ -112,7 +119,13 @@ internal fun MobilePlayerSettingsSheet(
                     .fillMaxWidth()
                     .weight(1f),
             ) { page ->
+                val listState = rememberLazyListState()
+                ScrollToTopOnChange(
+                    order = if (trackTabs[page] == MobilePlayerTrackSettingsTab.Dubbing) dubbingNames else balancerNames,
+                    state = listState,
+                )
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -146,6 +159,12 @@ internal fun MobilePlayerSettingsSheet(
                                             )
                                         }
                                     },
+                                    trailingContent = {
+                                        SourceStarButton(
+                                            starred = dubbingStarred.getOrElse(index) { false },
+                                            onClick = { onDubbingStarClick(index) },
+                                        )
+                                    },
                                     onClick = { onDubbingSelected(index) },
                                 )
                             }
@@ -172,6 +191,12 @@ internal fun MobilePlayerSettingsSheet(
                                                 color = contentColor.copy(alpha = 0.68f),
                                             )
                                         }
+                                    },
+                                    trailingContent = {
+                                        SourceStarButton(
+                                            starred = balancerStarred.getOrElse(index) { false },
+                                            onClick = { onBalancerStarClick(index) },
+                                        )
                                     },
                                     onClick = { onBalancerSelected(index) },
                                 )

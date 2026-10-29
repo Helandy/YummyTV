@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.episodes
 
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
+import su.afk.yummy.tv.feature.details.utils.withStars
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -96,6 +98,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val settingsStore: PlayerSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
+    private val sourceStars: SourceStarsHandler,
     private val downloadHandler: EpisodeDownloadHandler,
     private val watchedHandler: EpisodeWatchedHandler,
     private val watchLaterHandler: EpisodeWatchLaterHandler,
@@ -138,8 +141,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
     }
 
+    private var starredDubbings: Set<String> = emptySet()
+    private var starredBalancers: Set<String> = emptySet()
+
     init {
         analytics.eventEpisodesScreenOpened(animeId)
+        observeSourceStars()
         appLifecycleSettingsStore.notificationPermissionRequested
             .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
             .launchIn(viewModelScope)
@@ -218,6 +225,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 setState { copy(pendingEpisodeDubbingSelection = null) }
                 showBalancerPickerForDubbing(event.video)
             }
+
+            is EpisodesState.Event.DubbingStarToggled ->
+                viewModelScope.launch { sourceStars.toggleDubbing(event.name) }
+
+            is EpisodesState.Event.BalancerStarToggled ->
+                viewModelScope.launch { sourceStars.toggleBalancer(event.playerName) }
 
             EpisodesState.Event.EpisodeDubbingPickerDismissed ->
                 setState { copy(pendingEpisodeDubbingSelection = null) }
@@ -666,6 +679,21 @@ class EpisodesViewModel @AssistedInject internal constructor(
         }
     }
 
+    private fun observeSourceStars() {
+        viewModelScope.launch {
+            sourceStars.starredDubbings.collect { starred ->
+                starredDubbings = starred
+                setState { copy(pendingEpisodeDubbingSelection = pendingEpisodeDubbingSelection?.withStars(starred)) }
+            }
+        }
+        viewModelScope.launch {
+            sourceStars.starredBalancers.collect { starred ->
+                starredBalancers = starred
+                setState { copy(pendingBalancerSelection = pendingBalancerSelection?.withStars(starred)) }
+            }
+        }
+    }
+
     private fun showBalancerPickerForDubbing(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val dubbingVideos = allVideos.sameEpisodeDubbing(video)
@@ -680,7 +708,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
             is DetailsPlayerSelection.ShowPicker -> {
                 reportUnsupportedPlayers(selection.picker)
-                setState { copy(pendingBalancerSelection = selection.picker) }
+                setState { copy(pendingBalancerSelection = selection.picker.withStars(starredBalancers)) }
             }
         }
     }
@@ -721,7 +749,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                     episode = episode,
                     options = options.toImmutableList(),
                     episodeTitle = info?.title,
-                ),
+                ).withStars(starredDubbings),
             )
         }
     }

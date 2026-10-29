@@ -60,6 +60,7 @@ import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.artworkSource
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
+import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.preferredQualityForLabel
 import su.afk.yummy.tv.feature.player.utils.qualityHeight
 import su.afk.yummy.tv.feature.player.utils.streamQualities
@@ -408,6 +409,19 @@ class PlayerViewModel @AssistedInject internal constructor(
                     ),
                 )
                 applySourceSelection(nextState, sourceScopeChanged = true)
+            }
+
+            is PlayerState.Event.DubbingStarToggled -> {
+                val name = globalDubbingNames(currentState).getOrNull(event.index) ?: return
+                preferences.toggleDubbingStar(host, name)
+            }
+
+            is PlayerState.Event.BalancerStarToggled -> {
+                val name = displayedBalancerIndices(currentState)
+                    .getOrNull(event.index)
+                    ?.let { currentState.sourceGraph.balancers.getOrNull(it)?.name }
+                    ?: return
+                preferences.toggleBalancerStar(host, name)
             }
 
             is PlayerState.Event.BalancerSelected -> {

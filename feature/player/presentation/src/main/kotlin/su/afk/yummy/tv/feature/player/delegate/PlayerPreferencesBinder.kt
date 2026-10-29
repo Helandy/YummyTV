@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
@@ -16,8 +17,11 @@ import javax.inject.Inject
 /** Держит глобальные настройки плеера и одноразовые обучения в состоянии экрана. */
 internal class PlayerPreferencesBinder @Inject constructor(
     private val settings: PlayerSettingsHandler,
+    private val sourceStars: SourceStarsSettingsStore,
 ) {
     fun bind(host: PlayerStateHost) {
+        host.bind(sourceStars.starredDubbings) { copy(starredDubbings = it) }
+        host.bind(sourceStars.starredBalancers) { copy(starredBalancers = it) }
         with(settings) {
             host.bind(autoSkipOpeningsEndings) { copy(autoSkipOpeningsEndings = it) }
             host.bind(autoSkipDelaySeconds) { copy(autoSkipDelaySeconds = it) }
@@ -43,6 +47,14 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(playerSubtitleStyle) { copy(subtitleStyle = it) }
             host.bind(playerPlaybackSpeed) { copy(selectedSpeed = it) }
         }
+    }
+
+    fun toggleDubbingStar(host: PlayerStateHost, name: String) {
+        host.scope.launch { sourceStars.toggleDubbing(name) }
+    }
+
+    fun toggleBalancerStar(host: PlayerStateHost, name: String) {
+        host.scope.launch { sourceStars.toggleBalancer(name) }
     }
 
     fun selectOrientationMode(host: PlayerStateHost, mode: PlayerOrientationMode) {

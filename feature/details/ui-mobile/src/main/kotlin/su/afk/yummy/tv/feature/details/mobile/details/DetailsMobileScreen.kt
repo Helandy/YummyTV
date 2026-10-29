@@ -284,6 +284,8 @@ fun DetailsMobileScreen(
             onBalancerDismiss = { onEvent(DetailsState.Event.BalancerPickerDismissed) },
             onDubbingSelected = { onEvent(DetailsState.Event.DubbingSelected(it.video)) },
             onDubbingDismiss = { onEvent(DetailsState.Event.DubbingPickerDismissed) },
+            onBalancerStarClick = { onEvent(DetailsState.Event.BalancerStarToggled(it)) },
+            onDubbingStarClick = { onEvent(DetailsState.Event.DubbingStarToggled(it.item.name)) },
         )
         NotificationPermissionGateHost(
             state = notificationPermissionGate,

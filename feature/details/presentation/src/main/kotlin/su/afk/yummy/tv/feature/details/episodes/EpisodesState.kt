@@ -184,6 +184,12 @@ class EpisodesState {
         /** Пользователь закрыл диалог выбора озвучки. */
         data object EpisodeDubbingPickerDismissed : Event
 
+        /** Пользователь поставил или снял звезду озвучки. */
+        data class DubbingStarToggled(val name: String) : Event
+
+        /** Пользователь поставил или снял звезду балансера. */
+        data class BalancerStarToggled(val playerName: String) : Event
+
         /** Пользователь нажал скачивание серии. */
         data class EpisodeDownloadSelected(val videos: List<AnimeVideo>) : Event
 

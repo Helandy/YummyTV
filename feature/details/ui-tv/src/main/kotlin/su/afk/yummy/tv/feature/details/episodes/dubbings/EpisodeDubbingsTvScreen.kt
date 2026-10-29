@@ -1,5 +1,10 @@
 package su.afk.yummy.tv.feature.details.episodes.dubbings
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
+import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -77,6 +82,8 @@ fun EpisodeDubbingsTvScreen(
         onEvent(EpisodeDubbingsState.Event.BackSelected)
     }
 
+    val listState = rememberLazyListState()
+    ScrollToTopOnChange(order = state.dubbings.map { it.name }, state = listState)
     var lastFocusedIndex by rememberSaveable(state.episode) { mutableIntStateOf(0) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var restoreFocusRequest by remember { mutableIntStateOf(0) }
@@ -115,6 +122,7 @@ fun EpisodeDubbingsTvScreen(
             )
 
             else -> LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .tvFocusRestorer(
@@ -150,6 +158,9 @@ fun EpisodeDubbingsTvScreen(
                                     lastFocusedIndex = index
                                 }
                             },
+                        onLongClick = {
+                            onEvent(EpisodeDubbingsState.Event.DubbingStarToggled(dubbing.name))
+                        },
                         onClick = {
                             lastFocusedIndex = index
                             onEvent(EpisodeDubbingsState.Event.DubbingSelected(dubbing.name))
@@ -165,15 +176,20 @@ fun EpisodeDubbingsTvScreen(
                 onConfirmed = { option ->
                     onEvent(EpisodeDubbingsState.Event.BalancerConfirmed(option.video))
                 },
+                onStarToggled = { option ->
+                    onEvent(EpisodeDubbingsState.Event.BalancerStarToggled(option.playerName))
+                },
                 onDismiss = ::dismissBalancerPicker,
             )
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DubbingRow(
     dubbing: EpisodeDubbingsState.DubbingItem,
+    onLongClick: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -182,60 +198,71 @@ private fun DubbingRow(
     val contentColor =
         if (focused) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(
                 if (focused) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
             )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(horizontal = 16.dp, vertical = 13.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+            .padding(end = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+        Row(
+            modifier = modifier
+                .weight(1f)
+                    .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onLongClick = onLongClick,
+                    onClick = onClick,
+                )
+                .padding(horizontal = 16.dp, vertical = 13.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = dubbing.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.
-                color = if (focused) contentColor else MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Visibility,
-                    contentDescription = null,
-                    tint = contentColor.copy(alpha = 0.7f),
-                    modifier = Modifier.size(13.dp),
-                )
                 Text(
-                    text = dubbing.views.formatCompactCount(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = contentColor.copy(alpha = 0.7f),
-                )
-            }
-            if (dubbing.supportedBalancers.isNotBlank()) {
-                Text(
-                    text = dubbing.supportedBalancers,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = contentColor.copy(alpha = 0.7f),
+                    text = dubbing.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.
+                    color = if (focused) contentColor else MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Visibility,
+                        contentDescription = null,
+                        tint = contentColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(13.dp),
+                    )
+                    Text(
+                        text = dubbing.views.formatCompactCount(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.7f),
+                    )
+                }
+                if (dubbing.supportedBalancers.isNotBlank()) {
+                    Text(
+                        text = dubbing.supportedBalancers,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.7f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
+        TvSourceStarButton(starred = dubbing.isStarred, onClick = onLongClick, onLightCard = focused)
     }
+
 }

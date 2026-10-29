@@ -42,6 +42,7 @@ internal fun List<AnimeVideo>.episodeDubbingItems(
             compareByDescending<EpisodeDubbingsState.DubbingItem> { it.views }
                 .thenBy { it.name }
         )
+        .mapIndexed { index, item -> item.copy(baseIndex = index) }
         .toList()
 }
 
