@@ -6,4 +6,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class FenixAccessDto(
     val token: String? = null,
+    val edge: FenixEdgeDto? = null,
+)
+
+/** Запасной медиа-хост страницы (`edge`): свой origin и свой токен, который уходит в query как `edge=`. */
+@Serializable
+internal data class FenixEdgeDto(
+    val origin: String? = null,
+    val token: String? = null,
 )

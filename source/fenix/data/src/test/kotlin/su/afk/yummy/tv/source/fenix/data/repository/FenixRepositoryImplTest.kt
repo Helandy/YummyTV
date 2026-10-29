@@ -1,10 +1,12 @@
 package su.afk.yummy.tv.source.fenix.data.repository
 
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.fenix.data.network.FenixApi
@@ -20,6 +22,11 @@ class FenixRepositoryImplTest : BaseUnitTest() {
 
     private fun createRepository() = FenixRepositoryImpl(api)
 
+    @Before
+    fun mainHostIsReachable() {
+        coEvery { api.isReachable(any(), any()) } returns true
+    }
+
     @Test
     fun `embed page gives the signed master of the chosen track`() = runTest {
         coEvery { api.getText("https://fenixplay.xyz/embed/abc.def") } returns resource("fenix-embed-page.html")
@@ -29,6 +36,52 @@ class FenixRepositoryImplTest : BaseUnitTest() {
         assertEquals(
             FenixStreamsResult.Success(
                 FenixStreams("https://media.fenixplay.xyz/anime/friren/ep002/fanvox/master.m3u8?v=2&token=media.tok.sig"),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `slow main host gives the master on the edge host`() = runTest {
+        coEvery { api.getText("https://fenixplay.xyz/embed/abc.def") } returns resource("fenix-embed-page.html")
+        coEvery { api.isReachable("https://media.fenixplay.xyz/anime/friren/ep002/fanvox/master.m3u8?v=2&token=media.tok.sig", any()) } returns false
+        coEvery { api.isReachable("https://cf-media.fenixplay.xyz/anime/friren/ep002/fanvox/master.m3u8?v=2&edge=edge.tok.sig", any()) } returns true
+
+        val result = createRepository().getStreams("https://fenixplay.xyz/embed/abc.def?ep=2&edition=tv", "FanVoxUa")
+
+        assertEquals(
+            FenixStreamsResult.Success(
+                FenixStreams("https://cf-media.fenixplay.xyz/anime/friren/ep002/fanvox/master.m3u8?v=2&edge=edge.tok.sig"),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `unreachable hosts fall back to the main master`() = runTest {
+        coEvery { api.getText("https://fenixplay.xyz/embed/abc.def") } returns resource("fenix-embed-page.html")
+        coEvery { api.isReachable(any(), any()) } returns false
+
+        val result = createRepository().getStreams("https://fenixplay.xyz/embed/abc.def?ep=2&edition=tv", "FanVoxUa")
+
+        assertEquals(
+            FenixStreamsResult.Success(
+                FenixStreams("https://media.fenixplay.xyz/anime/friren/ep002/fanvox/master.m3u8?v=2&token=media.tok.sig"),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `page without an edge keeps the main master and probes nothing`() = runTest {
+        coEvery { api.getText("https://fenixplay.xyz/vod/qtv.sig") } returns resource("fenix-vod-page.html")
+
+        val result = createRepository().getStreams("https://fenixplay.xyz/vod/qtv.sig", null)
+        coVerify(exactly = 0) { api.isReachable(any(), any()) }
+
+        assertEquals(
+            FenixStreamsResult.Success(
+                FenixStreams("https://media.fenixplay.xyz/anime/naruto/ep001/qtv/master.m3u8?v=9&token=vod.tok.sig"),
             ),
             result,
         )

@@ -15,6 +15,8 @@ private val DUBBING_LOGOS: Map<String, Int> = mapOf(
     "anilibria" to R.drawable.dub_anilibria,
     "animaunt" to R.drawable.dub_animaunt,
     "aniliberty" to R.drawable.dub_aniliberty,
+    "ailiberty" to R.drawable.dub_ailiberty,
+    "animebesst" to R.drawable.dub_animebesst,
     "mcentertainment" to R.drawable.dub_mc_entertainment,
     "kansai" to R.drawable.dub_kansai,
     "kansaistudio" to R.drawable.dub_kansai,
@@ -50,6 +52,20 @@ private val DUBBING_LOGOS: Map<String, Int> = mapOf(
     "coldfilm" to R.drawable.dub_coldfilm,
     "amber" to R.drawable.dub_amber,
     "studioamber" to R.drawable.dub_amber,
+    "newcomers" to R.drawable.dub_newcomers,
+    "takeoverproject" to R.drawable.dub_takeover_project,
+    "takeover" to R.drawable.dub_takeover_project,
+    "miraidub" to R.drawable.dub_mirai_dub,
+    "mirai" to R.drawable.dub_mirai_dub,
+    "beesound" to R.drawable.dub_beesound,
+    "anifame" to R.drawable.dub_anifame,
+    "anibreeze" to R.drawable.dub_anibreeze,
+    "amanogawa" to R.drawable.dub_amanogawa,
+    "nextvoice" to R.drawable.dub_nextvoice,
+    "flarrowfilms" to R.drawable.dub_flarrow_films,
+    "flarrow" to R.drawable.dub_flarrow_films,
+    "steponee" to R.drawable.dub_steponee,
+    "stepone" to R.drawable.dub_steponee,
     "foxforce" to R.drawable.dub_foxforce,
     "panzuinfo" to R.drawable.dub_panzu_info,
     "ktr" to R.drawable.dub_ktr,
@@ -113,16 +129,50 @@ private val DUBBING_LOGOS: Map<String, Int> = mapOf(
     "ruchime" to R.drawable.dub_ruchime,
     "animy" to R.drawable.dub_animy,
     "тодубляжная" to R.drawable.dub_dublyajnaya,
+    "артдубляж" to R.drawable.dub_art_dublyazh,
+    "artdublyazh" to R.drawable.dub_art_dublyazh,
+    "мосфильммастер" to R.drawable.dub_mosfilm_master,
+    "mosfilmmaster" to R.drawable.dub_mosfilm_master,
+    "невафильм" to R.drawable.dub_nevafilm,
+    "nevafilm" to R.drawable.dub_nevafilm,
+    "odaletydub" to R.drawable.dub_odalety_dub,
+    "odalety" to R.drawable.dub_odalety_dub,
+    "mda" to R.drawable.dub_mda,
+    "lightfamily" to R.drawable.dub_light_family,
+    "fanvoxua" to R.drawable.dub_fanvox_ua,
+    "fanvox" to R.drawable.dub_fanvox_ua,
+    "ріднийголос" to R.drawable.dub_ridnyi_holos,
+    "иньянвойс" to R.drawable.dub_yin_yang_voice,
+    "иньяньвойс" to R.drawable.dub_yin_yang_voice,
+    "yinyangvoice" to R.drawable.dub_yin_yang_voice,
     "anicosmic" to R.drawable.dub_anicosmic,
     "anirai" to R.drawable.dub_anirai,
     "jam" to R.drawable.dub_jam,
+    "jamclub" to R.drawable.dub_jam,
     "ruanime" to R.drawable.dub_ruanime,
     "руаниме" to R.drawable.dub_ruanime,
     "deep" to R.drawable.dub_deep,
 )
 
 /** Ключи внешних источников (отдельные модули каталога source): у них вместо логотипа — значок пазла. */
-private val EXTERNAL_SOURCE_KEYS = setOf("anistar", "amedia", "aniboom", "animeboom", "anilibria", "4k", "anime4k")
+private val EXTERNAL_SOURCE_KEYS = setOf(
+    "anistar",
+    "amedia",
+    "aniboom",
+    "animeboom",
+    "anilibria",
+    "4k",
+    "anime4k",
+    "ailiberty",
+    "anidub",
+    "animebesst",
+    "animeon",
+    "animevost",
+    "dreamcast",
+    "mikai",
+    "ashdi",
+    "fenix",
+)
 
 /** Нормализованный ключ названия: без служебных префиксов («Озвучка », «Плеер »), регистра и знаков. */
 internal fun String.logoKey(): String {
@@ -140,6 +190,6 @@ fun dubbingLogoRes(name: String): Int? = DUBBING_LOGOS[name.logoKey()]
 @Suppress("UNUSED_PARAMETER")
 fun balancerLogoRes(name: String): Int? = null
 
-/** Значок балансера: пазл у внешних источников (Anistar, Amedia, AniBoom, 4K, AniLibria), иначе play. */
+/** Значок балансера: пазл у внешних источников (все модули каталога source), иначе play. */
 fun balancerFallbackIcon(name: String): ImageVector =
     if (name.logoKey() in EXTERNAL_SOURCE_KEYS) Icons.Filled.Extension else Icons.Filled.PlayCircle

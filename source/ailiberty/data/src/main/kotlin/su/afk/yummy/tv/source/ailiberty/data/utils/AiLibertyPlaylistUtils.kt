@@ -10,7 +10,7 @@ internal const val AILIBERTY_BASE_URL = "https://ailiberty.top"
 
 /** Скрипт плеера Playerjs: `file: [...]`, дальше `default_quality` (запасной вариант — до закрывающей скобки объекта). */
 private val PLAYLIST = Regex("""file\s*:\s*(\[.*?])\s*,?\s*default_quality""", RegexOption.DOT_MATCHES_ALL)
-private val PLAYLIST_FALLBACK = Regex("""file\s*:\s*(\[.*?])\s*}""", RegexOption.DOT_MATCHES_ALL)
+private val PLAYLIST_FALLBACK = Regex("""file\s*:\s*(\[.*?])\s*\}""", RegexOption.DOT_MATCHES_ALL)
 
 /** `[480p]/video/….m3u8?expires=…,[720p]/video/….m3u8` — у каждого качества свой адрес. */
 private val QUALITY_LINK = Regex("""\[(\d{3,4})p]([^\[,]+)""")

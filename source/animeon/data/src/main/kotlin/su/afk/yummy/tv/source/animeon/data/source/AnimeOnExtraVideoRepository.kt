@@ -44,8 +44,8 @@ internal class AnimeOnExtraVideoRepository @Inject constructor(
                     val ids = parts.map { it.toIntOrNull()?.takeIf { id -> id > 0 } ?: return@flatMap emptyList() }
                     ids[0] to ids[1]
                 }
-                // Озвучка в Fenix остаётся с пометкой плеера: часто та же есть и в Ashdi, а эти варианты нужно отличать.
-                val dubbing = if (suffix == FENIX_SUFFIX) title else title.removeSuffix(suffix)
+                val dubbing = title.removeSuffix(suffix)
+                val player = if (suffix == FENIX_SUFFIX) ANIMEON_FENIX_PLAYER else ANIMEON_ASHDI_PLAYER
                 variant.episodes.map { episode ->
                     val url = AnimeOnTarget(availability.key, translationId, playerId, episode.number).toSourceUrl()
                     AnimeVideo(
@@ -53,7 +53,7 @@ internal class AnimeOnExtraVideoRepository @Inject constructor(
                         id = -(url.hashCode() and Int.MAX_VALUE) - 1,
                         episode = episode.number.toString(),
                         dubbing = dubbing,
-                        player = PLAYER_NAME,
+                        player = player,
                         playerId = null,
                         iframeUrl = url,
                         durationSeconds = null,
@@ -64,7 +64,6 @@ internal class AnimeOnExtraVideoRepository @Inject constructor(
 
     private companion object {
         const val SOURCE_ID = "animeon"
-        const val PLAYER_NAME = "AnimeON"
         const val FENIX_SUFFIX = " ($ANIMEON_FENIX_PLAYER)"
         val PLAYER_SUFFIXES = listOf(" ($ANIMEON_ASHDI_PLAYER)", FENIX_SUFFIX)
     }

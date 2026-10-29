@@ -12,7 +12,7 @@ import su.afk.yummy.tv.source.mikai.data.utils.mikaiVodId
 import javax.inject.Inject
 
 /**
- * Добавляет балансер «Mikai» (украинская озвучка и субтитры). Наличие тайтла приходит из общей ручки наличия на сервере YummyTV:
+ * Добавляет балансеры «Ashdi» и «Fenix» от агрегатора Mikai (украинская озвучка и субтитры). Наличие тайтла приходит из общей ручки наличия на сервере YummyTV:
  * вариант — команда на одном провайдере плеера (`key` = `провайдер:id команды`, `title` — имя команды), у серии `id` — запись
  * в плеере (у Fenix — токен серии). Играются провайдеры Ashdi и Fenix, остальные варианты пропускаются; озвучки-субтитры Fenix
  * тоже: субтитры его плеера приложение не подключает, и серия играла бы без текста. Ссылок на файлы здесь нет: поток берётся
@@ -24,6 +24,9 @@ internal class MikaiExtraVideoRepository @Inject constructor(
 ) : ExtraVideoRepository {
 
     override val sourceId: String = SOURCE_ID
+
+    /** Выше AnimeON: у Mikai есть прямые id серий плеера, а те же Ashdi/Fenix у AnimeON идут через его сайт. */
+    override val priority: Int = 1
 
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val lookup = AvailabilityLookup(
@@ -42,8 +45,7 @@ internal class MikaiExtraVideoRepository @Inject constructor(
             .flatMap { variant ->
                 val team = variant.title ?: return@flatMap emptyList()
                 val withSubs = if (variant.isSubs) team + messages.subsSuffix else team
-                // Озвучка в Fenix остаётся с пометкой плеера: та же команда часто есть и в Ashdi, а эти варианты нужно отличать.
-                val dubbing = if (isFenix(variant.key)) "$withSubs$FENIX_DUBBING_SUFFIX" else withSubs
+                val player = if (isFenix(variant.key)) FENIX_PLAYER else ASHDI_PLAYER
                 variant.episodes.mapNotNull { episode ->
                     val url = if (isFenix(variant.key)) {
                         mikaiFenixSourceUrl(mikaiFenixToken(episode.id, episode.url) ?: return@mapNotNull null)
@@ -54,8 +56,8 @@ internal class MikaiExtraVideoRepository @Inject constructor(
                         // Отрицательный id: серверу Yani такие видео неизвестны, прогресс остаётся локальным.
                         id = -(url.hashCode() and Int.MAX_VALUE) - 1,
                         episode = episode.number.toString(),
-                        dubbing = dubbing,
-                        player = PLAYER_NAME,
+                        dubbing = withSubs,
+                        player = player,
                         playerId = null,
                         iframeUrl = url,
                         durationSeconds = null,
@@ -70,9 +72,9 @@ internal class MikaiExtraVideoRepository @Inject constructor(
 
     private companion object {
         const val SOURCE_ID = "mikai"
-        const val PLAYER_NAME = "Mikai"
+        const val ASHDI_PLAYER = "Ashdi"
+        const val FENIX_PLAYER = "Fenix"
         const val ASHDI_KEY_PREFIX = "ashdi:"
         const val FENIX_KEY_PREFIX = "fenix:"
-        const val FENIX_DUBBING_SUFFIX = " (Fenix)"
     }
 }

@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.deeplink.api.DeepLinkResolver
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.deeplink.AnimeSiteLinkDeepLinkResolver
 import su.afk.yummy.tv.feature.details.deeplink.DetailsDeepLinkResolver
+import su.afk.yummy.tv.feature.details.deeplink.EpisodesDeepLinkResolver
 import su.afk.yummy.tv.feature.details.navigator.DetailsNavigator
 import javax.inject.Singleton
 
@@ -23,6 +24,10 @@ internal interface DetailsNavigatorModule {
     @Binds
     @IntoSet
     fun bindDetailsDeepLinkResolver(impl: DetailsDeepLinkResolver): DeepLinkResolver
+
+    @Binds
+    @IntoSet
+    fun bindEpisodesDeepLinkResolver(impl: EpisodesDeepLinkResolver): DeepLinkResolver
 
     @Binds
     @IntoSet

@@ -5,6 +5,8 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import java.io.IOException
 import javax.inject.Inject
@@ -20,4 +22,14 @@ internal class FenixApi @Inject constructor(
         if (!response.status.isSuccess()) throw IOException("Fenix: HTTP ${response.status.value}")
         return response.bodyAsText()
     }
+
+    /** Отвечает ли [url] успешно с первым байтом за [timeoutMs]; сеть и таймаут — `false`, а не ошибка. */
+    suspend fun isReachable(url: String, timeoutMs: Long): Boolean =
+        try {
+            withTimeout(timeoutMs) { client.get(url).status.isSuccess() }
+        } catch (_: TimeoutCancellationException) {
+            false
+        } catch (_: IOException) {
+            false
+        }
 }

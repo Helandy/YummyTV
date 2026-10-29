@@ -2,7 +2,7 @@ package su.afk.yummy.tv.source.animevost.data.utils
 
 internal const val ANIMEVOST_BASE_URL = "https://animevost.org"
 
-private val DATA = Regex("""var data = \{(.*?)}\s*;""", RegexOption.DOT_MATCHES_ALL)
+private val DATA = Regex("""var data = \{(.*?)\}\s*;""", RegexOption.DOT_MATCHES_ALL)
 private val DATA_ITEM = Regex(""""([^"]*)"\s*:\s*"(\d{1,18})"""")
 private val EPISODE_LABEL = Regex("""^\s*(\d{1,4})\s*сери""", RegexOption.IGNORE_CASE)
 private val DOWNLOAD_LINK = Regex("""download="invoice"[^>]*href="(https?://[^"]+)"[^>]*>\s*(\d{3,4})p""")

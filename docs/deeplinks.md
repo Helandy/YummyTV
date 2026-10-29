@@ -25,6 +25,7 @@
 |--------------------------------|----------------------------|-----------------------------------|----------------------------------------------------------------------------|
 | `yummytv://home`               | нет                        | `RootTabDeepLinkResolver`         | вкладка «Главная»                                                          |
 | `yummytv://details/{animeId}`  | `animeId` — Int            | `DetailsDeepLinkResolver`         | детали тайтла                                                              |
+| `yummytv://episodes/{animeId}` | `animeId` — Int            | `EpisodesDeepLinkResolver`        | экран выбора серии тайтла                                                  |
 | `yummytv://collection/{id}`    | `id` — Int                 | `CollectionDeepLinkResolver`      | подборка                                                                   |
 | `yummytv://downloads`          | нет                        | `VideoDownloadDeepLinkResolver`   | экран загрузок                                                             |
 | `yummytv://continue/{animeId}` | `animeId` — Int            | `ContinueWatchingDeepLinkResolver`| «Продолжить»: плеер на записи просмотра, без записи или цели — детали      |

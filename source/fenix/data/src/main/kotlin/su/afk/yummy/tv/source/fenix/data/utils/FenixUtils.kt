@@ -4,6 +4,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.source.fenix.data.dto.FenixAccessDto
 import su.afk.yummy.tv.source.fenix.data.dto.FenixPlaylistDto
+import su.afk.yummy.tv.source.fenix.data.model.FenixEdgeAccess
 import su.afk.yummy.tv.source.fenix.data.model.FenixPage
 
 private const val DEFAULT_EDITION = "tv"
@@ -39,6 +40,28 @@ internal fun fenixPlaylist(html: String): FenixPlaylistDto? =
 /** Токен доступа к медиа из `window.FENIX_MEDIA_ACCESS = {…}`. */
 internal fun fenixAccessToken(html: String): String? =
     jsonObjectAfter(html, ACCESS_MARKER)?.let { decode<FenixAccessDto>(it) }?.token?.takeIf { it.isNotBlank() }
+
+/** Запасной медиа-хост и его токен из `FENIX_MEDIA_ACCESS.edge`; `null`, если страница его не даёт или хост чужой. */
+internal fun fenixEdgeAccess(html: String): FenixEdgeAccess? {
+    val edge = jsonObjectAfter(html, ACCESS_MARKER)?.let { decode<FenixAccessDto>(it) }?.edge ?: return null
+    val origin = edge.origin?.trimEnd('/')?.takeIf { MEDIA_URL.containsMatchIn("$it/") } ?: return null
+    val token = edge.token?.takeIf { it.isNotBlank() } ?: return null
+    return FenixEdgeAccess(origin, token)
+}
+
+/**
+ * Тот же мастер на запасном хосте: путь и query сохраняются, origin заменяется, вместо `token` идёт `edge` — так же делает
+ * официальный плеер при медленном основном хосте. `null` для чужого адреса мастера.
+ */
+internal fun signedFenixEdgeMaster(master: String, edge: FenixEdgeAccess): String? {
+    val match = MEDIA_URL.find(master) ?: return null
+    val rest = master.substring(match.range.last)
+    val base = rest.substringBefore('#')
+    val path = base.substringBefore('?')
+    val query = base.substringAfter('?', "").split('&')
+        .filter { it.isNotEmpty() && !it.startsWith("token=") && !it.startsWith("edge=") }
+    return edge.origin + path + "?" + (query + "edge=${edge.token}").joinToString("&")
+}
 
 /**
  * HLS-мастер выбранной озвучки серии. На `/vod/` серия одна, озвучка — та, чей `vod_url` равен адресу страницы. На `/embed/`

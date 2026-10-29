@@ -1,14 +1,16 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -73,107 +75,108 @@ internal fun MobilePlayerSettingsSheet(
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
         HideSheetWindowSystemBars()
 
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(maxHeight)
-                .windowInsetsPadding(WindowInsets.navigationBars),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item {
-                Text(
-                    text = stringResource(R.string.player_mobile_track_settings_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 2.dp),
-                )
-            }
-            item {
-                val dubbingLabel = stringResource(R.string.player_dubbing_title)
-                val playerLabel = stringResource(R.string.player_name_prefix)
-                MobilePlayerTrackSettingsTabs(
-                    tabs = trackTabs,
-                    selectedTab = trackTabs[trackPagerState.currentPage],
-                    labelFor = { tab ->
-                        when (tab) {
-                            MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
-                            MobilePlayerTrackSettingsTab.Player -> playerLabel
-                        }
-                    },
-                    onTabSelected = { tab ->
-                        scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
-                    },
-                )
-            }
-            item {
-                HorizontalPager(
-                    state = trackPagerState,
-                    verticalAlignment = Alignment.Top,
-                    pageSpacing = 16.dp,
-                    modifier = Modifier.fillMaxWidth(),
-                ) { page ->
+            Text(
+                text = stringResource(R.string.player_mobile_track_settings_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 2.dp),
+            )
+            val dubbingLabel = stringResource(R.string.player_dubbing_title)
+            val playerLabel = stringResource(R.string.player_name_prefix)
+            MobilePlayerTrackSettingsTabs(
+                tabs = trackTabs,
+                selectedTab = trackTabs[trackPagerState.currentPage],
+                labelFor = { tab ->
+                    when (tab) {
+                        MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
+                        MobilePlayerTrackSettingsTab.Player -> playerLabel
+                    }
+                },
+                onTabSelected = { tab ->
+                    scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
+                },
+            )
+            HorizontalPager(
+                state = trackPagerState,
+                verticalAlignment = Alignment.Top,
+                pageSpacing = 16.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) { page ->
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     when (trackTabs[page]) {
-                        MobilePlayerTrackSettingsTab.Dubbing ->
-                            MobilePlayerSettingsSection(title = stringResource(R.string.player_dubbing_title)) {
-                                dubbingNames.forEachIndexed { index, name ->
-                                    val enabled = dubbingAvailability.getOrElse(index) { true }
-                                    MobilePlayerSelectionRow(
-                                        label = name,
-                                        selected = index == selectedDubbingIndex,
-                                        enabled = enabled,
-                                        accentLabel = true,
-                                        logoRes = dubbingLogoRes(name),
-                                        logoFallbackIcon = Icons.Filled.Mic,
-                                        metaContent = { contentColor ->
-                                            if (enabled) {
-                                                MobilePlayerDubbingMeta(
-                                                    views = dubbingViews.getOrElse(index) { 0 },
-                                                    episodeCount = dubbingEpisodeCounts.getOrElse(
-                                                        index
-                                                    ) { 0 },
-                                                    sourceNames = dubbingSourceNames.getOrElse(
-                                                        index
-                                                    ) { "" },
-                                                    contentColor = contentColor,
-                                                )
-                                            } else {
-                                                Text(
-                                                    text = stringResource(R.string.player_episode_unavailable),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = contentColor.copy(alpha = 0.68f),
-                                                )
-                                            }
-                                        },
-                                        onClick = { onDubbingSelected(index) },
-                                    )
-                                }
+                        MobilePlayerTrackSettingsTab.Dubbing -> {
+                            item(key = "title") {
+                                MobilePlayerSettingsSection(title = stringResource(R.string.player_dubbing_title)) {}
                             }
+                            itemsIndexed(dubbingNames, key = { index, name -> "$index-$name" }) { index, name ->
+                                val enabled = dubbingAvailability.getOrElse(index) { true }
+                                MobilePlayerSelectionRow(
+                                    label = name,
+                                    selected = index == selectedDubbingIndex,
+                                    enabled = enabled,
+                                    accentLabel = true,
+                                    logoRes = dubbingLogoRes(name),
+                                    logoFallbackIcon = Icons.Filled.Mic,
+                                    metaContent = { contentColor ->
+                                        if (enabled) {
+                                            MobilePlayerDubbingMeta(
+                                                views = dubbingViews.getOrElse(index) { 0 },
+                                                episodeCount = dubbingEpisodeCounts.getOrElse(index) { 0 },
+                                                sourceNames = dubbingSourceNames.getOrElse(index) { "" },
+                                                contentColor = contentColor,
+                                            )
+                                        } else {
+                                            Text(
+                                                text = stringResource(R.string.player_episode_unavailable),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = contentColor.copy(alpha = 0.68f),
+                                            )
+                                        }
+                                    },
+                                    onClick = { onDubbingSelected(index) },
+                                )
+                            }
+                        }
 
-                        MobilePlayerTrackSettingsTab.Player ->
-                            MobilePlayerSettingsSection(title = stringResource(R.string.player_name_prefix)) {
-                                balancerNames.forEachIndexed { index, name ->
-                                    val enabled = balancerAvailability.getOrElse(index) { true }
-                                    MobilePlayerSelectionRow(
-                                        label = name,
-                                        selected = index == selectedBalancerIndex,
-                                        enabled = enabled,
-                                        accentLabel = true,
-                                        logoRes = balancerLogoRes(name),
-                                        logoFallbackIcon = balancerFallbackIcon(name),
-                                        metaContent = { contentColor ->
-                                            if (!enabled) {
-                                                Text(
-                                                    text = stringResource(R.string.player_episode_unavailable),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = contentColor.copy(alpha = 0.68f),
-                                                )
-                                            }
-                                        },
-                                        onClick = { onBalancerSelected(index) },
-                                    )
-                                }
+                        MobilePlayerTrackSettingsTab.Player -> {
+                            item(key = "title") {
+                                MobilePlayerSettingsSection(title = stringResource(R.string.player_name_prefix)) {}
                             }
+                            itemsIndexed(balancerNames, key = { index, name -> "$index-$name" }) { index, name ->
+                                val enabled = balancerAvailability.getOrElse(index) { true }
+                                MobilePlayerSelectionRow(
+                                    label = name,
+                                    selected = index == selectedBalancerIndex,
+                                    enabled = enabled,
+                                    accentLabel = true,
+                                    logoRes = balancerLogoRes(name),
+                                    logoFallbackIcon = balancerFallbackIcon(name),
+                                    metaContent = { contentColor ->
+                                        if (!enabled) {
+                                            Text(
+                                                text = stringResource(R.string.player_episode_unavailable),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = contentColor.copy(alpha = 0.68f),
+                                            )
+                                        }
+                                    },
+                                    onClick = { onBalancerSelected(index) },
+                                )
+                            }
+                        }
                     }
                 }
             }

@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.MaterialTheme
@@ -66,12 +66,8 @@ internal fun TvPlayerNextEpisodeSourcesPrompt(
                 )
             }
         }
-        Column(
-            modifier = Modifier
-                .heightIn(max = 300.dp)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            options.forEachIndexed { index, option ->
+        LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+            itemsIndexed(options, key = { index, option -> "$index-${option.dubbing}" }) { index, option ->
                 PlayerSelectionItem(
                     label = option.dubbing,
                     metaContent = { color ->

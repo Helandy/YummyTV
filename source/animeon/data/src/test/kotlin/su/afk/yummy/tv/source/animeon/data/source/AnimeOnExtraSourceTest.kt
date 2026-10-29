@@ -69,8 +69,9 @@ class AnimeOnExtraSourceTest : BaseUnitTest() {
         assertEquals(listOf("1", "2", "1", "2"), videos.map { it.episode })
         assertEquals("source://animeon/924/2/1093/1209", videos[1].iframeUrl)
         assertEquals("source://animeon/924/1/1093/9061", videos[2].iframeUrl)
-        assertEquals(listOf("FanVoxUA", "FanVoxUA", "FanVoxUA (Fenix)", "FanVoxUA (Fenix)"), videos.map { it.dubbing })
-        assertTrue(videos.all { it.player == "AnimeON" && it.id < 0 })
+        assertEquals(listOf("FanVoxUA", "FanVoxUA", "FanVoxUA", "FanVoxUA"), videos.map { it.dubbing })
+        assertEquals(listOf("Ashdi", "Ashdi", "Fenix", "Fenix"), videos.map { it.player })
+        assertTrue(videos.all { it.id < 0 })
         assertEquals(videos.size, videos.map { it.id }.toSet().size)
     }
 

@@ -28,6 +28,7 @@ import su.afk.yummy.tv.feature.player.utils.isBalancerAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
+import su.afk.yummy.tv.feature.player.utils.withExtraSourceName
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.streamQualities
 
@@ -113,6 +114,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         adaptiveLimitBest = adaptiveCeilingHeight >= QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
         errorBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix)
+            .withExtraSourceName(activeIframeUrl(this))
             .takeIf { it.isNotBlank() && !isOfflinePlayback },
         canChangePlayer = canChangePlayer,
         canChangeDubbing = canChangeDubbing,

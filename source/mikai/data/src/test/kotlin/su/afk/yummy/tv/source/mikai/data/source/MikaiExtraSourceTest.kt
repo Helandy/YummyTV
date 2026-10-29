@@ -76,13 +76,14 @@ class MikaiExtraSourceTest : BaseUnitTest() {
                 "QTV" to "source://mikai/ashdi/100",
                 "QTV" to "source://mikai/ashdi/101",
                 "Amanogawa (subs)" to "source://mikai/ashdi/200",
-                "QTV (Fenix)" to "source://mikai/fenix/eyJ0.sig-1",
-                "QTV (Fenix)" to "source://mikai/fenix/eyJ1.sig-2",
+                "QTV" to "source://mikai/fenix/eyJ0.sig-1",
+                "QTV" to "source://mikai/fenix/eyJ1.sig-2",
             ),
             videos.map { it.dubbing to it.iframeUrl },
         )
         assertEquals(listOf("1", "2", "1", "1", "2"), videos.map { it.episode })
-        assertTrue(videos.all { it.player == "Mikai" && it.id < 0 })
+        assertEquals(listOf("Ashdi", "Ashdi", "Ashdi", "Fenix", "Fenix"), videos.map { it.player })
+        assertTrue(videos.all { it.id < 0 })
         assertEquals(videos.size, videos.map { it.id }.toSet().size)
     }
 

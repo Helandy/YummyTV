@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import su.afk.yummy.tv.source.fenix.data.model.FenixEdgeAccess
 import su.afk.yummy.tv.source.fenix.data.model.FenixPage
 
 class FenixUtilsTest {
@@ -85,5 +86,22 @@ class FenixUtilsTest {
         assertNull(signedFenixMaster("https://fenixplay.xyz.evil.example/m.m3u8", "t"))
         assertNull(signedFenixMaster("http://media.fenixplay.xyz/m.m3u8", "t"))
         assertNotNull(signedFenixMaster("https://cf-media.fenixplay.xyz/m.m3u8", "t"))
+    }
+
+    @Test
+    fun `edge master keeps path and query and swaps the token`() {
+        val edge = fenixEdgeAccess(embedPage)
+        assertEquals(FenixEdgeAccess("https://cf-media.fenixplay.xyz", "edge.tok.sig"), edge)
+        assertEquals(
+            "https://cf-media.fenixplay.xyz/a/m.m3u8?v=1&edge=edge.tok.sig",
+            signedFenixEdgeMaster("https://media.fenixplay.xyz/a/m.m3u8?v=1&token=old", edge!!),
+        )
+        assertEquals(
+            "https://cf-media.fenixplay.xyz/a/m.m3u8?edge=edge.tok.sig",
+            signedFenixEdgeMaster("https://media.fenixplay.xyz/a/m.m3u8", edge),
+        )
+        assertNull(signedFenixEdgeMaster("https://evil.example/a/m.m3u8", edge))
+        assertNull(fenixEdgeAccess("<html>no player</html>"))
+        assertNull(fenixEdgeAccess("window.FENIX_MEDIA_ACCESS={\"token\":\"t\",\"edge\":{\"origin\":\"https://evil.example\",\"token\":\"e\"}}"))
     }
 }

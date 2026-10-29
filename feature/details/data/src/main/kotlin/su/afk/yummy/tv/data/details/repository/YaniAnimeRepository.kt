@@ -36,29 +36,29 @@ import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.storage.document.getOrFetchJson
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
+import su.afk.yummy.tv.data.details.dto.MalEpisodesDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationsDto
-import su.afk.yummy.tv.data.details.dto.MalEpisodesDto
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 import su.afk.yummy.tv.data.details.mapper.AnimeRelationCachePayload
 import su.afk.yummy.tv.data.details.mapper.ExtraVideosCachePayload
-import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
 import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
-import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
+import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
+import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
-import su.afk.yummy.tv.data.details.utils.isFullyAired
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsWithReactions
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailersCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideosCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeWatchProgress
+import su.afk.yummy.tv.data.details.utils.isFullyAired
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationKind
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationReference
@@ -67,11 +67,11 @@ import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import su.afk.yummy.tv.domain.anime.utils.mergeExtraDubbings
 import su.afk.yummy.tv.domain.anime.utils.retainBaseDubbings
+import java.util.concurrent.ConcurrentHashMap
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAnimeDetails
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailers as toStoredAnimeTrailers
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideos as toStoredAnimeVideos
-import java.util.concurrent.ConcurrentHashMap
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 5 * 60 * 1000L
@@ -84,6 +84,7 @@ private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
 private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info"
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
+
 // v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
 private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v2"
 private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 30 * 24 * 60 * 60 * 1000L
@@ -204,10 +205,12 @@ class YaniAnimeRepository(
         base: List<AnimeVideo>,
         fetched: List<Pair<ExtraVideoRepository, List<AnimeVideo>>>,
     ): List<AnimeVideo> {
-        val extras = fetched.flatMap { (repository, videos) ->
-            val merged = mergeExtraDubbings(base, videos)
-            if (repository.requiresMatchingDubbing) retainBaseDubbings(base, merged) else merged
-        }
+        // Стабильная сортировка: при равном приоритете порядок источников прежний.
+        val extras = fetched.sortedByDescending { (repository, _) -> repository.priority }
+            .flatMap { (repository, videos) ->
+                val merged = mergeExtraDubbings(base, videos)
+                if (repository.requiresMatchingDubbing) retainBaseDubbings(base, merged) else merged
+            }
         return if (extras.isEmpty()) base else base + extras
     }
 
