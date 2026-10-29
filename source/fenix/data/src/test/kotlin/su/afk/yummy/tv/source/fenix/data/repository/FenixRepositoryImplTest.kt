@@ -102,6 +102,31 @@ class FenixRepositoryImplTest : BaseUnitTest() {
     }
 
     @Test
+    fun `indexed page takes the streams of its own track from the playback api`() = runTest {
+        coEvery { api.getText("https://fenixplay.xyz/vod/own.sig") } returns resource("fenix-vod-page-indexed.html")
+        coEvery {
+            api.getPlayback("/api/playback/chorna-konyushyna-sezon-2/episodes/tv/1", "playback.tok.sig")
+        } returns resource("fenix-playback-episode.json")
+
+        val result = createRepository().getStreams("https://fenixplay.xyz/vod/own.sig#embed=x&ep=1", null)
+
+        assertEquals(
+            FenixStreamsResult.Success(
+                FenixStreams("https://media.fenixplay.xyz/anime/s2/ep001/own/master.m3u8?v=3&token=vod.tok.sig"),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `indexed page without the playback episode means not found`() = runTest {
+        coEvery { api.getText("https://fenixplay.xyz/vod/own.sig") } returns resource("fenix-vod-page-indexed.html")
+        coEvery { api.getPlayback(any(), any()) } returns null
+
+        assertEquals(FenixStreamsResult.NotFound, createRepository().getStreams("https://fenixplay.xyz/vod/own.sig", null))
+    }
+
+    @Test
     fun `missing page, unknown episode, page without a player and a foreign url mean not found`() = runTest {
         coEvery { api.getText("https://fenixplay.xyz/embed/abc.def") } returns null
         assertEquals(FenixStreamsResult.NotFound, createRepository().getStreams("https://fenixplay.xyz/embed/abc.def?ep=1", null))

@@ -1,0 +1,3 @@
+{"episode":{"id":"ba30","number":1,"edition":"tv","hls_master_url":"https://media.fenixplay.xyz/anime/s2/ep001/own/master.m3u8?v=3","tracks":[
+{"label":"Рідний голос","hls_url":"https://media.fenixplay.xyz/anime/s2/ep001/own/master.m3u8?v=3","is_default":false,"vod_url":"/vod/own.sig"},
+{"label":"Оригінал","hls_url":"https://media.fenixplay.xyz/anime/s2/ep001/orig/master.m3u8?v=3","is_default":true,"vod_url":"/vod/orig.sig"}]},"token":"episode.tok"}

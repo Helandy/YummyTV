@@ -6,7 +6,11 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.source.fenix.data.network.FenixApi
 import su.afk.yummy.tv.source.fenix.data.utils.fenixAccessToken
 import su.afk.yummy.tv.source.fenix.data.utils.fenixEdgeAccess
-import su.afk.yummy.tv.source.fenix.data.utils.fenixMasterUrl
+import su.afk.yummy.tv.source.fenix.data.utils.fenixEpisode
+import su.afk.yummy.tv.source.fenix.data.utils.fenixEpisodeDetail
+import su.afk.yummy.tv.source.fenix.data.utils.fenixEpisodeDetailPath
+import su.afk.yummy.tv.source.fenix.data.utils.fenixEpisodeMaster
+import su.afk.yummy.tv.source.fenix.data.utils.hasStreams
 import su.afk.yummy.tv.source.fenix.data.utils.fenixPlaylist
 import su.afk.yummy.tv.source.fenix.data.utils.parseFenixPage
 import su.afk.yummy.tv.source.fenix.data.utils.signedFenixEdgeMaster
@@ -23,7 +27,7 @@ internal class FenixRepositoryImpl @Inject constructor(
 ) : FenixRepository {
 
     /**
-     * Страница плеера → `FENIX_PLAYLIST` (серия и озвучка) и `FENIX_MEDIA_ACCESS` (токен) → HLS-мастер с токеном в query. Токен
+     * Страница плеера → `FENIX_PLAYLIST` (серия; потоки и озвучки либо в ней, либо отдельным запросом `/api/playback/…`) и `FENIX_MEDIA_ACCESS` (токен) → HLS-мастер с токеном в query. Токен
      * живёт ограниченное время, поэтому страница читается при каждом воспроизведении. Гео-блока у Fenix нет. Основной
      * медиа-хост бывает недоступен или медленен: у страницы есть запасной хост (`edge`), и тот же мастер
      * проверяется на обоих хостах параллельно, см. [firstReachable].
@@ -33,7 +37,15 @@ internal class FenixRepositoryImpl @Inject constructor(
         val html = api.getText("https://fenixplay.xyz${page.path}") ?: return FenixStreamsResult.NotFound
         val playlist = fenixPlaylist(html) ?: return FenixStreamsResult.NotFound
         val token = fenixAccessToken(html) ?: return FenixStreamsResult.NotFound
-        val master = fenixMasterUrl(playlist, page, track)?.let { signedFenixMaster(it, token) }
+        val indexed = fenixEpisode(playlist, page) ?: return FenixStreamsResult.NotFound
+        val episode = if (indexed.hasStreams()) {
+            indexed
+        } else {
+            val path = fenixEpisodeDetailPath(playlist.slug, indexed) ?: return FenixStreamsResult.NotFound
+            val access = playlist.playback?.token?.takeIf { it.isNotBlank() } ?: return FenixStreamsResult.NotFound
+            api.getPlayback(path, access)?.let(::fenixEpisodeDetail) ?: return FenixStreamsResult.NotFound
+        }
+        val master = fenixEpisodeMaster(episode, page, track)?.let { signedFenixMaster(it, token) }
             ?: return FenixStreamsResult.NotFound
         val edgeMaster = fenixEdgeAccess(html)?.let { signedFenixEdgeMaster(master, it) }
             ?: return FenixStreamsResult.Success(FenixStreams(masterUrl = master))

@@ -3,6 +3,8 @@ package su.afk.yummy.tv.source.fenix.data.utils
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.source.fenix.data.dto.FenixAccessDto
+import su.afk.yummy.tv.source.fenix.data.dto.FenixEpisodeDetailDto
+import su.afk.yummy.tv.source.fenix.data.dto.FenixEpisodeDto
 import su.afk.yummy.tv.source.fenix.data.dto.FenixPlaylistDto
 import su.afk.yummy.tv.source.fenix.data.model.FenixEdgeAccess
 import su.afk.yummy.tv.source.fenix.data.model.FenixPage
@@ -12,6 +14,7 @@ private const val FENIX_ORIGIN = "https://fenixplay.xyz"
 
 private val PAGE_URL = Regex("""^https://fenixplay\.xyz(/(vod|embed)/[A-Za-z0-9_.-]{1,2048})(?:\?([^#\s]*))?(?:#.*)?$""")
 private val MEDIA_URL = Regex("""^https://(?:[a-z0-9-]+\.)*fenixplay\.xyz/""")
+private val SLUG = Regex("^[A-Za-z0-9_-]{1,200}$")
 private val PLAYLIST_MARKER = Regex("""FENIX_PLAYLIST\s*=\s*(?=\{)""")
 private val ACCESS_MARKER = Regex("""FENIX_MEDIA_ACCESS\s*=\s*(?=\{)""")
 private val json = Json { ignoreUnknownKeys = true }
@@ -64,24 +67,45 @@ internal fun signedFenixEdgeMaster(master: String, edge: FenixEdgeAccess): Strin
 }
 
 /**
- * HLS-мастер выбранной озвучки серии. На `/vod/` серия одна, озвучка — та, чей `vod_url` равен адресу страницы. На `/embed/`
- * серия — по `ep` и `edition`, озвучка — по названию [track] без учёта регистра. Без совпадения играет дорожка по умолчанию
- * (оригинал). `null`, если серии нет.
+ * Серия страницы. На `/vod/` серия одна, на `/embed/` — по `ep` и `edition`. `null`, если серии нет.
  */
-internal fun fenixMasterUrl(playlist: FenixPlaylistDto, page: FenixPage, track: String?): String? {
-    val episode = if (page.isVod) {
+internal fun fenixEpisode(playlist: FenixPlaylistDto, page: FenixPage): FenixEpisodeDto? =
+    if (page.isVod) {
         playlist.episodes.firstOrNull()
     } else {
-        val number = page.episode ?: return null
+        val number = page.episode
         val edition = page.edition ?: playlist.defaultEdition?.lowercase() ?: DEFAULT_EDITION
-        playlist.episodes.firstOrNull { it.number == number && (it.edition ?: DEFAULT_EDITION).lowercase() == edition }
-    } ?: return null
+        number?.let { playlist.episodes.firstOrNull { it.number == number && it.editionKey() == edition } }
+    }
+
+/** Отдаёт ли серия потоки сама: у страниц нового вида в индексе серий их нет, они приходят отдельным запросом. */
+internal fun FenixEpisodeDto.hasStreams(): Boolean = hlsMasterUrl != null || tracks.any { it.hlsUrl != null }
+
+/** Ключ версии серии (`tv`, …) в нижнем регистре, как его ждёт `GET /api/playback/{slug}/episodes/{edition}/{номер}`. */
+internal fun FenixEpisodeDto.editionKey(): String = (edition ?: DEFAULT_EDITION).lowercase()
+
+/** Путь запроса потоков серии; `null` для испорченного `slug` страницы. */
+internal fun fenixEpisodeDetailPath(slug: String?, episode: FenixEpisodeDto): String? =
+    slug?.takeIf { SLUG.matches(it) }?.let { "/api/playback/$it/episodes/${episode.editionKey()}/${episode.number}" }
+
+/** Серия из ответа `GET /api/playback/…/episodes/…`; `null` для чужого вида ответа. */
+internal fun fenixEpisodeDetail(body: String): FenixEpisodeDto? = decode<FenixEpisodeDetailDto>(body)?.episode
+
+/**
+ * HLS-мастер выбранной озвучки серии. На `/vod/` озвучка — та, чей `vod_url` равен адресу страницы. На `/embed/` — по
+ * названию [track] без учёта регистра. Без совпадения играет дорожка по умолчанию (оригинал). `null`, если потоков нет.
+ */
+internal fun fenixEpisodeMaster(episode: FenixEpisodeDto, page: FenixPage, track: String?): String? {
     val chosen = episode.tracks.firstOrNull { page.isVod && it.vodUrl == page.path }
         ?: track?.let { wanted -> episode.tracks.firstOrNull { it.label.equals(wanted, ignoreCase = true) } }
         ?: episode.tracks.firstOrNull { it.isDefault }
         ?: episode.tracks.firstOrNull()
     return chosen?.hlsUrl ?: episode.hlsMasterUrl
 }
+
+/** Мастер серии прямо из индекса страницы (старый вид страниц); `null`, если серии или потоков в индексе нет. */
+internal fun fenixMasterUrl(playlist: FenixPlaylistDto, page: FenixPage, track: String?): String? =
+    fenixEpisode(playlist, page)?.let { fenixEpisodeMaster(it, page, track) }
 
 /** Мастер с токеном доступа в query. Токен уходит только на хосты Fenix: чужой адрес в плейлисте даёт `null`. */
 internal fun signedFenixMaster(master: String, token: String): String? {

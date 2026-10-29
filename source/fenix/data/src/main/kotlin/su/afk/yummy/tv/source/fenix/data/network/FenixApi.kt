@@ -2,6 +2,7 @@ package su.afk.yummy.tv.source.fenix.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
@@ -18,6 +19,14 @@ internal class FenixApi @Inject constructor(
     /** Текст страницы; `null` при 404. */
     suspend fun getText(url: String): String? {
         val response = client.get(url)
+        if (response.status == HttpStatusCode.NotFound) return null
+        if (!response.status.isSuccess()) throw IOException("Fenix: HTTP ${response.status.value}")
+        return response.bodyAsText()
+    }
+
+    /** Тело ответа `/api/playback/…` с токеном страницы в заголовке `X-Fenix-Playback`; `null` при 404. */
+    suspend fun getPlayback(path: String, token: String): String? {
+        val response = client.get("https://fenixplay.xyz$path") { header("X-Fenix-Playback", token) }
         if (response.status == HttpStatusCode.NotFound) return null
         if (!response.status.isSuccess()) throw IOException("Fenix: HTTP ${response.status.value}")
         return response.bodyAsText()
