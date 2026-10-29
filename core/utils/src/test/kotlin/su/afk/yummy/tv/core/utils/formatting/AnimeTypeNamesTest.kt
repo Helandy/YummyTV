@@ -15,6 +15,11 @@ class AnimeTypeNamesTest : BaseUnitTest() {
     }
 
     @Test
+    fun `short film is shortened`() {
+        assertEquals("Короткий фильм", "Короткометражный фильм".toShortAnimeTypeName())
+    }
+
+    @Test
     fun `case and surrounding spaces do not matter`() {
         assertEquals("Фильм", "  полнометражный ФИЛЬМ ".toShortAnimeTypeName())
     }

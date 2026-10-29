@@ -94,7 +94,7 @@ private fun Modifier.drawTimelineLine(
 }
 
 /** Отрезок между нодами `segment` и `segment + 1`: до текущего приглушён, к текущему яркий, после — пунктир. */
-private fun DrawScope.drawSegment(
+internal fun DrawScope.drawSegment(
     segment: Int,
     currentIndex: Int,
     start: Offset,

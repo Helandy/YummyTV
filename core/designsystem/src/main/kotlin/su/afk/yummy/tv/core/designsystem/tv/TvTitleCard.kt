@@ -45,6 +45,8 @@ fun TvTitleCard(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     caption: String? = null,
+    /** Резерв высоты под [caption], чтобы карточки с короткой и длинной подписью в ряду были одной высоты. */
+    captionMinLines: Int = 1,
     onFocused: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
     width: Dp? = null,
@@ -134,13 +136,14 @@ fun TvTitleCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                if (!caption.isNullOrBlank()) {
+                if (!caption.isNullOrBlank() || captionMinLines > 1) {
                     Text(
-                        text = caption,
+                        text = caption.orEmpty(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         // Отсчёт до серии в одну строку карточки не влезает.
-                        maxLines = 2,
+                        minLines = captionMinLines,
+maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

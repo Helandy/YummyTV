@@ -8,10 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
+import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterType
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.model.anime.urlsByQuality
-import su.afk.yummy.tv.feature.details.mobile.viewingorder.utils.mobileMeta
 
 @Composable
 internal fun ViewingOrderMobileCard(
@@ -30,11 +30,12 @@ internal fun ViewingOrderMobileCard(
         modifier = modifier
             .fillMaxWidth()
             .then(if (selected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, shape) else Modifier),
-        subtitle = item.mobileMeta(),
         caption = item.relation,
+        captionMinLines = 2,
         rating = item.rating,
         animeId = item.animeId,
         posterOverlay = {
+            item.type?.takeIf { it.isNotBlank() }?.let { MobilePosterType(it) }
             if (showIndexAndYear) {
                 ViewingOrderMobileIndex(index)
                 item.year?.let { MobilePosterYear(it) }

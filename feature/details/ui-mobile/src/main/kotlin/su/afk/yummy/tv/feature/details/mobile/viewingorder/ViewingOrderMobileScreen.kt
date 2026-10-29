@@ -3,7 +3,12 @@ package su.afk.yummy.tv.feature.details.mobile.viewingorder
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,12 +20,12 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
-import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.dimensions.MobilePosterGridHorizontalPadding
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.feature.details.mobile.viewingorder.view.ViewingOrderMobileCard
+import su.afk.yummy.tv.feature.details.mobile.viewingorder.view.ViewingOrderTimelineRow
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderState
 
@@ -74,12 +79,24 @@ fun ViewingOrderMobileScreen(
             error = state.error?.asString(),
             empty = state.items.isEmpty() && !state.isLoading,
         ) {
-            MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {
+            val currentIndex = state.items.indexOfFirst { it.animeId == state.currentAnimeId }.coerceAtLeast(0)
+            val listState = rememberLazyListState()
+            LaunchedEffect(state.items.isNotEmpty()) {
+                if (state.items.isNotEmpty()) listState.scrollToItem(currentIndex)
+            }
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 8.dp, end = MobilePosterGridHorizontalPadding, top = 8.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(TimelineRowGap),
+            ) {
                 itemsIndexed(state.items, key = { index, item -> lazyKey("viewingorder", "${item.animeId}:$index", index) }) { index, item ->
-                    ViewingOrderMobileCard(
-                        index = index + 1,
+                    ViewingOrderTimelineRow(
+                        index = index,
+                        currentIndex = currentIndex,
+                        count = state.items.size,
                         item = item,
-                        selected = item.animeId == state.currentAnimeId,
+                        gap = TimelineRowGap,
                         onClick = { onEvent(ViewingOrderState.Event.AnimeSelected(item.animeId)) },
                     )
                 }
@@ -87,3 +104,5 @@ fun ViewingOrderMobileScreen(
         }
     }
 }
+
+private val TimelineRowGap = 12.dp

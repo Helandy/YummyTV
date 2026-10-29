@@ -9,15 +9,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
+import su.afk.yummy.tv.core.designsystem.tv.TvPosterType
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.model.anime.urlsByQuality
-import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCardWidth
 import su.afk.yummy.tv.feature.details.view.common.TvPosterIndex
 
@@ -34,10 +33,6 @@ internal fun ViewingOrderCard(
     showIndexAndYear: Boolean = true,
 ) {
     var focused by remember { mutableStateOf(false) }
-    val meta = listOfNotNull(
-        item.type,
-        item.episodesCount?.let { stringResource(R.string.details_episodes_count_short, it) },
-    ).joinToString(" · ")
 
     TvTitleCard(
         title = item.title,
@@ -52,12 +47,13 @@ internal fun ViewingOrderCard(
                     Modifier
                 },
             ),
-        subtitle = meta,
         caption = item.relation,
+        captionMinLines = 2,
         onFocused = onFocused,
         width = RelatedTitleCardWidth,
         animeId = item.animeId,
         posterOverlay = {
+            item.type?.takeIf { it.isNotBlank() }?.let { TvPosterType(it) }
             if (showIndexAndYear) TvPosterIndex(index)
             item.rating?.let { TvPosterRating(it) }
             if (showIndexAndYear) item.year?.let { TvPosterYear(it) }
