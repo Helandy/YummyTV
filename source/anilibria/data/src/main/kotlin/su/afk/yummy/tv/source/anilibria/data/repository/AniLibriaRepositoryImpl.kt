@@ -2,13 +2,10 @@ package su.afk.yummy.tv.source.anilibria.data.repository
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
 import su.afk.yummy.tv.source.anilibria.data.mapper.AniLibriaMapper
 import su.afk.yummy.tv.source.anilibria.data.network.AniLibriaApi
 import su.afk.yummy.tv.source.anilibria.domain.model.AniLibriaRelease
 import su.afk.yummy.tv.source.anilibria.domain.repository.AniLibriaRepository
-import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
-import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,37 +13,11 @@ import javax.inject.Singleton
 @Singleton
 internal class AniLibriaRepositoryImpl @Inject constructor(
     private val api: AniLibriaApi,
-    private val findAvailability: FindSourceAvailabilityUseCase,
 ) : AniLibriaRepository {
 
     private data class Cached(val release: AniLibriaRelease?, val fetchedAtMs: Long)
 
-    private data class CachedList(val releases: List<AniLibriaRelease>, val fetchedAtMs: Long)
-
-    private val byMalId = ConcurrentHashMap<Int, CachedList>()
     private val byReleaseId = ConcurrentHashMap<Int, Cached>()
-
-    override suspend fun findReleases(malId: Int, titles: List<String>, year: Int?): List<AniLibriaRelease> {
-        val now = System.currentTimeMillis()
-        byMalId[malId]?.let { cached ->
-            val ttl = if (cached.releases.isEmpty()) EMPTY_TTL_MS else TTL_MS
-            if (now - cached.fetchedAtMs < ttl) return cached.releases
-        }
-
-        // Только копия каталога на сервере YummyTV (общая ручка наличия): AniLibria не опрашивается, пока пользователь не запустил
-        // серию. Сбой сервера и «источник не ответил» (серии релизов ещё не прочитаны) в кэш не попадают: исключение уйдёт наверх,
-        // источник просто не появится в этот раз.
-        val sorted = prioritizeAnimeTitles("", titles, MAX_TITLES)
-        val title = sorted.firstOrNull()
-        val releases = if (title == null) {
-            emptyList()
-        } else {
-            val lookup = AvailabilityLookup(malId, title, sorted.drop(1), year, type = null, episodes = null)
-            findAvailability(SOURCE_ID, lookup)?.variants.orEmpty().mapNotNull { AniLibriaMapper.toRelease(malId, it) }
-        }
-        byMalId[malId] = CachedList(releases, System.currentTimeMillis())
-        return releases
-    }
 
     /** Релиз со ссылками на потоки: запрашивается у AniLibria только при запуске серии. */
     override suspend fun getRelease(releaseId: Int): AniLibriaRelease? {
@@ -72,9 +43,6 @@ internal class AniLibriaRepositoryImpl @Inject constructor(
 
     private companion object {
         const val TTL_MS = 30 * 60 * 1000L
-        const val EMPTY_TTL_MS = 5 * 60 * 1000L
         const val RETRY_DELAY_MS = 400L
-        const val MAX_TITLES = 30
-        const val SOURCE_ID = "anilibria"
     }
 }
