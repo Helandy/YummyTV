@@ -30,6 +30,8 @@ internal fun ViewingOrderCard(
     onFocused: () -> Unit = {},
     /** Тайтл, чья страница сейчас открыта: обводка отличается от фокусной и скрывается, пока карточка в фокусе. */
     selected: Boolean = false,
+    /** В ленте хронологии номер и год показывает нода таймлайна, на постере они дублировали бы её. */
+    showIndexAndYear: Boolean = true,
 ) {
     var focused by remember { mutableStateOf(false) }
     val meta = listOfNotNull(
@@ -56,9 +58,9 @@ internal fun ViewingOrderCard(
         width = RelatedTitleCardWidth,
         animeId = item.animeId,
         posterOverlay = {
-            TvPosterIndex(index)
+            if (showIndexAndYear) TvPosterIndex(index)
             item.rating?.let { TvPosterRating(it) }
-            item.year?.let { TvPosterYear(it) }
+            if (showIndexAndYear) item.year?.let { TvPosterYear(it) }
         },
     )
 }

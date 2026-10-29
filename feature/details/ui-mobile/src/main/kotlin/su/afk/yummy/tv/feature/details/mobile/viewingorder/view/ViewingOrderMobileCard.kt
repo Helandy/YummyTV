@@ -20,6 +20,8 @@ internal fun ViewingOrderMobileCard(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** В ленте хронологии номер и год показывает нода таймлайна, на постере они дублировали бы её. */
+    showIndexAndYear: Boolean = true,
 ) {
     val shape = MaterialTheme.shapes.medium
     MobilePosterCard(
@@ -33,8 +35,10 @@ internal fun ViewingOrderMobileCard(
         rating = item.rating,
         animeId = item.animeId,
         posterOverlay = {
-            ViewingOrderMobileIndex(index)
-            item.year?.let { MobilePosterYear(it) }
+            if (showIndexAndYear) {
+                ViewingOrderMobileIndex(index)
+                item.year?.let { MobilePosterYear(it) }
+            }
         },
         onClick = onClick,
     )

@@ -27,7 +27,7 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.mobile.viewingorder.view.ViewingOrderMobileCard
 import su.afk.yummy.tv.feature.details.presentation.R
 
-/** «Вселенная тайтла»: все тайтлы франшизы горизонтальным списком, лента открывается на текущем, «Показать все» ведёт на отдельный экран. */
+/** «Хронология франшизы»: все тайтлы франшизы лентой с таймлайном (год, нода, «ВЫ ЗДЕСЬ»), лента открывается на текущем, «Показать все» ведёт на отдельный экран. */
 @Composable
 internal fun DetailsUniverseSection(
     items: List<AnimeViewingOrderItem>,
@@ -38,13 +38,13 @@ internal fun DetailsUniverseSection(
 ) {
     if (items.size < 2) return
 
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = items.indexOfFirst { it.animeId == currentAnimeId }.coerceAtLeast(0),
-    )
+    val currentIndex = items.indexOfFirst { it.animeId == currentAnimeId }.coerceAtLeast(0)
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = currentIndex)
     // Как ряды на главной: не зависит от настройки размера карточек, ширина равна ячейке сетки.
     CompositionLocalProvider(LocalPosterCardSize provides PosterCardSize.STANDARD) {
         BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
             val cardWidth = currentMobilePosterCellWidth(maxWidth)
+            val spacing = currentMobilePosterSpacing()
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -61,19 +61,29 @@ internal fun DetailsUniverseSection(
                     state = listState,
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = MobilePosterGridHorizontalPadding),
-                    horizontalArrangement = Arrangement.spacedBy(currentMobilePosterSpacing()),
+                    horizontalArrangement = Arrangement.spacedBy(spacing),
                 ) {
                     itemsIndexed(
                         items = items,
                         key = { index, item -> lazyKey("details_universe", "${item.animeId}:$index", index) },
                     ) { index, item ->
-                        ViewingOrderMobileCard(
-                            index = index + 1,
-                            item = item,
-                            selected = item.animeId == currentAnimeId,
-                            onClick = { onAnimeClick(item.animeId) },
-                            modifier = Modifier.width(cardWidth),
-                        )
+                        Column(modifier = Modifier.width(cardWidth)) {
+                            UniverseTimelineNode(
+                                index = index,
+                                currentIndex = currentIndex,
+                                count = items.size,
+                                year = item.year,
+                                typeKind = item.typeKind,
+                                gap = spacing,
+                            )
+                            ViewingOrderMobileCard(
+                                index = index + 1,
+                                item = item,
+                                selected = item.animeId == currentAnimeId,
+                                onClick = { onAnimeClick(item.animeId) },
+                                showIndexAndYear = false,
+                            )
+                        }
                     }
                 }
             }

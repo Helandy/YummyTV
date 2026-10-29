@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeVideoSkipSegment
 import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
+import su.afk.yummy.tv.core.model.anime.AnimeTypeKind
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_CREATOR
@@ -41,6 +42,7 @@ import su.afk.yummy.tv.core.storage.anime.AnimeVideoCacheEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideoEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideosCache
 import su.afk.yummy.tv.core.storage.anime.AnimeViewingOrderEntry
+import su.afk.yummy.tv.data.details.mapper.toAnimeTypeKind
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
@@ -150,6 +152,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
                 title = title,
                 relation = item.data?.text.knownText(),
                 type = item.type?.name.knownText() ?: item.type?.shortname.knownText(),
+                typeKind = item.type.toAnimeTypeKind()?.name,
                 // API не отдаёт количество серий для элементов viewing_order — только код типа
                 // (TV/OVA/фильм и т.д.). Для текущего тайтла берём реальное число серий из
                 // основного ответа; для остальных элементов честно оставляем null.
@@ -488,6 +491,7 @@ private fun AnimeViewingOrderEntry.toAnimeViewingOrderItem(): AnimeViewingOrderI
         title = title,
         relation = relation,
         type = type.toShortAnimeTypeName(),
+        typeKind = AnimeTypeKind.entries.firstOrNull { it.name == typeKind },
         episodesCount = episodesCount,
         poster = posterOrNull(
             small = posterSmallUrl,

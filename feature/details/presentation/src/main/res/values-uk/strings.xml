@@ -173,7 +173,8 @@
     <string name="details_rating_percent">%1$s%%</string>
     <string name="details_mobile_list_stats">У списках</string>
     <string name="details_list_stat_item">%1$s %2$s</string>
-    <string name="details_mobile_title_universe">Всесвіт тайтла</string>
+    <string name="details_mobile_title_universe">Хронологія франшизи</string>
+    <string name="details_universe_you_are_here">ВИ ТУТ</string>
     <string name="details_related_anime">Пов\'язані аніме</string>
     <string name="details_related_anime_count">Пов\'язані аніме</string>
     <string name="details_related_empty">Пов\'язаних аніме не знайдено</string>

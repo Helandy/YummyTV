@@ -455,3 +455,13 @@ internal val MIGRATION_67_68 = object : Migration(67, 68) {
         db.execSQL("DELETE FROM account_video_subscription_caches")
     }
 }
+
+/**
+ * Язык-независимый вид типа тайтла в порядке просмотра (`typeKind`) — по нему рисуется значок на
+ * таймлайне франшизы. У уже закэшированных записей остаётся null до следующего обновления тайтла.
+ */
+internal val MIGRATION_68_69 = object : Migration(68, 69) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE anime_viewing_order ADD COLUMN typeKind TEXT")
+    }
+}

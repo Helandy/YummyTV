@@ -129,7 +129,12 @@ data class YaniAgeRatingDto(
 data class YaniAliasTitleDto(val title: String? = null, val alias: String? = null)
 
 @Serializable
-data class YaniAnimeTypeDto(val name: String? = null, val shortname: String? = null, val value: Int? = null)
+data class YaniAnimeTypeDto(
+    val name: String? = null,
+    val shortname: String? = null,
+    val value: Int? = null,
+    val alias: String? = null,
+)
 
 @Serializable
 data class YaniEpisodesDto(

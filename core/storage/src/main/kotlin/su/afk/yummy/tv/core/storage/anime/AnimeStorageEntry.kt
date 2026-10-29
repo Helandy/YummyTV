@@ -106,6 +106,8 @@ data class AnimeViewingOrderEntry(
     val title: String,
     val relation: String? = null,
     val type: String? = null,
+    /** Имя `AnimeTypeKind`; null у записей, закэшированных до появления поля. */
+    val typeKind: String? = null,
     val episodesCount: Int? = null,
     val posterSmallUrl: String? = null,
     val posterMediumUrl: String? = null,

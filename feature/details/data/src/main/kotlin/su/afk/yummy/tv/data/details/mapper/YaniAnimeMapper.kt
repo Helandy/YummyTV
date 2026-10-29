@@ -126,6 +126,7 @@ private fun YaniViewingOrderItemDto.toViewingOrderItem(
         title = safeTitle,
         relation = data?.text.knownText(),
         type = (type?.name.knownText() ?: type?.shortname.knownText()).toShortAnimeTypeName(),
+        typeKind = type.toAnimeTypeKind(),
         // API не отдаёт количество серий для элементов viewing_order — только код типа
         // (TV/OVA/фильм и т.д.). Для текущего тайтла берём реальное число серий из
         // основного ответа; для остальных элементов честно оставляем null.

@@ -5,6 +5,7 @@ data class AnimeViewingOrderItem(
     val title: String,
     val relation: String?,
     val type: String?,
+    val typeKind: AnimeTypeKind? = null,
     val episodesCount: Int?,
     val poster: AnimePoster?,
     val year: Int?,
