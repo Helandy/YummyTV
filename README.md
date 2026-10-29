@@ -175,7 +175,8 @@
 Встроенный плеер на **Media3 / ExoPlayer** поддерживает:
 
 - выбор качества, озвучки и балансера (Kodik, Aksor, Alloha, CVH, VK, Rutube, Sibnet, Zedfilm,
-  Aniboom, Anistar, Amedia, AniLibria, 4K);
+  Aniboom, Anistar, Amedia, AniLibria, AniDub, AiLiberty, AnimeVost, Animebesst, Ashdi,
+  Fenix, Dream Cast, 4K);
 - скорость, масштаб и зум, автопропуск опенинга/эндинга;
 - переход между сериями и автовоспроизведение следующей;
 - жесты на мобильных (яркость, громкость, перемотка, зум) и управление мышью на TV;
