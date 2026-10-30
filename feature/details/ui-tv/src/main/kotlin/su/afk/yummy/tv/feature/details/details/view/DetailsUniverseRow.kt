@@ -49,7 +49,12 @@ internal fun DetailsUniverseRow(
         )
         LazyRow(
             state = listState,
-            contentPadding = PaddingValues(horizontal = DetailsSectionHorizontalPadding, vertical = 8.dp),
+            contentPadding = PaddingValues(
+                start = DetailsSectionHorizontalPadding,
+                end = DetailsSectionHorizontalPadding,
+                top = 8.dp,
+                bottom = 24.dp,
+            ),
             horizontalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
             itemsIndexed(
