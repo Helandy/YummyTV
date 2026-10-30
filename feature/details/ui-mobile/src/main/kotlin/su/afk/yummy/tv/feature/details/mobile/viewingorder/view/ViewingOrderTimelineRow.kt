@@ -17,15 +17,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
@@ -80,26 +83,32 @@ internal fun ViewingOrderTimelineRow(
                 },
             contentAlignment = Alignment.TopStart,
         ) {
-            Column(
-                modifier = Modifier.width(NodeColumnWidth).padding(top = NodeTopPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            // Нода и год имеют фиксированные размеры, поэтому масштаб шрифта в колонке ограничен.
+            val density = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(density.density, fontScale = density.fontScale.coerceAtMost(MaxGutterFontScale)),
             ) {
-                TimelineNodeBadge(
-                    number = index + 1,
-                    typeKind = item.typeKind,
-                    current = isCurrent,
-                    size = NodeSize,
-                    textStyle = MaterialTheme.typography.labelSmall,
-                )
-                item.year?.let {
-                    Text(
-                        text = it.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        softWrap = false,
-                        modifier = Modifier.padding(top = 4.dp),
+                Column(
+                    modifier = Modifier.width(NodeColumnWidth).padding(top = NodeTopPadding),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    TimelineNodeBadge(
+                        number = index + 1,
+                        typeKind = item.typeKind,
+                        current = isCurrent,
+                        size = NodeSize,
+                        textStyle = MaterialTheme.typography.labelSmall,
                     )
+                    item.year?.let {
+                        Text(
+                            text = it.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
                 }
             }
         }
@@ -158,10 +167,12 @@ internal fun ViewingOrderTimelineRow(
     }
 }
 
-private val GutterWidth = 36.dp
+private val GutterWidth = 48.dp
 private val NodeSize = 26.dp
-private val NodeColumnWidth = 28.dp
+private val NodeColumnWidth = 48.dp
+
 /** Высота подписи года под нодой: 4dp отступ + строка labelSmall. */
 private val YearLabelHeight = 20.dp
 private val NodeTopPadding = 12.dp
 private val PosterWidth = 92.dp
+private const val MaxGutterFontScale = 1.3f
