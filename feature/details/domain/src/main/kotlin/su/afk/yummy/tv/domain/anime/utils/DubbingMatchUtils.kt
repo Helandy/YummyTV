@@ -205,3 +205,25 @@ fun retainBaseDubbings(base: List<AnimeVideo>, merged: List<AnimeVideo>): List<A
     val names = base.map { it.dubbing.trim() }.toSet()
     return merged.filter { it.dubbing.trim() in names }
 }
+
+/**
+ * Склеивает видео источников-расширений, отданные по убыванию приоритета ([su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository.priority]).
+ * Если озвучка, плеер и серия уже есть у более приоритетного источника (AnimeON и Mikai отдают одни и те же Ashdi, Fenix и Moon),
+ * видео менее приоритетного отбрасывается: у него остаются только серии, которых нет у первого. Озвучки сравниваются по ключу,
+ * как в [matchDubbingNames] (регистр, домен и префиксы типа не важны); повторы внутри одного источника не трогаются.
+ */
+fun dropDuplicateExtras(sourcesByPriority: List<List<AnimeVideo>>): List<AnimeVideo> {
+    val taken = HashSet<Triple<String, String, String>>()
+    return sourcesByPriority.flatMap { videos ->
+        val keys = videos.map { it.duplicateKey() }
+        val kept = videos.filterIndexed { index, _ -> keys[index] !in taken }
+        taken += keys
+        kept
+    }
+}
+
+private fun AnimeVideo.duplicateKey(): Triple<String, String, String> {
+    val parsed = dubbing.trim().parseDubbing()
+    val dubbingKey = parsed.exactKey().ifEmpty { dubbing.trim().lowercase() }
+    return Triple("${parsed.kind}|$dubbingKey", player.trim().lowercase(), episode.episodeGroupKey())
+}

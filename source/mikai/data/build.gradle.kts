@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(project(":source:ashdi:domain"))
     implementation(project(":source:fenix:domain"))
+    implementation(project(":source:moon:domain"))
     implementation(project(":source:availability:domain"))
     implementation(project(":core:model"))
     implementation(project(":feature:details:domain"))

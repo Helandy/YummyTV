@@ -7,21 +7,26 @@ import su.afk.yummy.tv.source.ashdi.domain.model.AshdiStreamsResult
 import su.afk.yummy.tv.source.ashdi.domain.usecase.ResolveAshdiStreamsUseCase
 import su.afk.yummy.tv.source.fenix.domain.model.FenixStreamsResult
 import su.afk.yummy.tv.source.fenix.domain.usecase.ResolveFenixStreamsUseCase
+import su.afk.yummy.tv.source.moon.domain.model.MoonStreamsResult
+import su.afk.yummy.tv.source.moon.domain.usecase.ResolveMoonStreamsUseCase
 import su.afk.yummy.tv.source.mikai.data.utils.isMikaiSourceUrl
 import su.afk.yummy.tv.source.mikai.data.utils.mikaiAshdiPageUrl
 import su.afk.yummy.tv.source.mikai.data.utils.mikaiFenixPageUrl
+import su.afk.yummy.tv.source.mikai.data.utils.mikaiMoonPageUrl
+import su.afk.yummy.tv.source.mikai.data.utils.parseMikaiMoonSourceUrl
 import su.afk.yummy.tv.source.mikai.data.utils.parseMikaiFenixSourceUrl
 import su.afk.yummy.tv.source.mikai.data.utils.parseMikaiSourceUrl
 import javax.inject.Inject
 
 /**
- * Превращает `source://mikai/ashdi/{id}` в HLS-поток Ashdi, а `source://mikai/fenix/{токен}` — в HLS-мастер Fenix с токеном
+ * Превращает `source://mikai/moon/{id}` в поток Moon (общий разбор `:source:moon`: расшифровка скрипта страницы, заголовки потока), `source://mikai/ashdi/{id}` в HLS-поток Ashdi, а `source://mikai/fenix/{токен}` — в HLS-мастер Fenix с токеном
  * доступа. Заголовков плееру не нужно. Мастер Ashdi разобран на варианты: отдаётся карта качеств по возрастанию (лучшее по
  * умолчанию — последнее), иначе мастер играет адаптивно («Авто»). У Fenix звук отдельной дорожкой мастера, он всегда адаптивный.
  */
 internal class MikaiExtraStreamRepository @Inject constructor(
     private val resolveStreams: ResolveAshdiStreamsUseCase,
     private val resolveFenixStreams: ResolveFenixStreamsUseCase,
+    private val resolveMoonStreams: ResolveMoonStreamsUseCase,
     private val messages: MikaiMessages,
 ) : ExtraStreamRepository {
 
@@ -29,6 +34,7 @@ internal class MikaiExtraStreamRepository @Inject constructor(
 
     override suspend fun resolve(url: String): PlayerStreamResolveResult {
         parseMikaiFenixSourceUrl(url)?.let { return resolveFenix(it) }
+        parseMikaiMoonSourceUrl(url)?.let { return resolveMoon(it) }
         val vodId = parseMikaiSourceUrl(url) ?: return PlayerStreamResolveResult.Failed("bad source url")
         return when (val result = resolveStreams(mikaiAshdiPageUrl(vodId))) {
             is AshdiStreamsResult.Success -> result.streams.toStream()
@@ -37,6 +43,17 @@ internal class MikaiExtraStreamRepository @Inject constructor(
             is AshdiStreamsResult.Failed -> PlayerStreamResolveResult.Failed(result.reason)
         }
     }
+
+    private suspend fun resolveMoon(id: String): PlayerStreamResolveResult =
+        when (val result = resolveMoonStreams(mikaiMoonPageUrl(id))) {
+            is MoonStreamsResult.Success -> PlayerStreamResolveResult.Stream(
+                url = result.streams.url,
+                headers = result.streams.headers,
+                qualities = result.streams.qualities?.let { LinkedHashMap(it) },
+            )
+            MoonStreamsResult.NotFound -> PlayerStreamResolveResult.Unavailable(messages.notFound)
+            is MoonStreamsResult.Failed -> PlayerStreamResolveResult.Failed(result.reason)
+        }
 
     private suspend fun resolveFenix(token: String): PlayerStreamResolveResult =
         when (val result = resolveFenixStreams(mikaiFenixPageUrl(token))) {

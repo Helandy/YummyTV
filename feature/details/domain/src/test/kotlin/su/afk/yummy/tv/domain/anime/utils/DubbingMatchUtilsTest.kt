@@ -204,9 +204,35 @@ class DubbingMatchUtilsTest {
         assertEquals(emptyList<AnimeVideo>(), retainBaseDubbings(emptyList(), mergeExtraDubbings(emptyList(), extras)))
     }
 
-    private fun video(id: Int, dubbing: String, player: String, url: String) = AnimeVideo(
+    @Test
+    fun `lower priority duplicate of dubbing player and episode is dropped, other episodes and players stay`() {
+        val mikai = listOf(
+            video(-1, "QTV", "Moon", "source://mikai/moon/a", episode = "1"),
+            video(-2, "QTV", "Ashdi", "source://mikai/ashdi/1", episode = "1"),
+        )
+        val animeOn = listOf(
+            video(-3, "qtv", "Moon", "source://animeon/1/1/1/1", episode = "1"),
+            video(-4, "QTV", "Moon", "source://animeon/1/2/1/1", episode = "2"),
+            video(-5, "QTV", "Fenix", "source://animeon/1/1/1/2", episode = "1"),
+            video(-6, "Другая", "Moon", "source://animeon/2/1/1/1", episode = "1"),
+        )
+
+        assertEquals(listOf(-1, -2, -4, -5, -6), dropDuplicateExtras(listOf(mikai, animeOn)).map { it.id })
+    }
+
+    @Test
+    fun `duplicates inside one source and a single source are kept, episode spelling is ignored`() {
+        val one = listOf(
+            video(-1, "QTV", "Moon", "source://a/1", episode = "01"),
+            video(-2, "QTV", "Moon", "source://a/2", episode = "01"),
+        )
+        assertEquals(listOf(-1, -2), dropDuplicateExtras(listOf(one)).map { it.id })
+        assertEquals(listOf(-1, -2), dropDuplicateExtras(listOf(one, listOf(video(-3, "QTV", "Moon", "source://b/1", episode = "1")))).map { it.id })
+    }
+
+    private fun video(id: Int, dubbing: String, player: String, url: String, episode: String = "1") = AnimeVideo(
         id = id,
-        episode = "1",
+        episode = episode,
         dubbing = dubbing,
         player = player,
         playerId = null,

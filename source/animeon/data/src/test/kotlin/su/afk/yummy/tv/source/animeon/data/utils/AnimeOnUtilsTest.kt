@@ -37,4 +37,12 @@ class AnimeOnUtilsTest {
         assertNull(parseAnimeOnSourceUrl("source://animeon/924/0/1093/1209"))
         assertNull(parseAnimeOnSourceUrl("source://anidub/924/3/1093/1209"))
     }
+
+    @Test
+    fun `moon pages are recognized on every mirror, other players are not`() {
+        assertEquals(true, isMoonPlayerUrl("https://moonanime.art/iframe/abcd1234/?player=animeon.club&api=1"))
+        assertEquals(true, isMoonPlayerUrl("https://moonanime.net/iframe/28e91vdh5vgo/?player=animeon.club&api=1"))
+        assertEquals(false, isMoonPlayerUrl("https://ashdi.vip/vod/104245?player=animeon.club"))
+        assertEquals(false, isMoonPlayerUrl("https://moonanime.art.evil.example/iframe/abcd1234/"))
+    }
 }

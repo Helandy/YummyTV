@@ -6,11 +6,13 @@ import su.afk.yummy.tv.source.animeon.data.dto.AnimeOnVideoUrlDto
 
 internal const val ANIMEON_BASE_URL = "https://animeon.club"
 
-/** Имя плеера в названии варианта с сервера (`FanVoxUA (Ashdi)`): играются Ashdi и Fenix, остальные (Moon) приложением пока нет. */
+/** Имя плеера в названии варианта с сервера (`FanVoxUA (Ashdi)`): играются Ashdi, Fenix и Moon, остальные приложением нет. */
 internal const val ANIMEON_ASHDI_PLAYER = "Ashdi"
 internal const val ANIMEON_FENIX_PLAYER = "Fenix"
+internal const val ANIMEON_MOON_PLAYER = "Moon"
 
 private const val FENIX_PAGE_PREFIX = "https://fenixplay.xyz/"
+private val MOON_PAGE = Regex("""^https://moonanime\.(?:art|net|vip)/iframe/""")
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -33,3 +35,6 @@ internal fun animeOnPlayerTrack(body: String): String? =
 
 /** Страница плеера Fenix (`https://fenixplay.xyz/embed/…`), а не Ashdi. */
 internal fun isFenixPlayerUrl(url: String): Boolean = url.startsWith(FENIX_PAGE_PREFIX)
+
+/** Страница плеера Moon (`https://moonanime.art/iframe/{id}/?player=animeon.club&api=1`; сайт отдаёт и зеркало `.net`). */
+internal fun isMoonPlayerUrl(url: String): Boolean = MOON_PAGE.containsMatchIn(url)

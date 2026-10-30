@@ -51,4 +51,13 @@ class MikaiSourceUrlsTest {
     fun `fenix page url is built from the token`() {
         assertEquals("https://fenixplay.xyz/vod/a.b", mikaiFenixPageUrl("a.b"))
     }
+
+    @Test
+    fun `moon links are validated`() {
+        assertEquals("abcd1234", mikaiMoonId("https://moonanime.art/iframe/abcd1234/"))
+        assertNull(mikaiMoonId("https://evil.example/iframe/abcd1234/"))
+        assertEquals("abcd1234", parseMikaiMoonSourceUrl(mikaiMoonSourceUrl("abcd1234")))
+        assertNull(parseMikaiMoonSourceUrl("source://mikai/moon/../x"))
+        assertEquals("https://moonanime.art/iframe/abcd1234/", mikaiMoonPageUrl("abcd1234"))
+    }
 }

@@ -100,11 +100,13 @@ dependencies {
     findProject(":source:ashdi:data")?.let { implementation(it) }
     // Общий разбор плеера Fenix для AnimeON и Mikai: нет каталога source/fenix, нет и зависимости.
     findProject(":source:fenix:data")?.let { implementation(it) }
+    // Общий разбор плеера Moon для AnimeON и Mikai: нет каталога source/moon, нет и зависимости.
+    findProject(":source:moon:data")?.let { implementation(it) }
     // Необязательный источник «AnimeON» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:animeon:data")?.let { implementation(it) }
     // Необязательный источник «AnimeVost» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:animevost:data")?.let { implementation(it) }
-    // Необязательный источник «Mikai» (нужны source/availability, source/ashdi и source/fenix): нет каталога, нет и зависимости.
+    // Необязательный источник «Mikai» (нужны source/availability, source/ashdi, source/fenix и source/moon): нет каталога, нет и зависимости.
     findProject(":source:mikai:data")?.let { implementation(it) }
     // Необязательный источник «Animebesst» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:animebesst:data")?.let { implementation(it) }

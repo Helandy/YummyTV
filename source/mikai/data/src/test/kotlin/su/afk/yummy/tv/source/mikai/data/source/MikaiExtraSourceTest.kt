@@ -11,6 +11,11 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
+import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
+import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
+import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
+import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import su.afk.yummy.tv.source.ashdi.domain.model.AshdiStreams
 import su.afk.yummy.tv.source.ashdi.domain.model.AshdiStreamsResult
 import su.afk.yummy.tv.source.ashdi.domain.repository.AshdiRepository
@@ -19,16 +24,16 @@ import su.afk.yummy.tv.source.fenix.domain.model.FenixStreams
 import su.afk.yummy.tv.source.fenix.domain.model.FenixStreamsResult
 import su.afk.yummy.tv.source.fenix.domain.repository.FenixRepository
 import su.afk.yummy.tv.source.fenix.domain.usecase.ResolveFenixStreamsUseCase
-import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
-import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
-import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
-import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
-import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
+import su.afk.yummy.tv.source.moon.domain.model.MoonStreams
+import su.afk.yummy.tv.source.moon.domain.model.MoonStreamsResult
+import su.afk.yummy.tv.source.moon.domain.repository.MoonRepository
+import su.afk.yummy.tv.source.moon.domain.usecase.ResolveMoonStreamsUseCase
 import java.io.IOException
 
 class MikaiExtraSourceTest : BaseUnitTest() {
 
     private val findAvailability: FindSourceAvailabilityUseCase = mockk()
+    private val moon: MoonRepository = mockk()
     private val ashdi: AshdiRepository = mockk()
     private val fenix: FenixRepository = mockk()
     private val messages = object : MikaiMessages {
@@ -54,6 +59,9 @@ class MikaiExtraSourceTest : BaseUnitTest() {
             SourceVariant("ashdi:45", false, listOf(episode(1, "200")), title = "Amanogawa", isSubs = true),
             SourceVariant("fenix:44", false, listOf(episode(1, "eyJ0.sig-1"), episode(2, null, "https://fenixplay.xyz/vod/eyJ1.sig-2#embed=x")), title = "QTV"),
             SourceVariant("fenix:45", false, listOf(episode(1, "eyJ2.sig")), title = "Amanogawa", isSubs = true),
+            SourceVariant("moonanime:44", false, listOf(episode(1, null, "https://moonanime.art/iframe/abcd1234/")), title = "QTV"),
+            SourceVariant("moonanime:45", false, listOf(episode(1, null, "https://moonanime.art/iframe/efgh5678/")), title = "Amanogawa", isSubs = true),
+            SourceVariant("moonanime:46", false, listOf(episode(1, null, "https://ashdi.vip/vod/7")), title = "Broken"),
             SourceVariant("ashdi:46", false, listOf(episode(1, null, "https://fenixplay.xyz/vod/x")), title = "Broken"),
             SourceVariant("ashdi:47", false, listOf(episode(1, "400")), title = null),
         ),
@@ -61,10 +69,10 @@ class MikaiExtraSourceTest : BaseUnitTest() {
 
     private fun videoRepository() = MikaiExtraVideoRepository(findAvailability, messages)
 
-    private fun streamRepository() = MikaiExtraStreamRepository(ResolveAshdiStreamsUseCase(ashdi), ResolveFenixStreamsUseCase(fenix), messages)
+    private fun streamRepository() = MikaiExtraStreamRepository(ResolveAshdiStreamsUseCase(ashdi), ResolveFenixStreamsUseCase(fenix), ResolveMoonStreamsUseCase(moon), messages)
 
     @Test
-    fun `ashdi and fenix teams with a playable id become videos, ashdi subtitles are marked`() = runTest {
+    fun `ashdi, fenix and moon teams with a playable id become videos, ashdi subtitles are marked`() = runTest {
         coEvery {
             findAvailability("mikai", AvailabilityLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28))
         } returns availability
@@ -78,11 +86,12 @@ class MikaiExtraSourceTest : BaseUnitTest() {
                 "Amanogawa (subs)" to "source://mikai/ashdi/200",
                 "QTV" to "source://mikai/fenix/eyJ0.sig-1",
                 "QTV" to "source://mikai/fenix/eyJ1.sig-2",
+                "QTV" to "source://mikai/moon/abcd1234",
             ),
             videos.map { it.dubbing to it.iframeUrl },
         )
-        assertEquals(listOf("1", "2", "1", "1", "2"), videos.map { it.episode })
-        assertEquals(listOf("Ashdi", "Ashdi", "Ashdi", "Fenix", "Fenix"), videos.map { it.player })
+        assertEquals(listOf("1", "2", "1", "1", "2", "1"), videos.map { it.episode })
+        assertEquals(listOf("Ashdi", "Ashdi", "Ashdi", "Fenix", "Fenix", "Moon"), videos.map { it.player })
         assertTrue(videos.all { it.id < 0 })
         assertEquals(videos.size, videos.map { it.id }.toSet().size)
     }
@@ -147,6 +156,26 @@ class MikaiExtraSourceTest : BaseUnitTest() {
         coEvery { fenix.getStreams(any(), any()) } throws IOException("down")
         assertTrue(streamRepository().resolve("source://mikai/fenix/eyJ0.sig") is PlayerStreamResolveResult.Failed)
         assertTrue(streamRepository().resolve("source://mikai/fenix/a/b") is PlayerStreamResolveResult.Failed)
+    }
+
+    @Test
+    fun `moon url resolves to the stream with its headers`() = runTest {
+        coEvery { moon.getStreams("https://moonanime.art/iframe/abcd1234/") } returns
+            MoonStreamsResult.Success(MoonStreams("https://s.example/v.m3u8", mapOf("Referer" to "https://moonanime.art/iframe/abcd1234/")))
+
+        val result = streamRepository().resolve("source://mikai/moon/abcd1234") as PlayerStreamResolveResult.Stream
+
+        assertEquals("https://s.example/v.m3u8", result.url)
+        assertEquals(mapOf("Referer" to "https://moonanime.art/iframe/abcd1234/"), result.headers)
+        assertEquals(null, result.qualities)
+    }
+
+    @Test
+    fun `moon not found is unavailable, bad id fails`() = runTest {
+        coEvery { moon.getStreams(any()) } returns MoonStreamsResult.NotFound
+        assertEquals("nf-text", (streamRepository().resolve("source://mikai/moon/abcd1234") as PlayerStreamResolveResult.Unavailable).message)
+
+        assertTrue(streamRepository().resolve("source://mikai/moon/a/b") is PlayerStreamResolveResult.Failed)
     }
 
     @Test

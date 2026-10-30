@@ -11,11 +11,11 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.source.animeon.domain.model.AnimeOnStreams
+import su.afk.yummy.tv.source.animeon.domain.model.AnimeOnStreamsResult
 import su.afk.yummy.tv.source.animeon.domain.model.AnimeOnTarget
 import su.afk.yummy.tv.source.animeon.domain.repository.AnimeOnRepository
 import su.afk.yummy.tv.source.animeon.domain.usecase.ResolveAnimeOnStreamsUseCase
-import su.afk.yummy.tv.source.ashdi.domain.model.AshdiStreams
-import su.afk.yummy.tv.source.ashdi.domain.model.AshdiStreamsResult
 import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
 import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
 import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
@@ -59,18 +59,19 @@ class AnimeOnExtraSourceTest : BaseUnitTest() {
     private fun streamRepository() = AnimeOnExtraStreamRepository(ResolveAnimeOnStreamsUseCase(repository), messages)
 
     @Test
-    fun `ashdi and fenix voices become videos with their own source urls, moon is skipped`() = runTest {
+    fun `ashdi, fenix and moon voices become videos with their own source urls`() = runTest {
         coEvery {
             findAvailability("animeon", AvailabilityLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28))
         } returns availability
 
         val videos = videoRepository().videos(details())
 
-        assertEquals(listOf("1", "2", "1", "2"), videos.map { it.episode })
+        assertEquals(listOf("1", "2", "1", "2", "1", "2"), videos.map { it.episode })
         assertEquals("source://animeon/924/2/1093/1209", videos[1].iframeUrl)
-        assertEquals("source://animeon/924/1/1093/9061", videos[2].iframeUrl)
-        assertEquals(listOf("FanVoxUA", "FanVoxUA", "FanVoxUA", "FanVoxUA"), videos.map { it.dubbing })
-        assertEquals(listOf("Ashdi", "Ashdi", "Fenix", "Fenix"), videos.map { it.player })
+        assertEquals("source://animeon/924/1/1093/3917", videos[2].iframeUrl)
+        assertEquals("source://animeon/924/1/1093/9061", videos[4].iframeUrl)
+        assertEquals(List(6) { "FanVoxUA" }, videos.map { it.dubbing })
+        assertEquals(listOf("Ashdi", "Ashdi", "Moon", "Moon", "Fenix", "Fenix"), videos.map { it.player })
         assertTrue(videos.all { it.id < 0 })
         assertEquals(videos.size, videos.map { it.id }.toSet().size)
     }
@@ -85,8 +86,8 @@ class AnimeOnExtraSourceTest : BaseUnitTest() {
     @Test
     fun `stream carries the quality map and plays the best one`() = runTest {
         coEvery { repository.getStreams(AnimeOnTarget("924", 1093, 1209, 2)) } returns
-            AshdiStreamsResult.Success(
-                AshdiStreams(linkedMapOf("480p" to "https://a/480.m3u8", "1080p" to "https://a/1080.m3u8"), "https://a/index.m3u8"),
+            AnimeOnStreamsResult.Success(
+                AnimeOnStreams("https://a/index.m3u8", linkedMapOf("480p" to "https://a/480.m3u8", "1080p" to "https://a/1080.m3u8")),
             )
 
         val result = streamRepository().resolve("source://animeon/924/2/1093/1209") as PlayerStreamResolveResult.Stream
@@ -97,7 +98,7 @@ class AnimeOnExtraSourceTest : BaseUnitTest() {
 
     @Test
     fun `master without variants plays adaptively`() = runTest {
-        coEvery { repository.getStreams(any()) } returns AshdiStreamsResult.Success(AshdiStreams(emptyMap(), "https://a/index.m3u8"))
+        coEvery { repository.getStreams(any()) } returns AnimeOnStreamsResult.Success(AnimeOnStreams("https://a/index.m3u8"))
 
         val result = streamRepository().resolve("source://animeon/924/1/1093/1209") as PlayerStreamResolveResult.Stream
 
@@ -106,8 +107,18 @@ class AnimeOnExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
+    fun `stream headers reach the player`() = runTest {
+        coEvery { repository.getStreams(any()) } returns
+            AnimeOnStreamsResult.Success(AnimeOnStreams("https://s/v.m3u8", headers = mapOf("Referer" to "https://moonanime.art/iframe/a/")))
+
+        val result = streamRepository().resolve("source://animeon/924/1/1093/3917") as PlayerStreamResolveResult.Stream
+
+        assertEquals(mapOf("Referer" to "https://moonanime.art/iframe/a/"), result.headers)
+    }
+
+    @Test
     fun `missing file is unavailable, network error and bad url fail`() = runTest {
-        coEvery { repository.getStreams(any()) } returns AshdiStreamsResult.NotFound
+        coEvery { repository.getStreams(any()) } returns AnimeOnStreamsResult.NotFound
         val unavailable = streamRepository().resolve("source://animeon/924/9/1093/1209")
         assertEquals("nf-text", (unavailable as PlayerStreamResolveResult.Unavailable).message)
 
@@ -118,7 +129,7 @@ class AnimeOnExtraSourceTest : BaseUnitTest() {
 
     @Test
     fun `region block is unavailable with its own text`() = runTest {
-        coEvery { repository.getStreams(any()) } returns AshdiStreamsResult.RegionBlocked
+        coEvery { repository.getStreams(any()) } returns AnimeOnStreamsResult.RegionBlocked
 
         val result = streamRepository().resolve("source://animeon/924/1/1093/1209")
 

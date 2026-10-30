@@ -65,6 +65,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeRelationReference
 import su.afk.yummy.tv.domain.anime.model.StudioUrlUnavailableException
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
+import su.afk.yummy.tv.domain.anime.utils.dropDuplicateExtras
 import su.afk.yummy.tv.domain.anime.utils.mergeExtraDubbings
 import su.afk.yummy.tv.domain.anime.utils.retainBaseDubbings
 import java.util.concurrent.ConcurrentHashMap
@@ -206,11 +207,13 @@ class YaniAnimeRepository(
         fetched: List<Pair<ExtraVideoRepository, List<AnimeVideo>>>,
     ): List<AnimeVideo> {
         // Стабильная сортировка: при равном приоритете порядок источников прежний.
-        val extras = fetched.sortedByDescending { (repository, _) -> repository.priority }
-            .flatMap { (repository, videos) ->
-                val merged = mergeExtraDubbings(base, videos)
-                if (repository.requiresMatchingDubbing) retainBaseDubbings(base, merged) else merged
-            }
+        val extras = dropDuplicateExtras(
+            fetched.sortedByDescending { (repository, _) -> repository.priority }
+                .map { (repository, videos) ->
+                    val merged = mergeExtraDubbings(base, videos)
+                    if (repository.requiresMatchingDubbing) retainBaseDubbings(base, merged) else merged
+                },
+        )
         return if (extras.isEmpty()) base else base + extras
     }
 

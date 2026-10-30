@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import su.afk.yummy.tv.source.animeon.data.utils.ANIMEON_ASHDI_PLAYER
 import su.afk.yummy.tv.source.animeon.data.utils.ANIMEON_FENIX_PLAYER
+import su.afk.yummy.tv.source.animeon.data.utils.ANIMEON_MOON_PLAYER
 import su.afk.yummy.tv.source.animeon.data.utils.toSourceUrl
 import su.afk.yummy.tv.source.animeon.domain.model.AnimeOnTarget
 import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
@@ -14,7 +15,7 @@ import javax.inject.Inject
 /**
  * Добавляет балансер «AnimeON» (украинская озвучка и субтитры). Наличие тайтла и варианты приходят из общей ручки наличия на
  * сервере YummyTV: `key` тайтла — id на сайте, вариант — озвучка в одном плеере (`translationId:playerId`, `title` — «озвучка
- * (плеер)»). Играются плееры Ashdi и Fenix, остальные варианты пропускаются. Ссылок на файлы здесь нет: поток берётся
+ * (плеер)»). Играются плееры Ashdi, Fenix и Moon, остальные варианты пропускаются. Ссылок на файлы здесь нет: поток берётся
  * со страницы плеера при открытии.
  */
 internal class AnimeOnExtraVideoRepository @Inject constructor(
@@ -45,7 +46,7 @@ internal class AnimeOnExtraVideoRepository @Inject constructor(
                     ids[0] to ids[1]
                 }
                 val dubbing = title.removeSuffix(suffix)
-                val player = if (suffix == FENIX_SUFFIX) ANIMEON_FENIX_PLAYER else ANIMEON_ASHDI_PLAYER
+                val player = suffix.removePrefix(" (").removeSuffix(")")
                 variant.episodes.map { episode ->
                     val url = AnimeOnTarget(availability.key, translationId, playerId, episode.number).toSourceUrl()
                     AnimeVideo(
@@ -64,7 +65,6 @@ internal class AnimeOnExtraVideoRepository @Inject constructor(
 
     private companion object {
         const val SOURCE_ID = "animeon"
-        const val FENIX_SUFFIX = " ($ANIMEON_FENIX_PLAYER)"
-        val PLAYER_SUFFIXES = listOf(" ($ANIMEON_ASHDI_PLAYER)", FENIX_SUFFIX)
+        val PLAYER_SUFFIXES = listOf(ANIMEON_ASHDI_PLAYER, ANIMEON_FENIX_PLAYER, ANIMEON_MOON_PLAYER).map { " ($it)" }
     }
 }

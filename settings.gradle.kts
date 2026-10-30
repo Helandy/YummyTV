@@ -229,7 +229,12 @@ if (file("source/fenix").isDirectory) {
     include(":source:fenix:data")
 }
 
-if (file("source/animeon").isDirectory && file("source/availability").isDirectory) {
+if (file("source/moon").isDirectory) {
+    include(":source:moon:domain")
+    include(":source:moon:data")
+}
+
+if (file("source/animeon").isDirectory && file("source/availability").isDirectory && file("source/moon").isDirectory) {
     include(":source:animeon:domain")
     include(":source:animeon:data")
 }
@@ -240,7 +245,7 @@ if (file("source/animevost").isDirectory && file("source/availability").isDirect
 }
 
 if (file("source/mikai").isDirectory && file("source/availability").isDirectory && file("source/ashdi").isDirectory &&
-    file("source/fenix").isDirectory
+    file("source/fenix").isDirectory && file("source/moon").isDirectory
 ) {
     include(":source:mikai:data")
 }
