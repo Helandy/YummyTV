@@ -29,6 +29,7 @@ import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerEpisodeProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerLibraryAutoListHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
@@ -86,6 +87,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val artworkHandler: PlayerArtworkHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
+    private val episodeProgressHandler: PlayerEpisodeProgressHandler,
     private val offlineSources: PlayerOfflineSourceLoader,
     private val navigation: PlayerNavigationDelegate,
     private val strings: StringProvider,
@@ -158,6 +160,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             loadLocalFileDestination(dest.localFileUri, dest.animeTitle)
         } else {
             loadFinalEpisodeAction(dest.animeId)
+            episodeProgressHandler.observe(host, dest.animeId)
             displaySettings.observeActive(host)
             loadSourceGraph()
             loadStream()
@@ -222,6 +225,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
         loadFinalEpisodeAction(newDest.animeId)
         displaySettings.observeActive(host, force = true)
+        episodeProgressHandler.observe(host, newDest.animeId)
         if (newDest.downloadId > 0L) {
             loadDownloadedDestination(newDest.downloadId)
         } else if (newDest.localFileUri.isNotBlank()) {
@@ -337,6 +341,18 @@ class PlayerViewModel @AssistedInject internal constructor(
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
                     refreshSourcesAlongsideStream = true,
                 )
+            }
+
+            is PlayerState.Event.EpisodeSelected -> {
+                val nextState = sourceSelectionHandler.selectEpisode(currentState, event.episodeIndex)
+                if (nextState != null) closeSourceSessions()
+                applySourceSelection(
+                    nextState,
+                    sourceScopeChanged = true,
+                    resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
+                    refreshSourcesAlongsideStream = true,
+                )
+                nextState?.let(::saveContinueTarget)
             }
 
             is PlayerState.Event.NextEpisode -> {

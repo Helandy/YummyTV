@@ -18,6 +18,9 @@ internal fun AnimeVideo.toPlayerSourceVideo(): PlayerSourceVideo =
         iframeUrl = iframeUrl,
         views = views,
         skips = skips.toPlayerSourceSkips(),
+        watchedEndTimeSeconds = watchedEndTimeSeconds,
+        watchedDateSeconds = watchedDateSeconds,
+        durationSeconds = durationSeconds,
     )
 
 internal fun AnimeVideoSkips.toPlayerSourceSkips(): PlayerSourceSkips =

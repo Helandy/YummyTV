@@ -28,6 +28,7 @@ import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingViews
 import su.afk.yummy.tv.feature.player.utils.isBalancerAvailableForEpisode
+import su.afk.yummy.tv.feature.player.utils.mergedWatchProgress
 import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isExtraSourceBalancer
 import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
@@ -89,12 +90,13 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         hasPrevEpisode = selection.episodeIndex > 0,
         hasNextEpisode = selection.episodeIndex < activeEpisodes.lastIndex,
         episodes = if (activeEpisodes.size > 1 && !isOfflinePlayback) {
+            val mergedProgress = sourceGraph.mergedWatchProgress(animeId, watchProgress)
             activeEpisodes.mapIndexed { index, episode ->
                 PlayerEpisodeItem(
                     index = index,
                     number = episode.number,
                     screenshotUrl = episode.screenshotUrl,
-                    progress = watchProgress.episodeProgress(episode.number),
+                    progress = mergedProgress.episodeProgress(episode.number),
                 )
             }.toImmutableList()
         } else {

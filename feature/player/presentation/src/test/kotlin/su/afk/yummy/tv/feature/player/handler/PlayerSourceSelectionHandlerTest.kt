@@ -61,6 +61,25 @@ class PlayerSourceSelectionHandlerTest : BaseUnitTest() {
     }
 
     @Test
+    fun `selecting an episode jumps inside the active dubbing and resets the position`() {
+        val state = state(PlayerSourceSelection(0, 1, 0)).copy(playbackPositionMs = 5_000L)
+
+        val result = handler.selectEpisode(state, 3)
+
+        assertEquals(PlayerSourceSelection(0, 1, 3), result?.sourceSelection)
+        assertEquals(0L, result?.playbackPositionMs)
+    }
+
+    @Test
+    fun `selecting the current or an unknown episode changes nothing`() {
+        val state = state(PlayerSourceSelection(0, 0, 1))
+
+        assertNull(handler.selectEpisode(state, 1))
+        assertNull(handler.selectEpisode(state, 3))
+        assertNull(handler.selectEpisode(state, -1))
+    }
+
+    @Test
     fun `next episode in other dubbing prefers the same dubbing on another balancer`() {
         val graph = PlayerSourceGraph(
             balancers = listOf(

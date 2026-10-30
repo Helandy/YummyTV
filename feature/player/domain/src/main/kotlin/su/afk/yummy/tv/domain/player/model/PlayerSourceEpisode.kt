@@ -7,4 +7,8 @@ data class PlayerSourceEpisode(
     val iframeUrl: String = "",
     val screenshotUrl: String = "",
     val skips: PlayerSourceSkips = PlayerSourceSkips.Empty,
+    /** Серверный прогресс просмотра серии (с других устройств); для подписей в списке серий. */
+    val watchedEndTimeSeconds: Int? = null,
+    val watchedDateSeconds: Long? = null,
+    val durationSeconds: Int? = null,
 )

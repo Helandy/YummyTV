@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player
 
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
@@ -80,6 +81,8 @@ class PlayerState {
         val mobileVideoOffsetX: Float = 0f,
         val mobileVideoOffsetY: Float = 0f,
         val isOfflinePlayback: Boolean = false,
+        /** Локальный прогресс серий тайтла: подписи просмотра в списке серий. */
+        val watchProgress: List<AnimeWatchProgress> = emptyList(),
         val isLocalFile: Boolean = false,
         val offlineCacheKey: String? = null,
         /** `VideoDownloadCacheKeyScheme.storageValue` скачанной серии; 0 — старая схема ключей. */
@@ -117,6 +120,9 @@ class PlayerState {
 
         /** Пользователь выбрал предыдущий эпизод. */
         data object PrevEpisode : Event
+
+        /** Пользователь выбрал серию из списка серий активной озвучки. */
+        data class EpisodeSelected(val episodeIndex: Int) : Event
 
         /** Пользователь выбрал следующий эпизод из указанного источника. */
         data class NextEpisode(

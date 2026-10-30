@@ -42,6 +42,9 @@ private fun DomainPlayerSourceEpisode.toPresentationSourceEpisode(): PlayerSourc
         iframeUrl = iframeUrl,
         screenshotUrl = screenshotUrl,
         skips = skips.toPresentationSkips(),
+        watchedEndTimeSeconds = watchedEndTimeSeconds,
+        watchedDateSeconds = watchedDateSeconds,
+        durationSeconds = durationSeconds,
     )
 
 private fun DomainPlayerSourceSelection.toPresentationSourceSelection(): PlayerSourceSelection =

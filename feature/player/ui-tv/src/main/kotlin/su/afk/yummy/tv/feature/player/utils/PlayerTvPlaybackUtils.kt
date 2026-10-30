@@ -21,6 +21,7 @@ internal fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlF
         PanelReturnFocusTarget.Quality -> PlayerControlFocusTarget.Quality
         PanelReturnFocusTarget.Dubbing -> PlayerControlFocusTarget.Dubbing
         PanelReturnFocusTarget.Balancer -> PlayerControlFocusTarget.Balancer
+        PanelReturnFocusTarget.Episodes -> PlayerControlFocusTarget.Episodes
         PanelReturnFocusTarget.PlayerSettings -> PlayerControlFocusTarget.PlayerSettings
         PanelReturnFocusTarget.Alloha -> PlayerControlFocusTarget.Alloha
         PanelReturnFocusTarget.NextEpisode -> PlayerControlFocusTarget.NextEpisode

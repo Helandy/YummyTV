@@ -10,12 +10,14 @@ internal class TvPlayerFocusRequesters {
     val quality = FocusRequester()
     val dubbing = FocusRequester()
     val balancer = FocusRequester()
+    val episodes = FocusRequester()
     val playerSettings = FocusRequester()
     val alloha = FocusRequester()
     val overlay = FocusRequester()
     val selectedQuality = FocusRequester()
     val selectedDubbing = FocusRequester()
     val selectedBalancer = FocusRequester()
+    val selectedEpisodes = FocusRequester()
     val selectedPlayerSettings = FocusRequester()
     val selectedAlloha = FocusRequester()
     val skip = FocusRequester()
@@ -30,6 +32,7 @@ internal class TvPlayerFocusRequesters {
             PlayerControlFocusTarget.Quality -> quality
             PlayerControlFocusTarget.Dubbing -> dubbing
             PlayerControlFocusTarget.Balancer -> balancer
+            PlayerControlFocusTarget.Episodes -> episodes
             PlayerControlFocusTarget.PlayerSettings -> playerSettings
             PlayerControlFocusTarget.Alloha -> alloha
             PlayerControlFocusTarget.NextEpisode -> nextEpisodeControl

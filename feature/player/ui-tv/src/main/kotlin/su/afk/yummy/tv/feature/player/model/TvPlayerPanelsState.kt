@@ -10,6 +10,7 @@ internal enum class TvPlayerPanel {
     Quality,
     Dubbing,
     Balancer,
+    Episodes,
     /** Боковое меню справа: скорость, масштаб, субтитры и звук. */
     PlayerSettings,
 

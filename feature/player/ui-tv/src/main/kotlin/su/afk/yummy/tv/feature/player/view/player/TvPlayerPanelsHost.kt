@@ -1,18 +1,29 @@
 package su.afk.yummy.tv.feature.player.view.player
 
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
+import su.afk.yummy.tv.feature.player.model.PlayerEpisodeProgress
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
@@ -45,6 +56,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
     onQualitySelected: (index: Int) -> Unit,
     onDubbingSelected: (index: Int) -> Unit,
     onBalancerSelected: (index: Int) -> Unit,
+    onEpisodeSelected: (index: Int) -> Unit,
     onSpeedSelected: (index: Int) -> Unit,
     onResizeModeSelected: (PlayerResizeMode) -> Unit,
     onZoomLevelSelected: (PlayerZoomLevel) -> Unit,
@@ -106,6 +118,52 @@ internal fun BoxScope.TvPlayerPanelsHost(
         },
         onItemSelected = onBalancerSelected,
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Balancer) },
+    )
+
+    TvPlayerSelectionPanel(
+        visible = panels.isOpen(TvPlayerPanel.Episodes),
+        title = stringResource(R.string.player_episode),
+        items = playback.episodes.map { stringResource(R.string.player_episode_number, it.number) },
+        selectedIndex = playback.currentEpisodeIndex,
+        selectedFocusRequester = focus.selectedEpisodes,
+        modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(end = 48.dp, bottom = 72.dp),
+        itemMetaContent = { index, contentColor ->
+            val progress = playback.episodes.getOrNull(index)?.progress
+            val label = when (progress) {
+                is PlayerEpisodeProgress.InProgress -> progress.label
+                is PlayerEpisodeProgress.Watched -> progress.label
+                PlayerEpisodeProgress.None, null -> null
+            }
+            if (label != null) {
+                // В фокусе фон оранжевый и зелёный на нём не читается: остаётся цвет строки.
+                val color = if (contentColor == MaterialTheme.colorScheme.onPrimary) {
+                    contentColor
+                } else {
+                    YummySemanticColors.InProgress
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (progress is PlayerEpisodeProgress.Watched) {
+                        Icon(
+                            imageVector = Icons.Filled.VisibilityOff,
+                            contentDescription = null,
+                            tint = contentColor,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = color,
+                        maxLines = 1,
+                    )
+                }
+            }
+        },
+        onItemSelected = onEpisodeSelected,
+        onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Episodes) },
     )
 
     TvPlayerSettingsPanel(

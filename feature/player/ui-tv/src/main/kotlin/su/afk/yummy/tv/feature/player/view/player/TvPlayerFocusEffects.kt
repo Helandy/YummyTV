@@ -110,6 +110,11 @@ internal fun TvPlayerFocusEffects(
             requestFocusUntilTimeout(focus.selectedBalancer)
         }
     }
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.Episodes)) {
+        if (panels.isOpen(TvPlayerPanel.Episodes)) {
+            requestFocusUntilTimeout(focus.selectedEpisodes)
+        }
+    }
     LaunchedEffect(panels.isOpen(TvPlayerPanel.PlayerSettings)) {
         if (panels.isOpen(TvPlayerPanel.PlayerSettings)) {
             requestFocusUntilTimeout(focus.selectedPlayerSettings)

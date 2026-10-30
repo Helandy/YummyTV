@@ -382,6 +382,7 @@ internal fun TvExoPlayerView(
                     TvPlayerPanel.Quality -> PanelReturnFocusTarget.Quality
                     TvPlayerPanel.Dubbing -> PanelReturnFocusTarget.Dubbing
                     TvPlayerPanel.Balancer -> PanelReturnFocusTarget.Balancer
+                    TvPlayerPanel.Episodes -> PanelReturnFocusTarget.Episodes
                     TvPlayerPanel.PlayerSettings -> PanelReturnFocusTarget.PlayerSettings
                     TvPlayerPanel.Alloha -> PanelReturnFocusTarget.Alloha
                     null -> null
@@ -545,6 +546,9 @@ internal fun TvExoPlayerView(
             onToggleBalancer = {
                 togglePanel(TvPlayerPanel.Balancer, PanelReturnFocusTarget.Balancer)
             },
+            onToggleEpisodes = {
+                togglePanel(TvPlayerPanel.Episodes, PanelReturnFocusTarget.Episodes)
+            },
             onTogglePlayerSettings = {
                 togglePanel(TvPlayerPanel.PlayerSettings, PanelReturnFocusTarget.PlayerSettings)
             },
@@ -594,6 +598,11 @@ internal fun TvExoPlayerView(
             onBalancerSelected = { idx ->
                 onBalancerSelected(idx, player.currentPosition)
                 panels.close(PanelReturnFocusTarget.Balancer)
+                onInteraction()
+            },
+            onEpisodeSelected = { idx ->
+                panels.close(PanelReturnFocusTarget.Episodes)
+                onPlayerEvent(PlayerState.Event.EpisodeSelected(idx))
                 onInteraction()
             },
             onSpeedSelected = { idx ->

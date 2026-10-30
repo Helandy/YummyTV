@@ -86,6 +86,9 @@ internal fun List<PlayerSourceVideo>.toPlayerSourceGraph(
                                 ?: fallbackScreenshotUrl.takeIf { source.id == selectedVideo.id }
                                 ?: "",
                             skips = source.skips,
+                            watchedEndTimeSeconds = source.watchedEndTimeSeconds,
+                            watchedDateSeconds = source.watchedDateSeconds,
+                            durationSeconds = source.durationSeconds,
                         )
                     }
                 PlayerSourceDubbing(

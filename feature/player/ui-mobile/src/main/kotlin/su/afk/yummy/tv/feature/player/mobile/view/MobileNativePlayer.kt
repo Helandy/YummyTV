@@ -904,6 +904,12 @@ internal fun MobileNativePlayer(
                 onBalancerSelected = { index ->
                     onEvent(PlayerState.Event.BalancerSelected(index, player.currentPosition))
                 },
+                episodes = ui.episodes,
+                selectedEpisodeIndex = ui.currentEpisodeIndex,
+                onEpisodeSelected = { index ->
+                    trackSheetOpen = false
+                    onEvent(PlayerState.Event.EpisodeSelected(index))
+                },
                 onDismiss = { trackSheetOpen = false },
                 initialTrackTab = settingsTrackTab,
                 onTrackTabChanged = { settingsTrackTab = it },

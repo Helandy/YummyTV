@@ -4,6 +4,7 @@ internal enum class PanelReturnFocusTarget {
     Quality,
     Dubbing,
     Balancer,
+    Episodes,
     /** Боковое меню настроек справа: скорость, масштаб, субтитры и звук. */
     PlayerSettings,
     Alloha,

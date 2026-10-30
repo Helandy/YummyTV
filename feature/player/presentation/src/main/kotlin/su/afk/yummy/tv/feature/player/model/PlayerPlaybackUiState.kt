@@ -18,6 +18,9 @@ data class PlayerPlaybackUiState(
     val activeSkips: PlayerSkips,
     val hasPrevEpisode: Boolean,
     val hasNextEpisode: Boolean,
+    /** Серии активной озвучки для выбора; пусто при офлайн-воспроизведении и единственной серии. */
+    val episodes: ImmutableList<PlayerEpisodeItem>,
+    val currentEpisodeIndex: Int,
     /** Озвучка, в которой есть серия N+1, когда в активной озвучке серии закончились */
     val nextEpisodeDubbing: String?,
     val finalEpisodeAction: PlayerFinalEpisodeAction,
@@ -30,11 +33,11 @@ data class PlayerPlaybackUiState(
     /** Имена балансеров для показа, уже без префикса «Плеер». */
     val balancerNames: ImmutableList<String>,
     val balancerAvailability: ImmutableList<Boolean>,
+    /** Плеер — внешний источник (`source://…`), а не балансер: в подписи вместо «Балансер» — «Внешний». */
+    val balancerExternal: ImmutableList<Boolean>,
     val currentBalancerIndex: Int,
     /** Доступные качества стрима: от экстрактора или выведенные из URL. */
     val qualityLabels: ImmutableList<String>,
-    /** Плеер — внешний источник (`source://…`), а не балансер: в подписи вместо «Балансер» — «Внешний». */
-    val balancerExternal: ImmutableList<Boolean>,
     /** Выбранное качество, а если его нет среди доступных — лучшее доступное. */
     val activeQuality: String?,
     /** Качеством управляет адаптивный режим: включён в настройках и в серии не выбрано вручную. */

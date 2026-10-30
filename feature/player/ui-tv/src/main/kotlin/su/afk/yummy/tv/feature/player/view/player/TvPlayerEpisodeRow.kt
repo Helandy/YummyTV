@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -34,6 +35,7 @@ internal fun TvPlayerEpisodeRow(
     hasNextEpisode: Boolean,
     finalEpisodeAction: PlayerFinalEpisodeAction,
     qualityCount: Int,
+    showEpisodesButton: Boolean = false,
     allDubbingNames: List<String>,
     currentDubbingIndex: Int,
     allBalancerNames: List<String>,
@@ -45,6 +47,7 @@ internal fun TvPlayerEpisodeRow(
     qualityFocusRequester: FocusRequester? = null,
     dubbingFocusRequester: FocusRequester? = null,
     balancerFocusRequester: FocusRequester? = null,
+    episodesFocusRequester: FocusRequester? = null,
     playerSettingsFocusRequester: FocusRequester? = null,
     allohaFocusRequester: FocusRequester? = null,
     nextEpisodeFocusRequester: FocusRequester? = null,
@@ -57,6 +60,7 @@ internal fun TvPlayerEpisodeRow(
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
+    onToggleEpisodes: () -> Unit = {},
     onTogglePlayerSettings: () -> Unit = {},
     onToggleAlloha: () -> Unit = {},
 ) {
@@ -82,6 +86,25 @@ internal fun TvPlayerEpisodeRow(
             }
         }
         Spacer(Modifier.weight(1f))
+        if (showEpisodesButton) {
+            TvControlButton(
+                onClick = onToggleEpisodes,
+                onFocused = onInteraction,
+                focusRequester = episodesFocusRequester,
+                modifier = Modifier
+                    .focusProperties { up = upFocusRequester }
+                    .width(48.dp),
+                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
+            ) { color ->
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.PlaylistPlay,
+                    contentDescription = stringResource(R.string.player_episode),
+                    tint = color,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+        }
         if (allDubbingNames.size > 1) {
             val label = allDubbingNames
                 .getOrElse(currentDubbingIndex) { dubbing }

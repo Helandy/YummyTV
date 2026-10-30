@@ -28,6 +28,7 @@ import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerEpisodeProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerLibraryAutoListHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
@@ -98,6 +99,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         artworkHandler = artworkHandler,
         destinationStateMapper = PlayerDestinationStateMapper(),
         sourceSelectionHandler = PlayerSourceSelectionHandler(),
+        episodeProgressHandler = mockk(relaxed = true),
         offlineSources = offlineSources,
         navigation = navigation,
         strings = strings,

@@ -25,6 +25,14 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
             }
     }
 
+    /** Переход на серию [episodeIndex] активной озвучки; null, если это текущая серия или индекс вне списка. */
+    fun selectEpisode(state: PlayerState.State, episodeIndex: Int): PlayerState.State? {
+        val selection = normalizedSourceSelection(state)
+        if (episodeIndex == selection.episodeIndex) return null
+        if (episodeIndex !in activeDubbingEpisodes(state).indices) return null
+        return state.withEpisodeSelection(selection.copy(episodeIndex = episodeIndex))
+    }
+
     fun nextEpisode(state: PlayerState.State): PlayerState.State? {
         val selection = normalizedSourceSelection(state)
         val episodes = activeDubbingEpisodes(state)
