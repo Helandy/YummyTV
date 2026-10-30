@@ -31,6 +31,7 @@ import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -68,8 +69,14 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private val permissionRequested = MutableStateFlow(false)
     private val sectionsHintDismissed = MutableStateFlow(false)
+    private val episodePushPromptShown = MutableStateFlow(false)
+    private val episodePushEnabled = MutableStateFlow(true)
+    private val episodePushSettingsStore: EpisodePushSettingsStore = mockk(relaxed = true) {
+        every { enabled } returns episodePushEnabled
+    }
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true) {
         every { notificationPermissionRequested } returns permissionRequested
+        every { episodePushPromptShown } returns this@DetailsViewModelTest.episodePushPromptShown
         every { detailsSectionsHintDismissed } returns sectionsHintDismissed
     }
     private val detailsNavigator: IDetailsNavigator = mockk()
@@ -161,6 +168,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         extrasHandler = extrasHandler,
         analytics = DetailsAnalytics(tracker),
         appLifecycleSettingsStore = appLifecycleSettingsStore,
+        episodePushSettingsStore = episodePushSettingsStore,
     )
 
     private fun videosResult(
@@ -563,6 +571,22 @@ class DetailsViewModelTest : BaseUnitTest() {
 
         assertTrue(vm.currentState.notificationPermissionRequested)
         coVerify(exactly = 1) { appLifecycleSettingsStore.markNotificationPermissionRequested() }
+    }
+
+    @Test
+    fun `episode push prompt is offered once and not after the user disabled pushes`() {
+        val vm = createViewModel()
+        assertTrue(vm.currentState.episodePushPromptAvailable)
+
+        vm.setEvent(Event.EpisodePushPromptShown)
+        episodePushPromptShown.value = true
+
+        assertFalse(vm.currentState.episodePushPromptAvailable)
+        coVerify(exactly = 1) { appLifecycleSettingsStore.markEpisodePushPromptShown() }
+
+        episodePushPromptShown.value = false
+        episodePushEnabled.value = false
+        assertFalse(vm.currentState.episodePushPromptAvailable)
     }
 
     @Test

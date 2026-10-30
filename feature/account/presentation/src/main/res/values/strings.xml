@@ -200,8 +200,6 @@
     <string name="account_mobile_my_subscriptions_player">Player: %1$s</string>
     <string name="account_mobile_my_subscriptions_player_unknown">Player unknown</string>
     <string name="account_error_load_subscriptions_failed">Could not load subscriptions</string>
-    <string name="account_episode_push_enabled">Push for new episodes</string>
-    <string name="account_episode_push_enabled_hint">Notify me when a subscribed episode airs</string>
     <string name="account_profile_social_friends">Friends</string>
     <string name="account_profile_social_reviews">Reviews</string>
     <string name="account_profile_social_comments">Comments</string>

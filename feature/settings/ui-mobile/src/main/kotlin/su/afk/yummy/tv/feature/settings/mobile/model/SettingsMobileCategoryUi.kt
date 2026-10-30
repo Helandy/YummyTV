@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.SkipNext
@@ -22,6 +23,7 @@ internal val SettingsCategory.titleRes: Int
         SettingsCategory.PLAYER -> R.string.settings_category_player
         SettingsCategory.PLAYBACK -> R.string.settings_category_playback
         SettingsCategory.WATCH_PROGRESS -> R.string.settings_category_watch_progress
+        SettingsCategory.NOTIFICATIONS -> R.string.settings_category_notifications
         SettingsCategory.SUBTITLES -> R.string.settings_category_subtitles
         SettingsCategory.STORAGE -> R.string.settings_category_storage
         SettingsCategory.API -> R.string.settings_category_api
@@ -35,6 +37,7 @@ internal val SettingsCategory.hintRes: Int
         SettingsCategory.PLAYER -> R.string.settings_mobile_category_player_hint
         SettingsCategory.PLAYBACK -> R.string.settings_mobile_category_playback_hint
         SettingsCategory.WATCH_PROGRESS -> R.string.settings_mobile_category_watch_progress_hint
+        SettingsCategory.NOTIFICATIONS -> R.string.settings_mobile_category_notifications_hint
         SettingsCategory.SUBTITLES -> R.string.settings_mobile_category_subtitles_hint
         SettingsCategory.STORAGE -> R.string.settings_mobile_category_storage_hint
         SettingsCategory.API -> R.string.settings_mobile_category_api_hint
@@ -47,6 +50,7 @@ internal val SettingsCategory.icon: ImageVector
         SettingsCategory.PLAYER -> Icons.Outlined.PlayCircle
         SettingsCategory.PLAYBACK -> Icons.Outlined.SkipNext
         SettingsCategory.WATCH_PROGRESS -> Icons.Outlined.History
+        SettingsCategory.NOTIFICATIONS -> Icons.Outlined.Notifications
         SettingsCategory.SUBTITLES -> Icons.Outlined.Subtitles
         SettingsCategory.STORAGE -> Icons.Outlined.Storage
         SettingsCategory.API -> Icons.Outlined.Key

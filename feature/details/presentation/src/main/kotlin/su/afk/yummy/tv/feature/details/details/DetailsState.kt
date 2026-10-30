@@ -63,6 +63,8 @@ class DetailsState {
         val showInfoSheet: Boolean = false,
         /** Системный запрос разрешения на уведомления уже показывали. */
         val notificationPermissionRequested: Boolean = false,
+        /** Приглашение включить пуши о новых сериях ещё не показывали и пользователь их не выключал. */
+        val episodePushPromptAvailable: Boolean = false,
         /** Показывать ТВ-подсказку «нажмите вниз — там доп. секции», пока её не закрыли. */
         val showSectionsHint: Boolean = false,
     ) : UiState {
@@ -205,6 +207,9 @@ class DetailsState {
 
         /** Экран показал системный запрос разрешения на уведомления. */
         data object NotificationPermissionRequested : Event
+
+        /** Экран показал приглашение включить пуши о новых сериях — больше не предлагаем. */
+        data object EpisodePushPromptShown : Event
 
         /** Пользователь закрыл подсказку про секции кнопкой «Хорошо, запомнил». */
         data object SectionsHintDismissed : Event

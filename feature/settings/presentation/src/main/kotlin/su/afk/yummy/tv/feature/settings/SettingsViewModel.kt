@@ -17,6 +17,8 @@ import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.logging.AppLogExporter
@@ -40,6 +42,8 @@ class SettingsViewModel @Inject internal constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
+    private val episodePushSettingsStore: EpisodePushSettingsStore,
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val tvIntegration: ITvIntegration,
@@ -109,6 +113,15 @@ class SettingsViewModel @Inject internal constructor(
                     )
                 }
             }
+            .launchIn(viewModelScope)
+        episodePushSettingsStore.enabled
+            .onEach { enabled -> setState { copy(episodePushEnabled = enabled) } }
+            .launchIn(viewModelScope)
+        episodePushSettingsStore.libraryEnabled
+            .onEach { enabled -> setState { copy(libraryEpisodePushEnabled = enabled) } }
+            .launchIn(viewModelScope)
+        appLifecycleSettingsStore.notificationPermissionRequested
+            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
             .launchIn(viewModelScope)
         settingsStore.playerSubtitleStyle
             .onEach { style -> setState { copy(subtitleStyle = style) } }
@@ -383,6 +396,20 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.autoManageLibraryLists
                 analytics.eventAutoManageLibraryListsToggled(enabled)
                 settingsStore.setAutoManageLibraryLists(enabled)
+            }
+
+            is SettingsState.Event.EpisodePushToggled -> viewModelScope.launch {
+                analytics.eventEpisodePushToggled(event.enabled)
+                episodePushSettingsStore.setEnabled(event.enabled)
+            }
+
+            is SettingsState.Event.LibraryEpisodePushToggled -> viewModelScope.launch {
+                analytics.eventLibraryEpisodePushToggled(event.enabled)
+                episodePushSettingsStore.setLibraryEnabled(event.enabled)
+            }
+
+            SettingsState.Event.NotificationPermissionRequested -> viewModelScope.launch {
+                appLifecycleSettingsStore.markNotificationPermissionRequested()
             }
 
             is SettingsState.Event.YaniApplicationTokenChanged -> {

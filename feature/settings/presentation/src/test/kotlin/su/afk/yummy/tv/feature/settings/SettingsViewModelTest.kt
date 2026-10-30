@@ -35,6 +35,8 @@ import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
@@ -63,6 +65,9 @@ class SettingsViewModelTest : BaseUnitTest() {
     private val errorHandler: ErrorHandler = mockk(relaxed = true)
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val settingsStore: SettingsStore = mockk(relaxed = true)
+    private val episodePushSettingsStore: EpisodePushSettingsStore = mockk(relaxed = true)
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true)
+    private val episodePushEnabled = MutableStateFlow(true)
     private val yaniAuthPreferences: YaniAuthPreferences = mockk()
     private val interfaceModePreferences: AppInterfaceModePreferences = mockk(relaxed = true)
     private val tvIntegration: ITvIntegration = mockk(relaxed = true)
@@ -85,6 +90,9 @@ class SettingsViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { settingsStore.settingsSnapshot } returns snapshot
+        every { episodePushSettingsStore.enabled } returns episodePushEnabled
+        every { episodePushSettingsStore.libraryEnabled } returns MutableStateFlow(true)
+        every { appLifecycleSettingsStore.notificationPermissionRequested } returns MutableStateFlow(false)
         every { settingsStore.playerSubtitleStyle } returns MutableStateFlow(mockk<PlayerSubtitleStyleSettings>())
         every { settingsStore.mobilePlayerGestureTutorialDismissed } returns MutableStateFlow(false)
         every { settingsStore.tvPlayerControlsTutorialDismissed } returns MutableStateFlow(false)
@@ -103,6 +111,8 @@ class SettingsViewModelTest : BaseUnitTest() {
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         settingsStore = settingsStore,
+        episodePushSettingsStore = episodePushSettingsStore,
+        appLifecycleSettingsStore = appLifecycleSettingsStore,
         yaniAuthPreferences = yaniAuthPreferences,
         interfaceModePreferences = interfaceModePreferences,
         tvIntegration = tvIntegration,
@@ -172,6 +182,20 @@ class SettingsViewModelTest : BaseUnitTest() {
         snapshot.value = snapshot(autoPlay = true)
 
         assertTrue(vm.currentState.autoPlayNextEpisode)
+    }
+
+    @Test
+    fun `episode push toggles are persisted and tracked`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.EpisodePushToggled(false))
+        vm.setEvent(Event.LibraryEpisodePushToggled(false))
+
+        coVerify(exactly = 1) { episodePushSettingsStore.setEnabled(false) }
+        coVerify(exactly = 1) { episodePushSettingsStore.setLibraryEnabled(false) }
+        verify(exactly = 1) { analytics.eventEpisodePushToggled(false) }
+        verify(exactly = 1) { analytics.eventLibraryEpisodePushToggled(false) }
+        assertTrue(vm.currentState.libraryEpisodePushEnabled)
     }
 
     @Test

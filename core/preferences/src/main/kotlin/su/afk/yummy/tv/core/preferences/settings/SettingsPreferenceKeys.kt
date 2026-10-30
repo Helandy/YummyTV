@@ -97,6 +97,8 @@ internal object SettingsPreferenceKeys {
     val lastSeenAnnouncementIdKey =stringPreferencesKey("last_seen_announcement_id")
     val notificationPermissionRequestedKey =
         booleanPreferencesKey("notification_permission_requested")
+    val episodePushPromptShownKey = booleanPreferencesKey("episode_push_prompt_shown")
+    val episodePushEnabledKey = booleanPreferencesKey("episode_push_enabled")
     val previewChannelPromptAnsweredKey =
         booleanPreferencesKey("preview_channel_prompt_answered")
     val detailsSectionsHintDismissedKey =
@@ -119,6 +121,10 @@ internal object SettingsPreferenceKeys {
     val lastSearchToYearKey = intPreferencesKey("last_search_to_year")
     val lastSearchSortKey = stringPreferencesKey("last_search_sort")
     val lastSearchSortForwardKey = booleanPreferencesKey("last_search_sort_forward")
+    val episodePushLibraryEnabledKey = booleanPreferencesKey("episode_push_library_enabled")
+    val episodePushKnownLibraryEpisodesKey =
+        stringSetPreferencesKey("episode_push_known_library_episodes")
+    val episodePushRecentPushesKey = stringSetPreferencesKey("episode_push_recent_pushes")
     val episodePushKnownNotificationIdsKey =
         stringSetPreferencesKey("episode_push_known_notification_ids")
 }

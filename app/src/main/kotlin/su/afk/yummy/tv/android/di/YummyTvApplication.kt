@@ -132,10 +132,11 @@ class YummyTvApplication :
         appScope.launch {
             trace("App.schedulers") {
                 homeFeedRefreshScheduler.schedule()
-                newEpisodePushScheduler.schedule()
+                newEpisodePushScheduler.scheduleLibraryPush()
                 pendingMutationSyncScheduler.schedule()
             }
         }
+        appScope.launch { newEpisodePushScheduler.syncProfilePushWithSession() }
         trace("App.maintenance") { startupMaintenanceRunner.run() }
         trace("App.seasonalIcon") { seasonalAppIconSwitcher.start() }
 

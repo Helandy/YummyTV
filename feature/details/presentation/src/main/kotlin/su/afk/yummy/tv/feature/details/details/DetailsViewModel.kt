@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
@@ -28,6 +29,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -86,6 +88,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val extrasHandler: DetailsExtrasHandler,
     private val analytics: DetailsAnalytics,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
+    private val episodePushSettingsStore: EpisodePushSettingsStore,
 ) : BaseViewModel<DetailsState.State, DetailsState.Event, DetailsState.Effect>() {
 
     @AssistedFactory
@@ -130,6 +133,12 @@ class DetailsViewModel @AssistedInject internal constructor(
         observeSourceStars()
         appLifecycleSettingsStore.notificationPermissionRequested
             .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
+        combine(
+            appLifecycleSettingsStore.episodePushPromptShown,
+            episodePushSettingsStore.enabled,
+        ) { shown, enabled -> !shown && enabled }
+            .onEach { available -> setState { copy(episodePushPromptAvailable = available) } }
             .launchIn(viewModelScope)
         appLifecycleSettingsStore.detailsSectionsHintDismissed
             .onEach { dismissed -> setState { copy(showSectionsHint = !dismissed) } }
@@ -345,6 +354,10 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.NotificationPermissionRequested -> viewModelScope.launch {
                 appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
+
+            DetailsState.Event.EpisodePushPromptShown -> viewModelScope.launch {
+                appLifecycleSettingsStore.markEpisodePushPromptShown()
             }
 
             DetailsState.Event.SectionsHintDismissed -> viewModelScope.launch {

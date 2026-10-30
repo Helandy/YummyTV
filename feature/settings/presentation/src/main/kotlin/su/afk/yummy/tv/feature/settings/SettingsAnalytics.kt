@@ -353,6 +353,30 @@ internal class SettingsAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь включил или выключил пуши о новых сериях.
+     *
+     * Параметры: target_state.
+     */
+    fun eventEpisodePushToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_EPISODE_PUSH_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
+    /**
+     * Пользователь включил или выключил локальный пуш о новых сериях из своих списков.
+     *
+     * Параметры: target_state.
+     */
+    fun eventLibraryEpisodePushToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_LIBRARY_EPISODE_PUSH_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
+    /**
      * Пользователь изменил язык контента Yani.
      *
      * Параметры: value.
@@ -471,6 +495,8 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_suggest_next_episode_on_watched_toggled"
         const val EVENT_AUTO_MANAGE_LIBRARY_LISTS_TOGGLED =
             "settings_auto_manage_library_lists_toggled"
+        const val EVENT_EPISODE_PUSH_TOGGLED = "settings_episode_push_toggled"
+        const val EVENT_LIBRARY_EPISODE_PUSH_TOGGLED = "settings_library_episode_push_toggled"
         const val EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED =
             "settings_auto_play_next_episode_toggled"
         const val EVENT_WATCHED_THRESHOLDS_CHANGED = "settings_watched_thresholds_changed"

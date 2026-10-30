@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communit
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastSeenAnnouncementIdKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastStartedVersionCodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsSectionsHintDismissedKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.episodePushPromptShownKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.notificationPermissionRequestedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewChannelPromptAnsweredKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.supportPromptDismissedKey
@@ -50,6 +51,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override val notificationPermissionRequested: Flow<Boolean> =
         store.boolean(notificationPermissionRequestedKey, false)
+
+    override val episodePushPromptShown: Flow<Boolean> =
+        store.boolean(episodePushPromptShownKey, false)
 
     override val previewChannelPromptAnswered: Flow<Boolean> =
         store.boolean(previewChannelPromptAnsweredKey, false)
@@ -94,6 +98,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override suspend fun markNotificationPermissionRequested() =
         store.setBoolean(notificationPermissionRequestedKey, true)
+
+    override suspend fun markEpisodePushPromptShown() =
+        store.setBoolean(episodePushPromptShownKey, true)
 
     override suspend fun markPreviewChannelPromptAnswered() =
         store.setBoolean(previewChannelPromptAnsweredKey, true)

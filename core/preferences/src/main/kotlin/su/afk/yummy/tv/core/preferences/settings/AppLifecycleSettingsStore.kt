@@ -26,6 +26,9 @@ interface AppLifecycleSettingsStore {
     /** Запрашивалось ли уже разрешение на уведомления через гейт (чтобы не спрашивать повторно). */
     val notificationPermissionRequested: Flow<Boolean>
 
+    /** Показывали ли уже приглашение включить пуши о новых сериях при добавлении в «Смотрю». */
+    val episodePushPromptShown: Flow<Boolean>
+
     /** Отвечал ли пользователь на предложение добавить preview-канал на главный экран ТВ. */
     val previewChannelPromptAnswered: Flow<Boolean>
 
@@ -47,6 +50,9 @@ interface AppLifecycleSettingsStore {
 
     /** Помечает, что разрешение на уведомления уже запрашивалось. */
     suspend fun markNotificationPermissionRequested()
+
+    /** Помечает, что приглашение включить пуши о новых сериях уже показывалось. */
+    suspend fun markEpisodePushPromptShown()
 
     /** Помечает, что предложение добавить preview-канал уже показывалось и получило ответ. */
     suspend fun markPreviewChannelPromptAnswered()

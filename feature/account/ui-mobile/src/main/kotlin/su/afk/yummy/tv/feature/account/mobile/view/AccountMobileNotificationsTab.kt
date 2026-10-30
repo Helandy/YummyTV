@@ -32,9 +32,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
-import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
-import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
-import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGranted
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileBlockingLoading
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
@@ -68,17 +65,7 @@ internal fun AccountMobileNotificationsTab(
         }
     }
     val unreadCount = state.unreadNotificationCount
-    // Воркер о новых сериях работает всегда, включать нечего: строка — только запрос разрешения,
-    // поэтому при отказе действие не выполняем, а после выдачи прячем её.
-    val notificationPermissionGate = rememberNotificationPermissionGate(runActionWhenDenied = false)
-    var permissionCheck by remember { mutableStateOf(0) }
-    val hasNotificationPermission = rememberNotificationPermissionGranted(permissionCheck)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (!hasNotificationPermission) {
-            AccountMobileEpisodePushRow(
-                onClick = { notificationPermissionGate { permissionCheck++ } },
-            )
-        }
         AccountMobileMySubscriptionsRow(
             onClick = { onEvent(AccountState.Event.MySubscriptionsSelected) },
         )
@@ -198,12 +185,6 @@ internal fun AccountMobileNotificationsTab(
             content = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
         )
     }
-    NotificationPermissionGateHost(
-        state = notificationPermissionGate,
-        permissionWasRequested = state.notificationPermissionRequested,
-        onPermissionRequested = { onEvent(AccountState.Event.NotificationPermissionRequested) },
-        explanationRes = CoreR.string.notification_permission_explanation_episode_push,
-    )
     if (state.isNotificationOpening || isOpeningNotification) {
         MobileBlockingLoading()
     }

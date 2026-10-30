@@ -50,8 +50,6 @@ class AccountState {
         /** Техническая причина ошибки загрузки уведомлений (код ответа, исключение). */
         val hubErrorDetails: String? = null,
         val localAuthServerState: LocalAuthServerState = LocalAuthServerState.Idle,
-        /** Системный запрос разрешения на уведомления уже показывали хотя бы раз. */
-        val notificationPermissionRequested: Boolean = false,
     ) : UiState {
         val unreadNotificationCounts: ImmutableList<NotificationCount>
             get() = notificationCounts.filterNot { it.type.equals("message", ignoreCase = true) }
@@ -68,9 +66,6 @@ class AccountState {
 
     /** Пользовательские действия на экране аккаунта. */
     sealed interface Event : UiEvent {
-        /** Показан системный запрос разрешения на уведомления: запоминаем это. */
-        data object NotificationPermissionRequested : Event
-
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
 

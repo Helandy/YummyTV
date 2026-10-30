@@ -30,6 +30,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobilePlayb
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobilePlayerContent
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileStorageContent
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileSubtitlesContent
+import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileNotificationsContent
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileWatchProgressContent
 import su.afk.yummy.tv.feature.settings.mobile.view.rememberSettingsMobileDialogs
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
@@ -91,6 +92,8 @@ fun SettingsMobileCategoryScreen(
                     SettingsCategory.PLAYBACK -> SettingsMobilePlaybackContent(state, onEvent)
 
                     SettingsCategory.WATCH_PROGRESS -> SettingsMobileWatchProgressContent(state, onEvent)
+
+                    SettingsCategory.NOTIFICATIONS -> SettingsMobileNotificationsContent(state, onEvent)
 
                     SettingsCategory.SUBTITLES ->
                         SettingsMobileSubtitlesContent(state, onEvent, onPickerRequested)

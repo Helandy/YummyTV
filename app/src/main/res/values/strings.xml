@@ -8,7 +8,8 @@
     <string name="interface_mode_tv_hint">Large controls and comfortable remote navigation</string>
     <string name="interface_mode_mobile">Mobile interface</string>
     <string name="interface_mode_mobile_hint">Compact layout optimized for touchscreen controls</string>
-    <string name="episode_push_notification_channel">New episodes</string>
+    <string name="episode_push_notification_channel">Profile notifications</string>
+    <string name="library_episode_push_notification_channel">New episodes from your lists</string>
     <string name="episode_push_action_watch">Watch</string>
     <string name="episode_push_action_details">Details</string>
     <string name="shortcut_search">Search</string>
@@ -19,4 +20,5 @@
     <string name="widget_continue_watching_empty">What you watch will appear here</string>
     <string name="widget_episode">Episode</string>
     <string name="widget_episode_number">Episode %1$s</string>
+    <string name="library_episode_push_text">Episode %1$d is out</string>
 </resources>

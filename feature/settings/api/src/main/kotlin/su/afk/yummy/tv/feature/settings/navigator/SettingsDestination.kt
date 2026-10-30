@@ -17,6 +17,7 @@ enum class SettingsCategory {
     PLAYER,
     PLAYBACK,
     WATCH_PROGRESS,
+    NOTIFICATIONS,
     SUBTITLES,
     STORAGE,
     API,

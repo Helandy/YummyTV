@@ -13,7 +13,6 @@ import su.afk.yummy.tv.core.model.error.toDisplayDetails
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
@@ -50,7 +49,6 @@ class AccountViewModel @Inject internal constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
-    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val settingsStore: YaniAccountSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
@@ -74,9 +72,6 @@ class AccountViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
-        appLifecycleSettingsStore.notificationPermissionRequested
-            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
-            .launchIn(viewModelScope)
         observeAccountSession()
             .onEach { session ->
                 sessionHandler.onSessionSnapshot(session.isAuthorized)
@@ -117,10 +112,6 @@ class AccountViewModel @Inject internal constructor(
 
     override fun onEvent(event: AccountState.Event) {
         when (event) {
-            AccountState.Event.NotificationPermissionRequested -> viewModelScope.launch {
-                appLifecycleSettingsStore.markNotificationPermissionRequested()
-            }
-
             AccountState.Event.BackSelected -> {
                 nav.back()
             }

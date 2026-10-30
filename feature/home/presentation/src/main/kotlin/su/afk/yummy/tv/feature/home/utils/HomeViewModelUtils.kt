@@ -7,6 +7,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
+import su.afk.yummy.tv.domain.home.utils.isEpisodeWatched
 import java.util.concurrent.TimeUnit
 
 /** Убирает из блока рекомендаций тайтлы, скрытые пользователем. */
@@ -45,10 +46,6 @@ internal fun HomeFeed.withMyNewEpisodes(
     val section = HomeFeedSection(HomeFeedSectionType.MY_NEW_EPISODES, title, items)
     return copy(sections = listOf(section) + sections)
 }
-
-/** Отмечена ли просмотренной именно та серия, которую показывает карточка. */
-private fun HomeFeedItem.isEpisodeWatched(watchedEpisodes: Map<Int, Set<Int>>): Boolean =
-    episodeNumber != null && episodeNumber in watchedEpisodes[id].orEmpty()
 
 internal fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
     videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()

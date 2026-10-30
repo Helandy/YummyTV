@@ -9,7 +9,8 @@
     <string name="interface_mode_tv_hint">Крупные элементы и удобная навигация с пульта</string>
     <string name="interface_mode_mobile">Мобильный интерфейс</string>
     <string name="interface_mode_mobile_hint">Компактная компоновка для сенсорного управления</string>
-    <string name="episode_push_notification_channel">Новые серии</string>
+    <string name="episode_push_notification_channel">Уведомления профиля</string>
+    <string name="library_episode_push_notification_channel">Новые серии из ваших списков</string>
     <string name="episode_push_action_watch">Смотреть</string>
     <string name="episode_push_action_details">Подробнее</string>
     <string name="shortcut_search">Поиск</string>
@@ -20,4 +21,5 @@
     <string name="widget_continue_watching_empty">Здесь появится то, что вы смотрите</string>
     <string name="widget_episode">Серия</string>
     <string name="widget_episode_number">Серия %1$s</string>
+    <string name="library_episode_push_text">Вышла серия %1$d</string>
 </resources>

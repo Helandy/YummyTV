@@ -20,7 +20,6 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -62,7 +61,6 @@ class AccountViewModelTest : BaseUnitTest() {
     private val errorHandler: ErrorHandler = mockk(relaxed = true)
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
-    private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true)
     private val settingsStore: YaniAccountSettingsStore = mockk(relaxed = true)
     private val accountRepository: AccountRepository = mockk()
     private val detailsNavigator: IDetailsNavigator = mockk(relaxed = true)
@@ -84,14 +82,12 @@ class AccountViewModelTest : BaseUnitTest() {
     private val session = MutableStateFlow(AccountSession(isAuthorized = true, userId = USER_ID))
     private val nickname = MutableStateFlow("")
     private val avatarUrl = MutableStateFlow("")
-    private val permissionRequested = MutableStateFlow(false)
 
     @Before
     fun setUp() {
         every { accountRepository.observeSession() } returns session
         every { settingsStore.yaniNickname } returns nickname
         every { settingsStore.yaniAvatarUrl } returns avatarUrl
-        every { appLifecycleSettingsStore.notificationPermissionRequested } returns permissionRequested
         every { sessionHandler.onSessionSnapshot(any()) } just Runs
         every { sessionHandler.isAuthorized() } answers { session.value.isAuthorized }
         every { sessionHandler.beginMissingProfileRecoveryIfNeeded(any()) } returns false
@@ -106,7 +102,6 @@ class AccountViewModelTest : BaseUnitTest() {
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,
-        appLifecycleSettingsStore = appLifecycleSettingsStore,
         settingsStore = settingsStore,
         observeAccountSession = ObserveAccountSessionUseCase(accountRepository),
         detailsNavigator = detailsNavigator,
@@ -178,16 +173,14 @@ class AccountViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `stored nickname avatar and permission flag are mirrored into the state`() {
+    fun `stored nickname and avatar are mirrored into the state`() {
         val vm = createViewModel()
 
         nickname.value = "sandy"
         avatarUrl.value = "avatar"
-        permissionRequested.value = true
 
         assertEquals("sandy", vm.currentState.nickname)
         assertEquals("avatar", vm.currentState.avatarUrl)
-        assertTrue(vm.currentState.notificationPermissionRequested)
     }
 
     @Test
@@ -484,13 +477,11 @@ class AccountViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `permission request is remembered and back leaves the screen`() {
+    fun `back leaves the screen`() {
         val vm = createViewModel()
 
-        vm.setEvent(Event.NotificationPermissionRequested)
         vm.setEvent(Event.BackSelected)
 
-        coVerify(exactly = 1) { appLifecycleSettingsStore.markNotificationPermissionRequested() }
         verify(exactly = 1) { nav.back() }
     }
 

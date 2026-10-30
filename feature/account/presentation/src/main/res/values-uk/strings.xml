@@ -203,8 +203,6 @@
     <string name="account_mobile_my_subscriptions_player">Плеєр: %1$s</string>
     <string name="account_mobile_my_subscriptions_player_unknown">Плеєр невідомий</string>
     <string name="account_error_load_subscriptions_failed">Не вдалося завантажити підписки</string>
-    <string name="account_episode_push_enabled">Пуш про нові серії</string>
-    <string name="account_episode_push_enabled_hint">Надсилати сповіщення про нову серію за підпискою</string>
     <string name="account_profile_social_friends">Друзі</string>
     <string name="account_profile_social_reviews">Рецензії</string>
     <string name="account_profile_social_comments">Коментарі</string>

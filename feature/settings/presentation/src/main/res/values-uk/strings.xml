@@ -10,6 +10,12 @@
     <string name="settings_mobile_category_playback_hint">Пропуск опенінгів, автоплей наступної серії, озвучка</string>
     <string name="settings_category_watch_progress">Прогрес перегляду</string>
     <string name="settings_mobile_category_watch_progress_hint">Коли серія вважається переглянутою</string>
+    <string name="settings_category_notifications">Сповіщення</string>
+    <string name="settings_mobile_category_notifications_hint">Пуші про нові серії</string>
+    <string name="settings_episode_push_label">Пуші профілю</string>
+    <string name="settings_episode_push_hint">Сповіщення про нову серію тайтлів і озвучок, на які ви підписані в профілі Yani. Перевірка приблизно раз на 3 години</string>
+    <string name="settings_library_episode_push_label">Локальні пуші про нові серії</string>
+    <string name="settings_library_episode_push_hint">Сповіщення про нову серію тайтлів зі списків, обраних для блоку на головній. Перевірка приблизно раз на 3 години</string>
     <string name="settings_category_subtitles">Субтитри</string>
     <string name="settings_mobile_category_subtitles_hint">Розмір, положення, колір і фон</string>
     <string name="settings_category_storage">Сховище</string>

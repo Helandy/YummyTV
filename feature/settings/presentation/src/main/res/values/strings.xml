@@ -10,6 +10,12 @@
     <string name="settings_mobile_category_playback_hint">Opening skip, next episode autoplay, dubbing</string>
     <string name="settings_category_watch_progress">Watch progress</string>
     <string name="settings_mobile_category_watch_progress_hint">When an episode counts as watched</string>
+    <string name="settings_category_notifications">Notifications</string>
+    <string name="settings_mobile_category_notifications_hint">New episode push</string>
+    <string name="settings_episode_push_label">Profile pushes</string>
+    <string name="settings_episode_push_hint">Notifies about new episodes of titles and dubbings you subscribed to in your Yani profile. Checked about every 3 hours</string>
+    <string name="settings_library_episode_push_label">Local new episode pushes</string>
+    <string name="settings_library_episode_push_hint">Notifies about new episodes of titles from the lists chosen for the home block. Checked about every 3 hours</string>
     <string name="settings_category_subtitles">Subtitles</string>
     <string name="settings_mobile_category_subtitles_hint">Size, position, color and background</string>
     <string name="settings_category_storage">Storage</string>

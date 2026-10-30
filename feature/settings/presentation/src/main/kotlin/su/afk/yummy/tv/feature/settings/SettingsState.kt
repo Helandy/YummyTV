@@ -71,6 +71,12 @@ class SettingsState {
         val tvPlayerControlsTutorialDismissed: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val autoManageLibraryLists: Boolean = true,
+        /** Пуши о новых сериях не выключены пользователем (системное разрешение — отдельно). */
+        val episodePushEnabled: Boolean = true,
+        /** Локальный пуш о новых сериях из списков не выключен пользователем. */
+        val libraryEpisodePushEnabled: Boolean = true,
+        /** Системный запрос разрешения на уведомления уже показывали. */
+        val notificationPermissionRequested: Boolean = false,
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
@@ -224,6 +230,15 @@ class SettingsState {
 
         /** Пользователь переключил автоматическое добавление в «Смотрю» / «Просмотрено». */
         data object AutoManageLibraryListsToggled : Event
+
+        /** Пользователь переключил пуши о новых сериях. */
+        data class EpisodePushToggled(val enabled: Boolean) : Event
+
+        /** Пользователь переключил локальный пуш о новых сериях из своих списков. */
+        data class LibraryEpisodePushToggled(val enabled: Boolean) : Event
+
+        /** Показан системный запрос разрешения на уведомления: запоминаем это. */
+        data object NotificationPermissionRequested : Event
 
         /** Пользователь изменил пороги "просмотрено" (минуты до конца по длине серии). */
         data class WatchedThresholdsChanged(val thresholds: WatchedThresholds) : Event

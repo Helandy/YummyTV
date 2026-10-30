@@ -270,8 +270,9 @@ fun DetailsMobileScreen(
             state = state,
             onLibraryListSelected = { list ->
                 val select = DetailsState.Event.LibraryListSelected(list)
-                // О новых сериях «Смотрю» сообщают пуши — разрешение спрашиваем при добавлении.
-                if (state.isSignedIn && list == UserAnimeList.WATCHING) {
+                // О новых сериях «Смотрю» сообщают пуши — разрешение предлагаем один раз.
+                if (state.isSignedIn && list == UserAnimeList.WATCHING && state.episodePushPromptAvailable) {
+                    onEvent(DetailsState.Event.EpisodePushPromptShown)
                     notificationPermissionGate { onEvent(select) }
                 } else {
                     onEvent(select)

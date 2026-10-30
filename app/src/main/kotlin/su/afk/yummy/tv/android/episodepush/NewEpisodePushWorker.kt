@@ -16,13 +16,15 @@ import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.unreadBadgeCount
 import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.ResolveNotificationAnimeIdUseCase
+import su.afk.yummy.tv.domain.home.usecase.SelectLibraryEpisodePushesUseCase
 
 /**
- * Раз в [su.afk.yummy.tv.android.episodepush.NewEpisodePushScheduler] опрашивает ту же ленту
- * уведомлений, что рисует вкладка «Уведомления» в аккаунте, и превращает новые
+ * Раз в 3 часа ([NewEpisodePushScheduler], только пока пользователь вошёл в аккаунт) опрашивает
+ * ту же ленту уведомлений, что рисует вкладка «Уведомления» в аккаунте, и превращает новые
  * `isNewEpisode`-записи в системные пуши — даже если приложение не открывали. Этот же ответ
- * обновляет счётчик непрочитанных для бейджа аккаунта. Опрос идёт всегда, независимо от разрешения
- * на уведомления: единственный выключатель пушей — системный канал.
+ * обновляет счётчик непрочитанных для бейджа аккаунта. Опрос идёт независимо от настроек пуша;
+ * сам пуш показывается, только если он включён ([EpisodePushSettingsStore.enabled]) и выдано
+ * системное разрешение.
  * Сервер сам решает, что считать новой серией по подписке ([ProfileNotification.isNewEpisode]),
  * поэтому воркеру не нужно ничего диффать самостоятельно.
  */
@@ -63,7 +65,9 @@ class NewEpisodePushWorker @AssistedInject constructor(
             // Ленту опрашиваем всегда, но без разрешения пуш система всё равно выкинет — не тратим
             // сеть на resolveNotificationAnimeId. Id при этом помечаем известными, иначе после
             // выдачи разрешения прилетит бэклог.
-            if (NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) {
+            val pushEnabled = episodePushSettingsStore.enabled.first() &&
+                NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
+            if (pushEnabled) {
                 newOnes.forEach { notification -> pushNotification(notification) }
             }
             episodePushSettingsStore.addKnownNotificationIds(
@@ -79,7 +83,16 @@ class NewEpisodePushWorker @AssistedInject constructor(
 
     private suspend fun pushNotification(notification: ProfileNotification) {
         val animeId = notification.animeSlug?.let { slug -> resolveNotificationAnimeId(slug) }
+        val nowSeconds = System.currentTimeMillis() / 1_000
+        if (animeId != null) {
+            // Локальный воркер мог уже сообщить об этой серии — один пуш на тайтл за сутки.
+            val lastPush = episodePushSettingsStore.recentPushes.first()[animeId]
+            if (lastPush != null && lastPush >= nowSeconds - SelectLibraryEpisodePushesUseCase.DEDUP_WINDOW_SECONDS) {
+                return
+            }
+        }
         notificationService.showNewEpisode(notification, animeId)
+        if (animeId != null) episodePushSettingsStore.recordPush(animeId, nowSeconds)
     }
 
     private companion object {
