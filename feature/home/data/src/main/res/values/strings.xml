@@ -3,7 +3,6 @@
     <string name="home_section_new">New episodes</string>
     <string name="home_section_new_titles">New titles</string>
     <string name="home_section_announcements">Coming soon</string>
-    <string name="home_section_schedule">Schedule</string>
     <string name="home_section_recommends">Recommendations</string>
     <string name="home_section_collections">Collections</string>
 </resources>

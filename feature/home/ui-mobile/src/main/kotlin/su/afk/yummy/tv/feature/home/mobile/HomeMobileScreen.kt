@@ -338,7 +338,6 @@ fun HomeMobileScreen(
                             title = stringResource(R.string.home_mobile_more),
                             scheduleTitle = stringResource(R.string.home_mobile_schedule),
                             reviewsTitle = stringResource(R.string.home_mobile_reviews),
-                            showSchedule = state.hasSchedule,
                             onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
                             onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
                             modifier = Modifier.mobileContentMaxWidth(),

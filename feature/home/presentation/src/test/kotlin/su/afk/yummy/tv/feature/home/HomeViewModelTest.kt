@@ -177,7 +177,6 @@ class HomeViewModelTest : BaseUnitTest() {
     private fun feed(recommendations: List<Int> = listOf(1, 2)) = HomeFeed(
         heroItems = emptyList(),
         sections = listOf(
-            HomeFeedSection(HomeFeedSectionType.SCHEDULE, "Schedule", listOf(item(100))),
             HomeFeedSection(HomeFeedSectionType.RECOMMENDATIONS, "For you", recommendations.map(::item)),
         ),
     )
@@ -202,12 +201,11 @@ class HomeViewModelTest : BaseUnitTest() {
         sections.single { it.type == HomeFeedSectionType.RECOMMENDATIONS }.items.map { it.id }
 
     @Test
-    fun `loads the feed without the schedule section and remembers that it existed`() {
+    fun `loads the feed`() {
         val state = createViewModel().currentState
 
         assertFalse(state.isLoading)
         assertNull(state.error)
-        assertTrue(state.hasSchedule)
         assertEquals(listOf(HomeFeedSectionType.RECOMMENDATIONS), state.feed?.sections?.map { it.type })
         verify(exactly = 1) { analytics.eventScreenOpened() }
     }

@@ -23,7 +23,6 @@ class HomeState {
         val isRefreshing: Boolean = false,
         val feed: HomeFeed? = null,
         /** Есть ли секция расписания в исходной ленте (до фильтрации из [feed]). */
-        val hasSchedule: Boolean = false,
         val error: UiText? = null,
         val continueWatching: ImmutableList<HomeContinueWatchingItem> = persistentListOf(),
         val isContinueWatchingLoaded: Boolean = false,

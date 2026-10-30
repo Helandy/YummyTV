@@ -3,7 +3,6 @@ package su.afk.yummy.tv.core.storage.home
 import su.afk.yummy.tv.core.storage.offlinefirst.isCacheFresh
 
 const val HOME_FEED_CONTAINER_HERO = "hero"
-const val HOME_FEED_CONTAINER_SCHEDULE = "schedule"
 const val HOME_FEED_CONTAINER_CONTINUE_WATCHING = "continue_watching"
 const val HOME_FEED_CONTAINER_NEW_RELEASES = "new_releases"
 const val HOME_FEED_CONTAINER_NEW_TITLES = "new_titles"

@@ -17,7 +17,6 @@ internal fun YaniFeedDto.summaryForLog(): String {
         append(" new=${data.new.size}")
         append(" recommends=${data.recommends.size}")
         append(" newVideos=${data.newVideos.size}")
-        append(" schedule=${data.schedule.size}")
         append(" posts=${data.posts.items.size}")
         append(" bloggerVideos=${data.blogger.videos.items.size}")
         append(" collections=${data.collections.size}")

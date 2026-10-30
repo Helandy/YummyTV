@@ -73,16 +73,8 @@ class HomeMobileScreenTest {
     }
 
     @Test
-    fun scheduleQuickActionIsHiddenWithoutSchedule() {
-        setScreen(loaded { copy(hasSchedule = false) })
-
-        scrollFeedToText(string(R.string.home_mobile_reviews))
-        composeRule.onNodeWithText(string(R.string.home_mobile_schedule)).assertDoesNotExist()
-    }
-
-    @Test
     fun scheduleQuickActionSendsScheduleSelected() {
-        setScreen(loaded { copy(hasSchedule = true) })
+        setScreen(loaded())
 
         scrollFeedToText(string(R.string.home_mobile_schedule))
         composeRule.onNodeWithText(string(R.string.home_mobile_schedule)).performClick()

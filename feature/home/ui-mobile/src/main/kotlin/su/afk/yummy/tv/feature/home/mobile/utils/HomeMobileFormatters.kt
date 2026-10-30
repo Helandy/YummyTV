@@ -10,7 +10,6 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.presentation.R
 
 internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this) {
-    HomeFeedSectionType.SCHEDULE,
     HomeFeedSectionType.MY_NEW_EPISODES,
     HomeFeedSectionType.NEW_RELEASES,
     HomeFeedSectionType.NEW_TITLES,

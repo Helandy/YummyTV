@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
@@ -49,6 +51,9 @@ class YaniHomeFeedRepository(
     private val animeStorage: AnimeStorage,
     private val analyticsTracker: AnalyticsTracker,
 ) : HomeFeedRepository {
+
+    /** Параллельные загрузки ленты (экран и канал ТВ) ждут друг друга, а не качают её дважды. */
+    private val fetchMutex = Mutex()
 
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
 
@@ -139,12 +144,20 @@ class YaniHomeFeedRepository(
         // fallback при ошибке), чтобы не пересчитывать его отдельно для сетевой ветки.
         val local = readLocalFeedContext()
         val watchSignature = feedCacheSignature()
+        val requestedAtMs = System.currentTimeMillis()
         offlineFirstCache(
             forceRefresh = forceRefresh,
             read = { homeFeedStore.getFeed(local.languageCode, watchSignature) },
             isFresh = { it.isFresh(FEED_TTL_MS) },
             toDomain = { it.toStoredHomeFeed(stringProvider) },
-            fetchAndSave = { fetchHomeFeed(local.languageCode, watchSignature) },
+            fetchAndSave = {
+                fetchMutex.withLock {
+                    // Лента, сохранённая другим вызовом уже после начала этого, подходит и для него.
+                    homeFeedStore.getFeed(local.languageCode, watchSignature)
+                        ?.takeIf { it.cachedAt >= requestedAtMs }
+                        ?: fetchHomeFeed(local.languageCode, watchSignature)
+                }
+            },
             transform = { it.withLocalOverrides(local.watchEntries, local.hiddenIds) },
         )
     }

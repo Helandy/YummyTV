@@ -40,7 +40,6 @@ import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
@@ -64,7 +63,6 @@ import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
-import su.afk.yummy.tv.feature.home.utils.withoutScheduleSection
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
@@ -429,10 +427,7 @@ class HomeViewModel @Inject internal constructor(
         val feed = rawFeed ?: return
         val hiddenIds = currentState.hiddenRecommendationIds
         setState {
-            copy(
-                feed = feed.toVisibleFeed(hiddenIds),
-                hasSchedule = feed.sections.any { it.type == HomeFeedSectionType.SCHEDULE },
-            )
+            copy(feed = feed.toVisibleFeed(hiddenIds))
         }
     }
 
@@ -806,15 +801,13 @@ class HomeViewModel @Inject internal constructor(
             copy(
                 isLoading = isLoading,
                 feed = feed.toVisibleFeed(hiddenRecommendationIds),
-                hasSchedule = feed.sections.any { it.type == HomeFeedSectionType.SCHEDULE },
             )
         }
     }
 
-    /** Лента в том виде, в котором её видит пользователь: без скрытого, без расписания, с новыми сериями. */
+    /** Лента в том виде, в котором её видит пользователь: без скрытого, с новыми сериями. */
     private fun HomeFeed.toVisibleFeed(hiddenIds: Set<Int>): HomeFeed =
         withoutHiddenRecommendations(hiddenIds)
-            .withoutScheduleSection()
             .let { feed ->
                 if (!newEpisodesSectionEnabled) {
                     feed

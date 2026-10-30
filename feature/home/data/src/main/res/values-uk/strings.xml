@@ -3,7 +3,6 @@
     <string name="home_section_new">Нові серії</string>
     <string name="home_section_new_titles">Новинки</string>
     <string name="home_section_announcements">Незабаром</string>
-    <string name="home_section_schedule">Розклад</string>
     <string name="home_section_recommends">Рекомендації</string>
     <string name="home_section_collections">Колекції</string>
 </resources>

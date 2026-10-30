@@ -15,7 +15,6 @@ data class YaniFeedResponseDto(
     val new: List<YaniAnimeDto> = emptyList(),
     val recommends: List<YaniAnimeDto> = emptyList(),
     @SerialName("new_videos") val newVideos: List<YaniVideoDto> = emptyList(),
-    val schedule: List<YaniAnimeDto> = emptyList(),
     val posts: YaniPostsDto = YaniPostsDto(),
     val blogger: YaniBloggerDto = YaniBloggerDto(),
     val collections: List<YaniCollectionDto> = emptyList(),

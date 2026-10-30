@@ -33,7 +33,6 @@ internal fun HomeQuickActionsSection(
     title: String,
     scheduleTitle: String,
     reviewsTitle: String,
-    showSchedule: Boolean,
     onScheduleClick: () -> Unit,
     onReviewsClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -52,14 +51,12 @@ internal fun HomeQuickActionsSection(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (showSchedule) {
-                HomeQuickActionCard(
-                    title = scheduleTitle,
-                    icon = Icons.Filled.DateRange,
-                    onClick = onScheduleClick,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            HomeQuickActionCard(
+                title = scheduleTitle,
+                icon = Icons.Filled.DateRange,
+                onClick = onScheduleClick,
+                modifier = Modifier.weight(1f),
+            )
             HomeQuickActionCard(
                 title = reviewsTitle,
                 icon = Icons.Filled.RateReview,
@@ -117,20 +114,6 @@ private fun HomeQuickActionsSectionPreview() = ScreenPreviewTheme {
         title = "Ещё",
         scheduleTitle = "Расписание",
         reviewsTitle = "Рецензии",
-        showSchedule = true,
-        onScheduleClick = {},
-        onReviewsClick = {},
-    )
-}
-
-@Preview(name = "Reviews only", showBackground = true)
-@Composable
-private fun HomeQuickActionsReviewsOnlyPreview() = ScreenPreviewTheme {
-    HomeQuickActionsSection(
-        title = "Ещё",
-        scheduleTitle = "Расписание",
-        reviewsTitle = "Рецензии",
-        showSchedule = false,
         onScheduleClick = {},
         onReviewsClick = {},
     )

@@ -24,10 +24,6 @@ internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFee
     )
 }
 
-/** Расписание вынесено в отдельную вкладку бокового меню, поэтому его секция не показывается в ленте главной. */
-internal fun HomeFeed.withoutScheduleSection(): HomeFeed =
-    copy(sections = sections.filterNot { it.type == HomeFeedSectionType.SCHEDULE })
-
 /**
  * Добавляет в начало ленты секцию недавно вышедших серий тайтлов из [libraryAnimeIds]; без
  * совпадений секцию не добавляет. Серии из [watchedEpisodes] убираются из секции.
