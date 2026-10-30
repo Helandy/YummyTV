@@ -32,17 +32,17 @@ class TmdbEpisodePreviewsTest : BaseUnitTest() {
     }
 
     @Test
-    fun `mobile gets the preview as served`() = runTest {
+    fun `mobile gets a bigger frame`() = runTest {
         withPreviews("1" to W300)
 
-        assertEquals(W300, previews(AppInterfaceMode.MOBILE).previewUrl(ANIME_ID, "1"))
+        assertEquals(W300.replace("/w300/", "/w780/"), previews(AppInterfaceMode.MOBILE).previewUrl(ANIME_ID, "1"))
     }
 
     @Test
-    fun `tv gets a bigger frame`() = runTest {
+    fun `tv gets the biggest frame`() = runTest {
         withPreviews("1" to W300)
 
-        assertEquals(W300.replace("/w300/", "/w780/"), previews(AppInterfaceMode.TV).previewUrl(ANIME_ID, "01"))
+        assertEquals(W300.replace("/w300/", "/w1280/"), previews(AppInterfaceMode.TV).previewUrl(ANIME_ID, "01"))
     }
 
     @Test

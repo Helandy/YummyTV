@@ -19,7 +19,7 @@ import javax.inject.Singleton
  * Параллельные запросы одного тайтла делят один [Deferred] на [IoApplicationScope]; пустой результат (сбой или нет
  * данных) помнится только [EMPTY_TTL_MS], чтобы один таймаут не лишал тайтл кадров до перезапуска.
  *
- * API отдаёт кадры в w300: на мобильном этого хватает, на ТВ карточки крупные, поэтому там берём w780.
+ * API отдаёт кадры в w300, а карточки серий крупнее: мобильному берём w780, ТВ — w1280.
  */
 @Singleton
 class TmdbEpisodePreviews @Inject constructor(
@@ -37,7 +37,8 @@ class TmdbEpisodePreviews @Inject constructor(
     suspend fun previewUrl(animeId: Int, episode: String): String? {
         if (animeId <= 0 || episode.isBlank()) return null
         val url = previewsOf(animeId)[episode.episodeGroupKey()] ?: return null
-        return if (interfaceModePreferences.selectedMode == AppInterfaceMode.TV) url.withTvSize() else url
+        val size = if (interfaceModePreferences.selectedMode == AppInterfaceMode.TV) TV_SIZE_SEGMENT else MOBILE_SIZE_SEGMENT
+        return url.replace(SERVED_SIZE_SEGMENT, size)
     }
 
     private suspend fun previewsOf(animeId: Int): Map<String, String> {
@@ -55,11 +56,10 @@ class TmdbEpisodePreviews @Inject constructor(
     private fun Entry.isStaleEmpty(now: Long): Boolean =
         previews.isCompleted && now - createdAtMs > EMPTY_TTL_MS && previews.getCompleted().isEmpty()
 
-    private fun String.withTvSize(): String = replace(MOBILE_SIZE_SEGMENT, TV_SIZE_SEGMENT)
-
     private companion object {
         const val EMPTY_TTL_MS = 60_000L
-        const val MOBILE_SIZE_SEGMENT = "/w300/"
-        const val TV_SIZE_SEGMENT = "/w780/"
+        const val SERVED_SIZE_SEGMENT = "/w300/"
+        const val MOBILE_SIZE_SEGMENT = "/w780/"
+        const val TV_SIZE_SEGMENT = "/w1280/"
     }
 }
