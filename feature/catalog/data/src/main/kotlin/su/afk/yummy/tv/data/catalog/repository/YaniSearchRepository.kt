@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.data.catalog.repository
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
@@ -12,11 +10,11 @@ import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.search.SearchStorage
 import su.afk.yummy.tv.core.storage.search.isFresh
-import su.afk.yummy.tv.data.catalog.dto.YaniSearchFilterOptionsDto
 import su.afk.yummy.tv.data.catalog.mapper.toSearchItem
 import su.afk.yummy.tv.data.catalog.network.YaniSearchApi
 import su.afk.yummy.tv.data.catalog.storage.mapper.toSearchFilterOptionsCache
 import su.afk.yummy.tv.data.catalog.storage.mapper.toSearchPageCache
+import su.afk.yummy.tv.domain.catalog.model.CachedSearchPage
 import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
@@ -70,6 +68,21 @@ class YaniSearchRepository(
         )
     }
 
+    override suspend fun getCachedSearchPage(
+        query: String,
+        filters: SearchFilters,
+        limit: Int,
+        offset: Int,
+    ): CachedSearchPage? = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
+        searchStorage.getPage(searchCacheKey(query, filters, limit, offset, language))?.let { cache ->
+            CachedSearchPage(
+                page = cache.toStoredSearchPage(),
+                isFresh = cache.isFresh(SEARCH_RESULTS_TTL_MS),
+            )
+        }
+    }
+
     override suspend fun getFilterOptions(): SearchFilterOptions = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
         offlineFirstCache(
@@ -77,9 +90,7 @@ class YaniSearchRepository(
             isFresh = { it.isFresh(SEARCH_FILTER_OPTIONS_TTL_MS) },
             toDomain = { it.toStoredSearchFilterOptions() },
             fetchAndSave = {
-                val response = fetchFilterOptionsDto()
-                val cache = response.genres.toSearchFilterOptionsCache(
-                    catalog = response.catalog,
+                val cache = api.getGenres().toSearchFilterOptionsCache(
                     language = languageCode,
                     cachedAt = System.currentTimeMillis(),
                 )
@@ -88,16 +99,6 @@ class YaniSearchRepository(
             },
         )
     }
-
-    private suspend fun fetchFilterOptionsDto(): YaniSearchFilterOptionsDto =
-        coroutineScope {
-            val genres = async { api.getGenres() }
-            val catalog = async { api.getCatalog() }
-            YaniSearchFilterOptionsDto(
-                genres = genres.await(),
-                catalog = catalog.await(),
-            )
-        }
 
     private fun searchCacheKey(
         query: String,

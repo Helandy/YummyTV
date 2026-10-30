@@ -5,8 +5,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import su.afk.yummy.tv.core.network.yani.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
-import su.afk.yummy.tv.data.catalog.dto.YaniSearchCatalogDto
-import su.afk.yummy.tv.data.catalog.dto.YaniSearchCatalogResponseDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchGenresResponseDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchItemDto
@@ -45,9 +43,4 @@ class YaniSearchApi(
             .body<YaniSearchGenresResponseDto>()
             .response
 
-    suspend fun getCatalog(): YaniSearchCatalogDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/catalog") {
-            parameter("limit", 1)
-            parameter("offset", 0)
-        }.body<YaniSearchCatalogResponseDto>().response
 }

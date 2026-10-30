@@ -31,11 +31,14 @@ import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
 import su.afk.yummy.tv.domain.catalog.usecase.AddSearchHistoryQueryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.ClearSearchHistoryUseCase
+import su.afk.yummy.tv.domain.catalog.model.SearchPage
+import su.afk.yummy.tv.domain.catalog.usecase.GetCachedSearchPageUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.ObserveSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.catalog.mapper.toLastSearchSnapshot
+import su.afk.yummy.tv.feature.catalog.mapper.toOffsetPage
 import su.afk.yummy.tv.feature.catalog.mapper.toSearchFilters
 import su.afk.yummy.tv.feature.catalog.utils.normalizedYears
 import su.afk.yummy.tv.feature.catalog.utils.toggle
@@ -53,6 +56,7 @@ class CatalogViewModel @Inject internal constructor(
     private val getSearchFilterOptions: GetSearchFilterOptionsUseCase,
     private val getRandomAnime: GetRandomAnimeUseCase,
     private val search: SearchUseCase,
+    private val getCachedSearchPage: GetCachedSearchPageUseCase,
     private val analytics: CatalogAnalytics,
     private val searchSettings: SearchSettingsStore,
     private val accountSettingsStore: YaniAccountSettingsStore,
@@ -332,9 +336,11 @@ class CatalogViewModel @Inject internal constructor(
                 enablePlaceholders = false,
             ),
             pagingSourceFactory = {
-                OffsetPagingSource(itemKey = { it.id }) { limit, offset ->
-                    loadSearchPage(query, filters, limit, offset)
+                lateinit var source: OffsetPagingSource<SearchItem>
+                source = OffsetPagingSource(itemKey = { it.id }) { limit, offset ->
+                    loadSearchPage(query, filters, limit, offset, onRefreshed = { source.invalidate() })
                 }
+                source
             },
         ).flow.cachedIn(viewModelScope)
         setState { copy(results = pagingFlow, isSearchActive = true, isSearchPending = false) }
@@ -345,22 +351,43 @@ class CatalogViewModel @Inject internal constructor(
         filters: SearchFilters,
         limit: Int,
         offset: Int,
-    ): OffsetPage<SearchItem> =
-        runSuspendCatching {
+        onRefreshed: () -> Unit,
+    ): OffsetPage<SearchItem> {
+        // Первую страницу показываем из кэша даже просроченной, а обновляем в фоне: так каталог
+        // не держит скелетоны, пока идёт сеть. Следующие страницы берём как раньше, иначе старые
+        // и новые страницы одной выдачи смешались бы.
+        if (offset == 0) {
+            val cached = runSuspendCatching { getCachedSearchPage(query, filters, limit, offset) }.getOrNull()
+            if (cached != null) {
+                if (!cached.isFresh) refreshShownPage(query, filters, limit, cached.page, onRefreshed)
+                return cached.page.toOffsetPage()
+            }
+        }
+        return runSuspendCatching {
             search(query, filters, limit, offset)
         }.fold(
-            onSuccess = { page ->
-                OffsetPage(
-                    items = page.items,
-                    nextOffset = page.nextOffset,
-                    canLoadMore = page.canLoadMore,
-                )
-            },
+            onSuccess = SearchPage::toOffsetPage,
             onFailure = { error ->
                 analytics.eventLoadError(query, filters, offset, error)
                 throw error
             },
         )
+    }
+
+    /** Обновляет первую страницу из сети и перезагружает список, только если выдача изменилась. */
+    private fun refreshShownPage(
+        query: String,
+        filters: SearchFilters,
+        limit: Int,
+        shown: SearchPage,
+        onRefreshed: () -> Unit,
+    ) {
+        viewModelScope.launch {
+            runSuspendCatching { search(query, filters, limit, 0) }.onSuccess { fresh ->
+                if (fresh.items.map { it.id } != shown.items.map { it.id }) onRefreshed()
+            }
+        }
+    }
 
     private fun persistLastSearchIfEnabled(query: String, filters: SearchFilters) {
         viewModelScope.launch {

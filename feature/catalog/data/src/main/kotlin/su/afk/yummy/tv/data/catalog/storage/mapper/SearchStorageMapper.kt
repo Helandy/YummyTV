@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.storage.search.SearchPageCache
 import su.afk.yummy.tv.core.storage.search.SearchPageEntry
 import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
 import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
-import su.afk.yummy.tv.data.catalog.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchItemDto
 import su.afk.yummy.tv.domain.catalog.model.SearchAnimeType
@@ -87,7 +86,6 @@ internal fun SearchPageCache.toSearchPage(): SearchPage =
     )
 
 internal fun YaniSearchGenresDto.toSearchFilterOptionsCache(
-    catalog: YaniSearchCatalogDto,
     language: String,
     cachedAt: Long,
 ): SearchFilterOptionsCache =
@@ -119,16 +117,12 @@ internal fun YaniSearchGenresDto.toSearchFilterOptionsCache(
                 groupId = genre.groupId ?: 0,
             )
         },
-        types = catalog.types.mapNotNull { item ->
-            val type = item.type ?: return@mapNotNull null
-            val id = type.alias ?: type.value?.toString() ?: return@mapNotNull null
-            id to type
-        }.mapIndexed { index, (id, type) ->
+        types = searchTypeTitles(language).mapIndexed { index, (id, title) ->
             SearchTypeEntry(
                 language = language,
                 position = index,
                 typeId = id,
-                title = type.name,
+                title = title,
             )
         },
     )

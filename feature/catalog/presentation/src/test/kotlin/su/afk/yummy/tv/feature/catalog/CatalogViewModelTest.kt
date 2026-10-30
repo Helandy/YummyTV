@@ -33,6 +33,7 @@ import su.afk.yummy.tv.domain.catalog.usecase.ClearSearchHistoryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.ObserveSearchHistoryUseCase
+import su.afk.yummy.tv.domain.catalog.usecase.GetCachedSearchPageUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.catalog.CatalogState.Event
@@ -78,6 +79,7 @@ class CatalogViewModelTest : BaseUnitTest() {
         getSearchFilterOptions = GetSearchFilterOptionsUseCase(repository),
         getRandomAnime = GetRandomAnimeUseCase(repository),
         search = SearchUseCase(repository),
+        getCachedSearchPage = GetCachedSearchPageUseCase(repository),
         analytics = analytics,
         searchSettings = searchSettings,
         accountSettingsStore = mockk<YaniAccountSettingsStore> { every { yaniContentLanguage } returns emptyFlow() },
