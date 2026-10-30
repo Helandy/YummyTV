@@ -246,7 +246,7 @@ fun PlayerMobileScreen(
                 balancerNames = uiState.balancerNames,
                 balancerAvailability = uiState.balancerAvailability,
                 selectedIndex = uiState.currentBalancerIndex,
-                metaLabel = stringResource(R.string.player_balancer_meta),
+                balancerExternal = uiState.balancerExternal,
                 onBalancerSelected = { index ->
                     showErrorBalancerSheet = false
                     onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))

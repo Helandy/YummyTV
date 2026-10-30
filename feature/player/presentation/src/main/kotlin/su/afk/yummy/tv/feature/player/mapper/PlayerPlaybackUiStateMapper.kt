@@ -1,8 +1,10 @@
 package su.afk.yummy.tv.feature.player.mapper
 
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
@@ -20,17 +22,19 @@ import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
+import su.afk.yummy.tv.feature.player.utils.episodeProgress
 import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingViews
 import su.afk.yummy.tv.feature.player.utils.isBalancerAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
+import su.afk.yummy.tv.feature.player.utils.isExtraSourceBalancer
 import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
-import su.afk.yummy.tv.feature.player.utils.withExtraSourceName
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.streamQualities
+import su.afk.yummy.tv.feature.player.utils.withExtraSourceName
 
 fun PlayerState.State.toPlayerPlaybackUiState(
     playerNamePrefix: String,
@@ -67,6 +71,9 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     val balancerNames = availableBalancerIndices.map { index ->
         sourceGraph.balancers.getOrNull(index)?.name.orEmpty().removePrefix(playerNamePrefix)
     }
+    val balancerExternal = availableBalancerIndices.map { index ->
+        sourceGraph.balancers.getOrNull(index)?.isExtraSourceBalancer() == true
+    }
     val canChangePlayer = balancerNames.size > 1
     val canChangeDubbing = displayedDubbingNames.size > 1
 
@@ -81,6 +88,19 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeSkips = activeEpisodeSource(this)?.skips ?: PlayerSkips.Empty,
         hasPrevEpisode = selection.episodeIndex > 0,
         hasNextEpisode = selection.episodeIndex < activeEpisodes.lastIndex,
+        episodes = if (activeEpisodes.size > 1 && !isOfflinePlayback) {
+            activeEpisodes.mapIndexed { index, episode ->
+                PlayerEpisodeItem(
+                    index = index,
+                    number = episode.number,
+                    screenshotUrl = episode.screenshotUrl,
+                    progress = watchProgress.episodeProgress(episode.number),
+                )
+            }.toImmutableList()
+        } else {
+            persistentListOf()
+        },
+        currentEpisodeIndex = selection.episodeIndex,
         nextEpisodeDubbing = if (selection.episodeIndex < activeEpisodes.lastIndex) {
             null
         } else {
@@ -103,6 +123,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
             ?: selection.dubbingIndex,
         balancerNames = balancerNames.toImmutableList(),
         balancerAvailability = balancerAvailability.toImmutableList(),
+        balancerExternal = balancerExternal.toImmutableList(),
         currentBalancerIndex = availableBalancerIndices.indexOf(selection.balancerIndex)
             .takeIf { it >= 0 }
             ?: 0,

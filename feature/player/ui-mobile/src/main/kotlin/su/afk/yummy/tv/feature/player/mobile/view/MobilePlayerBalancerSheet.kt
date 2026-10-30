@@ -43,7 +43,7 @@ internal fun MobilePlayerBalancerSheet(
     balancerNames: List<String>,
     balancerAvailability: List<Boolean>,
     selectedIndex: Int,
-    metaLabel: String? = null,
+    balancerExternal: List<Boolean>,
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -75,7 +75,13 @@ internal fun MobilePlayerBalancerSheet(
                 MobilePlayerBalancerRow(
                     label = name,
                     metaLabel = if (enabled) {
-                        metaLabel
+                        stringResource(
+                            if (balancerExternal.getOrElse(index) { false }) {
+                                R.string.player_balancer_external_meta
+                            } else {
+                                R.string.player_balancer_meta
+                            },
+                        )
                     } else {
                         stringResource(R.string.player_episode_unavailable)
                     },

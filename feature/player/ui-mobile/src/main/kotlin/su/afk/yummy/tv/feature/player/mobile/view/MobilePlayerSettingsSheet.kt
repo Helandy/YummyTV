@@ -54,6 +54,7 @@ internal fun MobilePlayerSettingsSheet(
     balancerNames: List<String>,
     balancerAvailability: List<Boolean>,
     selectedBalancerIndex: Int,
+    balancerExternal: List<Boolean>,
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
     initialTrackTab: MobilePlayerTrackSettingsTab = MobilePlayerTrackSettingsTab.Dubbing,
@@ -176,9 +177,7 @@ internal fun MobilePlayerSettingsSheet(
                                     metaContent = { contentColor ->
                                         Text(
                                             text = stringResource(
-                                                if (enabled) {
-                                                    R.string.player_balancer_meta
-                                                } else {
+                                                if (!enabled) {
                                                     R.string.player_episode_unavailable
                                                 },
                                             ),
@@ -195,6 +194,10 @@ internal fun MobilePlayerSettingsSheet(
                     }
                 }
             }
+                                                } else if (balancerExternal.getOrElse(index) { false }) {
+                                                    R.string.player_balancer_external_meta
+                                                } else {
+                                                    R.string.player_balancer_meta
         }
     }
 }

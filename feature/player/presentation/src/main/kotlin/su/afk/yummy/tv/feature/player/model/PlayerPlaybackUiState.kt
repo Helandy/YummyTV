@@ -33,6 +33,8 @@ data class PlayerPlaybackUiState(
     val currentBalancerIndex: Int,
     /** Доступные качества стрима: от экстрактора или выведенные из URL. */
     val qualityLabels: ImmutableList<String>,
+    /** Плеер — внешний источник (`source://…`), а не балансер: в подписи вместо «Балансер» — «Внешний». */
+    val balancerExternal: ImmutableList<Boolean>,
     /** Выбранное качество, а если его нет среди доступных — лучшее доступное. */
     val activeQuality: String?,
     /** Качеством управляет адаптивный режим: включён в настройках и в серии не выбрано вручную. */

@@ -95,7 +95,15 @@ internal fun BoxScope.TvPlayerPanelsHost(
         modifier = Modifier
             .align(Alignment.BottomStart)
             .padding(start = 48.dp, bottom = 72.dp),
-        itemMeta = { stringResource(R.string.player_balancer_meta) },
+        itemMeta = { index ->
+            stringResource(
+                if (playback.balancerExternal.getOrElse(index) { false }) {
+                    R.string.player_balancer_external_meta
+                } else {
+                    R.string.player_balancer_meta
+                },
+            )
+        },
         onItemSelected = onBalancerSelected,
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Balancer) },
     )

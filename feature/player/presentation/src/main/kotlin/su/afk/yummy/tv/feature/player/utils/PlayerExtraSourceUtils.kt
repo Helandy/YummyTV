@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.utils
 
+import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
+
 /** Имена источников каталога, у которых плеер (Ashdi, Fenix) отдельный: id из `source://<id>/…` → название для показа. */
 private val AGGREGATOR_SOURCE_NAMES = mapOf("mikai" to "Mikai", "animeon" to "AnimeON")
 
@@ -12,4 +14,10 @@ internal fun String.withExtraSourceName(iframeUrl: String): String {
         ?.lowercase()
     val sourceName = AGGREGATOR_SOURCE_NAMES[sourceId] ?: return this
     return "$this ($sourceName)"
+}
+
+/** Плеер целиком состоит из ссылок источников каталога (`source://…`), то есть это внешний источник, а не балансер. */
+internal fun PlayerSourceBalancer.isExtraSourceBalancer(): Boolean {
+    val urls = dubbings.flatMap { dubbing -> dubbing.episodes.map { it.iframeUrl } }
+    return urls.isNotEmpty() && urls.all { it.startsWith("source://", ignoreCase = true) }
 }

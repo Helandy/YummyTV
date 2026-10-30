@@ -44,6 +44,7 @@
     <string name="player_quality_meta">Відеопотік</string>
     <string name="player_dubbing_meta">Доріжка озвучення</string>
     <string name="player_balancer_meta">Балансер</string>
+    <string name="player_balancer_external_meta">Зовнішній</string>
     <string name="player_episode_unavailable">Немає цієї серії</string>
     <string name="player_resize_fit">Оригінальний</string>
     <string name="player_resize_zoom">Зум</string>

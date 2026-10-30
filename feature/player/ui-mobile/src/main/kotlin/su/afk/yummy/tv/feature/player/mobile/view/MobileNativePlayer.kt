@@ -899,6 +899,7 @@ internal fun MobileNativePlayer(
                 },
                 balancerNames = ui.balancerNames,
                 balancerAvailability = ui.balancerAvailability,
+                balancerExternal = ui.balancerExternal,
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
                     onEvent(PlayerState.Event.BalancerSelected(index, player.currentPosition))
