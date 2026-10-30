@@ -140,6 +140,7 @@
     <string name="profile_edit_images">Profile images</string>
     <string name="profile_edit_choose_avatar">Choose avatar</string>
     <string name="profile_edit_choose_banner">Choose banner</string>
+    <string name="profile_edit_banner_recommended_size">Recommended image size: 1370x170</string>
         <string name="profile_edit_main">Profile details</string>
         <string name="profile_edit_about">About</string>
     <string name="profile_edit_birth_date">Birth date</string>

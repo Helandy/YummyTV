@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.rememberCachedImageRequest
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalAvatarFrame
 
 /**
@@ -87,13 +88,16 @@ internal fun AccountMobileProfileHero(
                 ),
         ) {
             // Широкую панораму (AVIF) платформа декодирует с Android 12; иначе или при ошибке — cropped.
+            // Пока сводка профиля перезагружается, URL приходит пустым: держим последний, чтобы баннер не мигал.
+            var lastBannerUrl by remember { mutableStateOf("") }
+            if (bannerUrl.isNotBlank()) lastBannerUrl = bannerUrl
             var useWide by remember(bannerWideUrl) {
                 mutableStateOf(!bannerWideUrl.isNullOrBlank() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             }
-            val model = if (useWide) bannerWideUrl else bannerUrl.takeIf { it.isNotBlank() }
+            val model = if (useWide) bannerWideUrl else lastBannerUrl.takeIf { it.isNotBlank() }
             if (model != null) {
                 AsyncImage(
-                    model = model,
+                    model = rememberCachedImageRequest(model),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     onError = { if (useWide) useWide = false },
@@ -166,7 +170,7 @@ internal fun AccountMobileProfileHero(
     }
 }
 
-private val BannerHeight = 140.dp
+private val BannerHeight = 96.dp
 private val HeroCorner = 28.dp
 private val AvatarSize = 90.dp
 private val AvatarRing = 4.dp

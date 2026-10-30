@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.rememberCachedImageRequest
 
 /**
  * Баннер профиля фоном под шапкой: картинка (или градиент, если баннера нет)
@@ -49,13 +50,16 @@ internal fun AccountBanner(
                 ),
         ) {
             // Широкую панораму (AVIF) платформа декодирует с Android 12; иначе или при ошибке — cropped.
+            // Пока сводка профиля перезагружается, URL приходит пустым: держим последний, чтобы баннер не мигал.
+            var lastBannerUrl by remember { mutableStateOf("") }
+            if (!bannerUrl.isNullOrBlank()) lastBannerUrl = bannerUrl
             var useWide by remember(bannerWideUrl) {
                 mutableStateOf(!bannerWideUrl.isNullOrBlank() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             }
-            val model = if (useWide) bannerWideUrl else bannerUrl?.takeIf { it.isNotBlank() }
+            val model = if (useWide) bannerWideUrl else lastBannerUrl.takeIf { it.isNotBlank() }
             if (model != null) {
                 AsyncImage(
-                    model = model,
+                    model = rememberCachedImageRequest(model),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     onError = { if (useWide) useWide = false },

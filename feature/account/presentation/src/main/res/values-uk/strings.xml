@@ -143,6 +143,7 @@
     <string name="profile_edit_images">Зображення профілю</string>
     <string name="profile_edit_choose_avatar">Вибрати аватар</string>
     <string name="profile_edit_choose_banner">Вибрати банер</string>
+    <string name="profile_edit_banner_recommended_size">Рекомендований розмір зображення: 1370x170</string>
         <string name="profile_edit_main">Дані профілю</string>
         <string name="profile_edit_about">Про себе</string>
     <string name="profile_edit_birth_date">Дата народження</string>

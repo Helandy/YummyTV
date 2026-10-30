@@ -41,6 +41,7 @@ fun SeasonalAvatarFrame(
     val animated = rememberSeasonalOverlayEnabled()
     val request = ImageRequest.Builder(LocalContext.current)
         .data(HalloweenAvatarDecorUrl)
+        .diskCacheKey(HalloweenAvatarDecorUrl)
         // Без анимаций проигрываем один раз и замираем на последнем кадре (шляпа и хвост).
         .apply { if (!animated) repeatCount(0) }
         .build()

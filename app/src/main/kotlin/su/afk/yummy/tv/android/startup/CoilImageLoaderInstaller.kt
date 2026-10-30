@@ -79,7 +79,12 @@ class CoilImageLoaderInstaller @Inject constructor(
                 .components {
                     add(EpisodeThumbnailKeyer())
                     add(EpisodeThumbnailFetcher.Factory(episodeThumbnailResolver, kodikThumbnailCacheIO))
-                    add(KtorNetworkFetcherFactory(httpClient = imageHttpClient))
+                    add(
+                        KtorNetworkFetcherFactory(
+                            httpClient = { imageHttpClient },
+                            cacheStrategy = { StaticAssetCacheStrategy() },
+                        ),
+                    )
                     // yani отдаёт картинки новостей только в AVIF. Системный декодер на части ТВ-приставок
                     // (Google TV Streamer) уходит в аппаратный AV1-кодек: ~3 с на картинку, а кадры
                     // 1919x1079 не декодируются вовсе. Программный декод через libavif + dav1d.
