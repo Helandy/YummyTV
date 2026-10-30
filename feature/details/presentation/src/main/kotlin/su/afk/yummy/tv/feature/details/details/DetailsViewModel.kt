@@ -119,6 +119,7 @@ class DetailsViewModel @AssistedInject internal constructor(
      * `library.isFavorite || (isSignedIn && isFavorite)` возвращает `true`, и снять его уже нельзя.
      */
     private var pendingFavorite: Boolean? = null
+    private var pendingSkeletonExtras = 2
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var starredDubbings: Set<String> = emptySet()
     private var starredBalancers: Set<String> = emptySet()
@@ -443,26 +444,46 @@ class DetailsViewModel @AssistedInject internal constructor(
     private fun load() {
         viewModelScope.launch {
             loadDetails()
-            // Счётчики из деталей решают, какие дополнительные запросы вообще нужны.
-            loadExtras()
+            // Счётчик трейлеров приходит в деталях; остальные блоки от деталей не зависят.
+            loadTrailers()
         }
+        viewModelScope.launch { loadRatingOverview() }
+        viewModelScope.launch { loadCollections() }
+        viewModelScope.launch { loadEpisodeFrames() }
         viewModelScope.launch { refreshLibraryState() }
         viewModelScope.launch { loadVideosIfCacheMissing() }
     }
 
-    private suspend fun loadExtras() {
-        setState { copy(isExtrasLoading = true) }
-        val extras = extrasHandler.load(animeId, trailersCount = currentState.details?.trailersCount)
+    private suspend fun loadTrailers() {
+        val trailers = extrasHandler.loadTrailers(animeId, trailersCount = currentState.details?.trailersCount)
+        setState { copy(trailers = trailers.toImmutableList()) }
+        markExtraLoaded()
+    }
+
+    private suspend fun loadRatingOverview() {
+        val overview = extrasHandler.loadRatingOverview(animeId)
+        setState { copy(ratingOverview = overview) }
+        markExtraLoaded()
+    }
+
+    private suspend fun loadCollections() {
+        val collections = extrasHandler.loadCollections(animeId)
         setState {
             copy(
-                trailers = extras.trailers.toImmutableList(),
-                ratingOverview = extras.ratingOverview,
-                collectionsBadge = extras.collectionsBadge,
-                collections = extras.collections.toImmutableList(),
-                episodeFrames = extras.episodeFrames,
-                isExtrasLoading = false,
+                collectionsBadge = collections.badge,
+                collections = collections.items.toImmutableList(),
             )
         }
+    }
+
+    private suspend fun loadEpisodeFrames() {
+        val frames = extrasHandler.loadEpisodeFrames(animeId)
+        setState { copy(episodeFrames = frames) }
+    }
+
+    /** Скелетоны гаснут, когда пришли оба блока с ними — трейлеры и сводка рейтинга. */
+    private fun markExtraLoaded() {
+        if (--pendingSkeletonExtras == 0) setState { copy(isExtrasLoading = false) }
     }
 
     private fun refreshRatingOverview() {

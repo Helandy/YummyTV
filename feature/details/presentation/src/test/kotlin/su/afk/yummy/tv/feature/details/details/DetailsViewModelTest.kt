@@ -45,7 +45,7 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.animeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState.Event
 import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasHandler
-import su.afk.yummy.tv.feature.details.details.handler.DetailsExtrasResult
+import su.afk.yummy.tv.feature.details.details.model.DetailsCollections
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
@@ -114,7 +114,9 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())
         every { screenDataHandler.observeUserRating(any()) } returns userRating
-        coEvery { extrasHandler.load(any(), any()) } returns DetailsExtrasResult(emptyList(), null)
+        coEvery { extrasHandler.loadTrailers(any(), any()) } returns emptyList()
+        coEvery { extrasHandler.loadCollections(any()) } returns DetailsCollections()
+        coEvery { extrasHandler.loadEpisodeFrames(any()) } returns AnimeEpisodeFrames()
         coEvery { extrasHandler.loadRatingOverview(any()) } returns null
         every { screenDataHandler.observeAccountSession() } returns session
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.success(animeDetails(id = ANIME_ID, title = "Anime"))
@@ -203,7 +205,8 @@ class DetailsViewModelTest : BaseUnitTest() {
     fun `trailers and rating overview land in the state`() {
         val trailer = AnimeTrailer(iframeUrl = "https://www.youtube.com/embed/abc")
         val overview = DetailsRatingOverview(average = 8.0, votes = 3)
-        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(listOf(trailer), overview)
+        coEvery { extrasHandler.loadTrailers(ANIME_ID, any()) } returns listOf(trailer)
+        coEvery { extrasHandler.loadRatingOverview(ANIME_ID) } returns overview
 
         val state = createViewModel().currentState
 
@@ -217,11 +220,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         val yani = listOf(AnimeScreenshot(id = 1, episode = null, url = "yani"))
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
             Result.success(animeDetails(id = ANIME_ID, screenshots = yani))
-        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(
-            emptyList(),
-            null,
-            episodeFrames = AnimeEpisodeFrames(tmdbStillUrls = listOf("s1")),
-        )
+        coEvery { extrasHandler.loadEpisodeFrames(ANIME_ID) } returns AnimeEpisodeFrames(tmdbStillUrls = listOf("s1"))
 
         val state = createViewModel().currentState
 
@@ -244,11 +243,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     fun `episode frame opens the gallery of episode frames`() {
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
             Result.success(animeDetails(id = ANIME_ID, screenshots = listOf(AnimeScreenshot(1, null, "yani"))))
-        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(
-            emptyList(),
-            null,
-            episodeFrames = AnimeEpisodeFrames(tmdbStillUrls = listOf("s1", "s2")),
-        )
+        coEvery { extrasHandler.loadEpisodeFrames(ANIME_ID) } returns AnimeEpisodeFrames(tmdbStillUrls = listOf("s1", "s2"))
         every { imageViewNavigator(imageUrl = any(), imageUrls = any(), selectedIndex = any()) } returns navKey
         val vm = createViewModel()
 
@@ -259,7 +254,7 @@ class DetailsViewModelTest : BaseUnitTest() {
 
     @Test
     fun `collections badge lands in the state`() {
-        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(emptyList(), null, collectionsBadge = "20+")
+        coEvery { extrasHandler.loadCollections(ANIME_ID) } returns DetailsCollections(badge = "20+")
 
         val state = createViewModel().currentState
 
@@ -275,7 +270,8 @@ class DetailsViewModelTest : BaseUnitTest() {
         userRating.value = 9
 
         assertEquals(refreshed, vm.currentState.ratingOverview)
-        coVerify(exactly = 1) { extrasHandler.loadRatingOverview(ANIME_ID) }
+        // Первичная загрузка + обновление после смены оценки.
+        coVerify(exactly = 2) { extrasHandler.loadRatingOverview(ANIME_ID) }
     }
 
     @Test

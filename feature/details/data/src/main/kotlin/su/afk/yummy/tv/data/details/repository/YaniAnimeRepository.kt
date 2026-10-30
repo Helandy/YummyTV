@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.data.details.repository
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -55,8 +58,6 @@ import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
-import su.afk.yummy.tv.data.details.utils.previousTvEntryIds
-import su.afk.yummy.tv.data.details.utils.totalOrAiredCount
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
@@ -91,8 +92,9 @@ private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
 // v2: документ содержит кадры TMDB (previewUrl, stills). v3: у записей, чьи серии в TMDB идут сквозной нумерацией с другой
 // записью, сервер больше не отдаёт чужие серии (раньше у 3-го сезона лежали кадры, названия и описания 1-го).
-// v4: запрос несёт смещение серий предыдущих сезонов франшизы (?offset=), оно входит в ключ.
-private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v4"
+// v4: запрос нёс смещение серий предыдущих сезонов франшизы (?offset=), оно входило в ключ.
+// v5: смещение считает сервер, ключ без него.
+private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v5"
 // Сколько кадров Tenrai (по одному на серию) отдавать для ряда «Скриншоты».
 private const val EPISODE_FRAMES_LIMIT = 10
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
@@ -115,6 +117,8 @@ class YaniAnimeRepository(
 ) : AnimeRepository {
 
     private val malEpisodesLocks = ConcurrentHashMap<Int, Mutex>()
+    private val detailsInFlight = ConcurrentHashMap<String, Deferred<AnimeDetails>>()
+    private val detailsScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
@@ -124,11 +128,26 @@ class YaniAnimeRepository(
         }
 
         runSuspendCatching {
-            fetchDetailsFromNetwork(animeId, languageCode)
+            fetchDetailsShared(animeId, languageCode)
         }.getOrElse { error ->
             stored?.toStoredAnimeDetails()
                 ?: throw error
         }
+    }
+
+    /**
+     * Детали одного тайтла на холодном кэше просят одновременно экран, видео, кадры серий и превью, и каждый шёл бы
+     * в сеть отдельным запросом. Загрузка общая: пока она идёт, остальные ждут её же результат. Она живёт в своём
+     * скоупе, поэтому отмена одного ожидающего не обрывает запрос для остальных.
+     */
+    private suspend fun fetchDetailsShared(animeId: Int, languageCode: String): AnimeDetails {
+        val key = "$animeId:$languageCode"
+        val deferred = detailsInFlight.computeIfAbsent(key) {
+            detailsScope.async { fetchDetailsFromNetwork(animeId, languageCode) }.also { started ->
+                started.invokeOnCompletion { detailsInFlight.remove(key, started) }
+            }
+        }
+        return deferred.await()
     }
 
     override suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails? =
@@ -365,36 +384,26 @@ class YaniAnimeRepository(
             }
         }
 
-    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
-        AnimeEpisodeFrames(
-            tmdbStillUrls = getAnimeTmdbImages(animeId).firstEpisodeStillUrls,
-            tenraiFrameUrls = getAnimeEpisodeThumbnails(animeId).toOrderedFrameUrls(EPISODE_FRAMES_LIMIT),
-        )
-
-    /** Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. */
-    private suspend fun loadYummyEpisodes(animeId: Int): YummyEpisodesDto? {
-        val details = getAnimeDetails(animeId)
-        val malId = details.malId ?: return null
-        val offset = previousSeasonsEpisodeCount(animeId, details)
-        return documentCache.getOrFetchJson<YummyEpisodesDto>(
-            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId:$offset",
-            ttlMs = ANIME_EPISODE_INFO_TTL_MS,
-            fetch = { episodesApi.getEpisodes(malId, offset) },
-        )
+    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames = coroutineScope {
+        // TMDB и Tenrai не зависят друг от друга: ждать один ради другого незачем.
+        val tmdb = async { getAnimeTmdbImages(animeId).firstEpisodeStillUrls }
+        val tenrai = async { getAnimeEpisodeThumbnails(animeId).toOrderedFrameUrls(EPISODE_FRAMES_LIMIT) }
+        AnimeEpisodeFrames(tmdbStillUrls = tmdb.await(), tenraiFrameUrls = tenrai.await())
     }
 
     /**
-     * Сколько серий в предыдущих TV-записях франшизы. TMDB часто хранит все сезоны одним со сквозной нумерацией
-     * (у «Монолога фармацевта» 3-й сезон начинается с 37-й серии), и серверу нужно это смещение, чтобы отдать серии
-     * именно этой записи. Если у какой-то записи число серий неизвестно, смещение неточно — берём 0 (как раньше).
+     * Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. Смещение серий франшизы,
+     * которую TMDB хранит сквозной нумерацией (3-й сезон «Монолога фармацевта» начинается с 37-й серии), сервер
+     * считает сам, клиент его не присылает.
      */
-    private suspend fun previousSeasonsEpisodeCount(animeId: Int, details: AnimeDetails): Int {
-        val previousIds = details.viewingOrder.previousTvEntryIds(animeId)
-        if (previousIds.isEmpty()) return 0
-        val counts = runSuspendCatching {
-            previousIds.map { id -> getAnimeDetails(id).episodes.totalOrAiredCount() }
-        }.getOrNull() ?: return 0
-        return if (counts.any { it == null }) 0 else counts.sumOf { it ?: 0 }
+    private suspend fun loadYummyEpisodes(animeId: Int): YummyEpisodesDto? {
+        val details = getAnimeDetails(animeId)
+        val malId = details.malId ?: return null
+        return documentCache.getOrFetchJson<YummyEpisodesDto>(
+            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId",
+            ttlMs = ANIME_EPISODE_INFO_TTL_MS,
+            fetch = { episodesApi.getEpisodes(malId) },
+        )
     }
 
     override fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>> = channelFlow {

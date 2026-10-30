@@ -3,7 +3,6 @@ package su.afk.yummy.tv.data.details.network
 import io.ktor.client.call.body
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
@@ -23,15 +22,13 @@ class YummyEpisodesApi(
     private val signers: Set<SiteRequestSigner> = emptySet(),
 ) {
     /**
-     * [episodeOffset] — сколько серий занимают предыдущие записи франшизы: нужен, когда TMDB хранит их сквозной
-     * нумерацией (сервер сдвигает серии и кадры, у остальных записей игнорирует).
-     * 404 (нет маппинга MAL→TMDB) — валидный ответ «серий нет», а не ошибка.
+     * Серии записи. Смещение серий франшизы, которую TMDB хранит сквозной нумерацией, сервер считает сам.
+     * 404 (нет маппинга MAL→TMDB либо смещение посчитать не удалось) — валидный ответ «серий нет», а не ошибка.
      */
-    suspend fun getEpisodes(malId: Int, episodeOffset: Int = 0): YummyEpisodesDto {
+    suspend fun getEpisodes(malId: Int): YummyEpisodesDto {
         val url = "${siteApiConfig.baseUrl}/anime/mal/$malId"
         val response = clientProvider.get().get(url) {
             signSiteRequest(signers, "GET", url)
-            if (episodeOffset > 0) parameter("offset", episodeOffset)
             // Статус разбирается ниже: 404 — «серий нет», а не ошибка.
             expectSuccess = false
         }
