@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
-import androidx.compose.foundation.lazy.rememberLazyListState
-import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -29,11 +28,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
@@ -173,13 +174,19 @@ internal fun MobilePlayerSettingsSheet(
                                     logoRes = balancerLogoRes(name),
                                     logoFallbackIcon = balancerFallbackIcon(name),
                                     metaContent = { contentColor ->
-                                        if (!enabled) {
-                                            Text(
-                                                text = stringResource(R.string.player_episode_unavailable),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = contentColor.copy(alpha = 0.68f),
-                                            )
-                                        }
+                                        Text(
+                                            text = stringResource(
+                                                if (enabled) {
+                                                    R.string.player_balancer_meta
+                                                } else {
+                                                    R.string.player_episode_unavailable
+                                                },
+                                            ),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (enabled) contentColor else contentColor.copy(alpha = 0.68f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
                                     },
                                     onClick = { onBalancerSelected(index) },
                                 )
