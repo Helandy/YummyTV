@@ -55,6 +55,8 @@ import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
+import su.afk.yummy.tv.data.details.utils.previousTvEntryIds
+import su.afk.yummy.tv.data.details.utils.totalOrAiredCount
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
@@ -89,7 +91,8 @@ private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
 // v2: документ содержит кадры TMDB (previewUrl, stills). v3: у записей, чьи серии в TMDB идут сквозной нумерацией с другой
 // записью, сервер больше не отдаёт чужие серии (раньше у 3-го сезона лежали кадры, названия и описания 1-го).
-private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v3"
+// v4: запрос несёт смещение серий предыдущих сезонов франшизы (?offset=), оно входит в ключ.
+private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v4"
 // Сколько кадров Tenrai (по одному на серию) отдавать для ряда «Скриншоты».
 private const val EPISODE_FRAMES_LIMIT = 10
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
@@ -370,12 +373,28 @@ class YaniAnimeRepository(
 
     /** Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. */
     private suspend fun loadYummyEpisodes(animeId: Int): YummyEpisodesDto? {
-        val malId = getAnimeDetails(animeId).malId ?: return null
+        val details = getAnimeDetails(animeId)
+        val malId = details.malId ?: return null
+        val offset = previousSeasonsEpisodeCount(animeId, details)
         return documentCache.getOrFetchJson<YummyEpisodesDto>(
-            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId",
+            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId:$offset",
             ttlMs = ANIME_EPISODE_INFO_TTL_MS,
-            fetch = { episodesApi.getEpisodes(malId) },
+            fetch = { episodesApi.getEpisodes(malId, offset) },
         )
+    }
+
+    /**
+     * Сколько серий в предыдущих TV-записях франшизы. TMDB часто хранит все сезоны одним со сквозной нумерацией
+     * (у «Монолога фармацевта» 3-й сезон начинается с 37-й серии), и серверу нужно это смещение, чтобы отдать серии
+     * именно этой записи. Если у какой-то записи число серий неизвестно, смещение неточно — берём 0 (как раньше).
+     */
+    private suspend fun previousSeasonsEpisodeCount(animeId: Int, details: AnimeDetails): Int {
+        val previousIds = details.viewingOrder.previousTvEntryIds(animeId)
+        if (previousIds.isEmpty()) return 0
+        val counts = runSuspendCatching {
+            previousIds.map { id -> getAnimeDetails(id).episodes.totalOrAiredCount() }
+        }.getOrNull() ?: return 0
+        return if (counts.any { it == null }) 0 else counts.sumOf { it ?: 0 }
     }
 
     override fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>> = channelFlow {
