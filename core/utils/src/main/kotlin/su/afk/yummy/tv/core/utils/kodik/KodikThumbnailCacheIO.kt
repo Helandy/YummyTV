@@ -13,6 +13,9 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.mapNotNull
 import okio.Buffer
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
@@ -33,19 +36,14 @@ class KodikThumbnailCacheIO @Inject constructor(
 ) {
 
     /**
-     * Сначала отдаёт снапшот с диска — по [cacheKey], затем по [fallbackKeys] (ключи, под которыми
-     * превью могло лечь раньше); [resolveUrl] (сетевой резолв через HTML iframe) вызывается только
-     * при промахе — иначе после рестарта процесса каждое превью ждало бы запрос к Kodik.
-     * Скачанное пишется под [cacheKey].
+     * Сначала отдаёт снапшот с диска по [cacheKey]; [candidates] (ссылки по приоритету, часть из них резолвится по сети,
+     * например через HTML iframe Kodik) трогается только при промахе — иначе после рестарта процесса каждое превью
+     * ждало бы сеть. Ссылки пробуются по очереди, пока одна не скачается (у части пользователей CDN первого источника
+     * недоступен). Скачанное пишется под [cacheKey].
      */
-    suspend fun fetch(
-        cacheKey: String,
-        fallbackKeys: List<String> = emptyList(),
-        resolveUrl: suspend () -> String?,
-    ): FetchResult? {
-        (listOf(cacheKey) + fallbackKeys).firstNotNullOfOrNull(::readSnapshot)?.let { return it }
-        val url = resolveUrl() ?: return null
-        return downloadAndCache(cacheKey, url)
+    suspend fun fetch(cacheKey: String, candidates: Flow<String>): FetchResult? {
+        readSnapshot(cacheKey)?.let { return it }
+        return candidates.mapNotNull { url -> downloadAndCache(cacheKey, url) }.firstOrNull()
     }
 
     private fun readSnapshot(cacheKey: String): SourceFetchResult? {

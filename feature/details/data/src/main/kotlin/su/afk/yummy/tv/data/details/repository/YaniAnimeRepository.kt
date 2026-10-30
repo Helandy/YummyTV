@@ -18,6 +18,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
+import su.afk.yummy.tv.core.model.anime.AnimeTmdbImages
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationReaction
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
@@ -45,6 +47,8 @@ import su.afk.yummy.tv.data.details.mapper.AnimeRelationCachePayload
 import su.afk.yummy.tv.data.details.mapper.ExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
+import su.afk.yummy.tv.data.details.mapper.toAnimeTmdbImages
+import su.afk.yummy.tv.data.details.mapper.toOrderedFrameUrls
 import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
 import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
@@ -83,7 +87,11 @@ private const val ANIME_PUBLIC_EXTRAS_TTL_MS = 6 * 60 * 60 * 1000L
 private const val ANIME_RELATION_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
-private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info"
+// v2: документ содержит кадры TMDB (previewUrl, stills). v3: у записей, чьи серии в TMDB идут сквозной нумерацией с другой
+// записью, сервер больше не отдаёт чужие серии (раньше у 3-го сезона лежали кадры, названия и описания 1-го).
+private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v3"
+// Сколько кадров Tenrai (по одному на серию) отдавать для ряда «Скриншоты».
+private const val EPISODE_FRAMES_LIMIT = 10
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
 // v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
@@ -337,17 +345,38 @@ class YaniAnimeRepository(
     override suspend fun getAnimeEpisodeInfo(animeId: Int): Map<String, AnimeEpisodeInfo> =
         withContext(Dispatchers.IO) {
             runSuspendCatching {
-                val malId = getAnimeDetails(animeId).malId ?: return@withContext emptyMap()
-                documentCache.getOrFetchJson<YummyEpisodesDto>(
-                    cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId",
-                    ttlMs = ANIME_EPISODE_INFO_TTL_MS,
-                    fetch = { episodesApi.getEpisodes(malId) },
-                ).toAnimeEpisodeInfoByNumber()
+                loadYummyEpisodes(animeId)?.toAnimeEpisodeInfoByNumber().orEmpty()
             }.getOrElse {
                 // Названия серий — необязательная надстройка: экран должен работать и без них.
                 emptyMap()
             }
         }
+
+    override suspend fun getAnimeTmdbImages(animeId: Int): AnimeTmdbImages =
+        withContext(Dispatchers.IO) {
+            runSuspendCatching {
+                loadYummyEpisodes(animeId)?.toAnimeTmdbImages() ?: AnimeTmdbImages()
+            }.getOrElse {
+                // Картинки TMDB — необязательная надстройка: экран работает и со своими.
+                AnimeTmdbImages()
+            }
+        }
+
+    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
+        AnimeEpisodeFrames(
+            tmdbStillUrls = getAnimeTmdbImages(animeId).firstEpisodeStillUrls,
+            tenraiFrameUrls = getAnimeEpisodeThumbnails(animeId).toOrderedFrameUrls(EPISODE_FRAMES_LIMIT),
+        )
+
+    /** Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. */
+    private suspend fun loadYummyEpisodes(animeId: Int): YummyEpisodesDto? {
+        val malId = getAnimeDetails(animeId).malId ?: return null
+        return documentCache.getOrFetchJson<YummyEpisodesDto>(
+            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId",
+            ttlMs = ANIME_EPISODE_INFO_TTL_MS,
+            fetch = { episodesApi.getEpisodes(malId) },
+        )
+    }
 
     override fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>> = channelFlow {
         // Пометки — необязательная надстройка: экран должен работать и без них.

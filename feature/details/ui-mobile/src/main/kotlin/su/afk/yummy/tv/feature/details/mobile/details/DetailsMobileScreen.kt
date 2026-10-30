@@ -177,10 +177,10 @@ fun DetailsMobileScreen(
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
-            if (details.screenshots.isNotEmpty()) {
+            if (state.screenshots.isNotEmpty()) {
                 item(key = "screenshots") {
                     DetailsScreenshotsRow(
-                        screenshots = details.screenshots,
+                        screenshots = state.screenshots,
                         onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
                     )
                 }

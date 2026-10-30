@@ -17,8 +17,12 @@ dependencies {
 
     api(libs.ktor.client.core)
     api(libs.okhttp)
+    implementation(libs.okhttp.dnsoverhttps)
 
     implementation(libs.bundles.ktor.client.json)
 
     implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test.network)
 }

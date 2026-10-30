@@ -87,6 +87,7 @@ import su.afk.yummy.tv.feature.details.utils.statusIcon
 @Composable
 internal fun DetailsButtonBar(
     details: AnimeDetails,
+    hasScreenshots: Boolean,
     isInLibrary: Boolean,
     isFavorite: Boolean,
     libraryList: UserAnimeList?,
@@ -269,7 +270,7 @@ internal fun DetailsButtonBar(
             ButtonStyle.Normal,
             onBloggerVideosSelected,
         ),
-    ) + if (details.screenshots.isNotEmpty()) {
+    ) + if (hasScreenshots) {
         listOf(
             ButtonData(
                 DetailsButtonAction.SCREENSHOTS,

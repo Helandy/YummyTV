@@ -19,10 +19,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.screenshots.utils.imageModels
 import su.afk.yummy.tv.feature.details.screenshots.utils.screenshotLazyKey
 
 @Composable
@@ -62,8 +63,9 @@ internal fun DetailsScreenshotsRow(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     ),
                 ) {
-                    AsyncImage(
-                        model = screenshot.url,
+                    FallbackAsyncImage(
+                        models = screenshot.imageModels(),
+                        cacheKey = screenshot.cacheKey,
                         contentDescription = screenshot.episode?.let {
                             stringResource(R.string.details_episode_number, it)
                         } ?: stringResource(R.string.details_mobile_screenshot),

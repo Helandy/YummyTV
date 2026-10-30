@@ -9,12 +9,15 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeFramesUseCase
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
+import su.afk.yummy.tv.feature.details.mapper.mergeScreenshotSources
 import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrlAt
 import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrls
 
@@ -25,6 +28,7 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
+    private val getAnimeEpisodeFrames: GetAnimeEpisodeFramesUseCase,
     private val analytics: DetailsAnalytics,
     private val imageViewNavigator: IImageViewNavigator,
 ) : BaseViewModel<ScreenshotsState.State, ScreenshotsState.Event, ScreenshotsState.Effect>() {
@@ -71,11 +75,13 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
         setState { copy(isLoading = true, error = null) }
         runSuspendCatching { getAnimeDetails(animeId) }.fold(
             onSuccess = { details ->
+                // Как в деталке: у каждой карточки цепочка TMDB, Tenrai, Yani.
+                val frames = runSuspendCatching { getAnimeEpisodeFrames(animeId) }.getOrDefault(AnimeEpisodeFrames())
                 setState {
                     copy(
                         isLoading = false,
                         title = details.title,
-                        screenshots = details.screenshots.toImmutableList(),
+                        screenshots = mergeScreenshotSources(animeId, frames, details.screenshots).toImmutableList(),
                     )
                 }
             },

@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
+import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.text.UiText
@@ -17,6 +19,7 @@ import su.afk.yummy.tv.feature.details.details.model.DetailsRatingOverview
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
+import su.afk.yummy.tv.feature.details.mapper.mergeScreenshotSources
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
 class DetailsState {
@@ -39,6 +42,8 @@ class DetailsState {
         val collectionsBadge: String? = null,
         /** Коллекции с тайтлом (первая страница) для ленты в деталях; пусто, если их нет. */
         val collections: ImmutableList<AnimeCollectionSummary> = persistentListOf(),
+        /** Кадры серий из TMDB и Tenrai; пусто, если их нет — тогда показываются скриншоты Yani. */
+        val episodeFrames: AnimeEpisodeFrames = AnimeEpisodeFrames(),
         /** Трейлеры и сводка рейтинга ещё грузятся — блоки показывают скелетоны. */
         val isExtrasLoading: Boolean = true,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
@@ -61,6 +66,10 @@ class DetailsState {
         /** Показывать ТВ-подсказку «нажмите вниз — там доп. секции», пока её не закрыли. */
         val showSectionsHint: Boolean = false,
     ) : UiState {
+        /** Скриншоты для ряда и галереи: TMDB, Tenrai и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
+        val screenshots: List<AnimeScreenshot>
+            get() = details?.let { mergeScreenshotSources(it.id, episodeFrames, it.screenshots) }.orEmpty()
+
         /**
          * Видео ещё грузятся: Yani /videos, прогресс сервера и внешние источники
          * (AniLibria, 4K, AniBoom, AniStar приходят в одном ответе) — кнопка просмотра неактивна.

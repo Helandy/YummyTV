@@ -18,10 +18,7 @@ class EpisodeThumbnailFetcher(
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult? =
-        cacheIO.fetch(
-            cacheKey = data.cacheKey,
-            fallbackKeys = data.fallbackCacheKeys,
-        ) { resolver.resolveUrl(data) }
+        cacheIO.fetch(cacheKey = data.cacheKey, candidates = resolver.candidateUrls(data))
 
     class Factory(
         private val resolver: EpisodeThumbnailResolver,

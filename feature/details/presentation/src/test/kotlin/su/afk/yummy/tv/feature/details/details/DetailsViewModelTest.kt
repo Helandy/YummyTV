@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
@@ -209,6 +210,51 @@ class DetailsViewModelTest : BaseUnitTest() {
         assertEquals(listOf(trailer), state.trailers)
         assertEquals(overview, state.ratingOverview)
         assertFalse(state.isExtrasLoading)
+    }
+
+    @Test
+    fun `episode frames lead the screenshots and yani is the last fallback`() {
+        val yani = listOf(AnimeScreenshot(id = 1, episode = null, url = "yani"))
+        coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
+            Result.success(animeDetails(id = ANIME_ID, screenshots = yani))
+        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(
+            emptyList(),
+            null,
+            episodeFrames = AnimeEpisodeFrames(tmdbStillUrls = listOf("s1")),
+        )
+
+        val state = createViewModel().currentState
+
+        assertEquals(listOf("s1"), state.screenshots.map { it.url })
+        assertEquals(listOf("yani"), state.screenshots.single().fallbackUrls)
+    }
+
+    @Test
+    fun `without TMDB frames the yani screenshots stay`() {
+        val yani = listOf(AnimeScreenshot(id = 1, episode = null, url = "yani"))
+        coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
+            Result.success(animeDetails(id = ANIME_ID, screenshots = yani))
+
+        val state = createViewModel().currentState
+
+        assertEquals(yani, state.screenshots)
+    }
+
+    @Test
+    fun `episode frame opens the gallery of episode frames`() {
+        coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns
+            Result.success(animeDetails(id = ANIME_ID, screenshots = listOf(AnimeScreenshot(1, null, "yani"))))
+        coEvery { extrasHandler.load(ANIME_ID, any()) } returns DetailsExtrasResult(
+            emptyList(),
+            null,
+            episodeFrames = AnimeEpisodeFrames(tmdbStillUrls = listOf("s1", "s2")),
+        )
+        every { imageViewNavigator(imageUrl = any(), imageUrls = any(), selectedIndex = any()) } returns navKey
+        val vm = createViewModel()
+
+        vm.setEvent(Event.ScreenshotSelected(1))
+
+        verify { imageViewNavigator(imageUrl = "s2", imageUrls = listOf("s1", "s2"), selectedIndex = 1) }
     }
 
     @Test

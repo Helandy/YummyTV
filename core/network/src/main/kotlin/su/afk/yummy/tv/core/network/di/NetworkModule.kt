@@ -17,6 +17,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.network.dns.tmdbImageDns
 import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
@@ -32,7 +33,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient()
+    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder().dns(tmdbImageDns()).build()
 
     @Provides
     @Singleton

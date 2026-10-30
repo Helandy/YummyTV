@@ -170,7 +170,7 @@ internal fun DetailsBody(
     val hasHeroChips = details.genres.any { it.id != null && it.title.isNotBlank() } ||
         details.studios.any { it.id != null && it.title.isNotBlank() } ||
         details.creators.any { it.id != null && it.title.isNotBlank() }
-    val hasScreenshots = details.screenshots.isNotEmpty()
+    val hasScreenshots = state.screenshots.isNotEmpty()
     val hasUniverse = details.viewingOrder.size > 1
     val hasBloggerVideos = details.bloggerVideosCount > 0
     // Пока extras грузятся, кнопки этих секций скрыты, чтобы панель не прыгала, когда секция появится.
@@ -223,6 +223,7 @@ internal fun DetailsBody(
                             }
                             .tvWholeItemBringIntoView(),
                         details = details,
+                        hasScreenshots = hasScreenshots,
                         minHeight = heroHeight,
                         hintFocusRequester = requesterFor(HERO_HINT_FOCUS_KEY),
                         // Без ключа уход с чипа обнулял бы цель, хиро считало бы, что фокус потерян, и возвращало его на кнопки.
@@ -288,7 +289,7 @@ internal fun DetailsBody(
                 if (hasScreenshots) {
                     item(key = "screenshots") {
                         DetailsScreenshotsRow(
-                            screenshots = details.screenshots,
+                            screenshots = state.screenshots,
                             onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
                             modifier = Modifier.tvWholeItemBringIntoView(),
                             itemFocusModifier = rowItemFocus("screenshots"),

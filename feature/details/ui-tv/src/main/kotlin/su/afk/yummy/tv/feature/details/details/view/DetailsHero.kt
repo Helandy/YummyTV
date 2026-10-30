@@ -51,6 +51,7 @@ import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 @Composable
 internal fun DetailsHero(
     details: AnimeDetails,
+    hasScreenshots: Boolean,
     modifier: Modifier = Modifier,
     downFocusRequester: FocusRequester,
     isInLibrary: Boolean,
@@ -192,6 +193,7 @@ internal fun DetailsHero(
 
                 DetailsButtonBar(
                     details = details,
+                    hasScreenshots = hasScreenshots,
                     isInLibrary = isInLibrary,
                     isFavorite = isFavorite,
                     libraryList = libraryList,

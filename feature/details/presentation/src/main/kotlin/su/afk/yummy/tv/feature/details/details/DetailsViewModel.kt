@@ -459,6 +459,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 ratingOverview = extras.ratingOverview,
                 collectionsBadge = extras.collectionsBadge,
                 collections = extras.collections.toImmutableList(),
+                episodeFrames = extras.episodeFrames,
                 isExtrasLoading = false,
             )
         }
@@ -473,7 +474,7 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     /** Галерея всех скриншотов, начиная с выбранного. */
     private fun openScreenshot(index: Int) {
-        val screenshots = currentState.details?.screenshots ?: return
+        val screenshots = currentState.screenshots
         val urls = screenshots.galleryUrls()
         val url = screenshots.galleryUrlAt(index) ?: return
         nav.navigate(

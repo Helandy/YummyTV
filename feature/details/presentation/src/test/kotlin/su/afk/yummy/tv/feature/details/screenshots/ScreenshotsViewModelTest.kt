@@ -13,12 +13,14 @@ import org.junit.Test
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeFramesUseCase
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.animeDetails
@@ -37,6 +39,7 @@ class ScreenshotsViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { imageViewNavigator(any(), any(), any(), any(), any(), any(), any(), any()) } returns navKey
+        coEvery { repository.getAnimeEpisodeFrames(any()) } returns AnimeEpisodeFrames()
     }
 
     private fun createViewModel() = ScreenshotsViewModel(
@@ -45,6 +48,7 @@ class ScreenshotsViewModelTest : BaseUnitTest() {
         retryStorage = retryStorage,
         nav = nav,
         getAnimeDetails = GetAnimeDetailsUseCase(repository),
+        getAnimeEpisodeFrames = GetAnimeEpisodeFramesUseCase(repository),
         analytics = DetailsAnalytics(tracker),
         imageViewNavigator = imageViewNavigator,
     )
@@ -61,6 +65,30 @@ class ScreenshotsViewModelTest : BaseUnitTest() {
         assertFalse(state.isLoading)
         assertEquals("Anime", state.title)
         assertEquals(2, state.screenshots.size)
+    }
+
+    @Test
+    fun `episode frames lead the screenshots and keep the yani ones as fallback`() {
+        coEvery { repository.getAnimeDetails(ANIME_ID) } returns
+            animeDetails(title = "Anime", screenshots = listOf(screenshot(1, "yani")))
+        coEvery { repository.getAnimeEpisodeFrames(ANIME_ID) } returns
+            AnimeEpisodeFrames(tmdbStillUrls = listOf("tmdb1", "tmdb2"))
+
+        val state = createViewModel().currentState
+
+        assertEquals(listOf("tmdb1", "tmdb2"), state.screenshots.map { it.url })
+        assertEquals(listOf("yani"), state.screenshots.first().fallbackUrls)
+    }
+
+    @Test
+    fun `failed episode frames request keeps the yani screenshots`() {
+        coEvery { repository.getAnimeDetails(ANIME_ID) } returns
+            animeDetails(title = "Anime", screenshots = listOf(screenshot(1, "yani")))
+        coEvery { repository.getAnimeEpisodeFrames(ANIME_ID) } throws IllegalStateException("boom")
+
+        val state = createViewModel().currentState
+
+        assertEquals(listOf("yani"), state.screenshots.map { it.url })
     }
 
     @Test
