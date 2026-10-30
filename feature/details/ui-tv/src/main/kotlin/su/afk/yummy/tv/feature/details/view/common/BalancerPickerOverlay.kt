@@ -1,13 +1,12 @@
 package su.afk.yummy.tv.feature.details.view.common
 
-import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -18,10 +17,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VideoLibrary
@@ -60,6 +62,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
+import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
@@ -144,20 +147,29 @@ internal fun BalancerPickerOverlay(
                         color = Color.White.copy(alpha = 0.70f),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
-                    picker.options.forEachIndexed { idx, option ->
-                        BalancerOptionItem(
-                            label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),
-                            dubbing = option.video.dubbing,
-                            views = option.video.views,
-                            isExternal = option.video.iframeUrl.isExtraSourceUrl(),
-                            episodeCount = option.episodeCount,
-                            focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
-                            isSupported = option.isSupported,
-                            isStarred = option.isStarred,
-                            onFocused = { focusedOptionIndex = idx },
-                            onLongClick = { onStarToggled(option) },
-                            onClick = { onConfirmed(option) },
-                        )
+                    val playerPrefix = stringResource(R.string.details_player_prefix)
+                    // как у диалога озвучки: список ограничен по высоте, чтобы карточка не липла к краям экрана
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 430.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        itemsIndexed(picker.options) { idx, option ->
+                            BalancerOptionItem(
+                                label = option.playerName.removePrefix(playerPrefix),
+                                dubbing = option.video.dubbing,
+                                views = option.video.views,
+                                isExternal = option.video.iframeUrl.isExtraSourceUrl(),
+                                episodeCount = option.episodeCount,
+                                focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
+                                isSupported = option.isSupported,
+                                isStarred = option.isStarred,
+                                onFocused = { focusedOptionIndex = idx },
+                                onLongClick = { onStarToggled(option) },
+                                onClick = { onConfirmed(option) },
+                            )
+                        }
                     }
                 }
             }
