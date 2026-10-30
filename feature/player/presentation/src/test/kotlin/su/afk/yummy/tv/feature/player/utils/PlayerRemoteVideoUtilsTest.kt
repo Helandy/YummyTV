@@ -31,6 +31,24 @@ class PlayerRemoteVideoUtilsTest {
         assertEquals(0, state(selectedBalancer = 0, episodeNumber = "9").remoteVideoId())
     }
 
+    @Test
+    fun `picks among several real videos and stays stable per seed`() {
+        val graph = PlayerSourceGraph(
+            balancers = listOf(
+                PlayerSourceBalancer("4K", listOf(dub("A", episode(-1, "2")))),
+                PlayerSourceBalancer("Kodik", listOf(dub("B", episode(30, "2")))),
+                PlayerSourceBalancer("Alloha", listOf(dub("C", episode(31, "2")))),
+            ),
+        )
+        val state = PlayerState.State(
+            sourceGraph = graph,
+            sourceSelection = PlayerSourceSelection(balancerIndex = 0, dubbingIndex = 0, episodeIndex = 0),
+        )
+        val picks = (0..50).map { state.remoteVideoId(pickSeed = it) }.toSet()
+        assertEquals(setOf(30, 31), picks)
+        assertEquals(state.remoteVideoId(pickSeed = 5), state.remoteVideoId(pickSeed = 5))
+    }
+
     private fun state(selectedBalancer: Int, episodeNumber: String): PlayerState.State {
         val graph = PlayerSourceGraph(
             balancers = listOf(
