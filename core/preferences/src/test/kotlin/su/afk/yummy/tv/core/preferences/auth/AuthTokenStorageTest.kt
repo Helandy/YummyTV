@@ -33,6 +33,22 @@ class AuthTokenStorageTest : BaseUnitTest() {
     }
 
     @Test
+    fun `repeated reads with a dead cipher report once`() = runTest {
+        val store = StoredRecord()
+        storage(store).write("token")
+        val failures = mutableListOf<String>()
+        val broken = storage(
+            state = store,
+            keystore = cipher(TokenStorageMode.KEYSTORE, broken = true),
+            onFailure = { message, _ -> failures += message },
+        )
+
+        repeat(5) { assertEquals("", broken.read()) }
+
+        assertEquals(1, failures.size)
+    }
+
+    @Test
     fun `unreadable record is dropped when the cipher is healthy`() = runTest {
         val store = StoredRecord(record = "*not-a-valid-payload")
         val storage = storage(store)

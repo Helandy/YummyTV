@@ -34,12 +34,18 @@ internal class AuthTokenStorage(
 ) {
     private val ciphers = mutableMapOf<TokenStorageMode, TokenCipher>()
 
+    /** Запись, которую не смог расшифровать недоступный шифр; сбрасывается, когда запись меняется. */
+    private var unreadableRecord: String? = null
+
     var mode: TokenStorageMode = store.readMode() ?: TokenStorageMode.KEYSTORE
         private set
 
     suspend fun read(): String {
         val record = store.readRecord().orEmpty()
         if (record.isBlank()) return ""
+        // Токен читают несколько подписчиков и на каждое изменение prefs: уже признанную нечитаемой
+        // запись не пробуем заново — иначе каждый раз ретраи (~1.3 с) и новый репорт.
+        if (record == unreadableRecord) return ""
         val recordMode = record.recordMode()
         val payload = record.recordPayload()
 
@@ -57,6 +63,7 @@ internal class AuthTokenStorage(
             return ""
         }
 
+        unreadableRecord = record
         onStorageFailure("Auth token cipher is unavailable on read (${recordMode.name})", null)
         if (recordMode == TokenStorageMode.KEYSTORE) switchToFallback()
         return ""
