@@ -84,12 +84,6 @@ fun PlayerSetupTvScreen(
             enabled = state.suggestNextEpisodeOnWatched,
             onClick = { onEvent(PlayerSetupState.Event.SuggestNextEpisodeOnWatchedToggled) },
         )
-        PlayerSetupTvToggleRow(
-            label = stringResource(R.string.player_setup_ask_dubbing_label),
-            hint = stringResource(R.string.player_setup_ask_dubbing_hint),
-            enabled = state.askDubbingOnWatch,
-            onClick = { onEvent(PlayerSetupState.Event.AskDubbingOnWatchToggled) },
-        )
         PlayerSetupTvChoiceRow(
             label = stringResource(R.string.player_setup_language_label),
             hint = stringResource(R.string.player_setup_language_hint),

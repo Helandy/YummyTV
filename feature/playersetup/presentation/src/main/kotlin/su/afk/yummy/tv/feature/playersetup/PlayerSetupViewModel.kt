@@ -48,10 +48,6 @@ class PlayerSetupViewModel @Inject internal constructor(
                 settingsHandler.setSuggestNextEpisodeOnWatched(!currentState.suggestNextEpisodeOnWatched)
             }
 
-            PlayerSetupState.Event.AskDubbingOnWatchToggled -> launchWrite {
-                settingsHandler.setAskDubbingOnWatch(!currentState.askDubbingOnWatch)
-            }
-
             PlayerSetupState.Event.PictureInPictureToggled -> launchWrite {
                 settingsHandler.setPictureInPictureEnabled(!currentState.pictureInPictureEnabled)
             }

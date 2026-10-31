@@ -23,7 +23,6 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
@@ -127,7 +126,6 @@ internal class DataStoreSettingsStore @Inject constructor(
                 (prefs[nextEpisodeSwitchDelaySecondsKey] ?: 10).coerceIn(0, 30),
             playerControlsAutoHideSeconds =
                 (prefs[playerControlsAutoHideSecondsKey] ?: 4).coerceIn(1, 30000),
-            askDubbingOnWatch = prefs[askDubbingOnWatchKey] ?: true,
             pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
             playerOrientationMode = prefs.enum(
                 playerOrientationModeKey,

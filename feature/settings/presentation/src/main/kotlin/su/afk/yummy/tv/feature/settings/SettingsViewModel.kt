@@ -94,7 +94,6 @@ class SettingsViewModel @Inject internal constructor(
                         autoPlayNextEpisode = snapshot.autoPlayNextEpisode,
                         nextEpisodeSwitchDelaySeconds = snapshot.nextEpisodeSwitchDelaySeconds,
                         playerControlsAutoHideSeconds = snapshot.playerControlsAutoHideSeconds,
-                        askDubbingOnWatch = snapshot.askDubbingOnWatch,
                         pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
                         playerOrientationMode = snapshot.playerOrientationMode,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
@@ -337,12 +336,6 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.PlayerControlsAutoHideChanged -> viewModelScope.launch {
                 analytics.eventPlayerControlsAutoHideChanged(event.seconds)
                 settingsStore.setPlayerControlsAutoHideSeconds(event.seconds)
-            }
-
-            SettingsState.Event.AskDubbingOnWatchToggled -> viewModelScope.launch {
-                val enabled = !currentState.askDubbingOnWatch
-                analytics.eventAskDubbingOnWatchToggled(enabled)
-                settingsStore.setAskDubbingOnWatch(enabled)
             }
 
             SettingsState.Event.PictureInPictureToggled -> viewModelScope.launch {

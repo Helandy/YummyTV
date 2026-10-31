@@ -7,7 +7,7 @@
     <string name="settings_category_player">Плеер</string>
     <string name="settings_mobile_category_player_hint">Плеер по умолчанию, качество, буфер, ориентация, громкость</string>
     <string name="settings_category_playback">Воспроизведение</string>
-    <string name="settings_mobile_category_playback_hint">Пропуск опенингов, автоплей следующей серии, озвучка</string>
+    <string name="settings_mobile_category_playback_hint">Пропуск опенингов, автоплей следующей серии</string>
     <string name="settings_category_watch_progress">Прогресс просмотра</string>
     <string name="settings_mobile_category_watch_progress_hint">Когда серия считается просмотренной</string>
     <string name="settings_category_notifications">Уведомления</string>
@@ -165,9 +165,6 @@
     <string name="settings_next_episode_switch_delay_instant">Мгновенно</string>
     <string name="settings_next_episode_switch_delay_seconds">%d сек</string>
     <string name="settings_controls_auto_hide_label">Скрывать управление плеером через</string>
-    <string name="settings_ask_dubbing_on_watch_label">Спрашивать озвучку перед просмотром</string>
-    <string name="settings_ask_dubbing_on_watch_enabled">Перед запуском покажем список озвучек</string>
-    <string name="settings_ask_dubbing_on_watch_disabled">Сразу включится самая популярная</string>
     <string name="settings_picture_in_picture_label">Плавающий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматически включать при выходе из приложения во время воспроизведения</string>
     <string name="settings_advanced_volume_label">Продвинутая громкость в плеере</string>

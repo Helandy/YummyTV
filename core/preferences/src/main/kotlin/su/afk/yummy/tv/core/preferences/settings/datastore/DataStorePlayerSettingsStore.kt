@@ -21,7 +21,6 @@ import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumePercentKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
@@ -91,7 +90,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             .coerceIn(MIN_CONTROLS_AUTO_HIDE_SECONDS, MAX_CONTROLS_AUTO_HIDE_SECONDS)
     }
 
-    override val askDubbingOnWatch: Flow<Boolean> = store.boolean(askDubbingOnWatchKey, true)
 
     override val pictureInPictureEnabled: Flow<Boolean> =
         store.boolean(pictureInPictureEnabledKey, true)
@@ -227,9 +225,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
                 seconds.coerceIn(MIN_CONTROLS_AUTO_HIDE_SECONDS, MAX_CONTROLS_AUTO_HIDE_SECONDS)
         }
     }
-
-    override suspend fun setAskDubbingOnWatch(enabled: Boolean) =
-        store.setBoolean(askDubbingOnWatchKey, enabled)
 
     override suspend fun setPictureInPictureEnabled(enabled: Boolean) =
         store.setBoolean(pictureInPictureEnabledKey, enabled)

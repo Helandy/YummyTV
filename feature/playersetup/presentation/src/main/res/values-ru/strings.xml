@@ -10,8 +10,6 @@
     <string name="player_setup_auto_play_hint">Запускать следующую серию после отсчёта</string>
     <string name="player_setup_suggest_next_label">Предлагать следующую серию</string>
     <string name="player_setup_suggest_next_hint">Показывать на главной после завершения текущей</string>
-    <string name="player_setup_ask_dubbing_label">Спрашивать озвучку перед просмотром</string>
-    <string name="player_setup_ask_dubbing_hint">Иначе сразу включится самая популярная</string>
     <string name="player_setup_adaptive_quality_label">Адаптивное качество</string>
     <string name="player_setup_adaptive_quality_hint">Подстраивается под устройство и сеть, но не поднимается выше выбранного ниже качества</string>
     <string name="player_setup_quality_label">Качество видео</string>

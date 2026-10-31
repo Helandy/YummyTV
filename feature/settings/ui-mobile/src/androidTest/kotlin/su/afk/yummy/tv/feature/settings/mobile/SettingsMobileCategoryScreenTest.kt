@@ -71,15 +71,6 @@ class SettingsMobileCategoryScreenTest {
     fun apiShowsTitle() = assertTitleIsShown(SettingsCategory.API)
 
     @Test
-    fun playbackAskDubbingToggleSendsEvent() {
-        setScreen(SettingsCategory.PLAYBACK)
-
-        composeRule.onNodeWithText(string(R.string.settings_ask_dubbing_on_watch_label)).performClick()
-
-        assertTrue(SettingsState.Event.AskDubbingOnWatchToggled in events)
-    }
-
-    @Test
     fun playbackAutoSkipToggleSendsEvent() {
         setScreen(SettingsCategory.PLAYBACK)
 

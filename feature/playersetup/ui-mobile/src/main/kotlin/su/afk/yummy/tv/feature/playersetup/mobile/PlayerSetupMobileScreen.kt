@@ -107,12 +107,6 @@ fun PlayerSetupMobileScreen(
                     enabled = state.suggestNextEpisodeOnWatched,
                     onClick = { onEvent(PlayerSetupState.Event.SuggestNextEpisodeOnWatchedToggled) },
                 )
-                PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_ask_dubbing_label),
-                    hint = stringResource(R.string.player_setup_ask_dubbing_hint),
-                    enabled = state.askDubbingOnWatch,
-                    onClick = { onEvent(PlayerSetupState.Event.AskDubbingOnWatchToggled) },
-                )
             }
 
             PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_playback)) {

@@ -40,14 +40,12 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
             store.autoSkipOpeningsEndings,
             store.autoPlayNextEpisode,
             store.suggestNextEpisodeOnWatched,
-            store.askDubbingOnWatch,
-        ) { showOpening, autoSkip, autoPlay, suggestNext, askDubbing ->
+        ) { showOpening, autoSkip, autoPlay, suggestNext ->
             PlayerSetupState.State(
                 showOpeningOnTimeline = showOpening,
                 autoSkipOpeningsEndings = autoSkip,
                 autoPlayNextEpisode = autoPlay,
                 suggestNextEpisodeOnWatched = suggestNext,
-                askDubbingOnWatch = askDubbing,
             )
         },
         combine(
@@ -84,7 +82,6 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) =
         store.setSuggestNextEpisodeOnWatched(enabled)
 
-    suspend fun setAskDubbingOnWatch(enabled: Boolean) = store.setAskDubbingOnWatch(enabled)
 
     suspend fun setPictureInPictureEnabled(enabled: Boolean) = store.setPictureInPictureEnabled(enabled)
 

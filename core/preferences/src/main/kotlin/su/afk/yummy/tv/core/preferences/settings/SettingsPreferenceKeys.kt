@@ -38,8 +38,6 @@ internal object SettingsPreferenceKeys {
     val playerControlsAutoHideSecondsKey =
         intPreferencesKey("player_controls_auto_hide_seconds")
 
-    // v2: дефолт сменился на true — старое значение ("ask_dubbing_on_watch") сознательно игнорируем.
-    val askDubbingOnWatchKey = booleanPreferencesKey("ask_dubbing_on_watch_v2")
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
     val suggestNextEpisodeOnWatchedKey =

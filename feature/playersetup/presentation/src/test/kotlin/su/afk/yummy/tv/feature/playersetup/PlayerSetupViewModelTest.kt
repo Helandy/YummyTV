@@ -59,7 +59,6 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
             autoSkipOpeningsEndings = true,
             autoPlayNextEpisode = false,
             suggestNextEpisodeOnWatched = true,
-            askDubbingOnWatch = true,
             pictureInPictureEnabled = false,
         )
         val viewModel = createViewModel()
@@ -68,7 +67,6 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
         viewModel.setEvent(Event.AutoSkipOpeningsEndingsToggled)
         viewModel.setEvent(Event.AutoPlayNextEpisodeToggled)
         viewModel.setEvent(Event.SuggestNextEpisodeOnWatchedToggled)
-        viewModel.setEvent(Event.AskDubbingOnWatchToggled)
         viewModel.setEvent(Event.PictureInPictureToggled)
 
         coVerify {
@@ -76,7 +74,6 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
             settingsHandler.setAutoSkipOpeningsEndings(false)
             settingsHandler.setAutoPlayNextEpisode(true)
             settingsHandler.setSuggestNextEpisodeOnWatched(false)
-            settingsHandler.setAskDubbingOnWatch(false)
             settingsHandler.setPictureInPictureEnabled(true)
         }
     }

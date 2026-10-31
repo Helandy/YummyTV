@@ -63,7 +63,6 @@ class SettingsState {
         val autoPlayNextEpisode: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
         val playerControlsAutoHideSeconds: Int = 4,
-        val askDubbingOnWatch: Boolean = true,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
@@ -200,7 +199,6 @@ class SettingsState {
         data class PlayerControlsAutoHideChanged(val seconds: Int) : Event
 
         /** Пользователь переключил запрос выбора озвучки при нажатии "Смотреть". */
-        data object AskDubbingOnWatchToggled : Event
 
         /** Пользователь включил или выключил плавающий режим мобильного плеера. */
         data object PictureInPictureToggled : Event

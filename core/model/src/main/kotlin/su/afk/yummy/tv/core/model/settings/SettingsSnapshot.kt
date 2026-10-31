@@ -23,7 +23,6 @@ data class SettingsSnapshot(
     val autoPlayNextEpisode: Boolean,
     val nextEpisodeSwitchDelaySeconds: Int,
     val playerControlsAutoHideSeconds: Int,
-    val askDubbingOnWatch: Boolean,
     val pictureInPictureEnabled: Boolean,
     val playerOrientationMode: PlayerOrientationMode,
     val suggestNextEpisodeOnWatched: Boolean,

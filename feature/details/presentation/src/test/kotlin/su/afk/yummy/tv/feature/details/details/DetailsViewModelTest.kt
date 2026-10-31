@@ -117,7 +117,6 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { stringProvider.get(any<Int>()) } returns "load error"
         every { screenDataHandler.yaniUserId } returns flowOf(0)
         every { screenDataHandler.anime4kDubbing(any()) } returns flowOf(null)
-        every { screenDataHandler.askDubbingOnWatch } returns flowOf(false)
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())
         every { screenDataHandler.observeUserRating(any()) } returns userRating
@@ -422,17 +421,13 @@ class DetailsViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `watch without a saved target picks the player for the first video`() {
+    fun `watch without a saved target asks for dubbing instead of opening the player`() {
         every { videoHandler.resolveWatchTarget(any(), any(), any()) } returns DetailsWatchTarget.Initial(video)
-        every { playerNavigationHandler.selectPlayer(any(), any(), any()) } returns DetailsPlayerSelection.Navigate(video)
-        every {
-            playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
-        } returns navKey
         val vm = createViewModel()
 
         vm.setEvent(Event.WatchSelected)
 
-        verify(exactly = 1) { nav.navigate(navKey) }
+        verify(exactly = 0) { nav.navigate(any()) }
         assertFalse(vm.currentState.isWatchLaunchPending)
     }
 

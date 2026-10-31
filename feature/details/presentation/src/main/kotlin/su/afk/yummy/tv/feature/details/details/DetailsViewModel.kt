@@ -108,11 +108,6 @@ class DetailsViewModel @AssistedInject internal constructor(
         started = SharingStarted.Eagerly,
         initialValue = 0,
     )
-    private val askDubbingOnWatchState = screenDataHandler.askDubbingOnWatch.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = false,
-    )
     private var libraryMutationVersion = 0
     private var favoriteMutationVersion = 0
 
@@ -707,11 +702,7 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             is DetailsWatchTarget.Initial -> {
                 setState { copy(isWatchLaunchPending = false) }
-                if (askDubbingOnWatchState.value) {
-                    showDubbingPicker(target.video)
-                } else {
-                    showBalancerPicker(target.video)
-                }
+                showDubbingPicker(target.video)
             }
 
             null -> setState { copy(isWatchLaunchPending = false) }

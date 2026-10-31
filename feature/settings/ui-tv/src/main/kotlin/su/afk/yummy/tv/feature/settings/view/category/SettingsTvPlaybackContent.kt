@@ -24,22 +24,6 @@ internal fun SettingsTvPlaybackContent(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     ToggleRow(
-        label = stringResource(R.string.settings_ask_dubbing_on_watch_label),
-        hint = if (state.askDubbingOnWatch) {
-            stringResource(R.string.settings_ask_dubbing_on_watch_enabled)
-        } else {
-            stringResource(R.string.settings_ask_dubbing_on_watch_disabled)
-        },
-        enabled = state.askDubbingOnWatch,
-        onClick = {
-            onEvent(SettingsState.Event.AskDubbingOnWatchToggled)
-        },
-        modifier = Modifier
-            .focusRequester(tabContentFocusRequester)
-            .restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    SettingsDivider()
-    ToggleRow(
         label = stringResource(R.string.settings_auto_skip_label),
         hint = if (state.autoSkipOpeningsEndings) {
             stringResource(R.string.settings_auto_skip_enabled)
@@ -48,7 +32,9 @@ internal fun SettingsTvPlaybackContent(
         },
         enabled = state.autoSkipOpeningsEndings,
         onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
-        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        modifier = Modifier
+            .focusRequester(tabContentFocusRequester)
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
     SettingsSliderRow(

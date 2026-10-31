@@ -31,9 +31,6 @@ class DetailsScreenDataHandler @Inject constructor(
     /** Озвучка 4K, в которой тайтл смотрели раньше. */
     fun anime4kDubbing(animeId: Int): Flow<String?> = settingsStore.anime4kDubbing(animeId)
 
-    /** Спрашивать озвучку при нажатии "Смотреть", вместо автовыбора самой популярной. */
-    val askDubbingOnWatch: Flow<Boolean> = settingsStore.askDubbingOnWatch
-
     fun observeLibraryState(animeId: Int): Flow<AnimeLibraryState> =
         observeAnimeLibraryState(animeId)
 

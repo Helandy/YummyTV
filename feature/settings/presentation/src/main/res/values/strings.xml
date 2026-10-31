@@ -7,7 +7,7 @@
     <string name="settings_category_player">Player</string>
     <string name="settings_mobile_category_player_hint">Default player, quality, buffer, orientation, volume</string>
     <string name="settings_category_playback">Playback</string>
-    <string name="settings_mobile_category_playback_hint">Opening skip, next episode autoplay, dubbing</string>
+    <string name="settings_mobile_category_playback_hint">Opening skip, next episode autoplay</string>
     <string name="settings_category_watch_progress">Watch progress</string>
     <string name="settings_mobile_category_watch_progress_hint">When an episode counts as watched</string>
     <string name="settings_category_notifications">Notifications</string>
@@ -165,9 +165,6 @@
     <string name="settings_next_episode_switch_delay_instant">Instant</string>
     <string name="settings_next_episode_switch_delay_seconds">%d sec</string>
     <string name="settings_controls_auto_hide_label">Hide player controls after</string>
-    <string name="settings_ask_dubbing_on_watch_label">Ask for voice-over before watching</string>
-    <string name="settings_ask_dubbing_on_watch_enabled">We\'ll show the voice-over list before playback</string>
-    <string name="settings_ask_dubbing_on_watch_disabled">The most popular one starts right away</string>
     <string name="settings_picture_in_picture_label">Picture-in-Picture (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Automatically open when leaving the app during playback</string>
     <string name="settings_advanced_volume_label">Advanced volume in the player</string>

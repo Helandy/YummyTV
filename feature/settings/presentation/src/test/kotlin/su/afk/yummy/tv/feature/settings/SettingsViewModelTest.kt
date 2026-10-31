@@ -150,7 +150,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         autoPlayNextEpisode = autoPlay,
         nextEpisodeSwitchDelaySeconds = 1,
         playerControlsAutoHideSeconds = 1,
-        askDubbingOnWatch = false,
         pictureInPictureEnabled = false,
         playerOrientationMode = PlayerOrientationMode.entries.first(),
         suggestNextEpisodeOnWatched = false,
