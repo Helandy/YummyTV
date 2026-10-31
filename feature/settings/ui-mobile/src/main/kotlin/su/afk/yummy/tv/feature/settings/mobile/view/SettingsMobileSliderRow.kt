@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.settings.mobile.view
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -13,14 +13,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.highlightNumbers
 import su.afk.yummy.tv.feature.settings.common.utils.label
+import kotlin.math.roundToInt
 
 /**
  * Слайдер настройки. Во время перетаскивания меняются только ползунок и подпись;
@@ -45,10 +44,7 @@ internal fun SettingsMobileSliderRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
@@ -58,7 +54,6 @@ internal fun SettingsMobileSliderRow(
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
-                modifier = Modifier.weight(1f),
             )
             Text(
                 text = valueLabel(shownValue).highlightNumbers(MaterialTheme.colorScheme.primary),
