@@ -60,18 +60,41 @@ class GetPlayerSourceGraphUseCaseTest : BaseUnitTest() {
         coVerify { repository.getSources(ANIME_ID, true) }
     }
 
+    @Test
+    fun `requested video missing from the loaded list keeps its balancer playable`() = runTest {
+        coEvery { repository.getSources(ANIME_ID, false) } returns PlayerSourceData(listOf(ep1))
+
+        val graph = GetPlayerSourceGraphUseCase(repository)(
+            request(
+                selectedVideoId = -5,
+                iframeUrl = "source://anistar/10/3",
+                episode = "3",
+                playerName = "AniStar",
+                dubbing = "AniStar",
+            ),
+        )
+
+        val selection = graph.selection
+        val dubbing = graph.balancers[selection.balancerIndex].dubbings[selection.dubbingIndex]
+        assertEquals("AniStar", graph.balancers[selection.balancerIndex].name)
+        assertEquals("source://anistar/10/3", dubbing.episodes[selection.episodeIndex].iframeUrl)
+        assertEquals(true, graph.balancers.all { balancer -> balancer.dubbings.isNotEmpty() })
+    }
+
     private fun request(
         animeId: Int = ANIME_ID,
         selectedVideoId: Int,
         iframeUrl: String = "",
         episode: String = "",
+        playerName: String = "Kodik",
+        dubbing: String = "AniLibria",
     ) = PlayerSourceRequest(
         animeId = animeId,
         iframeUrl = iframeUrl,
         animeTitle = "Title",
         episode = episode,
-        playerName = "Kodik",
-        dubbing = "AniLibria",
+        playerName = playerName,
+        dubbing = dubbing,
         selectedVideoId = selectedVideoId,
         selectedScreenshotUrl = "",
     )

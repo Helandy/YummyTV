@@ -89,6 +89,38 @@ class VkExtractorTest : BaseUnitTest() {
         assertTrue((result as PlayerStreamResolveResult.Stream).url.endsWith("video.720.mp4"))
     }
 
+    @Test
+    fun `stripped page without streams is requested again`() = runTest {
+        var videoExtCalls = 0
+        coEvery { httpClient.getText(any(), any(), any()) } answers {
+            if ("video_ext.php" in firstArg<String>()) {
+                val html = if (++videoExtCalls == 1) "<html>stripped</html>" else """{"mp4_720":"https://cdn.okcdn.ru/video.720.mp4"}"""
+                PlayerHttpResponse(200, html, emptyMap(), html.toByteArray())
+            } else {
+                PlayerHttpResponse(200, "<html></html>", emptyMap())
+            }
+        }
+
+        val result = extractor().extract(request(), context)
+
+        assertTrue(result is PlayerStreamResolveResult.Stream)
+        assertEquals(2, videoExtCalls)
+    }
+
+    @Test
+    fun `video_ext network failure is reported as a network failure`() = runTest {
+        coEvery { httpClient.getText(any(), any(), any()) } answers {
+            if ("video_ext.php" in firstArg<String>()) {
+                throw java.net.SocketTimeoutException("timeout")
+            }
+            PlayerHttpResponse(200, "<html></html>", emptyMap())
+        }
+
+        val result = extractor().extract(request(), context)
+
+        assertEquals(PlayerStreamResolveResult.Failed("SocketTimeoutException: timeout"), result)
+    }
+
     private companion object {
         const val IFRAME_URL = "//ru.yummyani.me/iframeVK.html?id=-227475776_456244574"
     }

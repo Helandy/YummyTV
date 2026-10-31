@@ -40,7 +40,9 @@ internal fun List<PlayerSourceVideo>.toPlayerSourceGraph(
     screenshotByEpisode: Map<String, String>,
     fallbackScreenshotUrl: String,
 ): PlayerSourceGraph {
-    val videos = if (isEmpty()) listOf(selectedVideo) else this
+    // Запрошенной серии может не быть в загруженном списке (источник не ответил, серию сняли):
+    // без неё балансер выбранного плеера остался бы без озвучек и серий, а активная ссылка стала бы пустой.
+    val videos = if (selectedVideo in this) this else this + selectedVideo
     val supportedBalancers = videos
         .map { it.player }
         .distinct()

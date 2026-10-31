@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.player.extractor.vk
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
@@ -52,6 +53,8 @@ internal class VkExtractor @Inject constructor(
     // ASCII-маркер блока с сообщением VK («Видеофайл не найден»): не зависит от кодировки страницы.
     private val VIDEO_UNAVAILABLE_MARKER = "id=\"video_ext_msg\""
     private val VK_ID_DELIMITER = "_"
+    private val VIDEO_EXT_MAX_ATTEMPTS = 5
+    private val VIDEO_EXT_RETRY_DELAY_MS = 400L
 
     private val NAMED_STREAM_PATTERNS = listOf(
         "1080p" to Regex("(?i)\\b(?:url1080|mp4_1080)\\b\\s*[:=]\\s*['\"]([^'\"]+)['\"]"),
@@ -113,30 +116,51 @@ internal class VkExtractor @Inject constructor(
         try {
             val iframeHtml = normalizePayload(fetchPageText(normalizedUrl, referer))
             val videoExtUrl = resolveVideoExtUrl(iframeHtml, normalizedUrl)
-            var sourceBytes: ByteArray? = null
-            val sourceHtml = videoExtUrl?.let {
-                val source = it
-                runSuspendCatching {
-                    fetchPage(source, normalizedUrl).also { page -> sourceBytes = page.bodyBytes }
-                        .let { page -> normalizePayload(page.body) }
-                }
-                    .getOrElse {
-                        analyticsTracker.logExtractorFailure(
-                            "VK",
-                            source,
-                            "failed to load video_ext page, fallback to iframe",
-                            it,
-                        )
-                        iframeHtml
-                    }
-            } ?: iframeHtml
-
             val sourceUrl = videoExtUrl ?: normalizedUrl
-            val candidates = collectCandidates(sourceHtml, sourceUrl)
+            var sourceBytes: ByteArray? = null
+            var sourceHtml = iframeHtml
+            var videoExtFailure: Throwable? = null
+            var candidates: LinkedHashMap<String, String>
+            var attempt = 0
+            while (true) {
+                attempt++
+                if (videoExtUrl != null) {
+                    runSuspendCatching { fetchPage(videoExtUrl, normalizedUrl) }
+                        .onSuccess { page ->
+                            sourceBytes = page.bodyBytes
+                            sourceHtml = normalizePayload(page.body)
+                            videoExtFailure = null
+                        }
+                        .onFailure {
+                            videoExtFailure = it
+                            analyticsTracker.logExtractorFailure(
+                                "VK",
+                                videoExtUrl,
+                                "failed to load video_ext page, fallback to iframe",
+                                it,
+                            )
+                        }
+                }
+                candidates = collectCandidates(sourceHtml, sourceUrl)
+                // VK примерно в половине запросов отдаёт урезанную страницу плеера без ссылок на поток;
+                // повтор того же запроса обычно возвращает полную, поэтому пустой ответ без маркера
+                // «видео недоступно» перезапрашиваем. Ошибки сети не повторяем: таймаут уже долгий.
+                val emptyPage = videoExtUrl != null && videoExtFailure == null &&
+                    candidates.isEmpty() && VIDEO_UNAVAILABLE_MARKER !in sourceHtml
+                if (!emptyPage || attempt >= VIDEO_EXT_MAX_ATTEMPTS) break
+                delay(VIDEO_EXT_RETRY_DELAY_MS)
+            }
             if (candidates.isEmpty()) {
                 if (VIDEO_UNAVAILABLE_MARKER in sourceHtml) {
                     analyticsTracker.logExtractorFailure("VK", sourceUrl, "video is unavailable on VK")
                     return@withContext VkOutcome.VideoUnavailable(sourceBytes?.vkUnavailableMessage())
+                }
+                // video_ext не загрузился, а запасная iframe-страница ссылок не содержит: это сбой сети,
+                // а не отсутствие потоков. Префикс типа исключения распознаёт аналитика как сетевой.
+                videoExtFailure?.let { failure ->
+                    return@withContext VkOutcome.Failed(
+                        "${failure::class.java.simpleName}: ${failure.message.orEmpty().take(60)}",
+                    )
                 }
                 analyticsTracker.logExtractorFailure("VK", normalizedUrl, "no stream URLs found")
                 return@withContext VkOutcome.Failed("no stream URLs found (${sourceHtml.length} chars)")
