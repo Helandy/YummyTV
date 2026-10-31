@@ -97,8 +97,10 @@ class VideoExportWorker @AssistedInject internal constructor(
         val startedAtMs = System.currentTimeMillis()
         return try {
             // Проверяем доступ до перекодирования: иначе пользователь ждёт минуты ради SecurityException
-            check(exportRepository.isDestinationWritable(destinationUri)) {
-                applicationContext.getString(R.string.video_export_error_directory_unavailable)
+            if (!exportRepository.isDestinationWritable(destinationUri)) {
+                throw ExpectedExportException(
+                    applicationContext.getString(R.string.video_export_error_directory_unavailable),
+                )
             }
             ensureTemporarySpace(item)
             tempDirectory.mkdirs()
@@ -161,8 +163,10 @@ class VideoExportWorker @AssistedInject internal constructor(
         val available = StatFs(applicationContext.cacheDir.path).availableBytes
         val required = item.bytesDownloaded.coerceAtLeast(MINIMUM_ESTIMATED_EXPORT_BYTES) +
             TEMP_SPACE_RESERVE_BYTES
-        check(available >= required) {
-            applicationContext.getString(R.string.video_export_error_no_space)
+        if (available < required) {
+            throw ExpectedExportException(
+                applicationContext.getString(R.string.video_export_error_no_space),
+            )
         }
     }
 

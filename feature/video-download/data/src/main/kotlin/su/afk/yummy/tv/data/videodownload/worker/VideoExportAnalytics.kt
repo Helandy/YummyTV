@@ -65,6 +65,10 @@ class VideoExportAnalytics @Inject constructor(
             append("): ")
             append(details)
         }
+        if (throwable is ExpectedExportException) {
+            tracker.track(EVENT_FAILED_EXPECTED, analyticsParamsOf(PARAM_REASON to details))
+            return
+        }
         tracker.reportError(
             message = message,
             throwable = throwable ?: IllegalStateException(details),
@@ -91,6 +95,7 @@ class VideoExportAnalytics @Inject constructor(
         const val EVENT_DIRECTORY_REJECTED = "video_export_directory_rejected"
         const val EVENT_ENQUEUED = "video_export_enqueued"
         const val EVENT_SUCCEEDED = "video_export_succeeded"
+        const val EVENT_FAILED_EXPECTED = "video_export_failed_expected"
         const val EVENT_CANCELLED = "video_export_cancelled"
         const val ERROR_GROUP = "video_export_failed"
         const val PARAM_REASON = "reason"
