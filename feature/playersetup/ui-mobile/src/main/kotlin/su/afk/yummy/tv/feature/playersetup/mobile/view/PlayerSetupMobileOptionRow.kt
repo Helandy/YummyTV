@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun PlayerSetupMobileOptionRow(
     label: String,
+    icon: ImageVector,
     value: String,
     hint: String,
     onClick: () -> Unit,
@@ -41,6 +42,7 @@ internal fun PlayerSetupMobileOptionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        PlayerSetupMobileRowIcon(icon = icon)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,

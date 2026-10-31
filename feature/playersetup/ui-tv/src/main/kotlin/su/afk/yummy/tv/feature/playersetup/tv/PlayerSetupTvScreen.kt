@@ -7,6 +7,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.HighQuality
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +69,7 @@ fun PlayerSetupTvScreen(
 
         PlayerSetupTvToggleRow(
             label = stringResource(R.string.player_setup_opening_timeline_label),
+            icon = Icons.Outlined.Timeline,
             hint = stringResource(R.string.player_setup_opening_timeline_hint),
             enabled = state.showOpeningOnTimeline,
             onClick = { onEvent(PlayerSetupState.Event.ShowOpeningOnTimelineToggled) },
@@ -68,24 +77,28 @@ fun PlayerSetupTvScreen(
         )
         PlayerSetupTvToggleRow(
             label = stringResource(R.string.player_setup_auto_skip_label),
+            icon = Icons.Outlined.SkipNext,
             hint = stringResource(R.string.player_setup_auto_skip_hint),
             enabled = state.autoSkipOpeningsEndings,
             onClick = { onEvent(PlayerSetupState.Event.AutoSkipOpeningsEndingsToggled) },
         )
         PlayerSetupTvToggleRow(
             label = stringResource(R.string.player_setup_auto_play_label),
+            icon = Icons.Outlined.PlayCircle,
             hint = stringResource(R.string.player_setup_auto_play_hint),
             enabled = state.autoPlayNextEpisode,
             onClick = { onEvent(PlayerSetupState.Event.AutoPlayNextEpisodeToggled) },
         )
         PlayerSetupTvToggleRow(
             label = stringResource(R.string.player_setup_suggest_next_label),
+            icon = Icons.Outlined.Lightbulb,
             hint = stringResource(R.string.player_setup_suggest_next_hint),
             enabled = state.suggestNextEpisodeOnWatched,
             onClick = { onEvent(PlayerSetupState.Event.SuggestNextEpisodeOnWatchedToggled) },
         )
         PlayerSetupTvChoiceRow(
             label = stringResource(R.string.player_setup_language_label),
+            icon = Icons.Outlined.Language,
             hint = stringResource(R.string.player_setup_language_hint),
             value = state.contentLanguage.setupLabel(),
             onCycle = {
@@ -94,12 +107,14 @@ fun PlayerSetupTvScreen(
         )
         PlayerSetupTvToggleRow(
             label = stringResource(R.string.player_setup_adaptive_quality_label),
+            icon = Icons.Outlined.Speed,
             hint = stringResource(R.string.player_setup_adaptive_quality_hint),
             enabled = state.adaptiveVideoQualityEnabled,
             onClick = { onEvent(PlayerSetupState.Event.AdaptiveVideoQualityToggled) },
         )
         PlayerSetupTvChoiceRow(
             label = stringResource(R.string.player_setup_quality_label),
+            icon = Icons.Outlined.HighQuality,
             hint = stringResource(R.string.player_setup_quality_hint),
             value = state.preferredVideoQuality.setupLabel(),
             onCycle = {

@@ -15,5 +15,6 @@ dependencies {
     implementation(project(":feature:playersetup:presentation"))
 
     implementation(libs.bundles.compose.screen)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.bundles.navigation.serialization)
 }
