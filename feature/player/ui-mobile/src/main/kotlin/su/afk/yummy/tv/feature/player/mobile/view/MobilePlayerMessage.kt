@@ -4,7 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MobilePlayerMessage(
     title: String?,
@@ -77,12 +79,19 @@ internal fun MobilePlayerMessage(
             val hasTertiary = tertiaryActionLabel != null && onTertiaryAction != null
             if (hasSecondary || hasTertiary) {
                 Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     if (secondaryActionLabel != null && onSecondaryAction != null) {
-                        OutlinedButton(onClick = onSecondaryAction) { Text(secondaryActionLabel) }
+                        OutlinedButton(onClick = onSecondaryAction) {
+                            Text(secondaryActionLabel, maxLines = 1, softWrap = false)
+                        }
                     }
                     if (tertiaryActionLabel != null && onTertiaryAction != null) {
-                        OutlinedButton(onClick = onTertiaryAction) { Text(tertiaryActionLabel) }
+                        OutlinedButton(onClick = onTertiaryAction) {
+                            Text(tertiaryActionLabel, maxLines = 1, softWrap = false)
+                        }
                     }
                 }
             }
