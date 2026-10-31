@@ -33,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
@@ -43,6 +42,8 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
@@ -148,8 +149,8 @@ fun ReviewsListTvScreen(
                     ) {
                         items(
                             reviews.itemCount,
-                            key = reviews.itemKey { it.id }) { index ->
-                            reviews[index]?.let { review ->
+                            key = reviews.safeItemKey("review") { it.id }) { index ->
+                            reviews.getOrNull(index)?.let { review ->
                                 ReviewTvCard(
                                     review = review,
                                     reactions = state.reactionOverrides[review.id]

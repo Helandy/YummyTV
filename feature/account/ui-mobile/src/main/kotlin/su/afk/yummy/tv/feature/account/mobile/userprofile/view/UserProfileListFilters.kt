@@ -12,12 +12,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileChipTab
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileChipTabs
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserFriend
 import su.afk.yummy.tv.domain.account.model.UserPostSummary
@@ -90,9 +91,9 @@ internal fun LazyListScope.postItems(
     pagedStateItems(content, onRetry)
     items(
         count = content.itemCount,
-        key = content.itemKey { "post_${it.id}" },
+        key = content.safeItemKey("profile") { "post_${it.id}" },
     ) { index ->
-        content[index]?.let { item ->
+        content.getOrNull(index)?.let { item ->
             UserPostRow(
                 item = item,
                 onClick = { onEvent(UserProfileState.Event.PostSelected(item.id)) },
@@ -113,9 +114,9 @@ internal fun LazyListScope.reviewItems(
     pagedStateItems(content, onRetry)
     items(
         count = content.itemCount,
-        key = content.itemKey { "review_${it.id}" },
+        key = content.safeItemKey("profile") { "review_${it.id}" },
     ) { index ->
-        content[index]?.let { item ->
+        content.getOrNull(index)?.let { item ->
             UserReviewRow(
                 item = item,
                 onClick = { onEvent(UserProfileState.Event.ReviewSelected(item.id)) },
@@ -137,9 +138,9 @@ internal fun LazyListScope.friendItems(
     pagedStateItems(content, onRetry)
     items(
         count = content.itemCount,
-        key = content.itemKey { "friend_${it.id}" },
+        key = content.safeItemKey("profile") { "friend_${it.id}" },
     ) { index ->
-        content[index]?.let { item ->
+        content.getOrNull(index)?.let { item ->
             UserFriendRow(
                 item = item,
                 nowEpochSeconds = nowEpochSeconds,

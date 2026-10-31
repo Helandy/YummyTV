@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
@@ -41,6 +40,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileHideOnScrollState
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTextTabs
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.domain.posts.model.PostSummary
@@ -159,8 +160,8 @@ private fun PostsList(
                 )
             }
 
-            else -> items(posts.itemCount, key = posts.itemKey { lazyKey("post", it.id) }) { index ->
-                posts[index]?.let { post ->
+            else -> items(posts.itemCount, key = posts.safeItemKey("post") { lazyKey("post", it.id) }) { index ->
+                posts.getOrNull(index)?.let { post ->
                     PostMobileCard(
                         post,
                         { onEvent(PostsListState.Event.PostSelected(post.id)) })

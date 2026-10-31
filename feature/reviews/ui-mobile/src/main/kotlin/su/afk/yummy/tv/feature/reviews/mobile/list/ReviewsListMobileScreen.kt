@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
@@ -30,6 +29,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
 import su.afk.yummy.tv.feature.reviews.list.ReviewsListState
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewMobileCard
@@ -123,9 +124,9 @@ private fun ReviewsListContent(
         ) {
             items(
                 items.itemCount,
-                key = items.itemKey { it.id },
+                key = items.safeItemKey("review") { it.id },
             ) { index ->
-                items[index]?.let { review ->
+                items.getOrNull(index)?.let { review ->
                     ReviewMobileCard(
                         review,
                         state.reactionOverrides[review.id] ?: review.reactions,

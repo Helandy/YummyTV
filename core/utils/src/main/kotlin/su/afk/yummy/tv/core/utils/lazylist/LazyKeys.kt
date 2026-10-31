@@ -16,3 +16,26 @@ package su.afk.yummy.tv.core.utils.lazylist
  */
 fun lazyKey(prefix: String, id: Any?, index: Int = -1): String =
     if (id == null) "$prefix:placeholder:$index" else "$prefix:$id"
+
+/**
+ * Ключ элемента lazy-списка поверх Paging, который не бросает при устаревшем индексе.
+ *
+ * Lazy-layout строит карту ключей по `count`, прочитанному в композиции, а Paging за это время мог
+ * подменить снапшот (новый запрос, рефреш) на более короткий. `LazyPagingItems.peek(index)` на
+ * индексе за пределами снапшота бросает `IndexOutOfBoundsException`, поэтому индекс сверяется с
+ * актуальным размером. Для плейсхолдера и устаревшего индекса ключ берётся из отдельного
+ * пространства [lazyKey], где он не пересечётся с ключами настоящих элементов.
+ *
+ * @param itemCount актуальный размер снапшота, а не значение, закэшированное в композиции.
+ * @param peek чтение элемента без запуска подгрузки.
+ */
+inline fun <T : Any> pagingItemKey(
+    index: Int,
+    itemCount: Int,
+    peek: (Int) -> T?,
+    placeholderPrefix: String,
+    key: (T) -> Any,
+): Any {
+    val item = if (index in 0 until itemCount) peek(index) else null
+    return if (item == null) lazyKey(placeholderPrefix, null, index) else key(item)
+}

@@ -12,13 +12,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
@@ -58,9 +59,9 @@ internal fun UserProfileCollectionsGrid(
         }
         items(
             count = collections.itemCount,
-            key = collections.itemKey { "collection_${it.id}" },
+            key = collections.safeItemKey("collection") { "collection_${it.id}" },
         ) { index ->
-            collections[index]?.let { item ->
+            collections.getOrNull(index)?.let { item ->
                 MobileCollectionCard(
                     title = item.title,
                     posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },

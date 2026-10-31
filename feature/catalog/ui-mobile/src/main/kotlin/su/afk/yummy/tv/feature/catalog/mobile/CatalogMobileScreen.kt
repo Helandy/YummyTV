@@ -33,7 +33,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
@@ -48,6 +47,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleRowCard
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.MobileTitleRowSkeleton
@@ -249,10 +250,10 @@ fun CatalogMobileScreen(
             }
             items(
                 count = results.itemCount,
-                key = results.itemKey { it.id },
+                key = results.safeItemKey("search") { it.id },
                 contentType = { if (isRowLayout) "title_row" else "poster" },
             ) { index ->
-                results[index]?.let { item ->
+                results.getOrNull(index)?.let { item ->
                     if (isRowLayout) {
                         MobileTitleRowCard(
                             title = item.title,

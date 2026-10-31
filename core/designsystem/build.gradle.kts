@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.compose.material3.adaptive.navigation3)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.bundles.paging)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
     implementation(libs.zxing.core)

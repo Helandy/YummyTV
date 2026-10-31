@@ -55,6 +55,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyListKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -168,7 +169,7 @@ internal fun LibraryTvHistoryPage(
                 // в launchTvLazyListKeyFocusRestore никогда не совпадает.
                 key = { index -> keys.getOrNull(index) ?: lazyKey("history", null, index) },
             ) { index ->
-                items[index]?.let { entry ->
+                items.getOrNull(index)?.let { entry ->
                     val entryKey = keys.getOrNull(index)
                     // Реквестер на строку обязателен: без него карточка отрисуется пустой.
                     val fallbackFocusRequester = remember(index) { FocusRequester() }

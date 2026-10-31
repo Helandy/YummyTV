@@ -22,3 +22,37 @@ class LazyKeysTest : BaseUnitTest() {
         assertEquals(lazyKey("post", 7, index = 0), lazyKey("post", 7, index = 3))
     }
 }
+
+class PagingItemKeyTest : BaseUnitTest() {
+
+    private val items = listOf(10, 11)
+
+    private fun keyAt(index: Int, itemCount: Int = items.size): Any =
+        pagingItemKey(index, itemCount, peek = { items.getOrNull(it) }, placeholderPrefix = "p") { it }
+
+    @Test
+    fun `a loaded item gives its own key`() {
+        assertEquals(11, keyAt(1))
+    }
+
+    @Test
+    fun `an index past the snapshot never reads the list`() {
+        var peeked = false
+        val key = pagingItemKey<Int>(20, itemCount = 20, peek = { peeked = true; null }, placeholderPrefix = "p") { it }
+
+        assertEquals(lazyKey("p", null, 20), key)
+        assertEquals(false, peeked)
+    }
+
+    @Test
+    fun `a negative index gives a placeholder key`() {
+        assertEquals(lazyKey("p", null, -1), keyAt(-1))
+    }
+
+    @Test
+    fun `a placeholder inside the snapshot gives a placeholder key`() {
+        val key = pagingItemKey<Int>(1, itemCount = 5, peek = { null }, placeholderPrefix = "p") { it }
+
+        assertEquals(lazyKey("p", null, 1), key)
+    }
+}

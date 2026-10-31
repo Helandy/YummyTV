@@ -32,7 +32,6 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
@@ -44,6 +43,8 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvCollectionCard
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
@@ -131,9 +132,9 @@ internal fun CollectionsCatalogGrid(
 
                 items(
                     count = itemCount,
-                    key = pagingItems.itemKey { it.id },
+                    key = pagingItems.safeItemKey("collection") { it.id },
                 ) { index ->
-                    val item = pagingItems[index] ?: return@items
+                    val item = pagingItems.getOrNull(index) ?: return@items
                     TvCollectionCard(
                         title = item.title,
                         posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },

@@ -18,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
@@ -27,6 +26,8 @@ import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.MobileCompactListPane
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.messages.dialogs.DialogsState
 import su.afk.yummy.tv.feature.messages.mobile.view.DialogMobileAvatarItem
@@ -122,9 +123,9 @@ fun DialogsMobileScreen(
 
                             else -> items(
                                 count = dialogs.itemCount,
-                                key = dialogs.itemKey { lazyKey("dialog", it.userId) },
+                                key = dialogs.safeItemKey("dialog") { lazyKey("dialog", it.userId) },
                             ) { index ->
-                                dialogs[index]?.let { dialog ->
+                                dialogs.getOrNull(index)?.let { dialog ->
                                     val onClick = {
                                         onEvent(DialogsState.Event.DialogSelected(dialog.userId))
                                     }

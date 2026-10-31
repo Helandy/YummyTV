@@ -20,12 +20,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.resolve
@@ -87,9 +88,9 @@ internal fun CommentsList(
         }
         items(
             count = pagingComments.itemCount,
-            key = pagingComments.itemKey { it.comment.id },
+            key = pagingComments.safeItemKey("comment") { it.comment.id },
         ) { index ->
-            val item = pagingComments[index]?.resolve(state) ?: return@items
+            val item = pagingComments.getOrNull(index)?.resolve(state) ?: return@items
             if (state.prependedComments.any { it.comment.id == item.comment.id }) return@items
             CommentThread(
                 item = item,

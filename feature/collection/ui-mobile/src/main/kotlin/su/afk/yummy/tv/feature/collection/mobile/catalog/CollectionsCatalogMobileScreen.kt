@@ -20,7 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
@@ -36,6 +35,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.domain.collection.model.CollectionSort
@@ -159,9 +160,9 @@ fun CollectionsCatalogMobileScreen(
                 }
                 items(
                     count = pagingItems.itemCount,
-                    key = pagingItems.itemKey { it.id },
+                    key = pagingItems.safeItemKey("collection") { it.id },
                 ) { index ->
-                    pagingItems[index]?.let { item ->
+                    pagingItems.getOrNull(index)?.let { item ->
                         MobileCollectionCard(
                             title = item.title,
                             posterUrls = item.posterUrls.ifEmpty { listOfNotNull(item.posterUrl) },

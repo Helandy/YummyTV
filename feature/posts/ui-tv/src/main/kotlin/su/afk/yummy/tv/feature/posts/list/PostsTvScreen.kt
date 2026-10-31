@@ -47,6 +47,8 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
@@ -218,8 +220,8 @@ fun PostsTvScreen(
             }
 
             else -> {
-                items(posts.itemCount, key = { index -> lazyKey(POST_KEY_PREFIX, posts[index]?.id, index) }) { index ->
-                    posts[index]?.let { post ->
+                items(posts.itemCount, key = posts.safeItemKey(POST_KEY_PREFIX) { lazyKey(POST_KEY_PREFIX, it.id) }) { index ->
+                    posts.getOrNull(index)?.let { post ->
                         PostTvCard(
                             post,
                             onClick = {

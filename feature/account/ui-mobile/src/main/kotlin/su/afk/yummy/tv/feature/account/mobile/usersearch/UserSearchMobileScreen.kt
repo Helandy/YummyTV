@@ -42,6 +42,8 @@ import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.account.mobile.view.UserSearchCard
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -150,9 +152,9 @@ fun UserSearchMobileScreen(
 
                 else -> items(
                     count = results.itemCount,
-                    key = { index -> lazyKey("user", results[index]?.id, index) },
+                    key = results.safeItemKey("user") { lazyKey("user", it.id) },
                 ) { index ->
-                    results[index]?.let { item ->
+                    results.getOrNull(index)?.let { item ->
                         UserSearchCard(
                             item = item,
                             onClick = {

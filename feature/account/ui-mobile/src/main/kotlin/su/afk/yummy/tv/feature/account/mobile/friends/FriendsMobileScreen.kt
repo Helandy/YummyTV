@@ -19,6 +19,8 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.account.friends.FriendsState
@@ -65,9 +67,9 @@ fun FriendsMobileScreen(
                 pagedStateItems(friends, onRetry = friends::retry)
                 items(
                     count = friends.itemCount,
-                    key = { index -> lazyKey("friend", friends[index]?.id, index) },
+                    key = friends.safeItemKey("friend") { lazyKey("friend", it.id) },
                 ) { index ->
-                    friends[index]?.let { item ->
+                    friends.getOrNull(index)?.let { item ->
                         UserFriendRow(
                             item = item,
                             nowEpochSeconds = nowEpochSeconds,

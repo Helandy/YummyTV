@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -90,12 +91,12 @@ internal fun LibraryMobileHistoryPage(
             items(
                 items.itemCount,
                 key = { index ->
-                    items[index]?.let {
+                    items.getOrNull(index)?.let {
                         lazyKey("history", "${it.animeId}_${it.episode}_${it.watchedAtSeconds}")
                     } ?: lazyKey("history", null, index)
                 },
             ) { index ->
-                items[index]?.let { entry ->
+                items.getOrNull(index)?.let { entry ->
                     Surface(
                         shape = MaterialTheme.shapes.medium,
                         tonalElevation = 2.dp,

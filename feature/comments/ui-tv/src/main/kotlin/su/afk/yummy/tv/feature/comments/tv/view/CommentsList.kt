@@ -11,10 +11,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.paging.getOrNull
+import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.comments.model.CommentVote
@@ -62,9 +63,9 @@ internal fun CommentsList(
         }
         items(
             count = comments.itemCount,
-            key = comments.itemKey { lazyKey("comment", it.comment.id) },
+            key = comments.safeItemKey("comment") { lazyKey("comment", it.comment.id) },
         ) { index ->
-            val item = comments[index]?.resolve(state) ?: return@items
+            val item = comments.getOrNull(index)?.resolve(state) ?: return@items
             if (state.prependedComments.any { it.comment.id == item.comment.id }) return@items
             CommentCard(
                 item = item,
