@@ -19,8 +19,10 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 
 private const val YANI_APPLICATION_HEADER = "X-Application"
 private const val YANI_LANGUAGE_HEADER = "Lang"
@@ -37,6 +39,7 @@ fun buildYaniHttpClient(
     okHttpClient: OkHttpClient,
     scope: CoroutineScope,
     apiConfig: YaniApiConfig,
+    logRecordingSettings: AppLogRecordingSettings,
 ): HttpClient {
     val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, scope)
 
@@ -104,11 +107,14 @@ fun buildYaniHttpClient(
                 }
             },
         )
-        // Логи включены и в release: пользователи присылают экспортированные логи для разбора.
+        // В release логируем, только пока пользователь включил запись логов: тело больших ответов
+        // (например, /videos длинных тайтлов ~5 МБ) Ktor целиком читает в строку и режет на записи logcat,
+        // это секунды и GC-шторм. filter считается на каждый вызов, при false тело не читается.
         // Секреты маскирует SensitiveDataMaskingLogger, заголовки авторизации скрыты sanitizeHeader.
         install(Logging) {
             logger = SensitiveDataMaskingLogger(Logger.ANDROID)
             level = LogLevel.BODY
+            filter { BuildConfig.DEBUG || logRecordingSettings.isEnabled }
             sanitizeHeader { header ->
                 header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
                     header.equals(HttpHeaders.Cookie, ignoreCase = true) ||

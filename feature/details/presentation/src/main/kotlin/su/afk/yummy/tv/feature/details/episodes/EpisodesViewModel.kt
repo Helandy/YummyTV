@@ -178,12 +178,17 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 updateMergedWatchProgress()
             }
             .launchIn(viewModelScope)
+        var sessionSeen = false
         observeAccountSession()
             .onEach { session ->
                 val wasSignedIn = isSignedIn
+                // Первая эмиссия — стартовое состояние: видео и так грузятся с учётом входа (кэш не старше
+                // 5 минут, иначе сеть с серверным прогрессом), принудительный рефреш был бы дублем.
+                val firstEmission = !sessionSeen
+                sessionSeen = true
                 isSignedIn = session.isAuthorized
                 if (isSignedIn && !wasSignedIn) {
-                    viewModelScope.launch { refreshVideosFromNetwork() }
+                    if (!firstEmission) viewModelScope.launch { refreshVideosFromNetwork() }
                 } else if (!isSignedIn) {
                     updateMergedWatchProgress(serverVideos = emptyList())
                 }
@@ -468,9 +473,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
             onSuccess = {
                 // Автопереход ждёт полный список: на неполном пикер озвучек не показал бы модули-источники
                 latest?.let(::consumePendingEpisode)
-                if (isSignedIn) {
-                    refreshVideosFromNetwork()
-                }
             },
             onFailure = {
                 if (latest == null) {

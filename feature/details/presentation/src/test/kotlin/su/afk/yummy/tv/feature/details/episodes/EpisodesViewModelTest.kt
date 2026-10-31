@@ -246,6 +246,15 @@ class EpisodesViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `opening the screen signed in does not force a second videos request`() {
+        session.value = AccountSession(isAuthorized = true, userId = 1)
+
+        createViewModel()
+
+        coVerify(exactly = 0) { animeRepository.refreshAnimeVideos(ANIME_ID) }
+    }
+
+    @Test
     fun `episode selection offers the dubbings and the chosen one opens the player`() {
         val vm = createViewModel()
 

@@ -321,6 +321,27 @@ class DetailsViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `opening signed in does not force a videos refresh on the first session emission`() {
+        session.value = AccountSession(isAuthorized = true, userId = 1)
+
+        createViewModel()
+
+        coVerify(exactly = 1) { videoHandler.load(ANIME_ID, any()) }
+        coVerify(exactly = 0) { videoHandler.refresh(any(), any()) }
+    }
+
+    @Test
+    fun `signed in user with cached videos revalidates through the TTL aware load`() {
+        coEvery { videoHandler.loadCached(any(), any()) } returns videosResult()
+        session.value = AccountSession(isAuthorized = true, userId = 1)
+
+        createViewModel()
+
+        coVerify(exactly = 1) { videoHandler.load(ANIME_ID, any()) }
+        coVerify(exactly = 0) { videoHandler.refresh(any(), any()) }
+    }
+
+    @Test
     fun `failed load shows the message and retry recovers`() {
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.failure(IllegalStateException("boom"))
         val vm = createViewModel()

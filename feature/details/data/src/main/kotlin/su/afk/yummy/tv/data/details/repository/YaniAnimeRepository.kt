@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
+import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.anime.AnimeTrailersCache
@@ -118,6 +119,7 @@ class YaniAnimeRepository(
 
     private val malEpisodesLocks = ConcurrentHashMap<Int, Mutex>()
     private val detailsInFlight = ConcurrentHashMap<String, Deferred<AnimeDetails>>()
+    private val videosInFlight = ConcurrentHashMap<String, Deferred<AnimeVideosCache>>()
     private val detailsScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
@@ -553,18 +555,36 @@ class YaniAnimeRepository(
         )
     }
 
+    /**
+     * Список видео длинных тайтлов весит мегабайты, а просят его одновременно экран деталей, экран серий и
+     * обновление после входа. Загрузка общая: пока она идёт, остальные ждут её же результат. Она живёт в своём
+     * скоупе, поэтому отмена одного ожидающего не обрывает запрос для остальных.
+     */
     private suspend fun fetchVideosFromNetwork(
         animeId: Int,
         languageCode: String,
     ): AnimeVideosCache {
-        val dto = api.getAnimeVideos(animeId)
-        val cache = dto.response.toAnimeVideosCache(
-            animeId = animeId,
-            language = languageCode,
-            cachedAt = System.currentTimeMillis(),
-        )
-        animeStorage.saveVideos(cache)
-        return cache
+        // Ответ зависит от авторизации (поле `subscribed`, серверный прогресс): запрос, начатый до входа или
+        // выхода, чужому состоянию отдавать нельзя.
+        val key = "$animeId:$languageCode:${settingsStore.currentUserId()}"
+        val deferred = videosInFlight.computeIfAbsent(key) {
+            detailsScope.async {
+                val dto = api.getAnimeVideos(animeId)
+                // Маппинг тысяч видео — вычисления, а не IO: отдаём его пулу Default.
+                val cache = withContext(Dispatchers.Default) {
+                    dto.response.toAnimeVideosCache(
+                        animeId = animeId,
+                        language = languageCode,
+                        cachedAt = System.currentTimeMillis(),
+                    )
+                }
+                animeStorage.saveVideos(cache)
+                cache
+            }.also { started ->
+                started.invokeOnCompletion { videosInFlight.remove(key, started) }
+            }
+        }
+        return deferred.await()
     }
 
     private suspend fun saveRecommendationsContent(

@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.network.dns.tmdbImageDns
 import su.afk.yummy.tv.core.network.dns.tmdbImageTimeouts
 import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Singleton
 
 @Module
@@ -61,7 +62,11 @@ object NetworkModule {
     @Provides
     @Singleton
     @UnauthenticatedJsonClient
-    fun provideUnauthenticatedJsonClient(okHttpClient: OkHttpClient, json: Json): HttpClient =
+    fun provideUnauthenticatedJsonClient(
+        okHttpClient: OkHttpClient,
+        json: Json,
+        logRecordingSettings: AppLogRecordingSettings,
+    ): HttpClient =
         HttpClient(OkHttp) {
             engine { preconfigured = okHttpClient }
             install(HttpTimeout) {
@@ -73,16 +78,20 @@ object NetworkModule {
                 gzip()
                 deflate()
             }
-            if (BuildConfig.DEBUG) {
-                install(Logging) {
-                    logger = SensitiveDataMaskingLogger(Logger.ANDROID)
-                    level = LogLevel.BODY
-                    // Клиент ещё качает APK с GitHub: тело файла в лог не нужно.
-                    filter { request -> !request.url.host.endsWith("github.com") && !request.url.host.endsWith("githubusercontent.com") }
-                    sanitizeHeader { header ->
-                        header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
-                            header.startsWith("X-Sig", ignoreCase = true)
-                    }
+            // В release тело пишется, только пока пользователь включил запись логов: filter считается
+            // на каждый вызов, при false Ktor тело не читает.
+            install(Logging) {
+                logger = SensitiveDataMaskingLogger(Logger.ANDROID)
+                level = LogLevel.BODY
+                // Клиент ещё качает APK с GitHub: тело файла в лог не нужно.
+                filter { request ->
+                    (BuildConfig.DEBUG || logRecordingSettings.isEnabled) &&
+                        !request.url.host.endsWith("github.com") &&
+                        !request.url.host.endsWith("githubusercontent.com")
+                }
+                sanitizeHeader { header ->
+                    header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
+                        header.startsWith("X-Sig", ignoreCase = true)
                 }
             }
         }

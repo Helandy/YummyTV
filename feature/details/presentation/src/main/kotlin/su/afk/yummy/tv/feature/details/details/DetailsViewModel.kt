@@ -171,9 +171,14 @@ class DetailsViewModel @AssistedInject internal constructor(
                 updateMergedWatchProgress()
             }
             .launchIn(viewModelScope)
+        var sessionSeen = false
         screenDataHandler.observeAccountSession()
             .onEach { session ->
                 val wasSignedIn = currentState.isSignedIn
+                // Первая эмиссия — лишь стартовое состояние: загрузка видео сама учитывает вход
+                // (кэш → рефреш для залогиненного, иначе обычная загрузка). Рефреш здесь был бы дублем.
+                val firstEmission = !sessionSeen
+                sessionSeen = true
                 val signedIn = session.isAuthorized
                 setState {
                     copy(
@@ -186,7 +191,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 if (signedIn && !wasSignedIn) {
                     viewModelScope.launch {
                         refreshLibraryState()
-                        if (!currentState.isProgressRefreshing) refreshVideosFromNetwork()
+                        if (!firstEmission && !currentState.isProgressRefreshing) refreshVideosFromNetwork()
                     }
                 } else if (!signedIn) {
                     setState { copy(libraryList = null) }
@@ -601,7 +606,9 @@ class DetailsViewModel @AssistedInject internal constructor(
             if (signedIn) setState { copy(isProgressRefreshing = true) }
             setVideos(cached)
             if (signedIn) {
-                refreshVideosFromNetwork()
+                // Кэш читается без учёта возраста: свежий (до 5 минут) остаётся как есть, просроченный
+                // обновится из сети. Принудительный рефреш при каждом открытии не нужен.
+                refreshVideosFromNetwork(force = false)
             }
             return
         }
@@ -618,13 +625,17 @@ class DetailsViewModel @AssistedInject internal constructor(
         }
     }
 
-    private suspend fun refreshVideosFromNetwork() {
+    /** [force] = false: кэш видео моложе TTL берётся как есть, в сеть идёт только просроченный. */
+    private suspend fun refreshVideosFromNetwork(force: Boolean = true) {
         setState { copy(isProgressRefreshing = true) }
         try {
-            videoHandler.refresh(
-                animeId = animeId,
-                pendingSubscriptionStates = subscriptionHandler.pendingSubscriptionStates(animeId),
-            ).onSuccess { result ->
+            val pending = subscriptionHandler.pendingSubscriptionStates(animeId)
+            val loaded = if (force) {
+                videoHandler.refresh(animeId = animeId, pendingSubscriptionStates = pending)
+            } else {
+                videoHandler.load(animeId = animeId, pendingSubscriptionStates = pending)
+            }
+            loaded.onSuccess { result ->
                 setVideos(result)
                 if (currentState.isWatchLaunchPending) {
                     openInitialVideo(result.videos)

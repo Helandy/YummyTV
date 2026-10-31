@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +20,7 @@ class YaniHttpClientProvider @Inject constructor(
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val okHttpClient: OkHttpClient,
     private val apiConfig: YaniApiConfig,
+    private val logRecordingSettings: AppLogRecordingSettings,
     @IoApplicationScope private val scope: CoroutineScope,
 ) {
     private val mutex = Mutex()
@@ -31,7 +33,7 @@ class YaniHttpClientProvider @Inject constructor(
         return mutex.withLock {
             client?.let { return it }
             withContext(Dispatchers.IO) {
-                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient, scope, apiConfig)
+                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient, scope, apiConfig, logRecordingSettings)
             }.also { client = it }
         }
     }
