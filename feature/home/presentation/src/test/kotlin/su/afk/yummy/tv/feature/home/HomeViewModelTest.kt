@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
+import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
@@ -102,6 +103,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val userId = MutableStateFlow(USER_ID)
     private val supportPrompt = MutableStateFlow(SupportPromptSnapshot(dismissed = true, firstEligibleTimeMs = 0L))
     private val communityPrompt = MutableStateFlow(CommunityPromptSnapshot(dismissed = true, firstUseTimeMs = 0L))
+    private val boostyPrompt = MutableStateFlow(BoostyPromptSnapshot(dismissed = true, installTimeMs = 0L))
     private val navKey: NavKey = mockk()
 
     private val appClock: AppClock = mockk()
@@ -119,6 +121,7 @@ class HomeViewModelTest : BaseUnitTest() {
         every { settingsStore.yaniContentLanguage } returns emptyFlow()
         every { settingsStore.supportPromptSnapshot } returns supportPrompt
         every { settingsStore.communityPromptSnapshot } returns communityPrompt
+        every { settingsStore.boostyPromptSnapshot } returns boostyPrompt
         every { settingsStore.lastSeenAnnouncementId } returns flowOf("")
         every { featureToggleUpdateObserver.currentActivationId } returns 1L
         every { featureToggleUpdateObserver.updates } returns flowOf()
@@ -452,6 +455,55 @@ class HomeViewModelTest : BaseUnitTest() {
 
         assertFalse(vm.currentState.communityPromptVisible)
         assertEquals(Effect.OpenUri("https://t.me/etozhesandy_dev"), effects.single())
+    }
+
+    @Test
+    fun `boosty prompt is shown once after fourteen days and remembered`() {
+        boostyPrompt.value = BoostyPromptSnapshot(dismissed = false, installTimeMs = 0L)
+
+        val vm = createViewModel()
+
+        assertTrue(vm.currentState.boostyPromptVisible)
+        coVerify(exactly = 1) { settingsStore.dismissBoostyPrompt() }
+        vm.setEvent(Event.BoostyPromptDismissed)
+        assertFalse(vm.currentState.boostyPromptVisible)
+    }
+
+    @Test
+    fun `boosty prompt is not shown before fourteen days or when dismissed`() {
+        boostyPrompt.value = BoostyPromptSnapshot(
+            dismissed = false,
+            installTimeMs = System.currentTimeMillis(),
+        )
+        assertFalse(createViewModel().currentState.boostyPromptVisible)
+
+        boostyPrompt.value = BoostyPromptSnapshot(dismissed = true, installTimeMs = 0L)
+        assertFalse(createViewModel().currentState.boostyPromptVisible)
+    }
+
+    @Test
+    fun `boosty prompt waits behind the community prompt`() {
+        communityPrompt.value = CommunityPromptSnapshot(dismissed = false, firstUseTimeMs = 0L)
+        boostyPrompt.value = BoostyPromptSnapshot(dismissed = false, installTimeMs = 0L)
+
+        val vm = createViewModel()
+        assertTrue(vm.currentState.communityPromptVisible)
+        assertFalse(vm.currentState.boostyPromptVisible)
+
+        vm.setEvent(Event.CommunityPromptDismissed)
+        assertTrue(vm.currentState.boostyPromptVisible)
+    }
+
+    @Test
+    fun `supporting on boosty opens the page and closes the prompt`() = runTest {
+        boostyPrompt.value = BoostyPromptSnapshot(dismissed = false, installTimeMs = 0L)
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.BoostyPromptSupportClicked)
+
+        assertFalse(vm.currentState.boostyPromptVisible)
+        assertEquals(Effect.OpenUri("https://boosty.to/etozhesandy"), effects.single())
     }
 
     @Test

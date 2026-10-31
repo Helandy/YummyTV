@@ -46,4 +46,9 @@
     <string name="home_community_prompt_later">Пізніше</string>
     <string name="home_community_prompt_join">Приєднатися</string>
     <string name="home_community_prompt_scan">Наведіть камеру телефона на QR-код, щоб відкрити наш Telegram-канал</string>
+    <string name="home_boosty_prompt_title">Підтримайте проєкт на Boosty</string>
+    <string name="home_boosty_prompt_message">Застосунок безкоштовний і без реклами, його робить один розробник. Якщо він вам подобається, підтримайте розробку на Boosty — це дуже допомагає.</string>
+    <string name="home_boosty_prompt_support">Підтримати</string>
+    <string name="home_boosty_prompt_later">Пізніше</string>
+    <string name="home_boosty_prompt_scan">Наведіть камеру телефона на QR-код, щоб відкрити сторінку на Boosty</string>
 </resources>

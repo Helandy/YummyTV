@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
+import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
@@ -34,6 +35,7 @@ import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
+import su.afk.yummy.tv.core.utils.system.BOOSTY_URL
 import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
@@ -57,6 +59,7 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.feature.home.utils.boostyPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.communityPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
@@ -116,6 +119,11 @@ class HomeViewModel @Inject internal constructor(
     /** Срок приглашения в сообщество наступил и оно ещё не показано — ждёт свободного экрана. */
     private var communityPromptDue = false
 
+    private var boostyPromptTimerJob: Job? = null
+
+    /** Срок предложения Boosty наступил и оно ещё не показано — ждёт свободного экрана. */
+    private var boostyPromptDue = false
+
     /** Ответ на предложение preview-канала не пришёл из хранилища — до него не показываем. */
     private var previewChannelPromptAnswered = true
     private var previewChannelBrowsable = false
@@ -164,6 +172,7 @@ class HomeViewModel @Inject internal constructor(
         observeAnnouncement()
         observePreviewChannelPrompt()
         observeCommunityPrompt()
+        observeBoostyPrompt()
         loadBloggerVideos()
         load()
         reloadOnContentLanguageChange()
@@ -241,6 +250,11 @@ class HomeViewModel @Inject internal constructor(
             HomeState.Event.CommunityPromptJoinClicked -> {
                 hideCommunityPrompt()
                 setEffect(HomeState.Effect.OpenUri(COMMUNITY_TELEGRAM_URL))
+            }
+            HomeState.Event.BoostyPromptDismissed -> hideBoostyPrompt()
+            HomeState.Event.BoostyPromptSupportClicked -> {
+                hideBoostyPrompt()
+                setEffect(HomeState.Effect.OpenUri(BOOSTY_URL))
             }
             HomeState.Event.PreviewChannelPromptAccepted -> answerPreviewChannelPrompt(accepted = true)
             HomeState.Event.PreviewChannelPromptDismissed -> answerPreviewChannelPrompt(accepted = false)
@@ -516,6 +530,7 @@ class HomeViewModel @Inject internal constructor(
     private fun updateCommunityPrompt() {
         if (!communityPromptDue || currentState.communityPromptVisible) return
         if (currentState.supportPromptVisible ||
+            currentState.boostyPromptVisible ||
             currentState.announcement != null ||
             currentState.previewChannelPromptVisible
         ) {
@@ -526,6 +541,56 @@ class HomeViewModel @Inject internal constructor(
         viewModelScope.launch {
             settingsStore.dismissCommunityPrompt()
         }
+    }
+
+    /** Следит за тем, когда предложение поддержать на Boosty станет доступно к показу. */
+    private fun observeBoostyPrompt() {
+        settingsStore.boostyPromptSnapshot
+            .onEach(::applyBoostyPromptSnapshot)
+            .launchIn(viewModelScope)
+    }
+
+    /** Помечает предложение готовым к показу сразу либо заводит таймер до срока из [snapshot]. */
+    private fun applyBoostyPromptSnapshot(snapshot: BoostyPromptSnapshot) {
+        boostyPromptTimerJob?.cancel()
+        if (snapshot.dismissed) {
+            boostyPromptDue = false
+            return
+        }
+        val remainingMs = snapshot.boostyPromptRemainingMs(nowMs = System.currentTimeMillis())
+        if (remainingMs <= 0L) {
+            boostyPromptDue = true
+            updateBoostyPrompt()
+        } else {
+            boostyPromptTimerJob = viewModelScope.launch {
+                delay(remainingMs.milliseconds)
+                boostyPromptDue = true
+                updateBoostyPrompt()
+            }
+        }
+    }
+
+    /** Показывает предложение один раз, когда оно созрело и поверх главной нет других диалогов. */
+    private fun updateBoostyPrompt() {
+        if (!boostyPromptDue || currentState.boostyPromptVisible) return
+        if (currentState.supportPromptVisible ||
+            currentState.communityPromptVisible ||
+            currentState.announcement != null ||
+            currentState.previewChannelPromptVisible
+        ) {
+            return
+        }
+        boostyPromptDue = false
+        setState { copy(boostyPromptVisible = true) }
+        viewModelScope.launch {
+            settingsStore.dismissBoostyPrompt()
+        }
+    }
+
+    /** Закрывает предложение; показанным оно уже помечено при появлении. */
+    private fun hideBoostyPrompt() {
+        setState { copy(boostyPromptVisible = false) }
+        updatePreviewChannelPrompt()
     }
 
     /** Закрывает приглашение; показанным оно уже помечено при появлении. */
@@ -558,12 +623,14 @@ class HomeViewModel @Inject internal constructor(
             hasContinueWatching = currentState.continueWatching.isNotEmpty(),
             otherDialogVisible = currentState.supportPromptVisible ||
                 currentState.communityPromptVisible ||
+                currentState.boostyPromptVisible ||
                 currentState.announcement != null,
         )
         if (visible != currentState.previewChannelPromptVisible) {
             setState { copy(previewChannelPromptVisible = visible) }
         }
         updateCommunityPrompt()
+        updateBoostyPrompt()
     }
 
     /** Запоминает ответ; при согласии открывает системный запрос на добавление канала. */

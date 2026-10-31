@@ -92,6 +92,7 @@ internal object SettingsPreferenceKeys {
     val communityPromptDismissedKey = booleanPreferencesKey("community_prompt_dismissed")
     val communityPromptFirstUseTimeMsKey =
         longPreferencesKey("community_prompt_first_use_time_ms")
+    val boostyPromptDismissedKey = booleanPreferencesKey("boosty_prompt_dismissed")
     val lastSeenAnnouncementIdKey =stringPreferencesKey("last_seen_announcement_id")
     val notificationPermissionRequestedKey =
         booleanPreferencesKey("notification_permission_requested")

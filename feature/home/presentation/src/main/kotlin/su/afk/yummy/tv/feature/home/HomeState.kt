@@ -31,6 +31,7 @@ class HomeState {
         val supportPromptVisible: Boolean = false,
         /** Приглашение в Telegram-сообщество через несколько дней после первого использования. */
         val communityPromptVisible: Boolean = false,
+        val boostyPromptVisible: Boolean = false,
         val announcement: HomeAnnouncement? = null,
         /** Доп. строка-сообщение с сервера (не диалог). `null` — не показывается. */
         val statusMessage: String? = null,
@@ -96,6 +97,12 @@ class HomeState {
 
         /** Пользователь нажал «Вступить» в приглашении в сообщество. */
         data object CommunityPromptJoinClicked : Event
+
+        /** Пользователь отложил предложение поддержать проект на Boosty. */
+        data object BoostyPromptDismissed : Event
+
+        /** Пользователь нажал «Поддержать» в предложении поддержать проект на Boosty. */
+        data object BoostyPromptSupportClicked : Event
 
         /** Пользователь согласился добавить preview-канал на главный экран ТВ. */
         data object PreviewChannelPromptAccepted : Event

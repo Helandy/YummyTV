@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.preferences.settings
 
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 
@@ -19,6 +20,9 @@ interface AppLifecycleSettingsStore {
 
     /** Окно приглашения в сообщество: время первого использования и отметка, что оно уже показано. */
     val communityPromptSnapshot: Flow<CommunityPromptSnapshot>
+
+    /** Окно «Поддержать на Boosty»: реальное время установки приложения и отметка, что оно уже показано. */
+    val boostyPromptSnapshot: Flow<BoostyPromptSnapshot>
 
     /** Идентификатор последнего объявления, которое пользователь закрыл кнопкой ОК. */
     val lastSeenAnnouncementId: Flow<String>
@@ -44,6 +48,9 @@ interface AppLifecycleSettingsStore {
     /** Фиксирует время первого использования, если оно ещё не записано; позже не перезаписывается. */
     suspend fun ensureCommunityPromptFirstUseInitialized()
     suspend fun dismissCommunityPrompt()
+
+    /** Помечает окно Boosty как показанное, чтобы больше его не показывать. */
+    suspend fun dismissBoostyPrompt()
 
     /** Помечает объявление [id] как просмотренное, чтобы больше его не показывать. */
     suspend fun markAnnouncementSeen(id: String)

@@ -12,6 +12,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.utils.system.BOOSTY_URL
 import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_HANDLE
 import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.core.utils.system.copyToClipboard
@@ -96,6 +97,13 @@ internal fun SettingsTvAboutContent(
         hint = COMMUNITY_TELEGRAM_HANDLE,
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
         onClick = { context.openExternalUri(COMMUNITY_TELEGRAM_URL) },
+    )
+    SettingsDivider()
+    AboutRow(
+        label = stringResource(R.string.settings_boosty_label),
+        hint = BOOSTY_URL.removePrefix("https://"),
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        onClick = { context.openExternalUri(BOOSTY_URL) },
     )
 
     if (showReleaseNotes) {

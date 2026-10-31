@@ -197,6 +197,7 @@
     <string name="settings_session_storage_fallback">Fallback (Keystore unavailable)</string>
     <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
     <string name="settings_community_telegram_label">Telegram community</string>
+    <string name="settings_boosty_label">Support on Boosty</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
     <string name="settings_video_export_directory">MP4 export folder</string>
     <string name="settings_video_export_directory_not_selected">Not selected</string>

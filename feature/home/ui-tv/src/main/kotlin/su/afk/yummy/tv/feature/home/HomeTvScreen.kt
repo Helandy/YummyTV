@@ -43,6 +43,7 @@ import su.afk.yummy.tv.feature.home.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
 import su.afk.yummy.tv.feature.home.view.HomeTvSkeleton
+import su.afk.yummy.tv.feature.home.view.HomeBoostyPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomeCommunityPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomePreviewChannelPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
@@ -210,6 +211,12 @@ fun HomeTvScreen(
     if (state.communityPromptVisible) {
         HomeCommunityPromptDialog(
             onLater = { onEvent(HomeState.Event.CommunityPromptDismissed) },
+        )
+    }
+
+    if (state.boostyPromptVisible) {
+        HomeBoostyPromptDialog(
+            onLater = { onEvent(HomeState.Event.BoostyPromptDismissed) },
         )
     }
 

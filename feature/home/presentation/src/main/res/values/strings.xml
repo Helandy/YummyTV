@@ -47,4 +47,9 @@
     <string name="home_community_prompt_later">Later</string>
     <string name="home_community_prompt_join">Join</string>
     <string name="home_community_prompt_scan">Point your phone camera at the QR code to open our Telegram channel</string>
+    <string name="home_boosty_prompt_title">Support the project on Boosty</string>
+    <string name="home_boosty_prompt_message">The app is free and has no ads, and it is built by one developer. If you like it, you can support its development on Boosty — it helps a lot.</string>
+    <string name="home_boosty_prompt_support">Support</string>
+    <string name="home_boosty_prompt_later">Later</string>
+    <string name="home_boosty_prompt_scan">Point your phone camera at the QR code to open the Boosty page</string>
 </resources>

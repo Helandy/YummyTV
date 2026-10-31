@@ -197,6 +197,7 @@
     <string name="settings_session_storage_fallback">Запасное (Keystore недоступен)</string>
     <string name="settings_feedback_label">Вопросы/Идеи/Предложения</string>
     <string name="settings_community_telegram_label">Telegram сообщество</string>
+    <string name="settings_boosty_label">Поддержать на Boosty</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
     <string name="settings_video_export_directory">Папка экспорта MP4</string>
     <string name="settings_video_export_directory_not_selected">Не выбрана</string>

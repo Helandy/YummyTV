@@ -1,12 +1,16 @@
 package su.afk.yummy.tv.core.preferences.settings.datastore
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appLogRecordingEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.betaUpdatesEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.boostyPromptDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communityPromptDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.communityPromptFirstUseTimeMsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastSeenAnnouncementIdKey
@@ -23,6 +27,7 @@ import javax.inject.Singleton
 
 @Singleton
 internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val store: SettingsDataStore,
 ) : AppLifecycleSettingsStore {
 
@@ -44,6 +49,13 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
         CommunityPromptSnapshot(
             dismissed = prefs[communityPromptDismissedKey] ?: false,
             firstUseTimeMs = prefs[communityPromptFirstUseTimeMsKey] ?: System.currentTimeMillis(),
+        )
+    }
+
+    override val boostyPromptSnapshot: Flow<BoostyPromptSnapshot> = store.data.map { prefs ->
+        BoostyPromptSnapshot(
+            dismissed = prefs[boostyPromptDismissedKey] ?: false,
+            installTimeMs = installTimeMs(),
         )
     }
 
@@ -91,6 +103,14 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override suspend fun dismissCommunityPrompt() =
         store.setBoolean(communityPromptDismissedKey, true)
+
+    override suspend fun dismissBoostyPrompt() =
+        store.setBoolean(boostyPromptDismissedKey, true)
+
+    /** Реальное время первой установки; если система его не отдала — «сейчас», чтобы не показывать сразу. */
+    private fun installTimeMs(): Long = runCatching {
+        context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime
+    }.getOrDefault(System.currentTimeMillis())
 
     override suspend fun markAnnouncementSeen(id: String) {
         store.edit { prefs -> prefs[lastSeenAnnouncementIdKey] = id }

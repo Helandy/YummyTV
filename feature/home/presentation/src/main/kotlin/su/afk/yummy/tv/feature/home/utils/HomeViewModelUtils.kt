@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.home.utils
 
+import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -57,6 +58,12 @@ private val COMMUNITY_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(2)
 /** Сколько ещё ждать до приглашения в сообщество: 2 дня с первого использования. */
 internal fun CommunityPromptSnapshot.communityPromptRemainingMs(nowMs: Long): Long =
     COMMUNITY_PROMPT_DELAY_MS - (nowMs - firstUseTimeMs)
+
+private val BOOSTY_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(14)
+
+/** Сколько ещё ждать до предложения поддержать на Boosty: 14 дней с реальной установки. */
+internal fun BoostyPromptSnapshot.boostyPromptRemainingMs(nowMs: Long): Long =
+    BOOSTY_PROMPT_DELAY_MS - (nowMs - installTimeMs)
 
 /**
  * Предложение добавить preview-канал показывается один раз на телевизоре, когда пользователь уже
