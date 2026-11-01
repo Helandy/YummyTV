@@ -7,6 +7,13 @@ private val DATA_ITEM = Regex(""""([^"]*)"\s*:\s*"(\d{1,18})"""")
 private val EPISODE_LABEL = Regex("""^\s*(\d{1,4})\s*сери""", RegexOption.IGNORE_CASE)
 private val DOWNLOAD_LINK = Regex("""download="invoice"[^>]*href="(https?://[^"]+)"[^>]*>\s*(\d{3,4})p""")
 
+/**
+ * CDN плеера 2 на сайте. `frame5.php` отдаёт ссылки на зеркала `*.tigerlips.org` (≈15 КБ/с), а `res.trn.su` принимает ту же подпись
+ * (`md5`, `time`) и тот же путь и отдаёт файл в десятки раз быстрее.
+ */
+private const val FAST_CDN_ORIGIN = "https://res.trn.su"
+private val URL_ORIGIN = Regex("""^https?://[^/]+""")
+
 /** Адрес страницы тайтла. */
 internal fun animevostPageUrl(typePath: String, slug: String): String = "$ANIMEVOST_BASE_URL/tip/$typePath/$slug.html"
 
@@ -26,7 +33,7 @@ internal fun animevostQualities(html: String): LinkedHashMap<String, String> {
     val byHeight = sortedMapOf<Int, String>()
     DOWNLOAD_LINK.findAll(html).forEach {
         val height = it.groupValues[2].toIntOrNull() ?: return@forEach
-        byHeight.putIfAbsent(height, it.groupValues[1].replace("&amp;", "&"))
+        byHeight.putIfAbsent(height, it.groupValues[1].replace("&amp;", "&").replace(URL_ORIGIN, FAST_CDN_ORIGIN))
     }
     val result = LinkedHashMap<String, String>()
     byHeight.forEach { (height, url) -> result["${height}p"] = url }

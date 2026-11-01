@@ -24,7 +24,7 @@ class AnimevostUtilsTest {
         val qualities = animevostQualities(resource("animevost-frame.html"))
 
         assertEquals(listOf("480p", "720p"), qualities.keys.toList())
-        assertEquals("https://vn5614.tigerlips.org/720/1070765499.mp4?md5=ZhAgKxiKdP8j0e1O4SUENw&time=1793230048&d=1", qualities["720p"])
+        assertEquals("https://res.trn.su/720/1070765499.mp4?md5=ZhAgKxiKdP8j0e1O4SUENw&time=1793230048&d=1", qualities["720p"])
         assertEquals(emptyMap<String, String>(), animevostQualities("<html></html>"))
     }
 
