@@ -72,4 +72,19 @@ class AnimebesstUtilsTest {
         assertEquals(listOf("anime1.best", "ab2.animebesst.org"), hosts)
         assertNull(animebesstTitleRef("https://anime1.best/", emptyList()))
     }
+
+    @Test
+    fun `slug with a dot suffix survives title ref and source url`() {
+        val (slug, hosts) = requireNotNull(
+            animebesstTitleRef(
+                "https://anime1.best/anime1-online/2542-black-clover-1ab1z2-m.9.html",
+                listOf("https://ab2.animebesst.org/anime1-online/2542-black-clover-1ab1z2-m.9.html"),
+            ),
+        )
+        val target = AnimebesstTarget(slug, 3, hosts)
+
+        assertEquals("2542-black-clover-1ab1z2-m.9", slug)
+        assertEquals(listOf("anime1.best", "ab2.animebesst.org"), hosts)
+        assertEquals(target, parseAnimebesstSourceUrl(target.toSourceUrl()))
+    }
 }
