@@ -2,6 +2,7 @@ package su.afk.yummy.tv.domain.library.usecase
 
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -10,6 +11,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.common.coroutines.AppClock
+import su.afk.yummy.tv.core.model.mutation.PendingMutationFlusher
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.library.model.LocalLibraryPushResult
@@ -24,6 +26,7 @@ class SyncRemoteLibraryUseCaseTest : BaseUnitTest() {
     private val pushLocalChanges: PushLocalLibraryChangesUseCase = mockk()
     private val hydrateLocalLibrary: HydrateLocalLibraryUseCase = mockk(relaxed = true)
     private val clock: AppClock = mockk()
+    private val pendingMutationFlusher: PendingMutationFlusher = mockk()
 
     private val initial = snapshot()
     private val refreshed = snapshot(favorites = listOf(remoteItem(1, favorite = true)))
@@ -31,6 +34,7 @@ class SyncRemoteLibraryUseCaseTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { clock.nowMillis() } returns NOW
+        coEvery { pendingMutationFlusher.flush() } returns true
         coEvery { repository.hasSyncState(USER_ID) } returns true
         coEvery { hasCachedUserLists(USER_ID) } returns false
         coEvery { loadRemoteSnapshot(USER_ID, any()) } returns initial
@@ -83,6 +87,23 @@ class SyncRemoteLibraryUseCaseTest : BaseUnitTest() {
         assertTrue(createUseCase()(USER_ID) is RemoteLibrarySyncResult.Failure)
     }
 
+    @Test
+    fun `queued mutations are flushed before the remote snapshot is loaded`() = runTest {
+        createUseCase()(USER_ID)
+
+        coVerifyOrder {
+            pendingMutationFlusher.flush()
+            loadRemoteSnapshot(USER_ID, any())
+        }
+    }
+
+    @Test
+    fun `failed flush does not block the sync`() = runTest {
+        coEvery { pendingMutationFlusher.flush() } throws IllegalStateException("offline")
+
+        assertTrue(createUseCase()(USER_ID) is RemoteLibrarySyncResult.Success)
+    }
+
     private fun createUseCase() = SyncRemoteLibraryUseCase(
         libraryRepository = repository,
         hasCachedUserLists = hasCachedUserLists,
@@ -90,6 +111,7 @@ class SyncRemoteLibraryUseCaseTest : BaseUnitTest() {
         pushLocalChanges = pushLocalChanges,
         hydrateLocalLibrary = hydrateLocalLibrary,
         clock = clock,
+        pendingMutationFlusher = pendingMutationFlusher,
     )
 
     private companion object {

@@ -45,6 +45,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
+import su.afk.yummy.tv.feature.player.presentation.R
 
 class PlayerViewModelTest : BaseUnitTest() {
 
@@ -202,6 +203,18 @@ class PlayerViewModelTest : BaseUnitTest() {
         assertEquals("friendly error", vm.currentState.playerError)
         assertFalse(vm.currentState.isPlaybackRecovering)
         verify(exactly = 1) { defaultSource.reset() }
+    }
+
+    @Test
+    fun `playback error of a downloaded episode says the download is damaged`() {
+        every { strings.get(R.string.player_download_corrupted) } returns "damaged"
+        every { offlineSources.downloaded(any(), any()) } answers { firstArg<PlayerState.State>().copy(isOfflinePlayback = true) }
+        coEvery { offlineSources.findDownloaded(7L) } returns mockk(relaxed = true)
+        val vm = createViewModel(dest(downloadId = 7L))
+
+        vm.setEvent(PlayerState.Event.PlaybackError(message = "Source error"))
+
+        assertEquals("damaged", vm.currentState.playerError)
     }
 
     @Test

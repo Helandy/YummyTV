@@ -24,7 +24,7 @@ internal class OutboxPendingMutationQueue(
     private fun PendingMutation.toTypeAndPayload(): Pair<String, String> = when (this) {
         is PendingMutation.MarkWatched ->
             PendingMutationTypes.MARK_WATCHED to
-                MarkWatchedPayload(videoId, timeSeconds, durationSeconds).encode()
+                MarkWatchedPayload(videoId, timeSeconds, durationSeconds, times).encode()
 
         is PendingMutation.RemoveWatched ->
             PendingMutationTypes.REMOVE_WATCHED to RemoveWatchedPayload(videoIds).encode()

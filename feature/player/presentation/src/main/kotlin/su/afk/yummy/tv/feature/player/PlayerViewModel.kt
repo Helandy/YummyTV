@@ -110,7 +110,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var extractionJob: Job? = null
     private var finalEpisodeActionJob: Job? = null
 
-    private val changePlayerHint = PlayerChangePlayerHint(viewModelScope, ::setState)
+    private val changePlayerHint = PlayerChangePlayerHint(viewModelScope, ::setState) { !connectivity.isOnline.value }
 
     /** Порядок важен: решения принимает первое поведение, чей `handles` подошёл. */
     private val sourceBehaviors: List<PlayerSourceBehavior> = listOf(allohaSource, defaultSource)
@@ -334,10 +334,15 @@ class PlayerViewModel @AssistedInject internal constructor(
                         streamUrl = null,
                         streamFailoverHost = null,
                         isPlaybackRecovering = false,
-                        playerError = sourceStreamHandler.playbackErrorMessage(
-                            message = event.message,
-                            errorCode = event.errorCode,
-                        ),
+                        playerError = if (isOfflinePlayback && !isLocalFile) {
+                            // Скачанная серия читается без сети: ошибка тут — битый или неполный кэш, а не плеер.
+                            strings.get(R.string.player_download_corrupted)
+                        } else {
+                            sourceStreamHandler.playbackErrorMessage(
+                                message = event.message,
+                                errorCode = event.errorCode,
+                            )
+                        },
                         showChangePlayerHint = false,
                     )
                 }

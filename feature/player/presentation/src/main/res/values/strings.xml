@@ -23,6 +23,7 @@
     <string name="player_access_forbidden">403 Forbidden</string>
     <string name="player_region_blocked">Content is unavailable in this region</string>
     <string name="player_download_missing">Downloaded episode is missing from local cache</string>
+    <string name="player_download_corrupted">The downloaded episode is damaged or incomplete. Delete it in Downloads and download it again</string>
     <string name="player_local_file_title">Local file</string>
     <string name="player_download_resolve_error">Could not prepare this episode for download</string>
     <string name="player_download_enqueue_error">Could not queue download</string>

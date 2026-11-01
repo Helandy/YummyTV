@@ -186,17 +186,20 @@ internal class PlayerProgressHandler @Inject constructor(
             if (watchedEnough) completedRemoteVideoIds += videoId
         } else if (force || watchedEnough) {
             // Выход с экрана или досмотр без сети: позицию не теряем и досылаем, когда сеть вернётся.
-            // Плановые тики в очередь не ставим — следующий пришлёт свежую позицию. Секунды (`times`)
-            // в очередь не кладём: сервер засчитает позицию, но не время просмотра.
+            // Плановые тики в очередь не ставим — следующий пришлёт свежую позицию. Накопленные секунды
+            // уходят вместе с ней, иначе сервер засчитал бы позицию, но не время просмотра.
             result.exceptionOrNull()?.let { error ->
-                pendingMutationQueue.enqueueOnNetworkFailure(
+                val queued = pendingMutationQueue.enqueueOnNetworkFailure(
                     PendingMutation.MarkWatched(
                         videoId = videoId,
                         timeSeconds = timeSeconds,
                         durationSeconds = durationSeconds,
+                        times = delta,
                     ),
                     error,
                 )
+                // Секунды в очереди: плановые тики не должны слать их повторно и задваивать время.
+                if (queued) synced.addAll(delta)
             }
         }
     }

@@ -3,6 +3,8 @@ package su.afk.yummy.tv.domain.library.usecase
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.core.common.coroutines.AppClock
+import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.model.mutation.PendingMutationFlusher
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
@@ -16,12 +18,16 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
     private val pushLocalChanges: PushLocalLibraryChangesUseCase,
     private val hydrateLocalLibrary: HydrateLocalLibraryUseCase,
     private val clock: AppClock,
+    private val pendingMutationFlusher: PendingMutationFlusher,
 ) {
 
     suspend operator fun invoke(
         userId: Int,
         forceRefresh: Boolean = false,
     ): RemoteLibrarySyncResult = try {
+        // Невыгруженное удаление (RemoveList в очереди) ещё живо на сервере: подтяжка вернула бы
+        // тайтл в библиотеку, а досылка потом убрала бы его на сервере, но не локально.
+        runSuspendCatching { pendingMutationFlusher.flush() }
         val hasKnownRemoteState =
             libraryRepository.hasSyncState(userId) || hasCachedUserLists(userId)
         val allowMissingRemoteUpload = !hasKnownRemoteState

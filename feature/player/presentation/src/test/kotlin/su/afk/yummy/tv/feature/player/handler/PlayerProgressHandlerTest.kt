@@ -142,6 +142,29 @@ class PlayerProgressHandlerTest : BaseUnitTest() {
     }
 
     @Test
+    fun `queued progress carries the unsent seconds and does not resend them later`() = runTest {
+        val handler = createHandler()
+        listOf(5_000L, 6_000L, 7_000L, 20_000L).forEach { handler.recordWatchedSecond(VIDEO_ID, it, DURATION_MS) }
+        val error = IOException("offline")
+        coEvery { saveVideoWatchProgress(any(), any(), any(), any()) } throws error
+        coEvery { pendingMutationQueue.enqueueOnNetworkFailure(any(), any()) } returns true
+
+        handler.saveProgress(context, snapshot(positionMs = 60_000L), forceRemoteSync = true)
+
+        coVerify {
+            pendingMutationQueue.enqueueOnNetworkFailure(
+                PendingMutation.MarkWatched(VIDEO_ID, 60, DURATION_S, times = listOf(5, 6, 7, 20)),
+                error,
+            )
+        }
+
+        coEvery { saveVideoWatchProgress(any(), any(), any(), capture(sentTimes)) } returns true
+        handler.saveProgress(context, snapshot(positionMs = 61_000L), forceRemoteSync = true)
+
+        assertEquals(listOf(emptyList<Int>()), sentTimes)
+    }
+
+    @Test
     fun `planned sync without network is not queued`() = runTest {
         coEvery { saveVideoWatchProgress(any(), any(), any(), any()) } throws IOException("offline")
 

@@ -6,7 +6,11 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
+import java.net.InetSocketAddress
+import java.net.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -64,6 +68,15 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
             })
     }
 
+    override suspend fun isInternetReachable(): Boolean = withContext(Dispatchers.IO) {
+        // По IP, без DNS: в сети без интернета отказывает сразу, а не ждёт резолвер.
+        PROBE_ADDRESSES.any { (host, port) ->
+            runCatching {
+                Socket().use { it.connect(InetSocketAddress(host, port), PROBE_TIMEOUT_MS) }
+            }.isSuccess
+        }
+    }
+
     private fun ConnectivityManager.hasValidatedNetwork(): Boolean {
         val capabilities = getNetworkCapabilities(activeNetwork) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
@@ -77,4 +90,9 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
     private fun NetworkCapabilities.isValidatedUnmetered(): Boolean =
         hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
             hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+
+    private companion object {
+        val PROBE_ADDRESSES = listOf("1.1.1.1" to 443, "8.8.8.8" to 443)
+        const val PROBE_TIMEOUT_MS = 1_500
+    }
 }

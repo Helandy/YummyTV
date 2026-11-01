@@ -39,7 +39,10 @@ import su.afk.yummy.tv.feature.player.utils.withExtraSourceName
 
 fun PlayerState.State.toPlayerPlaybackUiState(
     playerNamePrefix: String,
+    connectionErrorMessage: String = "",
 ): PlayerPlaybackUiState {
+    // Ошибка из-за отсутствия сети: плеер и озвучка тут ни при чём, и заголовок «плеер вернул ошибку» вводит в заблуждение.
+    val isConnectionError = connectionErrorMessage.isNotEmpty() && playerError == connectionErrorMessage
     val selection = normalizedSourceSelection(this)
     val activeDubbing = activeDubbing(this)
     val activeDubbingName = activeDubbingName(this)
@@ -138,9 +141,9 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
         errorBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix)
             .withExtraSourceName(activeIframeUrl(this))
-            .takeIf { it.isNotBlank() && !isOfflinePlayback },
-        canChangePlayer = canChangePlayer,
-        canChangeDubbing = canChangeDubbing,
+            .takeIf { it.isNotBlank() && !isOfflinePlayback && !isConnectionError },
+        canChangePlayer = canChangePlayer && !isConnectionError,
+        canChangeDubbing = canChangeDubbing && !isConnectionError,
         showRecoveryHint = isPlaybackRecovering && showChangePlayerHint &&
             (canChangePlayer || canChangeDubbing),
         errorResumePositionMs = playbackPositionMs.takeIf { it > 0L }

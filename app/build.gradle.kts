@@ -241,4 +241,7 @@ dependencies {
     implementation(libs.androidx.tracing.ktx)
     baselineProfile(project(":baselineprofile"))
     add("ksp", libs.hilt.work.compiler)
+
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

@@ -6,6 +6,8 @@ sealed interface PendingMutation {
         val videoId: Int,
         val timeSeconds: Int,
         val durationSeconds: Int,
+        /** Ещё не отправленные уникальные просмотренные секунды: из них сервер считает время просмотра. */
+        val times: List<Int> = emptyList(),
     ) : PendingMutation
 
     data class RemoveWatched(val videoIds: List<Int>) : PendingMutation

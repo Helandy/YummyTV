@@ -56,7 +56,10 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
                 saveSubtitle = SaveAllohaSubtitleSelectionUseCase(trackPreferences),
             ),
             analytics = PlayerAnalytics(mockk(relaxed = true)),
-            connectivity = mockk { every { isOnline } returns online },
+            connectivity = mockk {
+                every { isOnline } returns online
+                coEvery { isInternetReachable() } returns false
+            },
         )
         behavior.attach(harness.host)
         return behavior to harness

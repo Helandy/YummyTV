@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.model.mutation.PendingMutationFlusher
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.storage.account.ACCOUNT_PROFILE_KEY_CURRENT
@@ -50,6 +51,7 @@ class YaniAccountRepository(
     private val animeStorage: AnimeStorage,
     private val analyticsTracker: AnalyticsTracker,
     private val authTokenBackup: AuthTokenBackup,
+    private val pendingMutationFlusher: PendingMutationFlusher,
 ) : AccountRepository {
 
     override suspend fun login(
@@ -245,6 +247,10 @@ class YaniAccountRepository(
 
     override suspend fun logout() = withContext(Dispatchers.IO) {
         val userId = settingsStore.yaniUserId.first()
+        // Очередь офлайн-мутаций чистится вместе с пользовательскими данными (см. clearUserScoped),
+        // поэтому пока токен ещё жив, пробуем её дослать: иначе оценка или список, поставленные в
+        // очередь при плохой сети, пропали бы молча. Без сети дослать нечем — тогда они теряются.
+        runSuspendCatching { withTimeoutOrNull(LOGOUT_REQUEST_TIMEOUT_MS) { pendingMutationFlusher.flush() } }
         // Серверный выход — best-effort: медленная сеть не должна задерживать локальную очистку.
         runSuspendCatching { withTimeoutOrNull(LOGOUT_REQUEST_TIMEOUT_MS) { api.logout() } }
         documentCache.deleteByPrefix(userDocumentCachePrefix(userId.coerceAtLeast(0)))

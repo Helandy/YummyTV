@@ -15,6 +15,8 @@ import su.afk.yummy.tv.feature.player.PlayerState
 internal class PlayerChangePlayerHint(
     private val scope: CoroutineScope,
     private val update: (PlayerState.State.() -> PlayerState.State) -> Unit,
+    /** Без сети смена плеера не поможет, подсказывать её рано: сначала нужна сеть. */
+    private val isOffline: () -> Boolean = { false },
 ) {
     private var job: Job? = null
 
@@ -25,6 +27,7 @@ internal class PlayerChangePlayerHint(
         job?.cancel()
         job = scope.launch {
             delay(delayMs)
+            while (condition() && isOffline()) delay(delayMs)
             if (condition()) update { copy(showChangePlayerHint = true) }
         }
     }

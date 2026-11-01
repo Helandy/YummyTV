@@ -23,6 +23,7 @@
     <string name="player_access_forbidden">403 Forbidden</string>
     <string name="player_region_blocked">Контент недоступен в этом регионе</string>
     <string name="player_download_missing">Скачанная серия отсутствует в локальном кэше</string>
+    <string name="player_download_corrupted">Скачанная серия повреждена или неполная. Удалите её в «Загрузках» и скачайте заново</string>
     <string name="player_local_file_title">Локальный файл</string>
     <string name="player_download_resolve_error">Не удалось подготовить серию к скачиванию</string>
     <string name="player_download_enqueue_error">Не удалось поставить скачивание в очередь</string>

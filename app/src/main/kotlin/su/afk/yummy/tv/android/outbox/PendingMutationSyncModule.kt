@@ -4,6 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import su.afk.yummy.tv.core.model.mutation.PendingMutationFlusher
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
 import javax.inject.Singleton
 
@@ -16,4 +17,10 @@ internal interface PendingMutationSyncModule {
     fun bindPendingMutationSyncScheduler(
         impl: AndroidPendingMutationSyncScheduler,
     ): PendingMutationSyncScheduler
+
+    @Binds
+    @Singleton
+    fun bindPendingMutationFlusher(
+        impl: PendingMutationFlushRunner,
+    ): PendingMutationFlusher
 }

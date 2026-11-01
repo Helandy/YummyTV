@@ -1,10 +1,12 @@
 package su.afk.yummy.tv.feature.player.behavior
 
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -19,13 +21,18 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 
 class DefaultSourceBehaviorTest : BaseUnitTest() {
 
-    private fun TestScope.createBehavior(): Pair<DefaultSourceBehavior, PlayerSourceHostMock> {
+    private fun TestScope.createBehavior(
+        online: MutableStateFlow<Boolean> = MutableStateFlow(true),
+    ): Pair<DefaultSourceBehavior, PlayerSourceHostMock> {
         val harness = PlayerSourceHostMock(backgroundScope, onlineState("Kodik"))
         val behavior = DefaultSourceBehavior(
             retry = PlayerPlaybackRetryHandler(),
             analytics = PlayerAnalytics(mockk(relaxed = true)),
             purgePlaybackCache = mockk(relaxed = true),
-            connectivity = mockk { every { isOnline } returns MutableStateFlow(true) },
+            connectivity = mockk {
+                every { isOnline } returns online
+                coEvery { isInternetReachable() } returns false
+            },
         )
         behavior.attach(harness.host)
         return behavior to harness
@@ -45,6 +52,21 @@ class DefaultSourceBehaviorTest : BaseUnitTest() {
         val request = harness.loadRequests.single()
         assertTrue(request.forceRefresh)
         assertTrue(request.refreshSourcesOnFailure)
+    }
+
+    @Test
+    fun `silent retry waits for the network instead of burning the budget`() = runTest {
+        val online = MutableStateFlow(false)
+        val (behavior, harness) = createBehavior(online)
+
+        assertTrue(behavior.onPlaybackError(playbackError()))
+        advanceTimeBy(5_000L)
+        assertTrue(harness.loadRequests.isEmpty())
+
+        online.value = true
+        runCurrent()
+
+        assertEquals(1, harness.loadRequests.size)
     }
 
     @Test
