@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -107,6 +109,7 @@ fun ScheduleMobileScreen(
             }
         },
     ) {
+        OfflineBanner(isOffline = LocalIsOffline.current)
         ScheduleMobileDateChips(
             groups = dayGroups,
             selectedEpochDay = schedule.selectedEpochDay,

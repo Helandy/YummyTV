@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -107,6 +109,8 @@ fun DetailsMobileScreen(
             }
         }
     }
+    val isOffline = LocalIsOffline.current
+
     BaseScreen(
         isScroll = false,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
@@ -156,6 +160,9 @@ fun DetailsMobileScreen(
                     onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
                     onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
                 )
+            }
+            if (isOffline) {
+                item(key = "offline") { OfflineBanner(isOffline = true) }
             }
             item(key = "actions") {
                 DetailsSecondaryActions(

@@ -66,6 +66,10 @@ abstract class AccountUserListsDao {
     )
     abstract suspend fun deleteUserListPageItems(userId: Int, listId: Int, language: String)
 
+    /** Сбрасывает метку свежести: кэш остаётся для офлайна, но следующее чтение идёт в сеть. */
+    @Query("UPDATE account_user_list_pages SET cachedAt = 0 WHERE userId = :userId")
+    abstract suspend fun markUserListPagesStale(userId: Int)
+
     @Query("SELECT * FROM account_anime_list_states WHERE userId = :userId AND animeId = :animeId LIMIT 1")
     abstract suspend fun getAnimeListState(userId: Int, animeId: Int): AccountAnimeListStateEntry?
 

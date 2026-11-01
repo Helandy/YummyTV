@@ -37,8 +37,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
@@ -93,6 +95,7 @@ fun CatalogMobileScreen(
     val appendState = results.loadState.append
     val hasActiveSearch = state.isSearchActive
     val isRowLayout = state.titleCardLayout == TitleCardLayout.ROW
+    val isOffline = LocalIsOffline.current
     val initialError = (refreshState as? LoadState.Error)
         ?.takeIf { results.itemCount == 0 }
         ?.error
@@ -127,6 +130,11 @@ fun CatalogMobileScreen(
             state = gridState,
             singleColumn = isRowLayout,
         ) {
+            if (isOffline) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "offline_banner") {
+                    OfflineBanner(isOffline = true)
+                }
+            }
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {
                 OutlinedTextField(
                     shape = MaterialTheme.shapes.large,

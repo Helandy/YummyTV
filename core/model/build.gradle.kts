@@ -12,6 +12,7 @@ java {
 dependencies {
     api(libs.kotlinx.serialization.json)
     implementation(project(":core:common"))
+    implementation(libs.ktor.client.core)
 
     testImplementation(project(":core:testing"))
 }

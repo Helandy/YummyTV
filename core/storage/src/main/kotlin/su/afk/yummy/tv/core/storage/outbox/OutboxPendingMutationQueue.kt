@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.core.storage.outbox
 
-import su.afk.yummy.tv.core.model.error.isNetworkError
+import su.afk.yummy.tv.core.model.error.isRetryableMutationFailure
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 
@@ -14,7 +14,7 @@ internal class OutboxPendingMutationQueue(
         mutation: PendingMutation,
         error: Throwable,
     ): Boolean {
-        if (!error.isNetworkError()) return false
+        if (!error.isRetryableMutationFailure()) return false
         val (type, payload) = mutation.toTypeAndPayload()
         outbox.enqueue(type, payload)
         scheduler.scheduleFlush()

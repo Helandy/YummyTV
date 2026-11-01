@@ -25,6 +25,9 @@ interface AccountStorage {
 
     suspend fun deleteUserLists(userId: Int)
 
+    /** Помечает кэш списков устаревшим, не стирая: без сети он остаётся доступным. */
+    suspend fun markUserListsStale(userId: Int)
+
     suspend fun getAnimeListState(userId: Int, animeId: Int): AccountAnimeListStateEntry?
 
     suspend fun saveAnimeListState(entry: AccountAnimeListStateEntry)

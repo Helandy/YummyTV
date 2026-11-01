@@ -205,7 +205,7 @@ class YaniUserListsRepository(
 
     private suspend fun invalidateUserLists(userId: Int) {
         if (userId > 0) {
-            accountStorage.deleteUserLists(userId)
+            accountStorage.markUserListsStale(userId)
         }
     }
 

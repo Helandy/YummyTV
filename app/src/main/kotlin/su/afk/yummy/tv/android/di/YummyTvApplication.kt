@@ -18,6 +18,7 @@ import su.afk.yummy.tv.android.cast.CastAnalytics
 import su.afk.yummy.tv.android.episodepush.NewEpisodePushScheduler
 import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator
 import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
+import su.afk.yummy.tv.android.outbox.PendingMutationOnlineFlusher
 import su.afk.yummy.tv.android.seasonal.SeasonalAppIconSwitcher
 import su.afk.yummy.tv.android.startup.AppStartupMaintenanceRunner
 import su.afk.yummy.tv.android.startup.CoilImageLoaderInstaller
@@ -53,6 +54,9 @@ class YummyTvApplication :
 
     @Inject
     lateinit var pendingMutationSyncScheduler: AndroidPendingMutationSyncScheduler
+
+    @Inject
+    lateinit var pendingMutationOnlineFlusher: PendingMutationOnlineFlusher
 
     @Inject
     lateinit var analyticsInitializer: AnalyticsInitializer
@@ -134,6 +138,7 @@ class YummyTvApplication :
                 homeFeedRefreshScheduler.schedule()
                 newEpisodePushScheduler.scheduleLibraryPush()
                 pendingMutationSyncScheduler.schedule()
+                pendingMutationOnlineFlusher.start()
             }
         }
         appScope.launch { newEpisodePushScheduler.syncProfilePushWithSession() }

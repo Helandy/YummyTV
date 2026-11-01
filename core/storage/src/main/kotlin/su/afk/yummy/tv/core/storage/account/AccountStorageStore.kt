@@ -44,6 +44,10 @@ internal class AccountStorageStore(
     override suspend fun hasUserListCache(userId: Int): Boolean =
         userListsDao.hasUserListPages(userId)
 
+    override suspend fun markUserListsStale(userId: Int) {
+        userListsDao.markUserListPagesStale(userId)
+    }
+
     override suspend fun deleteUserLists(userId: Int) {
         userListsDao.deleteUserLists(userId)
     }

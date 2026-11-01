@@ -62,6 +62,21 @@ class AndroidPendingMutationSyncScheduler @Inject constructor(
         )
     }
 
+    /**
+     * Внеочередной прогон при появлении сети. Отдельное имя и [ExistingWorkPolicy.KEEP]: прогон
+     * из [scheduleFlush], ушедший в backoff после сбоя на нестабильной сети, ждал бы своего срока
+     * (от 15 минут), а этот стартует сразу. Параллельные прогоны безопасны — их разводит Mutex воркера.
+     */
+    fun flushNow() {
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            FLUSH_ON_ONLINE_WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            OneTimeWorkRequestBuilder<PendingMutationSyncWorker>()
+                .setConstraints(networkConstraints())
+                .build(),
+        )
+    }
+
     private fun networkConstraints() =
         Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -69,6 +84,7 @@ class AndroidPendingMutationSyncScheduler @Inject constructor(
 
     private companion object {
         const val FLUSH_WORK_NAME = "pending_mutation_flush"
+        const val FLUSH_ON_ONLINE_WORK_NAME = "pending_mutation_flush_on_online"
         const val PERIODIC_WORK_NAME = "pending_mutation_periodic_sync"
         const val PERIODIC_INTERVAL_HOURS = 6L
         const val BACKOFF_MINUTES = 15L
