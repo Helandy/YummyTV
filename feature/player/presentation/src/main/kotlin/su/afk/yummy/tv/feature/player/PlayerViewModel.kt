@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
@@ -94,6 +95,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val analytics: PlayerAnalytics,
     private val allohaSource: AllohaSourceBehavior,
     private val defaultSource: DefaultSourceBehavior,
+    private val connectivity: NetworkConnectivityMonitor,
 ) : BaseViewModel<PlayerState.State, PlayerState.Event, PlayerState.Effect>() {
 
     @AssistedFactory
@@ -151,6 +153,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     init {
         analytics.eventScreenOpened(dest.animeId)
         observeArtwork()
+        observeConnectivityRestore()
         sourceBehaviors.forEach { it.attach(host) }
         preferences.bind(host)
         if (dest.downloadId > 0L) {
@@ -173,6 +176,25 @@ class PlayerViewModel @AssistedInject internal constructor(
      * после того, как поток получен: для Kodik это второй запрос того же iframe, и на старте он
      * конкурировал бы с извлечением ссылки, а обложка нужна лишь уведомлению уже идущего видео.
      */
+    /**
+     * Сеть пропала и вернулась, пока на экране висит ошибка воспроизведения: повторяем сами, как
+     * это сделал бы пользователь кнопкой «Повторить». Если ошибка так и не появилась, тихие
+     * ретраи уже справились, и вмешиваться не нужно.
+     */
+    private fun observeConnectivityRestore() {
+        viewModelScope.launch {
+            var wasOffline = false
+            connectivity.isOnline.collect { online ->
+                if (!online) {
+                    wasOffline = true
+                } else if (wasOffline) {
+                    wasOffline = false
+                    if (currentState.playerError != null) onEvent(PlayerState.Event.RetryStream)
+                }
+            }
+        }
+    }
+
     private fun observeArtwork() {
         viewModelScope.launch {
             state.map { it.artworkSource() }

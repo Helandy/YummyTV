@@ -14,6 +14,7 @@
     <string name="player_change_player">Сменить плеер</string>
     <string name="player_change_dubbing">Сменить озвучку</string>
     <string name="player_stream_error">Не удалось получить поток плеера, попробуйте сменить плеер или озвучку</string>
+    <string name="player_no_connection">Нет подключения к интернету. Воспроизведение продолжится, когда сеть появится</string>
     <string name="player_recovery_hint_title">Не удаётся восстановить воспроизведение</string>
     <string name="player_unsupported">Плеер не поддерживается</string>
     <string name="player_kodik_blocked">Просмотр заблокирован</string>

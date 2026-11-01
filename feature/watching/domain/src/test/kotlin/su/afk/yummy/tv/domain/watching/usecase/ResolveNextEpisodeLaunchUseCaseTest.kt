@@ -88,6 +88,7 @@ class ResolveNextEpisodeLaunchUseCaseTest : BaseUnitTest() {
             loadContinueWatchingVideos = loadVideos,
             migrateContinueWatchingProgress = mockk(),
             resolveNextEpisodeLaunch = createUseCase(),
+            findDownloadedEpisode = mockk(),
         )(nextEpisodeEntry(episode = "3"), refreshProgressOnLaunch = false)
 
         assertEquals(32, launch?.video?.id)

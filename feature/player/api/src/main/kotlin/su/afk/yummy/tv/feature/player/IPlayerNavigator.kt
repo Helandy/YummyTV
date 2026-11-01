@@ -17,7 +17,7 @@ interface IPlayerNavigator {
         resumeFromMs: Long = 0L,
     ): NavKey
 
-    fun getDownloadedPlayerDest(downloadId: Long): NavKey
+    fun getDownloadedPlayerDest(downloadId: Long, resumeFromMs: Long = 0L): NavKey
 
     fun getLocalFilePlayerDest(uri: String, title: String = ""): NavKey
 }

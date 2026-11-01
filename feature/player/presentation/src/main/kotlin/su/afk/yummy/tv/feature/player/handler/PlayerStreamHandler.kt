@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
@@ -34,6 +35,7 @@ internal class PlayerStreamHandler @Inject constructor(
     private val invalidatePlayerStreamCache: InvalidatePlayerStreamCacheUseCase,
     private val openAllohaStreamSession: OpenAllohaStreamSessionUseCase,
     private val strings: StringProvider,
+    private val connectivity: NetworkConnectivityMonitor,
 ) {
     /** Забывает закэшированный поток источника: его ссылки ведут на отказавший узел CDN. */
     fun invalidateCache(iframeUrl: String) = invalidatePlayerStreamCache(iframeUrl)
@@ -123,7 +125,7 @@ internal class PlayerStreamHandler @Inject constructor(
                 is PlayerStreamResolveResult.Failed -> {
                     session?.close()
                     PlayerStreamResult.PlayerError(
-                        message = strings.get(R.string.player_stream_error),
+                        message = streamFailureMessage(),
                         reason = PlayerStreamResult.REASON_FAILED,
                         detail = result.reason,
                     )
@@ -150,7 +152,13 @@ internal class PlayerStreamHandler @Inject constructor(
         settingsStore.setAnime4kDubbing(state.animeId, dubbing)
     }
 
+    /** Без сети «смените плеер/озвучку» вводит в заблуждение, а детали исключения — технический шум. */
+    private fun streamFailureMessage(): String = strings.get(
+        if (connectivity.isOnline.value) R.string.player_stream_error else R.string.player_no_connection,
+    )
+
     fun playbackErrorMessage(message: String, errorCode: String? = null): String {
+        if (!connectivity.isOnline.value) return strings.get(R.string.player_no_connection)
         val detail = message.trim().takeIf { it.isNotBlank() }
         val code = errorCode?.trim()?.takeIf { it.isNotBlank() && it != detail }
         return buildString {

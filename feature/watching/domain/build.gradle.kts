@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":feature:details:domain"))
     implementation(project(":feature:home:domain"))
     implementation(project(":feature:player:domain"))
+    implementation(project(":feature:video-download:domain"))
 
     implementation(libs.javax.inject)
 

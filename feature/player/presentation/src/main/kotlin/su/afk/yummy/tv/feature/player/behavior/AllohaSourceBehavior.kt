@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.player.behavior
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
@@ -16,6 +17,7 @@ import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.awaitOnline
 import javax.inject.Inject
 
 /**
@@ -33,6 +35,7 @@ internal class AllohaSourceBehavior @Inject constructor(
     private val recovery: PlayerAllohaRecoveryHandler,
     private val trackPreference: PlayerAllohaTrackPreferenceHandler,
     private val analytics: PlayerAnalytics,
+    private val connectivity: NetworkConnectivityMonitor,
 ) : PlayerSourceBehavior {
 
     private lateinit var host: PlayerSourceHost
@@ -249,6 +252,11 @@ internal class AllohaSourceBehavior @Inject constructor(
         val attempt = recovery.nextAttempt()
         recoveryJob = host.scope.launch {
             delay(delayMs)
+            // Без сети свежая сессия заведомо не откроется и лишь сожжёт бюджет попыток.
+            if (!connectivity.isOnline.value) {
+                analytics.debugLog { "Alloha recovery waits for network" }
+                connectivity.awaitOnline(NETWORK_WAIT_TIMEOUT_MS)
+            }
             if (
                 activeIframeUrl(host.state) == iframeUrl &&
                 handles(host.state) &&
@@ -357,5 +365,8 @@ internal class AllohaSourceBehavior @Inject constructor(
         private const val ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE = "alloha_recovery_exhausted"
         private const val PLAYBACK_RECOVERY_DELAY_MS = 1_000L
         private const val RECOVERY_HINT_DELAY_MS = 15_000L
+
+        // Дольше не ждём: монитор может ошибаться (VPN, captive portal), а попытка всё равно честно упадёт.
+        private const val NETWORK_WAIT_TIMEOUT_MS = 30_000L
     }
 }

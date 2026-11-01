@@ -4,6 +4,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -42,7 +43,9 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
         }
     }
 
-    private fun TestScope.createBehavior(): Pair<AllohaSourceBehavior, PlayerSourceHostMock> {
+    private fun TestScope.createBehavior(
+        online: MutableStateFlow<Boolean> = MutableStateFlow(true),
+    ): Pair<AllohaSourceBehavior, PlayerSourceHostMock> {
         val harness = PlayerSourceHostMock(backgroundScope, onlineState("Alloha").copy(selectedQuality = "720p"))
         val behavior = AllohaSourceBehavior(
             session = PlayerAllohaSessionHandler(sessions),
@@ -53,6 +56,7 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
                 saveSubtitle = SaveAllohaSubtitleSelectionUseCase(trackPreferences),
             ),
             analytics = PlayerAnalytics(mockk(relaxed = true)),
+            connectivity = mockk { every { isOnline } returns online },
         )
         behavior.attach(harness.host)
         return behavior to harness
@@ -85,6 +89,20 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
         assertTrue(request.forceFreshAllohaSession)
         assertFalse(request.refreshSourcesOnFailure)
         assertEquals("720p", request.selectedQualityOverride)
+    }
+
+    @Test
+    fun `recovery waits for network before opening a fresh session`() = runTest {
+        val online = MutableStateFlow(false)
+        val (behavior, harness) = createBehavior(online)
+
+        assertTrue(behavior.onPlaybackError(playbackError(positionMs = 65_000L)))
+        advanceTimeBy(5_000L)
+        assertTrue(harness.loadRequests.isEmpty())
+
+        online.value = true
+        runCurrent()
+        assertTrue(harness.loadRequests.single().forceFreshAllohaSession)
     }
 
     @Test

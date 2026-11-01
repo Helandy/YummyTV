@@ -2,11 +2,13 @@ package su.afk.yummy.tv.domain.watching.usecase
 
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingRemoteProgressSwitch
@@ -16,6 +18,7 @@ import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.MigrateContinueWatchingProgressUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.FindDownloadedEpisodeUseCase
 
 class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
 
@@ -23,6 +26,12 @@ class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase = mockk()
     private val migrateProgress: MigrateContinueWatchingProgressUseCase = mockk(relaxed = true)
     private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase = mockk(relaxed = true)
+    private val findDownloadedEpisode: FindDownloadedEpisodeUseCase = mockk()
+
+    @Before
+    fun setUp() {
+        coEvery { findDownloadedEpisode(any(), any(), any()) } returns null
+    }
 
     private val ep2 = video(id = 2, episode = "2")
     private val ep3 = video(id = 3, episode = "3")
@@ -43,6 +52,17 @@ class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
     }
 
     // ---------------- resolving ----------------
+
+    @Test
+    fun `downloaded copy of the episode is launched from the local cache`() = runTest {
+        coEvery { getAnimeVideos(ANIME_ID) } returns listOf(ep2, ep3)
+        coEvery { findDownloadedEpisode(ANIME_ID, "2", any()) } returns mockk { every { id } returns 17L }
+
+        val launch = resolve(entry(videoId = 2, episode = "2", positionMs = 300_000L), refresh = false)
+
+        assertEquals(17L, launch.downloadId)
+        assertEquals(300_000L, launch.resumeFromMs)
+    }
 
     @Test
     fun `local progress resumes its own video`() = runTest {
@@ -142,6 +162,7 @@ class ContinueWatchingLaunchUseCasesTest : BaseUnitTest() {
             LoadContinueWatchingVideosUseCase(getAnimeVideos, refreshAnimeVideos),
             migrateProgress,
             ResolveNextEpisodeLaunchUseCase(mockk(), mockk(), removeCachedContinueWatching),
+            findDownloadedEpisode,
         )(entry, refreshProgressOnLaunch = refresh)!!
 
     private fun entry(videoId: Int, episode: String, positionMs: Long) = HomeContinueWatchingItem(

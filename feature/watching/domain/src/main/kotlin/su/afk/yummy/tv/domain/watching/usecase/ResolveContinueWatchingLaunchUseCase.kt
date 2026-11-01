@@ -4,18 +4,21 @@ import su.afk.yummy.tv.core.model.watching.ContinueWatchingLaunch
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingSource
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.MigrateContinueWatchingProgressUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.FindDownloadedEpisodeUseCase
 import su.afk.yummy.tv.domain.watching.utils.resolveContinueWatchingLaunch
 import javax.inject.Inject
 
 /**
  * Разрешает, какое видео и с какой позиции запускать по карточке «Продолжить просмотр».
  * Возвращает null, только если у карточки следующей серии ([ContinueWatchingSource.REMOTE_NEXT_EPISODE])
- * этой серии нет — тогда вызывающий открывает детали тайтла.
+ * этой серии нет — тогда вызывающий открывает детали тайтла. Если серия с той же озвучкой скачана,
+ * запуск помечается [ContinueWatchingLaunch.downloadId] и идёт из локального кэша, даже без сети.
  */
 class ResolveContinueWatchingLaunchUseCase @Inject internal constructor(
     private val loadContinueWatchingVideos: LoadContinueWatchingVideosUseCase,
     private val migrateContinueWatchingProgress: MigrateContinueWatchingProgressUseCase,
     private val resolveNextEpisodeLaunch: ResolveNextEpisodeLaunchUseCase,
+    private val findDownloadedEpisode: FindDownloadedEpisodeUseCase,
 ) {
 
     suspend operator fun invoke(
@@ -40,6 +43,11 @@ class ResolveContinueWatchingLaunchUseCase @Inject internal constructor(
         resolution.progressMigration?.let { migration ->
             migrateContinueWatchingProgress(migration)
         }
-        return resolution.launch
+        return resolution.launch?.withDownloadedCopy()
+    }
+
+    private suspend fun ContinueWatchingLaunch.withDownloadedCopy(): ContinueWatchingLaunch {
+        val download = findDownloadedEpisode(animeId, video.episode, video.dubbing) ?: return this
+        return copy(downloadId = download.id)
     }
 }

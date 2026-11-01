@@ -2,9 +2,7 @@ package su.afk.yummy.tv.feature.player.behavior
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.domain.player.usecase.PurgePlayerPlaybackCacheUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
@@ -15,6 +13,7 @@ import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.availableFailoverHost
+import su.afk.yummy.tv.feature.player.utils.awaitOnline
 import su.afk.yummy.tv.feature.player.utils.streamHost
 import su.afk.yummy.tv.feature.player.utils.withFailoverHost
 import javax.inject.Inject
@@ -253,7 +252,7 @@ internal class DefaultSourceBehavior @Inject constructor(
     private suspend fun awaitConnectivity() {
         if (connectivity.isOnline.value) return
         analytics.debugLog { "Silent retry waits for network" }
-        withTimeoutOrNull(NETWORK_WAIT_TIMEOUT_MS) { connectivity.isOnline.first { it } }
+        connectivity.awaitOnline(NETWORK_WAIT_TIMEOUT_MS)
     }
 
     private companion object {

@@ -8,4 +8,6 @@ data class ContinueWatchingLaunch(
     val video: ContinueWatchingPlaybackVideo,
     val resumeFromMs: Long,
     val remoteProgressSwitch: ContinueWatchingRemoteProgressSwitch? = null,
+    /** Скачанная копия этой серии (0 — нет): запускается из локального кэша без сети. */
+    val downloadId: Long = 0L,
 )

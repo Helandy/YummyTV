@@ -5,7 +5,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.HttpDataSource
 import su.afk.yummy.tv.core.common.player.isOkCdnHost
 import su.afk.yummy.tv.data.videodownload.worker.findDownloadFailureCause
+import java.net.SocketException
 import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 @OptIn(UnstableApi::class)
 internal fun Throwable.isForbiddenHttpResponse(): Boolean =
@@ -26,9 +28,14 @@ internal fun Throwable.isOkCdnNodeRefusal(): Boolean {
 internal fun Throwable.isTransientDownloadFailure(): Boolean {
     if (isOkCdnNodeRefusal()) return true
     if (findDownloadFailureCause<SocketTimeoutException>() != null) return true
+    if (findDownloadFailureCause<UnknownHostException>() != null) return true
+    if (findDownloadFailureCause<SocketException>() != null) return true
     val httpError = findDownloadFailureCause<HttpDataSource.HttpDataSourceException>()
         ?: return false
+    if (httpError is HttpDataSource.InvalidContentTypeException) return false
+    // Не HTTP-ответ, а обрыв соединения или потеря сети посреди загрузки.
     val responseCode = (httpError as? HttpDataSource.InvalidResponseCodeException)?.responseCode
+        ?: return true
     return responseCode in TRANSIENT_HTTP_RESPONSE_CODES
 }
 

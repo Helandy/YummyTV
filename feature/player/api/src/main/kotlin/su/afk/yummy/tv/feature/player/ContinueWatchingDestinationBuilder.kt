@@ -7,6 +7,13 @@ import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 
 /** Maps a domain Continue Watching decision to the public player destination contract. */
 fun IPlayerNavigator.getPlayerDest(launch: ContinueWatchingLaunch): NavKey =
+    if (launch.downloadId > 0L) {
+        getDownloadedPlayerDest(launch.downloadId, launch.resumeFromMs)
+    } else {
+        getStreamPlayerDest(launch)
+    }
+
+private fun IPlayerNavigator.getStreamPlayerDest(launch: ContinueWatchingLaunch): NavKey =
     getPlayerDest(
         video = launch.video.toPlayerVideoSource(),
         animeTitle = launch.animeTitle,

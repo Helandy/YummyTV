@@ -17,6 +17,7 @@ import org.junit.Test
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
@@ -41,6 +42,8 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     private val invalidateCache: InvalidatePlayerStreamCacheUseCase = mockk(relaxed = true)
     private val openAllohaSession: OpenAllohaStreamSessionUseCase = mockk()
     private val strings: StringProvider = mockk()
+    private val online = MutableStateFlow(true)
+    private val connectivity: NetworkConnectivityMonitor = mockk { every { isOnline } returns online }
 
     private val preferredQuality = MutableStateFlow(PreferredVideoQuality.P720)
     private val adaptiveQuality = MutableStateFlow(false)
@@ -171,6 +174,19 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     }
 
     @Test
+    fun `failed source without network says there is no connection`() = runTest {
+        online.value = false
+        coEvery { resolvePlayerStream(any()) } returns PlayerStreamResolveResult.Failed(reason = "timeout")
+
+        val result = createHandler().resolve(state(KODIK_URL), null)
+
+        assertEquals(
+            PlayerStreamResult.PlayerError("res${R.string.player_no_connection}", PlayerStreamResult.REASON_FAILED, "timeout"),
+            result,
+        )
+    }
+
+    @Test
     fun `fresh alloha session is closed on a crash, a reused one is kept`() = runTest {
         val session = allohaSession(stream("720p"))
         every { session.selectQuality(any()) } throws IllegalStateException("webview died")
@@ -263,6 +279,15 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
         ),
     )
 
+    @Test
+    fun `playback error without network shows the no connection message only`() {
+        online.value = false
+
+        val message = createHandler().playbackErrorMessage("Source error", "4003")
+
+        assertEquals(strings.get(R.string.player_no_connection), message)
+    }
+
     private fun createHandler() = PlayerStreamHandler(
         getWatchProgress = getWatchProgress,
         settingsStore = settingsStore,
@@ -270,6 +295,7 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
         invalidatePlayerStreamCache = invalidateCache,
         openAllohaStreamSession = openAllohaSession,
         strings = strings,
+        connectivity = connectivity,
     )
 
     private companion object {

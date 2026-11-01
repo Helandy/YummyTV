@@ -14,6 +14,7 @@
     <string name="player_change_player">Change player</string>
     <string name="player_change_dubbing">Change dubbing</string>
     <string name="player_stream_error">Could not load the player stream, try switching the player or voice-over</string>
+    <string name="player_no_connection">No internet connection. Playback will resume when the network is back</string>
     <string name="player_recovery_hint_title">Playback is taking long to restore</string>
     <string name="player_unsupported">Player is not supported</string>
     <string name="player_kodik_blocked">Playback is blocked</string>

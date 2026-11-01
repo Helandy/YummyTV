@@ -11,6 +11,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
@@ -62,6 +64,8 @@ class PlayerViewModelTest : BaseUnitTest() {
     private val libraryAutoListHandler: PlayerLibraryAutoListHandler = mockk(relaxed = true)
     private val allohaSource: AllohaSourceBehavior = mockk(relaxed = true)
     private val defaultSource: DefaultSourceBehavior = mockk(relaxed = true)
+    private val online = MutableStateFlow(true)
+    private val connectivity: NetworkConnectivityMonitor = mockk { every { isOnline } returns online }
 
     private val streamState = PlayerState.State(
         streamUrl = STREAM_URL,
@@ -106,6 +110,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         analytics = analytics,
         allohaSource = allohaSource,
         defaultSource = defaultSource,
+        connectivity = connectivity,
     )
 
     private fun dest(downloadId: Long = 0L, localFileUri: String = "") = PlayerDestination(
@@ -232,6 +237,30 @@ class PlayerViewModelTest : BaseUnitTest() {
             sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
         verify(exactly = 1) { analytics.eventRetryStream(ANIME_ID) }
+    }
+
+    @Test
+    fun `network returning after a playback error retries the stream once`() {
+        val vm = createViewModel()
+        online.value = false
+        vm.setEvent(PlayerState.Event.PlaybackError(message = "boom"))
+        assertEquals("friendly error", vm.currentState.playerError)
+
+        online.value = true
+
+        assertEquals(1, vm.currentState.retryKey)
+        verify(exactly = 1) { analytics.eventRetryStream(ANIME_ID) }
+    }
+
+    @Test
+    fun `network flap without an error does not retry`() {
+        val vm = createViewModel()
+
+        online.value = false
+        online.value = true
+
+        assertEquals(0, vm.currentState.retryKey)
+        verify(exactly = 0) { analytics.eventRetryStream(any()) }
     }
 
     @Test
