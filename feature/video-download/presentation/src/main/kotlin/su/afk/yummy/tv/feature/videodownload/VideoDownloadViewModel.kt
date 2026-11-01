@@ -1,7 +1,10 @@
 package su.afk.yummy.tv.feature.videodownload
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.minus
+import kotlinx.collections.immutable.plus
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -29,6 +32,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.ResumeAllVideoDownloadsUseCa
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.videodownload.mapper.toGroups
 import su.afk.yummy.tv.feature.videodownload.utils.isActive
 import javax.inject.Inject
 
@@ -68,7 +72,16 @@ class VideoDownloadViewModel @Inject constructor(
             .launchIn(viewModelScope)
         observeVideoDownloads()
             .onEach { items ->
-                setState { copy(items = items.toImmutableList()) }
+                setState {
+                    val groups = items.toGroups()
+                    // Раскрытость живёт по ключу: исчезнувшие сериалы из набора выкидываем.
+                    val liveKeys = groups.mapTo(HashSet()) { it.key }
+                    copy(
+                        items = items.toImmutableList(),
+                        groups = groups,
+                        expandedGroupKeys = expandedGroupKeys.filter { it in liveKeys }.toPersistentSet(),
+                    )
+                }
             }
             .launchIn(viewModelScope)
         observeExportDestination()
@@ -85,6 +98,16 @@ class VideoDownloadViewModel @Inject constructor(
             }
 
             VideoDownloadState.Event.BackSelected -> nav.back()
+            is VideoDownloadState.Event.GroupToggled -> setState {
+                copy(
+                    expandedGroupKeys = if (event.key in expandedGroupKeys) {
+                        expandedGroupKeys - event.key
+                    } else {
+                        expandedGroupKeys + event.key
+                    },
+                )
+            }
+
             is VideoDownloadState.Event.ItemSelected -> {
                 nav.navigate(playerNavigator.getDownloadedPlayerDest(event.id))
             }

@@ -36,4 +36,11 @@
     <string name="video_export_reexport_dialog_message">«%1$s», episode %2$s is already in the export folder. The existing file will be replaced.</string>
     <string name="video_export_reexport_dialog_confirm">Export again</string>
         <string name="video_export_directory_error">Unable to write to the selected folder</string>
+    <string name="video_download_group_summary">%1$s · %2$s</string>
+    <string name="video_download_group_expand">Show episodes</string>
+    <string name="video_download_group_collapse">Hide episodes</string>
+    <plurals name="video_download_group_episodes">
+        <item quantity="one">%d episode</item>
+        <item quantity="other">%d episodes</item>
+    </plurals>
 </resources>

@@ -133,6 +133,23 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
     )
 
     @Test
+    fun `group toggle expands and collapses and vanished groups are forgotten`() {
+        items.value = listOf(item(1))
+        val viewModel = createViewModel()
+
+        viewModel.setEvent(Event.GroupToggled("anime:5"))
+        assertEquals(setOf("anime:5"), viewModel.currentState.expandedGroupKeys)
+        assertEquals(1, viewModel.currentState.groups.size)
+
+        viewModel.setEvent(Event.GroupToggled("anime:5"))
+        assertTrue(viewModel.currentState.expandedGroupKeys.isEmpty())
+
+        viewModel.setEvent(Event.GroupToggled("anime:5"))
+        items.value = emptyList()
+        assertTrue(viewModel.currentState.expandedGroupKeys.isEmpty())
+    }
+
+    @Test
     fun `downloads destination and permission flag are mirrored`() {
         items.value = listOf(item(1, bytes = 10), item(2, bytes = 30))
         destination.value = DESTINATION

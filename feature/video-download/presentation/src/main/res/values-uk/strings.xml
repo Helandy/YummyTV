@@ -36,4 +36,13 @@
     <string name="video_export_reexport_dialog_message">«%1$s», серія %2$s вже є в папці експорту. Наявний файл буде замінено.</string>
     <string name="video_export_reexport_dialog_confirm">Експортувати повторно</string>
         <string name="video_export_directory_error">Не вдалося отримати доступ на запис до обраної папки</string>
+    <string name="video_download_group_summary">%1$s · %2$s</string>
+    <string name="video_download_group_expand">Показати серії</string>
+    <string name="video_download_group_collapse">Сховати серії</string>
+    <plurals name="video_download_group_episodes">
+        <item quantity="one">%d серія</item>
+        <item quantity="few">%d серії</item>
+        <item quantity="many">%d серій</item>
+        <item quantity="other">%d серії</item>
+    </plurals>
 </resources>

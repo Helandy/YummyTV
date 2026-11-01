@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -18,6 +20,7 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
 import su.afk.yummy.tv.feature.videodownload.VideoDownloadState
+import su.afk.yummy.tv.feature.videodownload.mapper.toGroups
 import su.afk.yummy.tv.feature.videodownload.presentation.R
 
 class VideoDownloadMobileScreenTest {
@@ -60,6 +63,20 @@ class VideoDownloadMobileScreenTest {
     private fun string(id: Int, vararg args: Any): String =
         InstrumentationRegistry.getInstrumentation().targetContext.getString(id, *args)
 
+    private fun stateOf(
+        vararg items: VideoDownloadItem,
+        expanded: Boolean = true,
+        pendingDeleteItem: VideoDownloadItem? = null,
+    ): VideoDownloadState.State {
+        val groups = items.toList().toGroups()
+        return VideoDownloadState.State(
+            items = persistentListOf(*items),
+            groups = groups,
+            expandedGroupKeys = if (expanded) groups.map { it.key }.toPersistentSet() else persistentSetOf(),
+            pendingDeleteItem = pendingDeleteItem,
+        )
+    }
+
     private fun setScreen(state: VideoDownloadState.State) {
         composeRule.setContent {
             ScreenPreviewTheme {
@@ -82,17 +99,27 @@ class VideoDownloadMobileScreenTest {
 
     @Test
     fun itemIsShownAndClickSendsItemSelected() {
-        setScreen(VideoDownloadState.State(items = persistentListOf(item(VideoDownloadStatus.Downloaded))))
+        setScreen(stateOf(item(VideoDownloadStatus.Downloaded)))
 
         composeRule.onNodeWithText("Скачанное аниме").assertIsDisplayed()
-        composeRule.onNodeWithText("Скачанное аниме").performClick()
+        composeRule.onNodeWithText("AniDub").performClick()
 
         assertTrue(VideoDownloadState.Event.ItemSelected(8L) in events)
     }
 
     @Test
+    fun collapsedGroupHidesEpisodesAndHeaderClickTogglesIt() {
+        setScreen(stateOf(item(VideoDownloadStatus.Downloaded), expanded = false))
+
+        composeRule.onNodeWithText("AniDub").assertDoesNotExist()
+        composeRule.onNodeWithText("Скачанное аниме").performClick()
+
+        assertTrue(VideoDownloadState.Event.GroupToggled("anime:44") in events)
+    }
+
+    @Test
     fun downloadingItemShowsPauseAllAndSendsEvent() {
-        setScreen(VideoDownloadState.State(items = persistentListOf(item(VideoDownloadStatus.Downloading))))
+        setScreen(stateOf(item(VideoDownloadStatus.Downloading)))
 
         composeRule.onNodeWithContentDescription(string(R.string.video_download_pause_all)).performClick()
 
@@ -101,7 +128,7 @@ class VideoDownloadMobileScreenTest {
 
     @Test
     fun pausedItemDoesNotOfferPauseAll() {
-        setScreen(VideoDownloadState.State(items = persistentListOf(item(VideoDownloadStatus.Paused))))
+        setScreen(stateOf(item(VideoDownloadStatus.Paused)))
 
         composeRule.onNodeWithContentDescription(string(R.string.video_download_pause_all)).assertDoesNotExist()
         composeRule.onNodeWithContentDescription(string(R.string.video_download_resume_all)).assertIsDisplayed()
@@ -110,12 +137,7 @@ class VideoDownloadMobileScreenTest {
     @Test
     fun deleteDialogConfirmSendsDeleteConfirmed() {
         val downloaded = item(VideoDownloadStatus.Downloaded)
-        setScreen(
-            VideoDownloadState.State(
-                items = persistentListOf(downloaded),
-                pendingDeleteItem = downloaded,
-            ),
-        )
+        setScreen(stateOf(downloaded, pendingDeleteItem = downloaded))
 
         composeRule.onNodeWithText(string(R.string.video_download_delete_confirm_title, "3")).assertIsDisplayed()
         composeRule.onNodeWithText(string(DesignSystemR.string.common_delete)).performClick()
@@ -126,12 +148,7 @@ class VideoDownloadMobileScreenTest {
     @Test
     fun deleteDialogCancelSendsDeleteDismissed() {
         val downloaded = item(VideoDownloadStatus.Downloaded)
-        setScreen(
-            VideoDownloadState.State(
-                items = persistentListOf(downloaded),
-                pendingDeleteItem = downloaded,
-            ),
-        )
+        setScreen(stateOf(downloaded, pendingDeleteItem = downloaded))
 
         composeRule.onNodeWithText(string(DesignSystemR.string.common_cancel)).performClick()
 

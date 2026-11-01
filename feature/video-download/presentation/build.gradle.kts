@@ -16,6 +16,7 @@ dependencies {
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
     implementation(project(":core:utils"))
+    implementation(project(":core:common"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:video-download:domain"))

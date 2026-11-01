@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DriveFolderUpload
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
@@ -61,7 +60,6 @@ private val DownloadActiveColor = YummySemanticColors.InProgress
 internal fun VideoDownloadMobileCard(
     item: VideoDownloadItem,
     onClick: () -> Unit,
-    onDetailsClick: () -> Unit,
     onDelete: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -157,13 +155,6 @@ internal fun VideoDownloadMobileCard(
                     verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Text(
-                        text = item.animeTitle,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
                         text = stringResource(
                             R.string.video_download_item_dubbing,
                             item.dubbingLabel()
@@ -208,15 +199,6 @@ internal fun VideoDownloadMobileCard(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    IconButton(
-                        onClick = onDetailsClick,
-                        enabled = item.animeId > 0,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = stringResource(R.string.video_download_open_details),
-                        )
-                    }
                     if (item.status == VideoDownloadStatus.Failed) {
                         IconButton(onClick = onRestart) {
                             Icon(

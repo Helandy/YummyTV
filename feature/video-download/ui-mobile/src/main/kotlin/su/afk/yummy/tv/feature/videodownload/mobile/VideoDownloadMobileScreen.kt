@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -35,10 +36,12 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.videodownload.VideoDownloadState
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.formatDiskSize
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.isEligibleForExport
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadDeleteConfirmationDialog
+import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadGroupCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadMobileCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportAllConfirmationDialog
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportReExportConfirmationDialog
@@ -153,33 +156,43 @@ fun VideoDownloadMobileScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(state.items, key = { it.id }) { item ->
-                    VideoDownloadMobileCard(
-                        item = item,
-                        waitingForWifi = state.waitingForWifi,
-                        onClick = { onEvent(VideoDownloadState.Event.ItemSelected(item.id)) },
-                        onDetailsClick = { onEvent(VideoDownloadState.Event.DetailsSelected(item.animeId)) },
-                        onDelete = { onEvent(VideoDownloadState.Event.DeleteSelected(item.id)) },
-                        onPause = { onEvent(VideoDownloadState.Event.PauseSelected(item.id)) },
-                        onResume = {
-                            notificationPermissionGate {
-                                onEvent(VideoDownloadState.Event.ResumeSelected(item.id))
+                items(state.groups, key = { lazyKey("group", it.key) }) { group ->
+                    VideoDownloadGroupCard(
+                        group = group,
+                        expanded = group.key in state.expandedGroupKeys,
+                        onToggle = { onEvent(VideoDownloadState.Event.GroupToggled(group.key)) },
+                        onDetailsClick = { onEvent(VideoDownloadState.Event.DetailsSelected(group.animeId)) },
+                    ) {
+                        group.episodes.forEach { item ->
+                            key(item.id) {
+                                VideoDownloadMobileCard(
+                                    item = item,
+                                    waitingForWifi = state.waitingForWifi,
+                                    onClick = { onEvent(VideoDownloadState.Event.ItemSelected(item.id)) },
+                                    onDelete = { onEvent(VideoDownloadState.Event.DeleteSelected(item.id)) },
+                                    onPause = { onEvent(VideoDownloadState.Event.PauseSelected(item.id)) },
+                                    onResume = {
+                                        notificationPermissionGate {
+                                            onEvent(VideoDownloadState.Event.ResumeSelected(item.id))
+                                        }
+                                    },
+                                    onRestart = {
+                                        notificationPermissionGate {
+                                            onEvent(VideoDownloadState.Event.RestartSelected(item.id))
+                                        }
+                                    },
+                                    onExport = {
+                                        notificationPermissionGate {
+                                            onEvent(VideoDownloadState.Event.ExportSelected(item.id))
+                                        }
+                                    },
+                                    onCancelExport = {
+                                        onEvent(VideoDownloadState.Event.CancelExportSelected(item.id))
+                                    },
+                                )
                             }
-                        },
-                        onRestart = {
-                            notificationPermissionGate {
-                                onEvent(VideoDownloadState.Event.RestartSelected(item.id))
-                            }
-                        },
-                        onExport = {
-                            notificationPermissionGate {
-                                onEvent(VideoDownloadState.Event.ExportSelected(item.id))
-                            }
-                        },
-                        onCancelExport = {
-                            onEvent(VideoDownloadState.Event.CancelExportSelected(item.id))
-                        },
-                    )
+                        }
+                    }
                 }
             }
         }

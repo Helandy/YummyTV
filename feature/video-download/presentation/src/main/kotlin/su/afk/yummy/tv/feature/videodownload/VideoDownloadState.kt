@@ -2,18 +2,25 @@ package su.afk.yummy.tv.feature.videodownload
 
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportDestination
+import su.afk.yummy.tv.feature.videodownload.model.VideoDownloadGroup
 
 class VideoDownloadState {
     @Immutable
     data class State(
         val items: ImmutableList<VideoDownloadItem> = persistentListOf(),
+        /** Те же серии, собранные по сериалам для списка. */
+        val groups: ImmutableList<VideoDownloadGroup> = persistentListOf(),
+        /** Ключи раскрытых сериалов ([VideoDownloadGroup.key]). */
+        val expandedGroupKeys: PersistentSet<String> = persistentSetOf(),
         val pendingDeleteItem: VideoDownloadItem? = null,
         val pendingReExportItem: VideoDownloadItem? = null,
         val exportDestination: VideoExportDestination? = null,
@@ -49,6 +56,7 @@ class VideoDownloadState {
         data object NotificationPermissionRequested : Event
 
         data object BackSelected : Event
+        data class GroupToggled(val key: String) : Event
         data class ItemSelected(val id: Long) : Event
         data class DetailsSelected(val animeId: Int) : Event
         data class DeleteSelected(val id: Long) : Event
