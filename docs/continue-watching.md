@@ -150,6 +150,10 @@ playback-цель. Presentation превращает её в destination пле�
 - Источник выбирается по `videoId`, затем `episodeUrl`, затем по совпадению `episode + player +
   dubbing`, затем по `episode`. Если exact-кандидат не поддерживается, берётся поддерживаемый
   источник той же серии или первый поддерживаемый.
+- Если серия с той же озвучкой скачана (`FindDownloadedEpisodeUseCase`), запуск помечается
+  `ContinueWatchingLaunch.downloadId` и идёт из локального кэша загрузок с той же позиции
+  (`IPlayerNavigator.getDownloadedPlayerDest(downloadId, resumeFromMs)`), в том числе без сети.
+  Карточка следующей серии (`REMOTE_NEXT_EPISODE`) скачанную копию не подхватывает.
 - Запись с placeholder episode может быть мигрирована на доверенный реальный episode, если совпал
   `videoId` или `episodeUrl`.
 

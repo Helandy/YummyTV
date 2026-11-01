@@ -65,7 +65,7 @@
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Состояния (мобилка)      | `mobile/state/MobileStateContent`, `MobileAppendError`                                                                                      |
 | Состояния (ТВ)           | `tv/TvStateContent`, `TvStateMessage`, `TvAppendErrorFooter`, `TvLoadingFooter`, `TvLoadingScreen`                                          |
-| Общие                    | `components/StateMessage`, `CachedAsyncImage`, `GlobalToastOverlay`, `OfflineBanner`, `RatingBadge`, `MarqueeTitleText`                     |
+| Общие                    | `components/StateMessage`, `CachedAsyncImage`, `GlobalToastOverlay`, `OfflineBanner` (встраивается в вёрстку экрана: главная, каталог, детали, расписание на мобилке и главная на ТВ; оверлеем не рисуется), `RatingBadge`, `MarqueeTitleText`                     |
 | Фокус ТВ                 | `focus/` ([tv-focus.md](tv-focus.md))                                                                                                       |
 | Каркас мобильных экранов | `baseScreen/`: `BaseScreen`, `BaseBottomSheet`, `BaseBottomSheetCustom`, `ScreenNavigator` ([insets-and-sheets.md](insets-and-sheets.md))   |
 | Мобильные блоки          | `mobile/`: `MobileSectionHeader`, `MobileMetaRow`, `MobileSwipeableTabsPager`, `bar/`, `cards/`                                             |

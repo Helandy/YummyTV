@@ -69,7 +69,7 @@ VideoDownloadWorker (foreground, до 2 одновременно)
 |-----------------------------------------------------|-----------------------------------------------------------------------------------------|
 | 403 в первый раз                                    | Перезапрос `/videos`, новый iframe и поток, пауза 3 с, повтор (`retriedAfterForbidden`) |
 | 403 снова                                           | `Queued` и `Result.retry()`, до `MAX_STREAM_REFRESH_WORK_RETRIES = 3`                   |
-| Transient (таймаут сокета, 408/429/500/502/503/504) | Перезапрос потока и повтор до `MAX_TRANSIENT_DOWNLOAD_RETRIES = 3`, пауза 3 с           |
+| Transient (таймаут сокета, `UnknownHostException`, `SocketException`, обрыв внутри `HttpDataSourceException`, 408/429/500/502/503/504) | Перезапрос потока и повтор до `MAX_TRANSIENT_DOWNLOAD_RETRIES = 3`, пауза 3 с           |
 | Transient исчерпан                                  | `Queued` и `Result.retry()` до трёх попыток воркера                                     |
 | Перезапрос потока не удался                         | То же: retry воркера, затем `Failed`                                                    |
 | Остановка (`isStopped`)                             | `Result.failure()`                                                                      |

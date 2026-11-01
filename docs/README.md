@@ -45,6 +45,7 @@
 - [player-buffering.md](player-buffering.md) — буфер `DefaultLoadControl`, различия Kodik, CVH и
   Alloha, диагностика остановок.
 - [video-download.md](video-download.md) — офлайн-загрузки: воркер, стратегии, ключи кэша, экспорт.
+- [offline.md](offline.md) — поведение без сети и при нестабильной связи: что работает, что нет, как проверять.
 - [continue-watching.md](continue-watching.md) — правила карточек «Продолжить просмотр».
 
 ## Аккаунт

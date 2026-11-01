@@ -35,8 +35,7 @@
 уведомления, статистика), комментарии, документы, загрузки, дорожки Alloha, «Позже», очередь
 мутаций.
 
-`exportSchema = false`. Миграции описаны в `core/storage/.../db/migrations/` и перечислены в
-`ALL_MIGRATIONS`. `StorageCleanup.purgeStaleCaches` (`StorageCleanupStore`) удаляет кэши старше
+Миграции описаны в `core/storage/.../db/migrations/` и перечислены в `ALL_MIGRATIONS`. `StorageCleanup.purgeStaleCaches` (`StorageCleanupStore`) удаляет кэши старше
 7 суток (`CACHE_RETENTION_MS`) вместе с «осиротевшими» дочерними строками.
 
 ### Слои доступа
@@ -53,6 +52,9 @@
 ```
 stored = forceRefresh ? null : read()
 если stored есть и (isFresh(stored) или !isOnline()) → вернуть toDomain(stored)
+  (isOnline по умолчанию `{ true }`: репозитории его не передают, так что ветка «офлайн» не работает и
+  устаревший кэш отдаётся только после отказа сети. Передавать по `isOnline` монитора нельзя: флаг
+  `VALIDATED` врёт при VPN и captive portal, и устаревшие данные перестали бы обновляться)
 иначе fetchAndSave(); при ошибке сети вернуть устаревший кэш, если он есть, иначе onMissing(error)
 ```
 
@@ -123,26 +125,48 @@ TTL — свежесть для чтения, а не срок удаления.
 Room (`pending_mutations`: `id`, `type`, `payloadJson`, `createdAt`, `attemptCount`).
 
 ```
-ViewModel/Handler  → сетевая ошибка → outbox.enqueue(type, payloadJson) → scheduleFlush()
-PendingMutationSyncWorker (WorkManager, NetworkType.CONNECTED)
+ViewModel/Handler  → повторяемый сбой → outbox.enqueue(type, payloadJson) → scheduleFlush()
+PendingMutationSyncWorker (WorkManager, NetworkType.CONNECTED) → PendingMutationFlushRunner.flush()
   для каждой записи: apply(entry)
     успех                → remove(id)
-    сетевая ошибка       → оставить, Result.retry() (экспоненциальный backoff от 15 минут), попытки не тратятся
-    4xx (кроме 408/425/429) → remove(id): повторять бессмысленно
-    5xx / 429 / неразобранный ответ → recordAttemptFailure(id), оставить, Result.retry();
+    сетевая ошибка       → оставить, прогон возвращает retry (экспоненциальный backoff от 15 минут), попытки не тратятся
+    4xx (кроме 401/408/425/429) → remove(id): повторять бессмысленно
+    401 / 5xx / 408 / 425 / 429 / неразобранный ответ → recordAttemptFailure(id), оставить, retry;
                            после 8 попыток (MAX_ATTEMPTS) → remove(id)
   на первой повторяемой ошибке прогон останавливается (порядок записей сохраняется)
 ```
+
+«Повторяемый сбой» (`isRetryableMutationFailure`, `core/model/.../error/NetworkErrors.kt`): любой
+`IOException`, ответ 5xx/408/425/429 и `SerializationException` (HTML captive portal или страница
+шлюза вместо JSON). Постоянные 4xx в очередь не попадают, мутация откатывается.
+
+401 не считается отказом по сути мутации (проблема сессии), поэтому запись не стирается, а тратит
+попытки. Очередь не привязана к пользователю и целиком чистится в `clearUserScoped` при выходе.
+
+Когда очередь дожимается:
+
+- сразу при появлении сети: `PendingMutationOnlineFlusher` на старте приложения и при каждом возврате
+  `isOnline` ставит отдельную уникальную работу `pending_mutation_flush_on_online` (`KEEP`), которая не
+  ждёт backoff уже ушедшего в retry прогона;
+- перед синхронизацией библиотеки (`SyncRemoteLibraryUseCase`): иначе невыгруженное удаление
+  (`remove_list`) вернулось бы с сервера подтяжкой и тайтл «воскрес» бы локально;
+- перед выходом из аккаунта (`YaniAccountRepository.logout`, до 5 секунд): очередь чистится вместе с
+  данными пользователя, а с токеном другого аккаунта слать нечем. Выход без сети теряет невыгруженное.
+
+`PendingMutationFlusher` (`core/model/.../mutation`) — интерфейс для этих вызовов, реализация
+`PendingMutationFlushRunner` в `:app`; один `Mutex` разводит прогоны воркера и выхода из аккаунта.
 
 Типы (`PendingMutationTypes`, строки, чтобы БД переживала переименование enum'ов): `mark_watched`,
 `remove_watched`, `set_list`, `remove_list`, `set_favorite`, `set_rating`, `delete_rating`,
 `vote_review`.
 
-- Воркер живёт в `:app`, а не в `core`: ему нужны use case'ы сразу нескольких фич.
+- Логика прогона (`PendingMutationFlushRunner`) и воркер живут в `:app`, а не в `core`: им нужны
+  use case'ы сразу нескольких фич. Воркер — тонкая обёртка над раннером.
 - `schedule()` ещё взводит периодическую страховку (`PeriodicWork`, раз в 6 часов): мутация,
   поставленная в очередь, пока процесс убит, всё равно уйдёт.
 - Типы объявлены в `PendingMutationTypes`, payload'ы (`encode`/`decode`) — в
-  `PendingMutationPayloads.kt`, применяются в `PendingMutationSyncWorker.apply`. Ветка `else -> Unit`
+  `PendingMutationPayloads.kt`, применяются в `PendingMutationFlushRunner.apply`. `mark_watched`
+хранит `videoId|time|duration|секунды`; записи старого формата из трёх полей читаются. Ветка `else -> Unit`
   для неизвестного типа завершается без ошибки, и запись удаляется как успешная.
 
 ## Настройки (DataStore)

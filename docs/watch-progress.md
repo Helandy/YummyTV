@@ -139,9 +139,15 @@ KDoc `PlayerNavigationDelegate`: прогресс сохраняется в `ioS
 ### Офлайн
 
 Отметка «просмотрено» из деталей серии (`MARK_WATCHED`) при сетевой ошибке ставится в очередь
-`PendingMutationOutbox` и дожимается `PendingMutationSyncWorker`, см.
-[storage-and-cache.md](storage-and-cache.md). `PlayerProgressHandler` с очередью не работает: в его
-конструкторе нет `PendingMutationOutbox`.
+`PendingMutationOutbox` и дожимается `PendingMutationFlushRunner`, см.
+[storage-and-cache.md](storage-and-cache.md).
+
+`PlayerProgressHandler` тоже ставит позицию в очередь через `PendingMutationQueue`, но только
+финальную отправку (`force`, уход с экрана) или досмотр: плановые тики (раз в 10 с) в очередь не
+идут, следующий пришлёт свежую позицию. Вместе с позицией в запись уходят ещё не отправленные
+секунды просмотра (`times`, диапазонами вида `0-120,300-310`). Сервер СУММИРУЕТ присланные секунды,
+поэтому после постановки в очередь они помечаются отправленными и плановые тики не шлют их повторно.
+Локальная запись в Room (`watch_progress`) пишется всегда и от сети не зависит.
 
 ## Запуск из карточки и прогресс с других устройств
 
