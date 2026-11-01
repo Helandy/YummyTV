@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.schedule.view
 
 import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -173,7 +172,7 @@ internal fun ScheduleTimeline(
                         runCatching { selectedChipFocusRequester.requestFocus() }
                     }
                 }
-                .focusable(),
+                .focusGroup(),
         ) {
             ScheduleDateChips(
                 groups = schedule.dayGroups,

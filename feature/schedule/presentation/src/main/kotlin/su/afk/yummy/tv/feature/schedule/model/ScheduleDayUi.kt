@@ -6,4 +6,5 @@ data class ScheduleDayUi(
     val date: LocalDate,
     val weekdayLabel: String,
     val items: List<ScheduleReleaseUi>,
+    val isToday: Boolean = false,
 )

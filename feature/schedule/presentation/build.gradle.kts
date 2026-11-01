@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:deeplink:api"))
     implementation(project(":feature:schedule:api"))
     implementation(project(":core:utils"))
     api(project(":feature:schedule:domain"))

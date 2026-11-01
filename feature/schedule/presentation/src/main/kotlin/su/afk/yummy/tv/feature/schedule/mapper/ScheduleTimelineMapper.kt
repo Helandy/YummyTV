@@ -44,7 +44,7 @@ private fun selectedEpochDay(
     selectedEpochDay?.takeIf { it in availableEpochDays }
         ?: availableEpochDays.firstOrNull { it == todayEpochDay }
         ?: availableEpochDays.firstOrNull { it > todayEpochDay }
-        ?: availableEpochDays.firstOrNull()
+        ?: availableEpochDays.lastOrNull()
 
 private fun List<AnimeScheduleDay>.toUiDayGroups(
     zone: ZoneId,
@@ -53,7 +53,8 @@ private fun List<AnimeScheduleDay>.toUiDayGroups(
     flatMap { it.items }
         .flatMap { item ->
             buildList {
-                item.previousDateEpochSeconds?.let { previousDate ->
+                // У анонсов prev_date — общая дата-заглушка, поэтому берём его только если серии выходили.
+                item.previousDateEpochSeconds?.takeIf { (item.airedEpisodes ?: 0) > 0 }?.let { previousDate ->
                     add(
                         ScheduleReleaseUi(
                             item = item,
@@ -76,9 +77,9 @@ private fun List<AnimeScheduleDay>.toUiDayGroups(
             }
         }
         .filter { release ->
-            Instant.ofEpochSecond(release.epochSeconds).atZone(zone).toLocalDate() >= today
+            Instant.ofEpochSecond(release.epochSeconds).atZone(zone).toLocalDate() >= today.minusDays(1)
         }
-        .distinctBy { "${it.item.animeId}:${it.epochSeconds}:${it.aired}" }
+        .distinctBy { "${it.item.animeId}:${it.epochSeconds}" }
         .sortedBy { it.epochSeconds }
         .groupBy { release ->
             Instant.ofEpochSecond(release.epochSeconds).atZone(zone).toLocalDate()
@@ -92,5 +93,6 @@ private fun List<AnimeScheduleDay>.toUiDayGroups(
                     .trimEnd('.')
                     .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
                 items = items.sortedBy { it.epochSeconds },
+                isToday = date == today,
             )
         }

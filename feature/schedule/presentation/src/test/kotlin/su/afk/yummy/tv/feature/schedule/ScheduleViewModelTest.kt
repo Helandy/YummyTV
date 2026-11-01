@@ -161,11 +161,40 @@ class ScheduleViewModelTest : BaseUnitTest() {
         verify(exactly = 0) { nav.navigate(any()) }
     }
 
+    @Test
+    fun `yesterday release adds a yesterday tab without selecting it`() {
+        givenSchedule(day(previousEpochSeconds = NOW - 86_400L))
+
+        val timeline = createViewModel().currentState.tvSchedule
+
+        assertEquals(2, timeline.dayGroups.size)
+        assertEquals(timeline.availableEpochDays.last(), timeline.selectedEpochDay)
+    }
+
+    @Test
+    fun `releases older than yesterday are dropped`() {
+        givenSchedule(day(previousEpochSeconds = NOW - 2 * 86_400L))
+
+        assertEquals(1, createViewModel().currentState.tvSchedule.dayGroups.size)
+    }
+
+    @Test
+    fun `placeholder previous date of an announcement is ignored`() {
+        givenSchedule(day(previousEpochSeconds = NOW - 86_400L, airedEpisodes = null))
+
+        assertEquals(1, createViewModel().currentState.tvSchedule.dayGroups.size)
+    }
+
     private companion object {
+        const val NOW = 1_700_000_000L
         const val DAY_1 = 1_900_000_000L
         const val DAY_2 = DAY_1 + 3 * 86_400L
 
-        fun day(epochSeconds: Long = DAY_1) = AnimeScheduleDay(
+        fun day(
+            epochSeconds: Long = DAY_1,
+            previousEpochSeconds: Long? = null,
+            airedEpisodes: Int? = 3,
+        ) = AnimeScheduleDay(
             title = "day",
             items = listOf(
                 AnimeScheduleItem(
@@ -173,7 +202,8 @@ class ScheduleViewModelTest : BaseUnitTest() {
                     title = "anime",
                     poster = null,
                     nextDateEpochSeconds = epochSeconds,
-                    airedEpisodes = 3,
+                    previousDateEpochSeconds = previousEpochSeconds,
+                    airedEpisodes = airedEpisodes,
                     totalEpisodes = 12,
                 ),
             ),
