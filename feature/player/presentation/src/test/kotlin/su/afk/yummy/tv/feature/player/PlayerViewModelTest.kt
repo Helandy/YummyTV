@@ -65,8 +65,8 @@ class PlayerViewModelTest : BaseUnitTest() {
     private val libraryAutoListHandler: PlayerLibraryAutoListHandler = mockk(relaxed = true)
     private val allohaSource: AllohaSourceBehavior = mockk(relaxed = true)
     private val defaultSource: DefaultSourceBehavior = mockk(relaxed = true)
-    private val online = MutableStateFlow(true)
-    private val connectivity: NetworkConnectivityMonitor = mockk { every { isOnline } returns online }
+    private val offline = MutableStateFlow(false)
+    private val connectivity: NetworkConnectivityMonitor = mockk { every { isOffline } returns offline }
 
     private val streamState = PlayerState.State(
         streamUrl = STREAM_URL,
@@ -255,11 +255,11 @@ class PlayerViewModelTest : BaseUnitTest() {
     @Test
     fun `network returning after a playback error retries the stream once`() {
         val vm = createViewModel()
-        online.value = false
+        offline.value = true
         vm.setEvent(PlayerState.Event.PlaybackError(message = "boom"))
         assertEquals("friendly error", vm.currentState.playerError)
 
-        online.value = true
+        offline.value = false
 
         assertEquals(1, vm.currentState.retryKey)
         verify(exactly = 1) { analytics.eventRetryStream(ANIME_ID) }
@@ -269,8 +269,8 @@ class PlayerViewModelTest : BaseUnitTest() {
     fun `network flap without an error does not retry`() {
         val vm = createViewModel()
 
-        online.value = false
-        online.value = true
+        offline.value = true
+        offline.value = false
 
         assertEquals(0, vm.currentState.retryKey)
         verify(exactly = 0) { analytics.eventRetryStream(any()) }

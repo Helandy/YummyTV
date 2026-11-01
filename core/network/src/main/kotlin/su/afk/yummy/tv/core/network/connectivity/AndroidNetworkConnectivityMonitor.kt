@@ -6,8 +6,12 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -27,10 +31,16 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var probeJob: Job? = null
+    private val knownNetworks = mutableSetOf<Network>()
     private val validatedNetworks = mutableSetOf<Network>()
     private val unmeteredNetworks = mutableSetOf<Network>()
 
     override val isOnline = MutableStateFlow(connectivityManager.hasValidatedNetwork())
+
+    // Начальное значение грубое: колбэк сразу отдаёт текущие сети, и publishState уточнит его (в т.ч. пробой).
+    override val isOffline = MutableStateFlow(connectivityManager.activeNetwork == null)
 
     override val isUnmetered = MutableStateFlow(connectivityManager.hasValidatedUnmeteredNetwork())
 
@@ -43,8 +53,9 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
             object : ConnectivityManager.NetworkCallback() {
                 override fun onCapabilitiesChanged(
                     network: Network,
-                    capabilities: NetworkCapabilities
+                    capabilities: NetworkCapabilities,
                 ) {
+                    knownNetworks.add(network)
                     if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
                         validatedNetworks.add(network)
                     } else {
@@ -55,17 +66,30 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
                     } else {
                         unmeteredNetworks.remove(network)
                     }
-                    isOnline.value = validatedNetworks.isNotEmpty()
-                    isUnmetered.value = unmeteredNetworks.isNotEmpty()
+                    publishState()
                 }
 
                 override fun onLost(network: Network) {
+                    knownNetworks.remove(network)
                     validatedNetworks.remove(network)
                     unmeteredNetworks.remove(network)
-                    isOnline.value = validatedNetworks.isNotEmpty()
-                    isUnmetered.value = unmeteredNetworks.isNotEmpty()
+                    publishState()
                 }
-            })
+            },
+        )
+    }
+
+    private fun publishState() {
+        isOnline.value = validatedNetworks.isNotEmpty()
+        isUnmetered.value = unmeteredNetworks.isNotEmpty()
+        probeJob?.cancel()
+        when {
+            validatedNetworks.isNotEmpty() -> isOffline.value = false
+            // Сетей нет вовсе («Самолёт», выключен Wi-Fi): проба не нужна.
+            knownNetworks.isEmpty() -> isOffline.value = true
+            // Сеть есть, но система её не подтвердила: офлайн, только если проба тоже не прошла.
+            else -> probeJob = scope.launch { isOffline.value = !isInternetReachable() }
+        }
     }
 
     override suspend fun isInternetReachable(): Boolean = withContext(Dispatchers.IO) {

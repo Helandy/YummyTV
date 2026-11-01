@@ -110,7 +110,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var extractionJob: Job? = null
     private var finalEpisodeActionJob: Job? = null
 
-    private val changePlayerHint = PlayerChangePlayerHint(viewModelScope, ::setState) { !connectivity.isOnline.value }
+    private val changePlayerHint = PlayerChangePlayerHint(viewModelScope, ::setState) { connectivity.isOffline.value }
 
     /** Порядок важен: решения принимает первое поведение, чей `handles` подошёл. */
     private val sourceBehaviors: List<PlayerSourceBehavior> = listOf(allohaSource, defaultSource)
@@ -184,8 +184,8 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun observeConnectivityRestore() {
         viewModelScope.launch {
             var wasOffline = false
-            connectivity.isOnline.collect { online ->
-                if (!online) {
+            connectivity.isOffline.collect { offline ->
+                if (offline) {
                     wasOffline = true
                 } else if (wasOffline) {
                     wasOffline = false

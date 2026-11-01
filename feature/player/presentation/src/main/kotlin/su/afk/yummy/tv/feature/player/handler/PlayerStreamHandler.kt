@@ -154,11 +154,11 @@ internal class PlayerStreamHandler @Inject constructor(
 
     /** Без сети «смените плеер/озвучку» вводит в заблуждение, а детали исключения — технический шум. */
     private fun streamFailureMessage(): String = strings.get(
-        if (connectivity.isOnline.value) R.string.player_stream_error else R.string.player_no_connection,
+        if (connectivity.isOffline.value) R.string.player_no_connection else R.string.player_stream_error,
     )
 
     fun playbackErrorMessage(message: String, errorCode: String? = null): String {
-        if (!connectivity.isOnline.value) return strings.get(R.string.player_no_connection)
+        if (connectivity.isOffline.value) return strings.get(R.string.player_no_connection)
         val detail = message.trim().takeIf { it.isNotBlank() }
         val code = errorCode?.trim()?.takeIf { it.isNotBlank() && it != detail }
         return buildString {

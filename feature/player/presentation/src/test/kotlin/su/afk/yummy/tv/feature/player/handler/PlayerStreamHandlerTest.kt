@@ -42,8 +42,8 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     private val invalidateCache: InvalidatePlayerStreamCacheUseCase = mockk(relaxed = true)
     private val openAllohaSession: OpenAllohaStreamSessionUseCase = mockk()
     private val strings: StringProvider = mockk()
-    private val online = MutableStateFlow(true)
-    private val connectivity: NetworkConnectivityMonitor = mockk { every { isOnline } returns online }
+    private val offline = MutableStateFlow(false)
+    private val connectivity: NetworkConnectivityMonitor = mockk { every { isOffline } returns offline }
 
     private val preferredQuality = MutableStateFlow(PreferredVideoQuality.P720)
     private val adaptiveQuality = MutableStateFlow(false)
@@ -175,7 +175,7 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `failed source without network says there is no connection`() = runTest {
-        online.value = false
+        offline.value = true
         coEvery { resolvePlayerStream(any()) } returns PlayerStreamResolveResult.Failed(reason = "timeout")
 
         val result = createHandler().resolve(state(KODIK_URL), null)
@@ -281,7 +281,7 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `playback error without network shows the no connection message only`() {
-        online.value = false
+        offline.value = true
 
         val message = createHandler().playbackErrorMessage("Source error", "4003")
 
