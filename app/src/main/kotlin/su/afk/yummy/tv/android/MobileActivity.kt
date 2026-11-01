@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.android.episodepush.utils.cancelEpisodePushNotification
 import su.afk.yummy.tv.android.shortcuts.AppShortcutsPublisher
 import su.afk.yummy.tv.android.widget.ContinueWatchingWidgetUpdater
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
@@ -76,6 +77,7 @@ class MobileActivity : ComponentActivity() {
     }
 
     private fun handleIncomingIntent(intent: Intent) {
+        intent.cancelEpisodePushNotification(this)
         if (!searchIntentHandler.handle(intent)) {
             deepLinkHandler.handle(intent)
         }

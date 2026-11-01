@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.R
+import su.afk.yummy.tv.android.episodepush.utils.EXTRA_EPISODE_PUSH_NOTIFICATION_ID
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.home.model.LibraryEpisodePush
 import javax.inject.Inject
@@ -58,7 +59,7 @@ class NewEpisodePushNotificationService @Inject constructor(
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setAutoCancel(true)
         if (animeId != null) {
-            val watchIntent = deepLinkIntent("$CONTINUE_DEEP_LINK_PREFIX$animeId")
+            val watchIntent = deepLinkIntent("$CONTINUE_DEEP_LINK_PREFIX$animeId", notificationId)
             builder
                 .setContentIntent(watchIntent)
                 .addAction(
@@ -69,22 +70,23 @@ class NewEpisodePushNotificationService @Inject constructor(
                 .addAction(
                     0,
                     context.getString(R.string.episode_push_action_details),
-                    deepLinkIntent("$DETAILS_DEEP_LINK_PREFIX$animeId"),
+                    deepLinkIntent("$DETAILS_DEEP_LINK_PREFIX$animeId", notificationId),
                 )
         } else {
-            builder.setContentIntent(deepLinkIntent(HOME_DEEP_LINK))
+            builder.setContentIntent(deepLinkIntent(HOME_DEEP_LINK, notificationId))
         }
         context.getSystemService(NotificationManager::class.java)
             .notify(notificationId, builder.build())
     }
 
-    private fun deepLinkIntent(deepLink: String): PendingIntent {
+    private fun deepLinkIntent(deepLink: String, notificationId: Int): PendingIntent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink)).apply {
             setPackage(context.packageName)
+            putExtra(EXTRA_EPISODE_PUSH_NOTIFICATION_ID, notificationId)
         }
         return PendingIntent.getActivity(
             context,
-            CONTENT_REQUEST_CODE,
+            notificationId,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -118,9 +120,6 @@ class NewEpisodePushNotificationService @Inject constructor(
         const val NOTIFICATION_ID_BASE = 61_000
         const val LIBRARY_NOTIFICATION_ID_BASE = 1_000_000
 
-        // PendingIntent различаются по data-ссылке, поэтому «Смотреть» и «Подробнее» не
-        // перетирают друг друга при общем requestCode.
-        const val CONTENT_REQUEST_CODE = 61_000
         const val CONTINUE_DEEP_LINK_PREFIX = "yummytv://continue/"
         const val DETAILS_DEEP_LINK_PREFIX = "yummytv://details/"
         const val HOME_DEEP_LINK = "yummytv://home"
