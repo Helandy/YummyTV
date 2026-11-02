@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,6 +17,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
@@ -28,6 +30,7 @@ import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserFriendRow
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.appendStateItem
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.pagedStateItems
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 fun FriendsMobileScreen(
@@ -48,7 +51,20 @@ fun FriendsMobileScreen(
             )
         },
     ) {
-        if (friends.loadState.refresh is LoadState.NotLoading && friends.itemCount == 0) {
+        val refreshError = (friends.loadState.refresh as? LoadState.Error)
+            ?.takeIf { friends.itemCount == 0 }
+            ?.error
+            ?.uiMessage()
+        if (refreshError != null) {
+            // Как на остальных экранах: иконка, заголовок, пояснение и «Повторить», а не голая панель.
+            MobileMessage(
+                title = refreshError.substringBefore('\n'),
+                description = refreshError.substringAfter('\n', "").ifBlank { null },
+                icon = Icons.Filled.Warning,
+                actionLabel = stringResource(CoreR.string.common_retry),
+                onAction = friends::retry,
+            )
+        } else if (friends.loadState.refresh is LoadState.NotLoading && friends.itemCount == 0) {
             MobileMessage(
                 title = stringResource(R.string.friends_empty_title),
                 description = stringResource(R.string.friends_empty_description),

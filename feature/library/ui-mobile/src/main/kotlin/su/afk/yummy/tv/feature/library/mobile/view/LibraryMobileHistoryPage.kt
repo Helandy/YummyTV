@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,6 +39,7 @@ import coil3.compose.SubcomposeAsyncImageContent
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -72,9 +74,16 @@ internal fun LibraryMobileHistoryPage(
         return
     }
     val items = history.collectAsLazyPagingItems()
+    val refreshState = items.loadState.refresh
     when {
-        items.loadState.refresh is LoadState.Loading -> HistoryMessage(null, loading = true)
-        items.loadState.refresh is LoadState.Error -> HistoryMessage(stringResource(R.string.library_history_error))
+        refreshState is LoadState.Loading -> HistoryMessage(null, loading = true)
+        refreshState is LoadState.Error -> MobileMessage(
+            title = stringResource(R.string.library_history_error),
+            description = refreshState.error.uiMessage(),
+            icon = Icons.Filled.Warning,
+            actionLabel = stringResource(CoreR.string.common_retry),
+            onAction = items::retry,
+        )
         items.itemCount == 0 -> HistoryMessage(stringResource(R.string.library_history_empty))
         else -> LazyColumn(
             modifier = Modifier
