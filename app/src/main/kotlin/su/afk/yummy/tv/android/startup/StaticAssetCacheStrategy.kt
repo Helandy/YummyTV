@@ -9,9 +9,11 @@ import kotlin.time.Duration.Companion.days
 /**
  * Статика нашего сервера (`/static/`, например декор аватарки) отдаётся без Cache-Control и ETag,
  * поэтому стандартная стратегия Coil перекачивает её при каждом открытии. Здесь успешный ответ
- * из кэша считаем свежим [StaticFreshness]; всё остальное решает [CacheStrategy.DEFAULT].
+ * из кэша считаем свежим [StaticFreshness]; всё остальное решает [CacheStrategy.DEFAULT]. Адрес статики берётся из
+ * [staticPrefix] при каждом запросе: хост API можно заменить удалённо.
  */
 internal class StaticAssetCacheStrategy(
+    private val staticPrefix: () -> String,
     private val delegate: CacheStrategy = CacheStrategy.DEFAULT,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : CacheStrategy {
@@ -23,7 +25,7 @@ internal class StaticAssetCacheStrategy(
     ): CacheStrategy.ReadResult {
         val age = nowMillis() - cacheResponse.responseMillis
         val isFresh = cacheResponse.code == 200 && age in 0..StaticFreshness.inWholeMilliseconds
-        return if (isFresh && isOwnStatic(networkRequest.url)) {
+        return if (isFresh && isOwnStatic(networkRequest.url, staticPrefix())) {
             CacheStrategy.ReadResult(cacheResponse)
         } else {
             delegate.read(cacheResponse, networkRequest, options)
@@ -39,8 +41,7 @@ internal class StaticAssetCacheStrategy(
 
     internal companion object {
         val StaticFreshness = 7.days
-        private const val StaticPrefix = "https://yummytv.afk.su/static/"
 
-        fun isOwnStatic(url: String): Boolean = url.startsWith(StaticPrefix)
+        fun isOwnStatic(url: String, staticPrefix: String): Boolean = staticPrefix.isNotEmpty() && url.startsWith(staticPrefix)
     }
 }

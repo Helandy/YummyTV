@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -13,6 +14,8 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import su.afk.yummy.tv.android.episodepush.utils.cancelEpisodePushNotification
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
+import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
+import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.TvMainGraph
@@ -23,6 +26,9 @@ class TvActivity : ComponentActivity() {
 
     @Inject
     lateinit var mainGraph: TvMainGraph
+
+    @Inject
+    lateinit var siteApiConfig: SiteApiConfig
 
     @Inject
     lateinit var deepLinkHandler: DeepLinkHandler
@@ -41,8 +47,10 @@ class TvActivity : ComponentActivity() {
         setContent {
             // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
             // baseline profile и бенчмарки (модуль :baselineprofile)
-            Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
-                mainGraph.MainGraph()
+            CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
+                Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
+                    mainGraph.MainGraph()
+                }
             }
         }
 

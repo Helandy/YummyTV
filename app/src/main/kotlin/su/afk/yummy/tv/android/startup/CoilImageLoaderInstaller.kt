@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
@@ -44,6 +45,7 @@ class CoilImageLoaderInstaller @Inject constructor(
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val episodeThumbnailResolver: EpisodeThumbnailResolver,
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
+    private val siteApiConfig: SiteApiConfig,
 ) {
 
     @OptIn(ExperimentalCoilApi::class)
@@ -82,7 +84,7 @@ class CoilImageLoaderInstaller @Inject constructor(
                     add(
                         KtorNetworkFetcherFactory(
                             httpClient = { imageHttpClient },
-                            cacheStrategy = { StaticAssetCacheStrategy() },
+                            cacheStrategy = { StaticAssetCacheStrategy(staticPrefix = { siteApiConfig.staticBaseUrl }) },
                         ),
                     )
                     // yani отдаёт картинки новостей только в AVIF. Системный декодер на части ТВ-приставок

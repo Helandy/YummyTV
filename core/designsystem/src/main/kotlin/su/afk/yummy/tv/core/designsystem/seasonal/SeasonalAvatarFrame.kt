@@ -12,10 +12,11 @@ import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImage
 import coil3.gif.repeatCount
 import coil3.request.ImageRequest
+import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 
 /** Анимированный WebP декора (шляпа, росчерк, хвост) с сервера, папка static. */
-private const val HalloweenAvatarDecorUrl = "https://yummytv.afk.su/static/halloween-avatar-decor.webp"
+private const val HalloweenAvatarDecorFile = "halloween-avatar-decor.webp"
 
 /** Во сколько раз квадрат декора больше аватарки: аватарка занимает 240 из 288 px кадра. */
 private const val AvatarDecorScale = 1.2f
@@ -39,9 +40,10 @@ fun SeasonalAvatarFrame(
         return
     }
     val animated = rememberSeasonalOverlayEnabled()
+    val decorUrl = LocalStaticBaseUrl.current + HalloweenAvatarDecorFile
     val request = ImageRequest.Builder(LocalContext.current)
-        .data(HalloweenAvatarDecorUrl)
-        .diskCacheKey(HalloweenAvatarDecorUrl)
+        .data(decorUrl)
+        .diskCacheKey(decorUrl)
         // Без анимаций проигрываем один раз и замираем на последнем кадре (шляпа и хвост).
         .apply { if (!animated) repeatCount(0) }
         .build()

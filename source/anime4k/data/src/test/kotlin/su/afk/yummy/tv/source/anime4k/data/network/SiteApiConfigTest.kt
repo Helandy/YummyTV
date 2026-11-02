@@ -34,4 +34,13 @@ class SiteApiConfigTest : BaseUnitTest() {
         assertEquals("https://new.example/api", config.baseUrl)
         assertEquals("token", config.effectiveToken("builtin"))
     }
+
+    @Test
+    fun `static folder follows the api host`() {
+        val config = SiteApiConfig()
+        assertEquals("https://yummytv.afk.su/static/", config.staticBaseUrl)
+
+        config.apply("https://v2.example/api/", "")
+        assertEquals("https://v2.example/static/", config.staticBaseUrl)
+    }
 }

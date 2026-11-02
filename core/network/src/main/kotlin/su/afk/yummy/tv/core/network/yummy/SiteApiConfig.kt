@@ -25,8 +25,16 @@ class SiteApiConfig @Inject constructor() {
         this.remoteToken = remoteToken.trim()
     }
 
+    /** Папка статики того же сервера (`/static/`): картинки вроде декора аватарки идут с того же хоста, что и API. */
+    val staticBaseUrl: String get() = baseUrl.removeSuffix(API_PATH_SUFFIX) + STATIC_PATH
+
     /** Токен с сайта, если он пришёл и отличается от встроенного; иначе [builtIn]. */
     fun effectiveToken(builtIn: String): String = remoteToken.ifBlank { builtIn }
+
+    private companion object {
+        const val API_PATH_SUFFIX = "/api"
+        const val STATIC_PATH = "/static/"
+    }
 
     private fun normalizeRemoteBaseUrl(raw: String): String? {
         val value = raw.trim().trimEnd('/')
