@@ -166,12 +166,69 @@ class PlayerViewModelTest : BaseUnitTest() {
     fun `downloaded destination loads the offline item`() {
         val item: VideoDownloadItem = mockk(relaxed = true)
         coEvery { offlineSources.findDownloaded(7L) } returns item
-        every { offlineSources.downloaded(any(), item) } answers { firstArg<PlayerState.State>().copy(isOfflinePlayback = true) }
+        coEvery { offlineSources.findSiblings(item) } returns listOf(item)
+        coEvery { offlineSources.resumePositionMs(item) } returns null
+        every { offlineSources.downloaded(any(), item, any(), any()) } answers { firstArg<PlayerState.State>().copy(isOfflinePlayback = true) }
 
         val state = createViewModel(dest(downloadId = 7L)).currentState
 
         assertTrue(state.isOfflinePlayback)
         coVerify(exactly = 0) { sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `downloaded episode resumes from the saved watch progress`() {
+        val item: VideoDownloadItem = mockk(relaxed = true)
+        coEvery { offlineSources.findDownloaded(7L) } returns item
+        coEvery { offlineSources.findSiblings(item) } returns listOf(item)
+        coEvery { offlineSources.resumePositionMs(item) } returns 900_000L
+        every { offlineSources.downloaded(any(), item, any(), 900_000L) } answers {
+            firstArg<PlayerState.State>().copy(isOfflinePlayback = true, resumeFromMs = 900_000L)
+        }
+
+        val state = createViewModel(dest(downloadId = 7L)).currentState
+
+        assertEquals(900_000L, state.resumeFromMs)
+    }
+
+    @Test
+    fun `next episode of a downloaded series opens the next download`() {
+        val first: VideoDownloadItem = mockk(relaxed = true)
+        val second: VideoDownloadItem = mockk(relaxed = true)
+        val graph = PlayerSourceGraph(
+            balancers = listOf(
+                PlayerSourceBalancer(
+                    name = "Kodik",
+                    dubbings = listOf(
+                        PlayerSourceDubbing(
+                            name = "Dub",
+                            episodes = listOf(
+                                PlayerSourceEpisode(number = "1", iframeUrl = "a", downloadId = 7L),
+                                PlayerSourceEpisode(number = "2", iframeUrl = "b", downloadId = 8L),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        coEvery { offlineSources.findDownloaded(7L) } returns first
+        coEvery { offlineSources.findDownloaded(8L) } returns second
+        coEvery { offlineSources.findSiblings(any()) } returns listOf(first, second)
+        coEvery { offlineSources.resumePositionMs(any()) } returns null
+        every { offlineSources.downloaded(any(), any(), any(), any()) } answers {
+            val item = secondArg<VideoDownloadItem>()
+            firstArg<PlayerState.State>().copy(
+                isOfflinePlayback = true,
+                sourceGraph = graph,
+                sourceSelection = PlayerSourceSelection(episodeIndex = if (item === first) 0 else 1),
+            )
+        }
+        val vm = createViewModel(dest(downloadId = 7L))
+
+        vm.setEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
+
+        coVerify(exactly = 1) { offlineSources.findDownloaded(8L) }
+        assertEquals(1, vm.currentState.sourceSelection.episodeIndex)
     }
 
     @Test
@@ -208,8 +265,10 @@ class PlayerViewModelTest : BaseUnitTest() {
     @Test
     fun `playback error of a downloaded episode says the download is damaged`() {
         every { strings.get(R.string.player_download_corrupted) } returns "damaged"
-        every { offlineSources.downloaded(any(), any()) } answers { firstArg<PlayerState.State>().copy(isOfflinePlayback = true) }
+        every { offlineSources.downloaded(any(), any(), any(), any()) } answers { firstArg<PlayerState.State>().copy(isOfflinePlayback = true) }
         coEvery { offlineSources.findDownloaded(7L) } returns mockk(relaxed = true)
+        coEvery { offlineSources.findSiblings(any()) } returns emptyList()
+        coEvery { offlineSources.resumePositionMs(any()) } returns null
         val vm = createViewModel(dest(downloadId = 7L))
 
         vm.setEvent(PlayerState.Event.PlaybackError(message = "Source error"))

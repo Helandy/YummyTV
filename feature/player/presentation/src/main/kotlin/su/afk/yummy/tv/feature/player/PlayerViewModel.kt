@@ -53,6 +53,7 @@ import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
+import su.afk.yummy.tv.feature.player.utils.activeEpisodeSource
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeQuality
@@ -630,9 +631,32 @@ class PlayerViewModel @AssistedInject internal constructor(
                 setState { offlineSources.missingDownload(this) }
                 return@launch
             }
-            setState { offlineSources.downloaded(this, item) }
+            val siblings = offlineSources.findSiblings(item)
+            val resumeFromMs = pendingDestinationResumeMs
+                ?: offlineSources.resumePositionMs(item)
+                ?: 0L
+            pendingDestinationResumeMs = null
+            setState { offlineSources.downloaded(this, item, siblings, resumeFromMs) }
             loadFinalEpisodeAction(item.animeId)
         }
+    }
+
+    /**
+     * Переход на другую скачанную серию («Далее», «Назад», выбор из списка). Офлайн-плеер не
+     * резолвит поток, а открывает загрузку выбранной серии; ключ в back stack двигается вместе
+     * с [activeDest], как в [syncBackStackDestination].
+     */
+    private fun switchDownloadedEpisode(state: PlayerState.State) {
+        val downloadId = activeEpisodeSource(state)?.downloadId?.takeIf { it > 0L } ?: return
+        if (downloadId == activeDest.downloadId) return
+        val destination = activeDest.copy(downloadId = downloadId, resumeFromMs = 0L)
+        activeDest = destination
+        pendingDestinationResumeMs = null
+        // Как в сетевой ветке: поток гасим сразу и сразу переключаем выбранную серию. Иначе плеер ещё
+        // держит позицию прежней серии, а отчёт прогресса уже строится по новой и пишет её не туда.
+        setState { sourceStreamHandler.preparingStreamLoad(state, PlayerStreamResumeMode.SelectedSourceOnly) }
+        if (nav.backStack.lastOrNull() is PlayerDestination) nav.replace(destination)
+        loadDownloadedDestination(downloadId)
     }
 
     /**
@@ -748,6 +772,10 @@ class PlayerViewModel @AssistedInject internal constructor(
         refreshSourcesAlongsideStream: Boolean = false,
     ) {
         if (state == null) return
+        if (state.isOfflinePlayback && !state.isLocalFile) {
+            switchDownloadedEpisode(state)
+            return
+        }
         resetSourceBehaviors()
         setState { sourceStreamHandler.preparingStreamLoad(state, resumeMode) }
         if (sourceScopeChanged) {

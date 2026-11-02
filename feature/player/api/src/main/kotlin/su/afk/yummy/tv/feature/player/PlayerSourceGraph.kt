@@ -33,6 +33,8 @@ data class PlayerSourceEpisode(
     val watchedEndTimeSeconds: Int? = null,
     val watchedDateSeconds: Long? = null,
     val durationSeconds: Int? = null,
+    /** Скачанная серия, которую открывает офлайн-плеер; 0 для сетевых источников. */
+    val downloadId: Long = 0L,
 )
 
 @Serializable
