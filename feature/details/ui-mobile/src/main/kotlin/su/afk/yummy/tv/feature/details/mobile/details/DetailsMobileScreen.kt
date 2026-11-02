@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.details
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -9,19 +10,28 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -36,6 +46,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.anime.urlsByQuality
 import su.afk.yummy.tv.core.model.text.UiText
+import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
@@ -59,9 +70,7 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.SubscriptionsSignInSh
 import su.afk.yummy.tv.feature.details.mobile.details.view.buildDetailsLinks
 import su.afk.yummy.tv.feature.details.mobile.details.view.commentsDetailsLink
 import su.afk.yummy.tv.feature.details.mobile.details.view.similarDetailsLink
-import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -149,20 +158,30 @@ fun DetailsMobileScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item(key = "hero") {
-                DetailsMobileHero(
-                    state = state,
-                    details = details,
-                    onBack = { onEvent(DetailsState.Event.BackSelected) },
-                    onShare = { onEvent(DetailsState.Event.ShareSelected) },
-                    onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
-                    onInfoClick = { onEvent(DetailsState.Event.InfoSelected) },
-                    onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
-                    onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
-                    onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
-                )
-            }
-            if (isOffline) {
-                item(key = "offline") { OfflineBanner(isOffline = true) }
+                // Фон шапки остаётся под статус-баром, плашка лежит поверх него, а контент шапки сдвинут вниз.
+                var bannerHeightPx by remember { mutableIntStateOf(0) }
+                Box {
+                    DetailsMobileHero(
+                        state = state,
+                        details = details,
+                        onBack = { onEvent(DetailsState.Event.BackSelected) },
+                        onShare = { onEvent(DetailsState.Event.ShareSelected) },
+                        onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
+                        onInfoClick = { onEvent(DetailsState.Event.InfoSelected) },
+                        onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
+                        onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                        onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                        topExtra = with(LocalDensity.current) { bannerHeightPx.toDp() },
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .statusBarsPadding()
+                            .onSizeChanged { bannerHeightPx = it.height },
+                    ) {
+                        OfflineBanner(isOffline = isOffline)
+                    }
+                }
             }
             item(key = "actions") {
                 DetailsSecondaryActions(

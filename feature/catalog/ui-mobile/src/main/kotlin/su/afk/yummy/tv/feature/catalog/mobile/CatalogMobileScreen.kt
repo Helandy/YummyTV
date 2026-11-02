@@ -132,7 +132,7 @@ fun CatalogMobileScreen(
         ) {
             if (isOffline) {
                 item(span = { GridItemSpan(maxLineSpan) }, contentType = "offline_banner") {
-                    OfflineBanner(isOffline = true)
+                    OfflineBanner(isOffline = true, horizontalPadding = 0.dp)
                 }
             }
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {

@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
@@ -58,6 +59,8 @@ internal fun DetailsMobileHero(
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFavoriteToggle: () -> Unit,
+    /** Высота плашки поверх шапки: контент сдвигается вниз, фон остаётся под статус-баром. */
+    topExtra: Dp = 0.dp,
 ) {
     val configuration = LocalConfiguration.current
     val posterWidth = (configuration.screenWidthDp.dp * 0.42f).coerceIn(142.dp, 190.dp)
@@ -96,6 +99,7 @@ internal fun DetailsMobileHero(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
+                .padding(top = topExtra)
                 .padding(end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -125,6 +129,7 @@ internal fun DetailsMobileHero(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .statusBarsPadding()
+                .padding(top = topExtra)
                 .padding(start = 12.dp)
                 .size(52.dp),
         ) {
@@ -139,6 +144,7 @@ internal fun DetailsMobileHero(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
+                .padding(top = topExtra)
                 .padding(horizontal = 16.dp)
                 .padding(top = 58.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

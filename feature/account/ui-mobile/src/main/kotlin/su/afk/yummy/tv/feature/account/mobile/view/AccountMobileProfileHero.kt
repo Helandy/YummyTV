@@ -58,6 +58,8 @@ internal fun AccountMobileProfileHero(
     topActions: @Composable RowScope.() -> Unit = {},
     /** Поверх аватара без обрезки кругом — например точка «в сети» у края. */
     avatarBadge: @Composable BoxScope.() -> Unit = {},
+    /** Высота плашки поверх баннера: кнопки и аватар сдвигаются вниз, баннер остаётся под статус-баром. */
+    topExtra: Dp = 0.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val surface = MaterialTheme.colorScheme.surfaceContainer
@@ -67,7 +69,7 @@ internal fun AccountMobileProfileHero(
     }
     // Баннер на всю ширину и под статус-баром, как фон деталки.
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val bannerHeight = statusBarTop + BannerHeight
+    val bannerHeight = statusBarTop + topExtra + BannerHeight
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -127,6 +129,7 @@ internal fun AccountMobileProfileHero(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .statusBarsPadding()
+                    .padding(top = topExtra)
                     .padding(12.dp),
                 content = navigationAction,
             )
@@ -134,6 +137,7 @@ internal fun AccountMobileProfileHero(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .statusBarsPadding()
+                    .padding(top = topExtra)
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 content = topActions,

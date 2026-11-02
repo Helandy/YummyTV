@@ -22,11 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R
 
 /**
- * Плашка «нет сети». Встраивается в вёрстку главной (под поиском на мобилке, под
+ * Плашка «нет сети». Встраивается в вёрстку главной (над поиском на мобилке, под
  * «Продолжить просмотр» на ТВ), а не рисуется оверлеем: глобальная плашка перекрывала
  * плеер и другие экраны. Появляясь, раздвигает контент, а не наезжает на него.
  */
@@ -34,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.R
 fun OfflineBanner(
     isOffline: Boolean,
     modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 16.dp,
 ) {
     AnimatedVisibility(
         visible = isOffline,
@@ -44,7 +46,7 @@ fun OfflineBanner(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = horizontalPadding, vertical = 8.dp),
             shape = RoundedCornerShape(percent = 50),
             color = MaterialTheme.colorScheme.errorContainer,
             contentColor = MaterialTheme.colorScheme.onErrorContainer,

@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account.mobile.account
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -27,12 +28,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -40,7 +45,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
@@ -62,7 +70,6 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsGrid
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileTabs
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -123,6 +130,7 @@ fun AccountMobileScreen(
         }
     }
 
+    val isOffline = LocalIsOffline.current
     var showLogoutConfirm by remember { mutableStateOf(false) }
     val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
     val accountTabs = AccountState.AccountTab.entries
@@ -296,12 +304,25 @@ fun AccountMobileScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item(key = "profile") {
-                    AccountMobileHeader(
-                        state = state,
-                        profileSummary = state.profileSummary,
-                        onEditClick = { onEvent(AccountState.Event.ProfileEditSelected) },
-                        onLogoutClick = { showLogoutConfirm = true },
-                    )
+                    // Баннер остаётся под статус-баром, плашка лежит поверх него, а кнопки и аватар сдвинуты вниз.
+                    var bannerHeightPx by remember { mutableIntStateOf(0) }
+                    Box {
+                        AccountMobileHeader(
+                            state = state,
+                            profileSummary = state.profileSummary,
+                            onEditClick = { onEvent(AccountState.Event.ProfileEditSelected) },
+                            onLogoutClick = { showLogoutConfirm = true },
+                            topExtra = with(LocalDensity.current) { bannerHeightPx.toDp() },
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .statusBarsPadding()
+                                .onSizeChanged { bannerHeightPx = it.height },
+                        ) {
+                            OfflineBanner(isOffline = isOffline)
+                        }
+                    }
                 }
                 item(key = "quick_actions") {
                     AccountMobileQuickActionsGrid(

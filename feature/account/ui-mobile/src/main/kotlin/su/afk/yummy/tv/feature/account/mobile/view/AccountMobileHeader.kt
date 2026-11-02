@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -17,6 +19,7 @@ internal fun AccountMobileHeader(
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier,
+    topExtra: Dp = 0.dp,
 ) {
     val nickname = profileSummary?.nickname?.ifBlank { state.nickname } ?: state.nickname
     AccountMobileProfileHero(
@@ -25,6 +28,7 @@ internal fun AccountMobileHeader(
         avatarUrl = profileSummary?.avatarUrl ?: state.avatarUrl,
         nickname = nickname,
         modifier = modifier,
+        topExtra = topExtra,
         topActions = {
             AccountMobileHeroActionButton(
                 icon = Icons.Filled.Edit,

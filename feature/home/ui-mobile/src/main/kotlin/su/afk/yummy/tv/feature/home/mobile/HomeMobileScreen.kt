@@ -227,22 +227,17 @@ fun HomeMobileScreen(
                 ) {
                     val feed = state.feed
 
-                    // Item только пока есть что показать: пустой дал бы лишний зазор spacedBy сверху
+                    // Плашки и поиск в одном item: иначе spacedBy(24) растягивает зазор между ними
                     item(key = "search") {
-                        HomeMobileSearchBar(
-                            onClick = { onEvent(HomeState.Event.SearchSelected) },
-                            modifier = Modifier
-                                .mobileContentMaxWidth()
-                                .padding(horizontal = 16.dp),
-                        )
-                    }
-
-                    if (isOffline || state.statusMessage != null) {
-                        item(key = "banners") {
-                            Column(modifier = Modifier.mobileContentMaxWidth()) {
-                                OfflineBanner(isOffline = isOffline)
-                                InfoBanner(message = state.statusMessage)
-                            }
+                        Column(modifier = Modifier.mobileContentMaxWidth()) {
+                            OfflineBanner(isOffline = isOffline)
+                            InfoBanner(message = state.statusMessage)
+                            HomeMobileSearchBar(
+                                onClick = { onEvent(HomeState.Event.SearchSelected) },
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = if (isOffline || state.statusMessage != null) 8.dp else 0.dp),
+                            )
                         }
                     }
 
