@@ -148,6 +148,15 @@ class PlayerSourceSelectionHandlerTest : BaseUnitTest() {
     }
 
     @Test
+    fun `switching back from a failed resolve keeps the resume position of the previous switch`() {
+        val failed = state(PlayerSourceSelection(1, 0, 1)).copy(dubbingResumeMs = 17_000L)
+
+        val result = handler.selectBalancer(failed, 0, currentPosMs = 0L)
+
+        assertEquals(17_000L, result?.dubbingResumeMs)
+    }
+
+    @Test
     fun `selecting the current or an unknown dubbing changes nothing`() {
         val state = state(PlayerSourceSelection(0, 0, 0))
 

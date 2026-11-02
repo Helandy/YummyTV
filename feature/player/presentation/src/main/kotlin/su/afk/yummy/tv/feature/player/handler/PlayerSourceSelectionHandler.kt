@@ -51,7 +51,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
                     balancerIndex = source.balancerIndex,
                     dubbingIndex = source.dubbingIndex,
                     episodeIndex = source.episodeIndex,
-                )
+                ),
             )
         }
 
@@ -78,7 +78,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         if (selection == currentSelection.toDubbingSource()) return null
 
         return state.copy(
-            dubbingResumeMs = resumeOverrideMs(currentPosMs),
+            dubbingResumeMs = resumeOverrideMs(currentPosMs, state.dubbingResumeMs),
             sourceSelection = PlayerSourceSelection(
                 balancerIndex = selection.balancerIndex,
                 dubbingIndex = selection.dubbingIndex,
@@ -112,7 +112,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
             ?: return null
 
         return state.copy(
-            dubbingResumeMs = resumeOverrideMs(currentPosMs),
+            dubbingResumeMs = resumeOverrideMs(currentPosMs, state.dubbingResumeMs),
             sourceSelection = PlayerSourceSelection(
                 balancerIndex = index,
                 dubbingIndex = newDubbingIdx,
@@ -129,14 +129,16 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
      * Позиция, с которой продолжаем после смены озвучки/балансера.
      *
      * Плеер мог ещё не стартовать - например, переключение идёт с оверлея ошибки resolve, где
-     * позиция в state уже обнулена. Тогда возвращаем сентинел "позиции нет", чтобы ViewModel
-     * откатился на resume из destination или на локальный прогресс, а не начал серию с нуля.
+     * позиция в state уже обнулена. Тогда сохраняем уже накопленный [previousResumeMs] (позиция
+     * с прошлой смены источника, не израсходованная из-за ошибки), а если и его нет - сентинел
+     * "позиции нет": ViewModel откатится на resume из destination или локальный прогресс, а не
+     * начнёт серию с нуля.
      */
-    private fun resumeOverrideMs(currentPosMs: Long): Long =
+    private fun resumeOverrideMs(currentPosMs: Long, previousResumeMs: Long): Long =
         if (currentPosMs > 0L) {
             (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L)
         } else {
-            NO_RESUME_MS
+            previousResumeMs.takeIf { it > 0L } ?: NO_RESUME_MS
         }
 
     fun resizeSettingsScope(state: PlayerState.State): PlayerResizeSettingsScope =
