@@ -20,7 +20,8 @@ import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
  *
  * Политика пересоздаётся при смене набора качеств (новая серия или источник), поэтому память о
  * проблемных уровнях живёт в пределах одного потока. Остановки после перемотки, пропуска опенинга и
- * замены item (смена сабов) не считаются.
+ * замены item (смена сабов) не считаются повторными, но затянувшаяся такая остановка понижает
+ * качество: иначе зависание на перемотке при слабой сети не лечится никогда.
  */
 @Composable
 fun PlayerQualityAdaptationEffect(
@@ -45,6 +46,12 @@ fun PlayerQualityAdaptationEffect(
         var wasReady = false
         var hasPlayed = false
         var seekPending = false
+        fun startSeekStallIfBuffering() {
+            if (seekPending && player.playbackState == Player.STATE_BUFFERING && player.playWhenReady) {
+                policy.onStallStarted(nowMs(), afterSeek = true)
+            }
+        }
+
         val listener = object : Player.Listener {
             override fun onPositionDiscontinuity(
                 oldPosition: Player.PositionInfo,
@@ -56,6 +63,8 @@ fun PlayerQualityAdaptationEffect(
                 if (reason != Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
                     seekPending = true
                     policy.onStallEnded()
+                    // Перемотка посреди буферизации нового состояния не шлёт - таймер заводим сами.
+                    if (hasPlayed) startSeekStallIfBuffering()
                 }
             }
 
@@ -63,6 +72,7 @@ fun PlayerQualityAdaptationEffect(
                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
                     seekPending = true
                     policy.onStallEnded()
+                    if (hasPlayed) startSeekStallIfBuffering()
                 }
             }
 
@@ -80,6 +90,8 @@ fun PlayerQualityAdaptationEffect(
                         val countable = !hasPlayed || (wasReady && !seekPending)
                         if (countable && player.playWhenReady) {
                             policy.onStallStarted(nowMs(), startup = !hasPlayed)
+                        } else {
+                            startSeekStallIfBuffering()
                         }
                         wasReady = false
                     }

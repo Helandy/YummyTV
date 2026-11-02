@@ -41,12 +41,21 @@ class QualityAdaptationPolicy(
     /**
      * Начало остановки буфера (не перемотка). [startup] — серия ещё ни разу не начинала играть:
      * такая остановка в счётчик повторных не идёт, но затянувшийся старт понижает качество
-     * (на слабой сети лучшее качество может не стартовать вовсе).
+     * (на слабой сети лучшее качество может не стартовать вовсе). [afterSeek] — буферизация после
+     * перемотки или замены item: короткая нормальна и в счётчик повторных не идёт, но затянувшаяся
+     * (сервер не отдаёт нужный кусок) понижает качество так же, как обычная долгая остановка.
      */
-    fun onStallStarted(nowMs: Long, startup: Boolean = false) {
-        if (!startup) stallTimesMs.addLast(nowMs)
+    fun onStallStarted(nowMs: Long, startup: Boolean = false, afterSeek: Boolean = false) {
+        if (!startup && !afterSeek) stallTimesMs.addLast(nowMs)
         stallStartedAtMs = nowMs
-        stallLimitMs = if (startup) LONG_STARTUP_MS else LONG_STALL_MS
+        stallLimitMs = when {
+            startup -> LONG_STARTUP_MS
+            // Замена item при смене качества тоже даёт «перемотку»: новому потоку остаётся его
+            // пауза на загрузку, а не короткий порог.
+            afterSeek && nowMs - lastSwitchAtMs < LONG_AFTER_SWITCH_MS -> LONG_AFTER_SWITCH_MS
+            afterSeek -> LONG_SEEK_STALL_MS
+            else -> LONG_STALL_MS
+        }
         trim(nowMs)
     }
 
@@ -168,6 +177,9 @@ class QualityAdaptationPolicy(
 
         /** Остановка буфера дольше этого срока сама по себе означает, что сеть не тянет. */
         const val LONG_STALL_MS = 8_000L
+
+        /** Буферизация после перемотки дольше этого срока: нужный кусок сеть не тянет. */
+        const val LONG_SEEK_STALL_MS = 5_000L
 
         /** Старт воспроизведения дольше этого срока — лучшее качество сети не по силам. */
         const val LONG_STARTUP_MS = 15_000L

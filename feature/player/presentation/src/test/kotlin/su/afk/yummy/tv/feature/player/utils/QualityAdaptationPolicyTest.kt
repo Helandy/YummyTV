@@ -71,6 +71,39 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
     }
 
     @Test
+    fun `long buffering after a seek steps down but short one does not`() {
+        policy.onStallStarted(0L, afterSeek = true)
+
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 4_000L))
+        assertEquals(
+            QualityAdaptationDecision.Switch("720p", isDowngrade = true),
+            decide("1080p", now = 5_000L),
+        )
+    }
+
+    @Test
+    fun `seek buffering right after a switch keeps the new stream grace period`() {
+        policy.onQualityChanged(10_000L)
+        policy.onStallStarted(11_000L, afterSeek = true)
+
+        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 30_000L))
+        assertEquals(
+            QualityAdaptationDecision.Switch("480p", isDowngrade = true),
+            decide("720p", now = 36_000L),
+        )
+    }
+
+    @Test
+    fun `seek buffering is not counted as a repeated stall`() {
+        policy.onStallStarted(0L, afterSeek = true)
+        policy.onStallEnded()
+        policy.onStallStarted(20_000L)
+        policy.onStallEnded()
+
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 25_000L))
+    }
+
+    @Test
     fun `startup buffering is not counted as a repeated stall`() {
         policy.onStallStarted(0L, startup = true)
         policy.onStallEnded()
