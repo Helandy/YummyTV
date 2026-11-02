@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.minus
 import kotlinx.collections.immutable.plus
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -16,6 +17,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
+import su.afk.yummy.tv.domain.player.usecase.ObserveWatchProgressUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
@@ -33,6 +35,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestination
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.videodownload.mapper.toGroups
+import su.afk.yummy.tv.feature.videodownload.mapper.toWatchProgressByDownload
 import su.afk.yummy.tv.feature.videodownload.utils.isActive
 import javax.inject.Inject
 
@@ -43,6 +46,7 @@ class VideoDownloadViewModel @Inject constructor(
     private val nav: INavigationManager,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val observeVideoDownloads: ObserveVideoDownloadsUseCase,
+    private val observeWatchProgress: ObserveWatchProgressUseCase,
     private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
     private val pauseVideoDownload: PauseVideoDownloadUseCase,
     private val pauseAllVideoDownloads: PauseAllVideoDownloadsUseCase,
@@ -70,8 +74,10 @@ class VideoDownloadViewModel @Inject constructor(
         networkConnectivityMonitor.isUnmetered
             .onEach { unmetered -> setState { copy(unmeteredNetwork = unmetered) } }
             .launchIn(viewModelScope)
-        observeVideoDownloads()
-            .onEach { items ->
+        combine(observeVideoDownloads(), observeWatchProgress()) { items, progress ->
+            items to items.toWatchProgressByDownload(progress)
+        }
+            .onEach { (items, watchProgress) ->
                 setState {
                     val groups = items.toGroups()
                     // Раскрытость живёт по ключу: исчезнувшие сериалы из набора выкидываем.
@@ -79,6 +85,7 @@ class VideoDownloadViewModel @Inject constructor(
                     copy(
                         items = items.toImmutableList(),
                         groups = groups,
+                        watchProgress = watchProgress,
                         expandedGroupKeys = expandedGroupKeys.filter { it in liveKeys }.toPersistentSet(),
                     )
                 }

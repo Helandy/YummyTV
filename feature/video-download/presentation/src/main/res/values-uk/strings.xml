@@ -6,6 +6,8 @@
     <string name="video_download_item_dubbing">%1$s</string>
     <string name="video_download_item_quality_balancer">%1$s • %2$s</string>
     <string name="video_download_item_disk_size">На диску: %1$s</string>
+    <string name="video_download_item_watch_progress">%1$s / %2$s</string>
+    <string name="video_download_item_watched">Переглянуто</string>
     <string name="video_download_item_progress">Триває завантаження %1$d%%</string>
     <string name="video_download_item_paused">На паузі %1$d%%</string>
     <string name="video_download_item_error_unknown">Помилка завантаження</string>

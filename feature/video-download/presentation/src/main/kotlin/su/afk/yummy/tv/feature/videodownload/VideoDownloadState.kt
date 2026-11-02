@@ -2,8 +2,10 @@ package su.afk.yummy.tv.feature.videodownload
 
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -12,6 +14,7 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportDestination
 import su.afk.yummy.tv.feature.videodownload.model.VideoDownloadGroup
+import su.afk.yummy.tv.feature.videodownload.model.VideoDownloadWatchProgress
 
 class VideoDownloadState {
     @Immutable
@@ -19,6 +22,8 @@ class VideoDownloadState {
         val items: ImmutableList<VideoDownloadItem> = persistentListOf(),
         /** Те же серии, собранные по сериалам для списка. */
         val groups: ImmutableList<VideoDownloadGroup> = persistentListOf(),
+        /** Прогресс просмотра скачанных серий по id загрузки. */
+        val watchProgress: ImmutableMap<Long, VideoDownloadWatchProgress> = persistentMapOf(),
         /** Ключи раскрытых сериалов ([VideoDownloadGroup.key]). */
         val expandedGroupKeys: PersistentSet<String> = persistentSetOf(),
         val pendingDeleteItem: VideoDownloadItem? = null,

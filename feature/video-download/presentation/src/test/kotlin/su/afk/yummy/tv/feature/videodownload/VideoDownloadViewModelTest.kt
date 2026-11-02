@@ -21,6 +21,8 @@ import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
+import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
+import su.afk.yummy.tv.domain.player.usecase.ObserveWatchProgressUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadCacheKeyScheme
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -54,6 +56,7 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
     private val videoDownloadSettingsStore: VideoDownloadSettingsStore = mockk(relaxed = true)
     private val networkConnectivityMonitor: NetworkConnectivityMonitor = mockk(relaxed = true)
     private val exportRepository: VideoDownloadExportRepository = mockk(relaxed = true)
+    private val watchProgressRepository: WatchProgressRepository = mockk(relaxed = true)
     private val playerNavigator: IPlayerNavigator = mockk()
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val items = MutableStateFlow<List<VideoDownloadItem>>(emptyList())
@@ -64,6 +67,7 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { downloadRepository.observeDownloads() } returns items
+        every { watchProgressRepository.observeAll() } returns MutableStateFlow(emptyList())
         every { videoDownloadSettingsStore.videoDownloadWifiOnly } returns MutableStateFlow(false)
         every { networkConnectivityMonitor.isUnmetered } returns MutableStateFlow(true)
         every { exportRepository.observeDestination() } returns destination
@@ -78,6 +82,7 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
         nav = nav,
         appLifecycleSettingsStore = appLifecycleSettingsStore,
         observeVideoDownloads = ObserveVideoDownloadsUseCase(downloadRepository),
+        observeWatchProgress = ObserveWatchProgressUseCase(watchProgressRepository),
         cancelOrDeleteVideoDownload = CancelOrDeleteVideoDownloadUseCase(downloadRepository),
         pauseVideoDownload = PauseVideoDownloadUseCase(downloadRepository),
         pauseAllVideoDownloads = PauseAllVideoDownloadsUseCase(downloadRepository),

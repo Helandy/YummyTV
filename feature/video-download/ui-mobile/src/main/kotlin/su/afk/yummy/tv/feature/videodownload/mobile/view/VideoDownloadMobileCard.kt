@@ -41,6 +41,7 @@ import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
+import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
@@ -52,6 +53,7 @@ import su.afk.yummy.tv.feature.videodownload.mobile.utils.hasProgressIndicator
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.isActive
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.statusText
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.visibleProgress
+import su.afk.yummy.tv.feature.videodownload.model.VideoDownloadWatchProgress
 import su.afk.yummy.tv.feature.videodownload.presentation.R
 
 private val DownloadActiveColor = YummySemanticColors.InProgress
@@ -68,6 +70,7 @@ internal fun VideoDownloadMobileCard(
     onCancelExport: () -> Unit,
     modifier: Modifier = Modifier,
     waitingForWifi: Boolean = false,
+    watchProgress: VideoDownloadWatchProgress? = null,
 ) {
     val imageModels = episodeThumbnailModels(
         thumbnail = episodeThumbnailOf(item.animeId, item.episode, item.screenshotUrl),
@@ -131,6 +134,17 @@ internal fun VideoDownloadMobileCard(
                             .background(DownloadActiveColor, CircleShape),
                     )
                 }
+                if (watchProgress != null && !item.hasProgressIndicator) {
+                    LinearProgressIndicator(
+                        progress = { watchProgress.fraction },
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(3.dp),
+                    )
+                }
                 if (item.hasProgressIndicator) {
                     LinearProgressIndicator(
                         progress = { item.visibleProgress.coerceIn(0f, 1f) },
@@ -181,6 +195,23 @@ internal fun VideoDownloadMobileCard(
                             style = MaterialTheme.typography.labelSmall,
                             color = statusColor,
                             maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    if (watchProgress != null) {
+                        Text(
+                            text = if (watchProgress.isWatched) {
+                                stringResource(R.string.video_download_item_watched)
+                            } else {
+                                stringResource(
+                                    R.string.video_download_item_watch_progress,
+                                    watchProgress.positionMs.millisToClockTime(),
+                                    watchProgress.durationMs.millisToClockTime(),
+                                )
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = DownloadActiveColor,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }

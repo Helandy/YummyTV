@@ -1,11 +1,15 @@
 package su.afk.yummy.tv.domain.player.repository
 
+import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 
 /** Читает/пишет локальный прогресс просмотра серий и управляет видимостью Continue Watching. */
 interface WatchProgressRepository {
 
     suspend fun get(animeId: Int, episode: String): AnimeWatchProgress?
+
+    /** Прогресс просмотра всех серий всех тайтлов; обновляется при каждой записи позиции. */
+    fun observeAll(): Flow<List<AnimeWatchProgress>>
 
     /** Локальный прогресс всех серий тайтла. */
     suspend fun getByAnime(animeId: Int): List<AnimeWatchProgress>

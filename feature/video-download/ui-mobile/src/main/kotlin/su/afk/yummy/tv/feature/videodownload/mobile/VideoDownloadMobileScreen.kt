@@ -168,6 +168,7 @@ fun VideoDownloadMobileScreen(
                                 VideoDownloadMobileCard(
                                     item = item,
                                     waitingForWifi = state.waitingForWifi,
+                                    watchProgress = state.watchProgress[item.id],
                                     onClick = { onEvent(VideoDownloadState.Event.ItemSelected(item.id)) },
                                     onDelete = { onEvent(VideoDownloadState.Event.DeleteSelected(item.id)) },
                                     onPause = { onEvent(VideoDownloadState.Event.PauseSelected(item.id)) },

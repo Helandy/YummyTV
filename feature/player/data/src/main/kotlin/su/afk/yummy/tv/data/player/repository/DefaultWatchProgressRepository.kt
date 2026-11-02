@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.data.player.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.data.player.mapper.toDomain
@@ -13,6 +16,9 @@ internal class DefaultWatchProgressRepository @Inject constructor(
 
     override suspend fun get(animeId: Int, episode: String): AnimeWatchProgress? =
         store.get(animeId, episode)?.toDomain()
+
+    override fun observeAll(): Flow<List<AnimeWatchProgress>> =
+        store.observeAll().map { entries -> entries.map { it.toDomain() } }.distinctUntilChanged()
 
     override suspend fun getByAnime(animeId: Int): List<AnimeWatchProgress> =
         store.observeByAnimeId(animeId).first().map { it.toDomain() }

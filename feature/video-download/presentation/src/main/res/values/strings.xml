@@ -6,6 +6,8 @@
     <string name="video_download_item_dubbing">%1$s</string>
     <string name="video_download_item_quality_balancer">%1$s • %2$s</string>
     <string name="video_download_item_disk_size">On disk: %1$s</string>
+    <string name="video_download_item_watch_progress">%1$s / %2$s</string>
+    <string name="video_download_item_watched">Watched</string>
     <string name="video_download_item_progress">Downloading %1$d%%</string>
     <string name="video_download_item_paused">Paused at %1$d%%</string>
     <string name="video_download_item_error_unknown">Download error</string>
