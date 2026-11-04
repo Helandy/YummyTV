@@ -200,10 +200,12 @@ internal class AllohaStreamProxy(
                     val line = reader.readLineBounded(MAX_REQUEST_LINE_CHARS) ?: break
                     if (line.isBlank()) break
                     val separator = line.indexOf(':')
-                    if (separator > 0) put(
-                        line.substring(0, separator).trim().lowercase(),
-                        line.substring(separator + 1).trim(),
-                    )
+                    if (separator > 0) {
+                        put(
+                            line.substring(0, separator).trim().lowercase(),
+                            line.substring(separator + 1).trim(),
+                        )
+                    }
                 }
             }
             val path = requestLine.split(' ').getOrNull(1) ?: return
@@ -247,7 +249,7 @@ internal class AllohaStreamProxy(
     private suspend fun serve(
         url: String,
         requestHeaders: Map<String, String>,
-        output: OutputStream
+        output: OutputStream,
     ) {
         if (isPlaylistUrl(url)) {
             servePlaylist(url, output)
@@ -271,7 +273,7 @@ internal class AllohaStreamProxy(
     private suspend fun serveSegment(
         url: String,
         requestHeaders: Map<String, String>,
-        output: OutputStream
+        output: OutputStream,
     ) {
         // Range requests bypass the cache/prefetch path so byte-range semantics stay exact.
         val hasRange = requestHeaders.containsKey("range") || requestHeaders.containsKey("if-range")
@@ -323,7 +325,7 @@ internal class AllohaStreamProxy(
                 it,
                 200,
                 contentTypeFor(url),
-                url
+                url,
             )
         }
         // computeIfAbsent (not the generic getOrPut) so concurrent requests for the same
@@ -433,15 +435,17 @@ internal class AllohaStreamProxy(
             // Accept-Language and no client hints) is what earned 403 client_blocked, so this is
             // the first thing to check when the CDN starts refusing the proxy while the page's
             // own player still loads fine.
-            if (verbose) analytics.log(LOG_TAG) {
-                "outgoing " + request.headers.names().joinToString(",") +
-                    " | ua=" + (request.header("User-Agent") ?: "-").take(48) +
-                    " | accept=" + (request.header("Accept") ?: "-") +
-                    " | lang=" + (request.header("Accept-Language") ?: "MISSING") +
-                    " | chUa=" + (request.header("sec-ch-ua") ?: "MISSING") +
-                    " | origin=" + (request.header("Origin") ?: "-") +
-                    " | referer=" + (request.header("Referer") ?: "-") +
-                    " | cookie=" + (if (request.header("Cookie") != null) "yes" else "no")
+            if (verbose) {
+                analytics.log(LOG_TAG) {
+                    "outgoing " + request.headers.names().joinToString(",") +
+                        " | ua=" + (request.header("User-Agent") ?: "-").take(48) +
+                        " | accept=" + (request.header("Accept") ?: "-") +
+                        " | lang=" + (request.header("Accept-Language") ?: "MISSING") +
+                        " | chUa=" + (request.header("sec-ch-ua") ?: "MISSING") +
+                        " | origin=" + (request.header("Origin") ?: "-") +
+                        " | referer=" + (request.header("Referer") ?: "-") +
+                        " | cookie=" + (if (request.header("Cookie") != null) "yes" else "no")
+                }
             }
             val requestClient = client
             val requestPool = connectionPool
@@ -594,9 +598,11 @@ internal class AllohaStreamProxy(
         val segmentName = failedUrl.substringAfterLast('/').substringBefore('?')
         if (segmentName.isBlank() || segmentName.equals(
                 "master.m3u8",
-                ignoreCase = true
+                ignoreCase = true,
             )
-        ) return null
+        ) {
+            return null
+        }
         val newBase = currentMaster.substringBeforeLast('/') + "/"
         val oldBase = failedUrl.substringBeforeLast('/') + "/"
         if (oldBase == newBase) return null
@@ -623,7 +629,9 @@ internal class AllohaStreamProxy(
     private suspend fun refreshSessionOnce(previousGeneration: Long): Boolean {
         if (streamStateProvider().generation > previousGeneration) return true
         val isLeader = synchronized(sessionRefreshLock) {
-            if (sessionRefreshInProgress) false else {
+            if (sessionRefreshInProgress) {
+                false
+            } else {
                 sessionRefreshInProgress = true
                 true
             }
@@ -739,7 +747,9 @@ internal class AllohaStreamProxy(
 
     private fun send(output: OutputStream, code: Int, type: String, bytes: ByteArray) {
         val reason = when (code) {
-            200 -> "OK"; 404 -> "Not Found"; else -> "Service Unavailable"
+            200 -> "OK"
+            404 -> "Not Found"
+            else -> "Service Unavailable"
         }
         runCatching {
             output.write("HTTP/1.1 $code $reason\r\nContent-Type: $type\r\nContent-Length: ${bytes.size}\r\nConnection: close\r\n\r\n".toByteArray())
@@ -783,7 +793,7 @@ internal class AllohaStreamProxy(
         // ~6s of margin over the 8s floor, while staying under PlayerDataSourceFactory's 16s HTTP
         // read timeout so the held loopback request itself never trips a client-side timeout.
         const val SEGMENT_HOLD_FOR_REFRESH_MS = 14_000L
-        const val CACHE_CAPACITY = 4
+        const val CACHE_CAPACITY = 3
         const val REQUEST_READ_TIMEOUT_MS = 15_000
         const val ACCEPT_RETRY_DELAY_MS = 250L
         const val MAX_REQUEST_LINE_CHARS = 32 * 1024

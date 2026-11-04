@@ -2,6 +2,8 @@ package su.afk.yummy.tv.data.player.extractor.alloha
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import android.webkit.WebResourceRequest
@@ -67,6 +69,7 @@ internal class AllohaWebViewPool {
 
     @SuppressLint("SetJavaScriptEnabled")
     fun acquire(context: Context, userAgent: String): WebView {
+        mainHandler.removeCallbacks(trimIdleRunnable)
         val webView = idleWebViews.poll() ?: WebView(context).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -101,10 +104,28 @@ internal class AllohaWebViewPool {
             webView.destroy()
         } else {
             idleWebViews.offer(webView)
+            scheduleIdleTrim()
         }
     }
 
+    /**
+     * An idle WebView keeps its Chromium renderer and the last player page (JS heap, media
+     * buffers) alive. Warm reuse only pays off between neighbouring episodes, so once nothing
+     * asks for a WebView for [IDLE_TRIM_DELAY_MS] the pooled one is destroyed to give the RAM back.
+     */
+    private fun scheduleIdleTrim() {
+        mainHandler.removeCallbacks(trimIdleRunnable)
+        mainHandler.postDelayed(trimIdleRunnable, IDLE_TRIM_DELAY_MS)
+    }
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val trimIdleRunnable = Runnable {
+        generateSequence { idleWebViews.poll() }.forEach(WebView::destroy)
+    }
+
     private companion object {
+        const val IDLE_TRIM_DELAY_MS = 60_000L
+
         // How many idle WebViews acquire()/release() keep warm for reuse. 1 covers the common
         // case (sequential recovery retries / episode switches); extra concurrent callers get
         // their own instance and destroy it on release rather than growing the pool.
