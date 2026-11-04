@@ -222,6 +222,11 @@ if (file("source/anidub").isDirectory && file("source/availability").isDirectory
     include(":source:anidub:data")
 }
 
+if (file("source/sameband").isDirectory && file("source/availability").isDirectory) {
+    include(":source:sameband:domain")
+    include(":source:sameband:data")
+}
+
 if (file("source/studiomir").isDirectory && file("source/availability").isDirectory) {
     include(":source:studiomir:domain")
     include(":source:studiomir:data")

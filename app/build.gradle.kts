@@ -96,6 +96,8 @@ dependencies {
     findProject(":source:ailiberty:data")?.let { implementation(it) }
     // Необязательный источник «AniDub» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:anidub:data")?.let { implementation(it) }
+    // Необязательный источник «Sameband» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:sameband:data")?.let { implementation(it) }
     // Необязательный источник «Studio MIR» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:studiomir:data")?.let { implementation(it) }
     // Общий разбор плеера Ashdi для AnimeON и Mikai: нет каталога source/ashdi, нет и зависимости.
