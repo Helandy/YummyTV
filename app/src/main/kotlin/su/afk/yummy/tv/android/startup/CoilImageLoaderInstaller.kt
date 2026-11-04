@@ -66,6 +66,7 @@ class CoilImageLoaderInstaller @Inject constructor(
             // приставках, а при DPAD-скролле её всё равно не видно.
             val isTvInterface = interfaceModePreferences.selectedMode == AppInterfaceMode.TV
             ImageLoader.Builder(it)
+                .logger(CoilErrorLogger())
                 .crossfade(!isTvInterface)
                 .memoryCache {
                     MemoryCache.Builder()
