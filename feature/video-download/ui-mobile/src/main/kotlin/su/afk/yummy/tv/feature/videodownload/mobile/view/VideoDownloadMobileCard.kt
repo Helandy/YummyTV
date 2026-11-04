@@ -34,13 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
+import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
-import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -80,7 +79,7 @@ internal fun VideoDownloadMobileCard(
     val diskSizeText = item.diskSizeText()
     val statusColor = when {
         item.status == VideoDownloadStatus.Failed ||
-                item.exportStatus == VideoExportStatus.Failed -> MaterialTheme.colorScheme.error
+            item.exportStatus == VideoExportStatus.Failed -> MaterialTheme.colorScheme.error
 
         else -> DownloadActiveColor
     }
@@ -189,6 +188,15 @@ internal fun VideoDownloadMobileCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    if (!diskSizeText.isNullOrBlank()) {
+                        Text(
+                            text = diskSizeText,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                     if (!statusText.isNullOrBlank()) {
                         Text(
                             text = statusText,
@@ -211,15 +219,6 @@ internal fun VideoDownloadMobileCard(
                             },
                             style = MaterialTheme.typography.labelSmall,
                             color = DownloadActiveColor,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    if (!diskSizeText.isNullOrBlank()) {
-                        Text(
-                            text = diskSizeText,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )

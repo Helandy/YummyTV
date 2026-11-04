@@ -10,6 +10,8 @@ data class PlayerEpisodeItem(
     val number: String,
     val screenshotUrl: String,
     val progress: PlayerEpisodeProgress = PlayerEpisodeProgress.None,
+    /** Длительность серии «24:00», если она известна из списка серий; показывается, пока серия не начата. */
+    val durationLabel: String? = null,
     /** Филлер/рекап из MyAnimeList; `null` — пометки нет или выключена. */
     val flags: EpisodeFlags? = null,
 )

@@ -38,7 +38,7 @@ internal fun MobilePlayerEpisodeBadges(
     modifier: Modifier = Modifier,
 ) {
     val timing = when (val progress = item.progress) {
-        PlayerEpisodeProgress.None -> null
+        PlayerEpisodeProgress.None -> item.durationLabel
         is PlayerEpisodeProgress.InProgress -> progress.label
         is PlayerEpisodeProgress.Watched -> progress.label
     }

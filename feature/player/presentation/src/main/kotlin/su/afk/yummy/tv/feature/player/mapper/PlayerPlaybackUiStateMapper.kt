@@ -2,6 +2,8 @@ package su.afk.yummy.tv.feature.player.mapper
 
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
@@ -23,16 +25,15 @@ import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.episodeProgress
-import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingViews
 import su.afk.yummy.tv.feature.player.utils.isBalancerAvailableForEpisode
-import su.afk.yummy.tv.feature.player.utils.mergedWatchProgress
 import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isExtraSourceBalancer
 import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
+import su.afk.yummy.tv.feature.player.utils.mergedWatchProgress
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.streamQualities
@@ -101,6 +102,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
                     number = episode.number,
                     screenshotUrl = episode.screenshotUrl,
                     progress = mergedProgress.episodeProgress(episode.number),
+                    durationLabel = episode.durationSeconds?.takeIf { it > 0 }?.times(1_000L)?.millisToClockTime(),
                     flags = episodeFlags[episode.number.episodeGroupKey()]?.takeIf { it.filler || it.recap },
                 )
             }.toImmutableList()
