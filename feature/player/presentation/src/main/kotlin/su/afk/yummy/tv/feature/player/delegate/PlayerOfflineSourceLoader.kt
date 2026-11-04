@@ -6,6 +6,7 @@ import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.GetDownloadedEpisodesUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
+import su.afk.yummy.tv.feature.player.mapper.toPlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
 import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
@@ -68,6 +69,7 @@ internal class PlayerOfflineSourceLoader @Inject constructor(
                         number = download.episode,
                         iframeUrl = download.iframeUrl,
                         screenshotUrl = download.screenshotUrl,
+                        skips = download.skips.toPlayerSkips(),
                         downloadId = download.id,
                     )
                 },

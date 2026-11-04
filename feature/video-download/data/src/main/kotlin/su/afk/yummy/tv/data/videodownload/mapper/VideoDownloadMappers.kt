@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.data.videodownload.mapper
 
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadEntry
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadCacheKeyScheme
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
@@ -41,6 +43,10 @@ internal fun VideoDownloadEntry.toDomain(): VideoDownloadItem =
         exportErrorMessage = exportErrorMessage,
         createdAt = createdAt,
         updatedAt = updatedAt,
+        skips = AnimeVideoSkips(
+            opening = skipSegmentOrNull(openingStartMs, openingEndMs),
+            ending = skipSegmentOrNull(endingStartMs, endingEndMs),
+        ),
     )
 
 internal fun VideoDownloadRequest.toEntry(
@@ -75,6 +81,10 @@ internal fun VideoDownloadRequest.toEntry(
         exportErrorMessage = null,
         createdAt = now,
         updatedAt = now,
+        openingStartMs = skips.opening?.startMs,
+        openingEndMs = skips.opening?.endMs,
+        endingStartMs = skips.ending?.startMs,
+        endingEndMs = skips.ending?.endMs,
     )
 
 internal fun Map<String, String>.toVideoDownloadHeadersJson(): String =
@@ -84,6 +94,9 @@ internal fun VideoDownloadStatus.storageName(): String = name
 
 internal fun String.toVideoDownloadStatus(): VideoDownloadStatus =
     runCatching { VideoDownloadStatus.valueOf(this) }.getOrDefault(VideoDownloadStatus.Failed)
+
+private fun skipSegmentOrNull(startMs: Long?, endMs: Long?): AnimeVideoSkipSegment? =
+    if (startMs != null && endMs != null) AnimeVideoSkipSegment(startMs = startMs, endMs = endMs) else null
 
 private fun String.toExportStatus(): VideoExportStatus =
     runCatching { VideoExportStatus.valueOf(this) }.getOrDefault(VideoExportStatus.Idle)

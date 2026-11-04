@@ -183,3 +183,10 @@ HLS-загрузки нельзя привязать к записи, удали
   проверяются до перекодирования: иначе пользователь ждал бы минуты ради `SecurityException`.
 - При ошибке созданный документ удаляется (`deleteDocument`).
 - Состояния — `VideoExportStatus`, `VideoExportSource`, `VideoExportDestination`.
+
+## Автопропуск у скачанных серий
+
+В момент постановки в очередь в запись загрузки (`video_downloads`) сохраняются тайминги опенинга и
+эндинга (`openingStartMs/EndMs`, `endingStartMs/EndMs`, Room 70). `PlayerOfflineSourceLoader` кладёт их в
+`PlayerSourceEpisode.skips`, дальше работает обычная кнопка и автопропуск. Серии, скачанные до версии
+схемы 70, остаются без таймингов; локальные файлы (ACTION_VIEW) их тоже не получают.

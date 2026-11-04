@@ -465,3 +465,16 @@ internal val MIGRATION_68_69 = object : Migration(68, 69) {
         db.execSQL("ALTER TABLE anime_viewing_order ADD COLUMN typeKind TEXT")
     }
 }
+
+/**
+ * Тайминги опенинга/эндинга в записи загрузки: автопропуск работает у скачанных серий без сети.
+ * У уже скачанных серий остаются null.
+ */
+internal val MIGRATION_69_70 = object : Migration(69, 70) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE video_downloads ADD COLUMN openingStartMs INTEGER")
+        db.execSQL("ALTER TABLE video_downloads ADD COLUMN openingEndMs INTEGER")
+        db.execSQL("ALTER TABLE video_downloads ADD COLUMN endingStartMs INTEGER")
+        db.execSQL("ALTER TABLE video_downloads ADD COLUMN endingEndMs INTEGER")
+    }
+}

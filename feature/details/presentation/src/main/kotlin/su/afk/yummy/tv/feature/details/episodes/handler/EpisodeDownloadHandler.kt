@@ -204,6 +204,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
             screenshotUrl = screenshotUrl,
             quality = quality,
             headers = quality.headers.ifEmpty { candidate.headers },
+            skips = video.skips,
         )
         replacementDownloadId?.let { downloadId ->
             if (mutationFailed { cancelOrDeleteVideoDownload(downloadId) }) {

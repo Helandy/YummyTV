@@ -51,4 +51,9 @@ data class VideoDownloadEntry(
     val exportErrorMessage: String?,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Тайминги пропуска (мс) на момент скачивания; null — сегмента нет. */
+    val openingStartMs: Long? = null,
+    val openingEndMs: Long? = null,
+    val endingStartMs: Long? = null,
+    val endingEndMs: Long? = null,
 )

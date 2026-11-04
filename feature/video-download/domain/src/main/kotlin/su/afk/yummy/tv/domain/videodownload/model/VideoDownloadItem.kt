@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.domain.videodownload.model
 
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
+
 data class VideoDownloadItem(
     val id: Long,
     val animeId: Int,
@@ -29,4 +31,5 @@ data class VideoDownloadItem(
     val exportErrorMessage: String?,
     val createdAt: Long,
     val updatedAt: Long,
+    val skips: AnimeVideoSkips = AnimeVideoSkips(),
 )
