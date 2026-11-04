@@ -510,6 +510,7 @@ internal fun TvExoPlayerView(
 
         TvPlayerControlsOverlay(
             visible = controllerVisible,
+            hidden = panels.isOpen(TvPlayerPanel.Episodes) && playback.episodes.isNotEmpty(),
             focus = focus,
             progress = progress,
             wantsPlay = playbackShouldPlay,
@@ -600,11 +601,6 @@ internal fun TvExoPlayerView(
                 panels.close(PanelReturnFocusTarget.Balancer)
                 onInteraction()
             },
-            onEpisodeSelected = { idx ->
-                panels.close(PanelReturnFocusTarget.Episodes)
-                onPlayerEvent(PlayerState.Event.EpisodeSelected(idx))
-                onInteraction()
-            },
             onSpeedSelected = { idx ->
                 onPlayerEvent(PlayerState.Event.SpeedSelected(speeds[idx]))
                 onInteraction()
@@ -677,6 +673,21 @@ internal fun TvExoPlayerView(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 48.dp),
+        )
+        TvPlayerEpisodesStrip(
+            visible = panels.isOpen(TvPlayerPanel.Episodes),
+            episodes = playback.episodes,
+            currentEpisodeIndex = playback.currentEpisodeIndex,
+            selectedFocusRequester = focus.selectedEpisodes,
+            animeId = state.animeId,
+            posterUrl = state.posterUrl,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            onEpisodeSelected = { index ->
+                panels.close(PanelReturnFocusTarget.Episodes)
+                onPlayerEvent(PlayerState.Event.EpisodeSelected(index))
+                onInteraction()
+            },
+            onExitUp = { exitPanelDown(PanelReturnFocusTarget.Episodes) },
         )
     }
 }

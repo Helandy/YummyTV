@@ -1,10 +1,6 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,10 +17,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,13 +35,10 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
-import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
-import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
-import su.afk.yummy.tv.feature.player.model.PlayerEpisodeProgress
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,16 +56,11 @@ internal fun MobilePlayerSettingsSheet(
     balancerExternal: List<Boolean>,
     selectedBalancerIndex: Int,
     onBalancerSelected: (Int) -> Unit,
-    episodes: List<PlayerEpisodeItem>,
-    selectedEpisodeIndex: Int,
-    onEpisodeSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
     initialTrackTab: MobilePlayerTrackSettingsTab = MobilePlayerTrackSettingsTab.Dubbing,
     onTrackTabChanged: (MobilePlayerTrackSettingsTab) -> Unit = {},
 ) {
-    val trackTabs = MobilePlayerTrackSettingsTab.entries.filter {
-        it != MobilePlayerTrackSettingsTab.Episodes || episodes.isNotEmpty()
-    }
+    val trackTabs = MobilePlayerTrackSettingsTab.entries
     val startTab = initialTrackTab
     val trackPagerState = rememberPagerState(
         initialPage = trackTabs.indexOf(startTab).coerceAtLeast(0),
@@ -110,7 +95,6 @@ internal fun MobilePlayerSettingsSheet(
             )
             val dubbingLabel = stringResource(R.string.player_dubbing_title)
             val playerLabel = stringResource(R.string.player_name_prefix)
-            val episodesLabel = stringResource(R.string.player_episode)
             MobilePlayerTrackSettingsTabs(
                 tabs = trackTabs,
                 selectedTab = trackTabs[trackPagerState.currentPage],
@@ -118,7 +102,6 @@ internal fun MobilePlayerSettingsSheet(
                     when (tab) {
                         MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
                         MobilePlayerTrackSettingsTab.Player -> playerLabel
-                        MobilePlayerTrackSettingsTab.Episodes -> episodesLabel
                     }
                 },
                 onTabSelected = { tab ->
@@ -134,17 +117,10 @@ internal fun MobilePlayerSettingsSheet(
                     .weight(1f),
             ) { page ->
                 val listState = rememberLazyListState()
-                if (trackTabs[page] == MobilePlayerTrackSettingsTab.Episodes) {
-                    // Список серий открываем на текущей, а не с начала: в длинных тайтлах её иначе не видно.
-                    LaunchedEffect(selectedEpisodeIndex) {
-                        listState.scrollToItem(selectedEpisodeIndex.coerceAtLeast(0))
-                    }
-                } else {
-                    ScrollToTopOnChange(
-                        order = if (trackTabs[page] == MobilePlayerTrackSettingsTab.Dubbing) dubbingNames else balancerNames,
-                        state = listState,
-                    )
-                }
+                ScrollToTopOnChange(
+                    order = if (trackTabs[page] == MobilePlayerTrackSettingsTab.Dubbing) dubbingNames else balancerNames,
+                    state = listState,
+                )
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
@@ -216,51 +192,6 @@ internal fun MobilePlayerSettingsSheet(
                                         )
                                     },
                                     onClick = { onBalancerSelected(index) },
-                                )
-                            }
-                        }
-
-                        MobilePlayerTrackSettingsTab.Episodes -> {
-                            itemsIndexed(episodes, key = { _, item -> item.index }) { _, item ->
-                                MobilePlayerSelectionRow(
-                                    label = stringResource(R.string.player_episode_number, item.number),
-                                    selected = item.index == selectedEpisodeIndex,
-                                    metaContent = { contentColor ->
-                                        val label = when (val progress = item.progress) {
-                                            PlayerEpisodeProgress.None -> null
-                                            is PlayerEpisodeProgress.InProgress -> progress.label
-                                            is PlayerEpisodeProgress.Watched -> progress.label
-                                        }
-                                        if (label != null) {
-                                            Text(
-                                                text = label,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = YummySemanticColors.InProgress,
-                                                maxLines = 1,
-                                            )
-                                        }
-                                    },
-                                    trailingContent = if (item.progress is PlayerEpisodeProgress.Watched) {
-                                        {
-                                            // Как значок «просмотрено» в списке эпизодов: белый глаз на тёмном кружке.
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(24.dp)
-                                                    .background(Color.Black.copy(alpha = 0.72f), CircleShape),
-                                                contentAlignment = Alignment.Center,
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Filled.VisibilityOff,
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(18.dp),
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        null
-                                    },
-                                    onClick = { onEpisodeSelected(item.index) },
                                 )
                             }
                         }

@@ -6,6 +6,9 @@
     <string name="player_name_prefix">Плеєр </string>
     <string name="player_episode">Серія</string>
     <string name="player_episode_number">Серія %1$s</string>
+    <string name="player_episode_flag_filler">Філер</string>
+    <string name="player_episode_flag_recap">Рекап</string>
+    <string name="player_episodes_list_title">Серії</string>
     <string name="player_info_title_episode">%1$s • Серія %2$s</string>
         <string name="player_notification_details">%1$s • %2$s</string>
     <string name="player_loading_stream">Отримуємо потік…</string>

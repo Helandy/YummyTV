@@ -23,6 +23,7 @@ import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.episodeProgress
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
@@ -100,6 +101,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
                     number = episode.number,
                     screenshotUrl = episode.screenshotUrl,
                     progress = mergedProgress.episodeProgress(episode.number),
+                    flags = episodeFlags[episode.number.episodeGroupKey()]?.takeIf { it.filler || it.recap },
                 )
             }.toImmutableList()
         } else {

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player
 
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
@@ -83,6 +84,8 @@ class PlayerState {
         val isOfflinePlayback: Boolean = false,
         /** Локальный прогресс серий тайтла: подписи просмотра в списке серий. */
         val watchProgress: List<AnimeWatchProgress> = emptyList(),
+        /** Пометки серий (филлер/рекап) из MyAnimeList по `episodeGroupKey()`; пусто, если пометки выключены в настройках. */
+        val episodeFlags: Map<String, EpisodeFlags> = emptyMap(),
         val isLocalFile: Boolean = false,
         val offlineCacheKey: String? = null,
         /** `VideoDownloadCacheKeyScheme.storageValue` скачанной серии; 0 — старая схема ключей. */

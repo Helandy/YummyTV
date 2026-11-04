@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -21,10 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.withoutDubbingTitlePrefix
@@ -64,8 +70,21 @@ internal fun TvPlayerEpisodeRow(
     onTogglePlayerSettings: () -> Unit = {},
     onToggleAlloha: () -> Unit = {},
 ) {
+    // Серии отдельной кнопки не имеют: «вниз» с ряда кнопок раскрывает ленту серий. Фокус-группа с
+    // restorer'ом нужна, чтобы после закрытия ленты фокус вернулся на кнопку, с которой её открыли.
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (episodesFocusRequester != null) Modifier.focusRequester(episodesFocusRequester) else Modifier)
+            .tvFocusRestorer()
+            .onPreviewKeyEvent { event ->
+                if (showEpisodesButton && event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
+                    onToggleEpisodes()
+                    true
+                } else {
+                    false
+                }
+            },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (hasPrevEpisode) {
@@ -86,25 +105,6 @@ internal fun TvPlayerEpisodeRow(
             }
         }
         Spacer(Modifier.weight(1f))
-        if (showEpisodesButton) {
-            TvControlButton(
-                onClick = onToggleEpisodes,
-                onFocused = onInteraction,
-                focusRequester = episodesFocusRequester,
-                modifier = Modifier
-                    .focusProperties { up = upFocusRequester }
-                    .width(48.dp),
-                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
-            ) { color ->
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.PlaylistPlay,
-                    contentDescription = stringResource(R.string.player_episode),
-                    tint = color,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-        }
         if (allDubbingNames.size > 1) {
             val label = allDubbingNames
                 .getOrElse(currentDubbingIndex) { dubbing }

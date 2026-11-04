@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateDpAsState
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -109,6 +111,12 @@ import su.afk.yummy.tv.feature.player.presentation.R
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
+/** Высота ленты серий в ландшафте: карточка 16:9 шириной 150dp, подпись и отступ. */
+private val EPISODES_STRIP_HEIGHT = 128.dp
+
+/** Высота ручки раскрытия ленты под кнопками управления. */
+private val EPISODES_HANDLE_HEIGHT = 52.dp
+
 @OptIn(UnstableApi::class)
 @Composable
 internal fun MobileNativePlayer(
@@ -120,12 +128,25 @@ internal fun MobileNativePlayer(
     onEvent: (PlayerState.Event) -> Unit,
     nextEpisodeUnavailable: PlayerNextEpisodeUnavailable? = null,
     onNextEpisodeUnavailableShown: () -> Unit = {},
+    episodesExpanded: Boolean,
+    onEpisodesExpandedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
     val tutorialBlocksPlayback = state.mobileTutorialBlocksPlayback
+    // Ручка «Серии» есть в обоих режимах. В ландшафте раскрытие показывает ленту поверх видео,
+    // в портрете — список под плеером (его собирает PlayerMobileScreen по episodesExpanded).
+    val episodesHandleVisible = ui.episodes.isNotEmpty()
+    val isLandscape = LocalConfiguration.current.orientation != Configuration.ORIENTATION_PORTRAIT
+    val episodesStripVisible = episodesHandleVisible && episodesExpanded && isLandscape
+    val overlayExtraBottom = when {
+        !episodesHandleVisible -> 0.dp
+        episodesStripVisible -> EPISODES_HANDLE_HEIGHT + EPISODES_STRIP_HEIGHT
+        else -> EPISODES_HANDLE_HEIGHT
+    }
     val tutorialVisible =
         state.mobileGestureTutorialReady &&
             state.showMobileGestureTutorial &&
@@ -199,6 +220,7 @@ internal fun MobileNativePlayer(
             wantsPlay &&
                 !trackSheetOpen &&
                 !sidePanelOpen &&
+                !episodesExpanded &&
                 !progress.isSeeking &&
                 !recoveryHintVisible &&
                 !tutorialBlocksPlayback &&
@@ -415,6 +437,15 @@ internal fun MobileNativePlayer(
         onFinished = episodeEnd::playNextEpisode,
     )
 
+    LaunchedEffect(episodesHandleVisible, overlay.visible, isInPictureInPictureMode) {
+        if (!episodesHandleVisible || !overlay.visible || isInPictureInPictureMode) onEpisodesExpandedChange(false)
+    }
+
+    BackHandler(enabled = episodesExpanded && !isInPictureInPictureMode) {
+        onEpisodesExpandedChange(false)
+        overlay.show()
+    }
+
     BackHandler(enabled = sidePanelOpen && !isInPictureInPictureMode) {
         sidePanelOpen = false
         overlay.show()
@@ -487,7 +518,7 @@ internal fun MobileNativePlayer(
     LaunchedEffect(Unit) { keyboardFocusRequester.requestFocus() }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .testTag("player_view")
             .background(Color.Black)
@@ -642,10 +673,30 @@ internal fun MobileNativePlayer(
                 overlay.visible = true
                 overlay.cancelHide()
             },
+            episodesAvailable = episodesHandleVisible,
+            episodesExpanded = episodesExpanded,
+            episodesStripVisible = episodesStripVisible,
+            onEpisodesExpandedChange = { expanded ->
+                onEpisodesExpandedChange(expanded)
+                if (expanded) overlay.cancelHide() else overlay.show()
+            },
+            episodesStrip = {
+                MobilePlayerEpisodesStrip(
+                    episodes = ui.episodes,
+                    currentEpisodeIndex = ui.currentEpisodeIndex,
+                    animeId = state.animeId,
+                    posterUrl = state.posterUrl,
+                    onEpisodeSelected = { index ->
+                        onEpisodesExpandedChange(false)
+                        onEvent(PlayerState.Event.EpisodeSelected(index))
+                        overlay.show()
+                    },
+                )
+            },
         )
 
         val skipButtonBottomPadding by animateDpAsState(
-            targetValue = if (overlay.visible && !isInPictureInPictureMode) 132.dp else 36.dp,
+            targetValue = if (overlay.visible && !isInPictureInPictureMode) 132.dp + overlayExtraBottom else 36.dp,
             label = "skipButtonBottomPadding",
         )
 
@@ -677,7 +728,7 @@ internal fun MobileNativePlayer(
             icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
+                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp + overlayExtraBottom else 36.dp),
         )
 
         MobilePlayerSkipToast(
@@ -689,7 +740,7 @@ internal fun MobileNativePlayer(
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
+                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp + overlayExtraBottom else 36.dp),
         )
 
         MobilePlayerZoomIndicator(
@@ -903,12 +954,6 @@ internal fun MobileNativePlayer(
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
                     onEvent(PlayerState.Event.BalancerSelected(index, player.currentPosition))
-                },
-                episodes = ui.episodes,
-                selectedEpisodeIndex = ui.currentEpisodeIndex,
-                onEpisodeSelected = { index ->
-                    trackSheetOpen = false
-                    onEvent(PlayerState.Event.EpisodeSelected(index))
                 },
                 onDismiss = { trackSheetOpen = false },
                 initialTrackTab = settingsTrackTab,

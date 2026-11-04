@@ -6,6 +6,9 @@
     <string name="player_name_prefix">Player </string>
     <string name="player_episode">Episode</string>
     <string name="player_episode_number">Episode %1$s</string>
+    <string name="player_episode_flag_filler">Filler</string>
+    <string name="player_episode_flag_recap">Recap</string>
+    <string name="player_episodes_list_title">Episodes</string>
     <string name="player_info_title_episode">%1$s • Episode %2$s</string>
         <string name="player_notification_details">%1$s • %2$s</string>
     <string name="player_loading_stream">Loading stream…</string>

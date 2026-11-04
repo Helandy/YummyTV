@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.mobile
 
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -8,10 +9,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -46,6 +56,7 @@ import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.mobile.view.MobileNativePlayer
+import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerEpisodesList
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerBalancerSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerDubbingSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerMessage
@@ -105,7 +116,23 @@ fun PlayerMobileScreen(
     // Сервис плеера поднимается параллельно с извлечением ссылки и переживает смену серии.
     PlayerServiceWarmupEffect()
 
-    HideMobilePlayerSystemBars()
+    val playerNamePrefix = stringResource(R.string.player_name_prefix)
+    val uiState = rememberPlayerPlaybackUiState(state, playerNamePrefix)
+    val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
+    var episodesExpanded by rememberSaveable { mutableStateOf(false) }
+    val episodesAvailable = state.streamUrl != null &&
+        state.playerError == null &&
+        state.kodikBlockedError == null &&
+        uiState.episodes.isNotEmpty() &&
+        !MobilePlayerPipController.isInPictureInPictureMode
+    // Как на YouTube: в портрете видео на весь экран, ручка «Серии» раскрывает список (видео 2/3, список 1/3).
+    val episodesBelowPlayer = isPortrait && episodesAvailable && episodesExpanded
+    val playerHeightFraction by animateFloatAsState(
+        targetValue = if (episodesBelowPlayer) PLAYER_HEIGHT_WITH_EPISODES else 1f,
+        label = "playerHeightFraction",
+    )
+
+    HideMobilePlayerSystemBars(hide = !episodesBelowPlayer)
     ApplyPlayerOrientation(state.playerOrientationMode)
 
     BackHandler {
@@ -122,8 +149,6 @@ fun PlayerMobileScreen(
         scale = state.mobileVideoScale,
         offset = Offset(state.mobileVideoOffsetX, state.mobileVideoOffsetY),
     )
-    val playerNamePrefix = stringResource(R.string.player_name_prefix)
-    val uiState = rememberPlayerPlaybackUiState(state, playerNamePrefix)
     val streamUrl = state.streamUrl
     val kodikBlockedError = state.kodikBlockedError
     Box(modifier = Modifier.fillMaxSize().testTag("player_screen")) {
@@ -182,24 +207,59 @@ fun PlayerMobileScreen(
                 onBack = { onEvent(PlayerState.Event.Back) },
             )
 
-            streamUrl != null -> MobileNativePlayer(
-                state = state,
-                ui = uiState,
-                streamUrl = streamUrl,
-                videoTransform = videoTransform,
-                onVideoTransformChanged = { transform ->
-                    onEvent(
-                        PlayerState.Event.MobileVideoTransformChanged(
-                            scale = transform.scale,
-                            offsetX = transform.offset.x,
-                            offsetY = transform.offset.y,
+            streamUrl != null -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(if (episodesBelowPlayer) MaterialTheme.colorScheme.background else Color.Black)
+                    .then(if (episodesBelowPlayer) Modifier.statusBarsPadding() else Modifier),
+            ) {
+                MobileNativePlayer(
+                    state = state,
+                    ui = uiState,
+                    streamUrl = streamUrl,
+                    videoTransform = videoTransform,
+                    onVideoTransformChanged = { transform ->
+                        onEvent(
+                            PlayerState.Event.MobileVideoTransformChanged(
+                                scale = transform.scale,
+                                offsetX = transform.offset.x,
+                                offsetY = transform.offset.y,
+                            ),
+                        )
+                    },
+                    onEvent = onEvent,
+                    nextEpisodeUnavailable = nextEpisodeUnavailable,
+                    onNextEpisodeUnavailableShown = { nextEpisodeUnavailable = null },
+                    episodesExpanded = episodesExpanded,
+                    onEpisodesExpandedChange = { episodesExpanded = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(playerHeightFraction)
+                        .then(
+                            if (episodesBelowPlayer) {
+                                Modifier.consumeWindowInsets(WindowInsets.navigationBars)
+                            } else {
+                                Modifier
+                            },
                         ),
+                )
+                if (episodesBelowPlayer) {
+                    MobilePlayerEpisodesList(
+                        episodes = uiState.episodes,
+                        currentEpisodeIndex = uiState.currentEpisodeIndex,
+                        animeId = state.animeId,
+                        posterUrl = state.posterUrl,
+                        onEpisodeSelected = {
+                            episodesExpanded = false
+                            onEvent(PlayerState.Event.EpisodeSelected(it))
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .fillMaxHeight(1f - PLAYER_HEIGHT_WITH_EPISODES),
                     )
-                },
-                onEvent = onEvent,
-                nextEpisodeUnavailable = nextEpisodeUnavailable,
-                onNextEpisodeUnavailableShown = { nextEpisodeUnavailable = null },
-            )
+                }
+            }
 
             else -> Box(
                 modifier = Modifier
@@ -269,6 +329,9 @@ fun PlayerMobileScreen(
 
 private const val SOURCE_TOAST_DURATION_MS = 2_000L
 
+/** Доля высоты видео, когда под ним раскрыт список серий (список — остальная 1/3). */
+private const val PLAYER_HEIGHT_WITH_EPISODES = 2f / 3f
+
 @Composable
 private fun ApplyPlayerOrientation(mode: PlayerOrientationMode) {
     val context = LocalContext.current
@@ -287,12 +350,13 @@ private fun ApplyPlayerOrientation(mode: PlayerOrientationMode) {
 }
 
 @Composable
-private fun HideMobilePlayerSystemBars() {
+private fun HideMobilePlayerSystemBars(hide: Boolean) {
     val context = LocalContext.current
     val view = LocalView.current
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
 
-    DisposableEffect(activity, view) {
+    DisposableEffect(activity, view, hide) {
+        if (!hide) return@DisposableEffect onDispose {}
         val window = activity?.window
             ?: return@DisposableEffect onDispose {}
         val controller = WindowCompat.getInsetsController(window, view)
