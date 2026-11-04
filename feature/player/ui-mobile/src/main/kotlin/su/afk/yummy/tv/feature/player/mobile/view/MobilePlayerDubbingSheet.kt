@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -54,7 +55,7 @@ internal fun MobilePlayerDubbingSheet(
             playback.dubbingNames.forEachIndexed { index, name ->
                 val enabled = playback.dubbingAvailability.getOrElse(index) { true }
                 MobilePlayerDubbingRow(
-                    label = name,
+                    label = name.dubbingDisplayName(),
                     selected = index == playback.currentDubbingIndex,
                     enabled = enabled,
                     views = playback.dubbingViews.getOrElse(index) { 0 },

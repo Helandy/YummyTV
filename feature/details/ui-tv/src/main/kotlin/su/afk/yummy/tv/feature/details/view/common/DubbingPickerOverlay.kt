@@ -65,6 +65,7 @@ import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.details.details.model.DubbingOption
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
@@ -229,7 +230,7 @@ private fun DubbingOptionItem(
             ) {
                 LogoBadge(logoRes = dubbingLogoRes(option.item.name), size = 26.dp, fallbackIcon = Icons.Filled.Mic)
                 Text(
-                    text = option.item.name,
+                    text = option.item.name.dubbingDisplayName(),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
                     // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.

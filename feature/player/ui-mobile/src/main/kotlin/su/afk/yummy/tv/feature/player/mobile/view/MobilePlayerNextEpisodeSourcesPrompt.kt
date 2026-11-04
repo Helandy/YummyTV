@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSourceOption
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -72,7 +73,7 @@ internal fun MobilePlayerNextEpisodeSourcesPrompt(
         ) {
             options.forEach { option ->
                 MobilePlayerDubbingRow(
-                    label = option.dubbing,
+                    label = option.dubbing.dubbingDisplayName(),
                     selected = false,
                     enabled = true,
                     views = option.views,

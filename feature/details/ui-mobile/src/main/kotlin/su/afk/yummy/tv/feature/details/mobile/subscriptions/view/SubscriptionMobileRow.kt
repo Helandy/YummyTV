@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -61,7 +62,7 @@ internal fun SubscriptionMobileRow(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
-                    text = option.dubbing,
+                    text = option.dubbing.dubbingDisplayName(),
                     style = MaterialTheme.typography.bodyLarge,
                     color = contentColor,
                     maxLines = 1,

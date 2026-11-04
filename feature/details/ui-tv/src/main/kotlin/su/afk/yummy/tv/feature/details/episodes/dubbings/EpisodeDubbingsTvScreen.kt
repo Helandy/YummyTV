@@ -56,6 +56,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatCompactCount
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
@@ -227,7 +228,7 @@ private fun DubbingRow(
                 verticalArrangement = Arrangement.spacedBy(3.dp),
             ) {
                 Text(
-                    text = dubbing.name,
+                    text = dubbing.name.dubbingDisplayName(),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.

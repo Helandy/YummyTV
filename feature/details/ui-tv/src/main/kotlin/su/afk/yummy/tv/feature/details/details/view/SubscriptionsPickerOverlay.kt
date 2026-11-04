@@ -51,6 +51,7 @@ import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -208,7 +209,7 @@ private fun SubscriptionOptionItem(
     ) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                text = stringResource(R.string.details_subscription_dubbing, option.dubbing),
+                text = stringResource(R.string.details_subscription_dubbing, option.dubbing.dubbingDisplayName()),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = textColor,

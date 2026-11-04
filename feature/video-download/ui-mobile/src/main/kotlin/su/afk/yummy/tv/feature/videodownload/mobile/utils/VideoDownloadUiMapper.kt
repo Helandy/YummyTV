@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.videodownload.mobile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.common.player.playerDisplayName
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
@@ -75,7 +76,7 @@ internal fun VideoDownloadItem.diskSizeText(): String? {
 }
 
 internal fun VideoDownloadItem.dubbingLabel(): String =
-    dubbing.ifBlank { playerName.balancerLabel() }
+    dubbing.dubbingDisplayName().ifBlank { playerName.balancerLabel() }
 
 internal fun String.balancerLabel(): String = playerDisplayName()
 

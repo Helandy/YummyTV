@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
@@ -52,7 +53,7 @@ internal fun EpisodeDownloadDubbingSheet(
                 selection.options.map { option ->
                     MobilePickerItem(
                         key = option.title,
-                        title = option.title,
+                        title = option.title.dubbingDisplayName(),
                         logoName = option.title,
                         logoRes = dubbingLogoRes(option.title),
                         logoFallbackIcon = Icons.Filled.Mic,

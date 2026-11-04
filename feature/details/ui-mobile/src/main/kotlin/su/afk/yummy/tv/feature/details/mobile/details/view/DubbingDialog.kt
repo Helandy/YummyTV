@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.details.details.model.DubbingOption
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
@@ -26,7 +27,7 @@ internal fun DubbingDialog(
             items = picker.options.map { option ->
                 MobilePickerItem(
                     key = option.item.name,
-                    title = option.item.name,
+                    title = option.item.name.dubbingDisplayName(),
                     logoName = option.item.name,
                     logoRes = dubbingLogoRes(option.item.name),
                     logoFallbackIcon = Icons.Filled.Mic,

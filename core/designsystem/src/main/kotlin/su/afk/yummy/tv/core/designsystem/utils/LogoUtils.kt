@@ -7,7 +7,7 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.ui.graphics.vector.ImageVector
 import su.afk.yummy.tv.core.designsystem.R
 
-private val LOGO_LABEL_PREFIXES = listOf("плеер", "player", "озвучка", "субтитры", "дубляж")
+internal val LOGO_LABEL_PREFIXES = listOf("плеер", "player", "озвучка", "субтитры", "дубляж")
 
 private val DUBBING_LOGOS: Map<String, Int> = mapOf(
     "anistar" to R.drawable.dub_anistar,

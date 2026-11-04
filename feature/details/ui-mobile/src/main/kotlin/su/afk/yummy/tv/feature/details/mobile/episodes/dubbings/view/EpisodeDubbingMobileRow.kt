@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
 import su.afk.yummy.tv.feature.details.mobile.view.MobileDubbingMeta
@@ -46,7 +47,7 @@ internal fun EpisodeDubbingMobileRow(
         ) {
             LogoBadge(logoRes = dubbingLogoRes(dubbing.name), size = 32.dp, fallbackIcon = Icons.Filled.Mic)
             Text(
-                text = dubbing.name,
+                text = dubbing.name.dubbingDisplayName(),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary,

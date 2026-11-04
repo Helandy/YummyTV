@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.overline
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -99,7 +100,7 @@ internal fun MobilePlayerTopBar(
                     }
                     if (dubbing.isNotBlank()) {
                         Text(
-                            text = dubbing,
+                            text = dubbing.dubbingDisplayName(),
                             color = Color.White.copy(alpha = 0.86f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

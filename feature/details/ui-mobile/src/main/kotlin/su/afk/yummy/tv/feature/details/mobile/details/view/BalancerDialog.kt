@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.core.designsystem.components.SourceStarButton
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
@@ -43,7 +44,7 @@ internal fun BalancerDialog(
                     logoName = option.playerName.playerLabel(),
                     logoRes = balancerLogoRes(option.playerName),
                     logoFallbackIcon = balancerFallbackIcon(option.playerName),
-                    subtitle = option.video.dubbing,
+                    subtitle = option.video.dubbing.dubbingDisplayName(),
                     views = option.video.views,
                     isExternal = option.video.iframeUrl.isExtraSourceUrl(),
                     episodeCount = option.episodeCount,

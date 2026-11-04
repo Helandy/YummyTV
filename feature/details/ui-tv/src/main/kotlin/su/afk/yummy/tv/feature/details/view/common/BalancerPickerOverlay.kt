@@ -68,6 +68,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -279,7 +280,7 @@ private fun BalancerOptionItem(
                     }
                     if (dubbing.isNotBlank()) {
                         Text(
-                            text = dubbing,
+                            text = dubbing.dubbingDisplayName(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = textColor.copy(alpha = 0.62f),
                             maxLines = 1,

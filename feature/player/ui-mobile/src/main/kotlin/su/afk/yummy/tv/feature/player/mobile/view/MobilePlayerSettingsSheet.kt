@@ -37,6 +37,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -134,7 +135,7 @@ internal fun MobilePlayerSettingsSheet(
                             itemsIndexed(dubbingNames, key = { index, name -> "$index-$name" }) { index, name ->
                                 val enabled = dubbingAvailability.getOrElse(index) { true }
                                 MobilePlayerSelectionRow(
-                                    label = name,
+                                    label = name.dubbingDisplayName(),
                                     selected = index == selectedDubbingIndex,
                                     enabled = enabled,
                                     accentLabel = true,

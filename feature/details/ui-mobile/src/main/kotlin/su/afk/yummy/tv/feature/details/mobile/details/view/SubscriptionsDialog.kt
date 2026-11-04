@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -49,7 +50,7 @@ internal fun SubscriptionsDialog(
                                 verticalArrangement = Arrangement.spacedBy(2.dp),
                             ) {
                                 Text(
-                                    text = option.dubbing,
+                                    text = option.dubbing.dubbingDisplayName(),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )

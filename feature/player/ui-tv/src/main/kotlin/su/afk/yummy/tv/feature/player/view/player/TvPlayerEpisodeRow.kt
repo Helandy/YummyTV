@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.withoutDubbingTitlePrefix
@@ -108,6 +109,7 @@ internal fun TvPlayerEpisodeRow(
         if (allDubbingNames.size > 1) {
             val label = allDubbingNames
                 .getOrElse(currentDubbingIndex) { dubbing }
+                .dubbingDisplayName()
                 .withoutDubbingTitlePrefix(stringResource(R.string.player_dubbing_title))
             TvControlButton(
                 onClick = onToggleDubbing,

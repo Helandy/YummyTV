@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.overline
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
@@ -61,7 +62,7 @@ internal fun TvPlayerInfoBar(
             }
             if (dubbing.isNotBlank()) {
                 Text(
-                    text = dubbing,
+                    text = dubbing.dubbingDisplayName(),
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White.copy(alpha = 0.85f),
                     modifier = Modifier

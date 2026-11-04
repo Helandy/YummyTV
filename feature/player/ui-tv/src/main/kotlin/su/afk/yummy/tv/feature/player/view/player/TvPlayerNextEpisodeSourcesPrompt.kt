@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.common.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSourceOption
@@ -69,7 +70,7 @@ internal fun TvPlayerNextEpisodeSourcesPrompt(
         LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
             itemsIndexed(options, key = { index, option -> "$index-${option.dubbing}" }) { index, option ->
                 PlayerSelectionItem(
-                    label = option.dubbing,
+                    label = option.dubbing.dubbingDisplayName(),
                     metaContent = { color ->
                         TvDubbingMetaRow(
                             views = option.views.formatCompactCount(),

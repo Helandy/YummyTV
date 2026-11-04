@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.common.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
@@ -73,7 +74,7 @@ fun playerNextEpisodeUnavailableTitle(info: PlayerNextEpisodeUnavailable): Strin
 
         info.hasOtherSource && episodeNumber != null -> stringResource(
             R.string.player_next_episode_missing_in_dubbing,
-            info.currentDubbing,
+            info.currentDubbing.dubbingDisplayName(),
             episodeNumber,
         )
 
