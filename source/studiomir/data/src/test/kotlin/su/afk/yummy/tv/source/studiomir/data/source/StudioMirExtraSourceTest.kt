@@ -54,7 +54,7 @@ class StudioMirExtraSourceTest : BaseUnitTest() {
 
         assertEquals(listOf("1", "2", "3"), videos.map { it.episode })
         assertEquals("source://studiomir/12294-frieren/2", videos[1].iframeUrl)
-        assertTrue(videos.all { it.player == "Studio MIR" && it.dubbing == "Studio MIR" && it.id < 0 })
+        assertTrue(videos.all { it.player == "Studio MIR" && it.dubbing == "Творческая студия МИР" && it.id < 0 })
         assertEquals(videos.size, videos.map { it.id }.toSet().size)
     }
 

@@ -3,10 +3,10 @@ package su.afk.yummy.tv.source.studiomir.data.source
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
-import su.afk.yummy.tv.source.studiomir.data.utils.toSourceUrl
-import su.afk.yummy.tv.source.studiomir.domain.model.StudioMirTarget
 import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
 import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
+import su.afk.yummy.tv.source.studiomir.data.utils.toSourceUrl
+import su.afk.yummy.tv.source.studiomir.domain.model.StudioMirTarget
 import javax.inject.Inject
 
 /**
@@ -37,7 +37,7 @@ internal class StudioMirExtraVideoRepository @Inject constructor(
                 // Отрицательный id: серверу Yani такие видео неизвестны, прогресс остаётся локальным.
                 id = -(url.hashCode() and Int.MAX_VALUE) - 1,
                 episode = episode.toString(),
-                dubbing = PLAYER_NAME,
+                dubbing = DUBBING_NAME,
                 player = PLAYER_NAME,
                 playerId = null,
                 iframeUrl = url,
@@ -49,5 +49,8 @@ internal class StudioMirExtraVideoRepository @Inject constructor(
     private companion object {
         const val SOURCE_ID = "studiomir"
         const val PLAYER_NAME = "Studio MIR"
+
+        /** Так озвучку называют другие балансеры (Kodik и др.): строки склеиваются, а «Studio MIR» остаётся меткой источника. */
+        const val DUBBING_NAME = "Творческая студия МИР"
     }
 }
