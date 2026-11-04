@@ -5,8 +5,8 @@ import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import javax.inject.Inject
 
 /**
- * Кадры серий для ряда «Скриншоты» деталки: кадры серии 1 из TMDB и кадры первых серий из Tenrai. Скриншоты Yani
- * третьим источником добавляет экран из деталей тайтла. Пустая модель, если у тайтла нет ни TMDB, ни Tenrai.
+ * Кадры серий для ряда «Скриншоты» деталки: кадры серии 1 из TMDB. Скриншоты Yani
+ * вторым источником добавляет экран из деталей тайтла. Пустая модель, если у тайтла нет TMDB.
  */
 class GetAnimeEpisodeFramesUseCase @Inject constructor(
     private val animeRepository: AnimeRepository,

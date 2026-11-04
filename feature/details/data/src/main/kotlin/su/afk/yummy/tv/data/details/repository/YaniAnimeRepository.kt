@@ -53,11 +53,9 @@ import su.afk.yummy.tv.data.details.mapper.ExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
 import su.afk.yummy.tv.data.details.mapper.toAnimeTmdbImages
-import su.afk.yummy.tv.data.details.mapper.toOrderedFrameUrls
 import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
 import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toMalEpisodesDto
-import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodeFlagsApi
@@ -99,8 +97,6 @@ private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations
 // v4: запрос нёс смещение серий предыдущих сезонов франшизы (?offset=), оно входило в ключ.
 // v5: смещение считает сервер, ключ без него.
 private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v5"
-// Сколько кадров Tenrai (по одному на серию) отдавать для ряда «Скриншоты».
-private const val EPISODE_FRAMES_LIMIT = 10
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
 // v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
@@ -394,12 +390,8 @@ class YaniAnimeRepository(
             }
         }
 
-    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames = coroutineScope {
-        // TMDB и Tenrai не зависят друг от друга: ждать один ради другого незачем.
-        val tmdb = async { getAnimeTmdbImages(animeId).firstEpisodeStillUrls }
-        val tenrai = async { getAnimeEpisodeThumbnails(animeId).toOrderedFrameUrls(EPISODE_FRAMES_LIMIT) }
-        AnimeEpisodeFrames(tmdbStillUrls = tmdb.await(), tenraiFrameUrls = tenrai.await())
-    }
+    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
+        AnimeEpisodeFrames(tmdbStillUrls = getAnimeTmdbImages(animeId).firstEpisodeStillUrls)
 
     /**
      * Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. Смещение серий франшизы,
@@ -422,12 +414,8 @@ class YaniAnimeRepository(
         send(episodes?.toEpisodeFlagsByNumber().orEmpty())
     }
 
-    override suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String> =
-        // Превью — необязательная надстройка: есть запасной источник.
-        loadMalEpisodes(animeId)?.toThumbnailUrlByNumber().orEmpty()
-
     /**
-     * Серии тайтла из MyAnimeList (пометки и картинки в одном документе). Пометки и превью одного тайтла просит один и тот же
+     * Серии тайтла из MyAnimeList. Пометки одного тайтла просит один и тот же
      * экран одновременно, поэтому загрузки одного тайтла идут по очереди — второй вызов уже читает кэш; разные тайтлы
      * друг друга не ждут (скорость запросов ограничивает сам API-клиент). [onFirstPage] вызывается, только если этот вызов
      * сам качает длинный список с сети.

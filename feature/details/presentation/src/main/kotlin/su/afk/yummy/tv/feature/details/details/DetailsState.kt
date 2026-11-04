@@ -42,7 +42,7 @@ class DetailsState {
         val collectionsBadge: String? = null,
         /** Коллекции с тайтлом (первая страница) для ленты в деталях; пусто, если их нет. */
         val collections: ImmutableList<AnimeCollectionSummary> = persistentListOf(),
-        /** Кадры серий из TMDB и Tenrai; пусто, если их нет — тогда показываются скриншоты Yani. */
+        /** Кадры серий из TMDB; пусто, если их нет — тогда показываются скриншоты Yani. */
         val episodeFrames: AnimeEpisodeFrames = AnimeEpisodeFrames(),
         /** Трейлеры и сводка рейтинга ещё грузятся — блоки показывают скелетоны. */
         val isExtrasLoading: Boolean = true,
@@ -68,7 +68,7 @@ class DetailsState {
         /** Показывать ТВ-подсказку «нажмите вниз — там доп. секции», пока её не закрыли. */
         val showSectionsHint: Boolean = false,
     ) : UiState {
-        /** Скриншоты для ряда и галереи: TMDB, Tenrai и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
+        /** Скриншоты для ряда и галереи: TMDB и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
         val screenshots: List<AnimeScreenshot>
             get() = details?.let { mergeScreenshotSources(it.id, episodeFrames, it.screenshots) }.orEmpty()
 

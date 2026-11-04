@@ -13,9 +13,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Источники превью серии по порядку: TMDB (кадры от YummyTV API), Tenrai (кадры MyAnimeList), затем Kodik (iframe
+ * Источники превью серии по порядку: TMDB (кадры от YummyTV API), затем Kodik (iframe
  * экрана или записи просмотра или, если его нет, Kodik-видео серии из уже закэшированного списка видео тайтла — сеть
- * за списком не ходит). Kodik остаётся запасным: он нужен, когда ни TMDB, ни Tenrai кадра не знают (свежие серии и
+ * за списком не ходит). Kodik остаётся запасным: он нужен, когда TMDB кадра не знает (свежие серии и
  * тайтлы без соответствия в TMDB). Одна и та же цепочка у эпизодов, «Продолжить», истории и «Отложенных».
  * Готовая картинка с Yani (`imageUrl` записи) в цепочке известной серии не участвует: у неопознанной серии она
  * остаётся единственным вариантом.
@@ -26,7 +26,6 @@ import javax.inject.Singleton
 @Singleton
 class DefaultEpisodeThumbnailResolver @Inject constructor(
     private val tmdbPreviews: TmdbEpisodePreviews,
-    private val tenraiThumbnails: TenraiEpisodeThumbnails,
     private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) : EpisodeThumbnailResolver {
@@ -34,7 +33,6 @@ class DefaultEpisodeThumbnailResolver @Inject constructor(
     override fun candidateUrls(thumbnail: EpisodeThumbnail): Flow<String> = flow {
         if (thumbnail.isEpisodeKnown) {
             tmdbPreviews.previewUrl(thumbnail.animeId, thumbnail.episode)?.let { emit(it) }
-            tenraiThumbnails.previewUrl(thumbnail.animeId, thumbnail.episode)?.let { emit(it) }
         } else {
             // Серия не опознана: опереться больше не на что, готовая картинка экрана — единственный шанс на кадр.
             thumbnail.imageUrl.takeIf { it.isNotBlank() }?.let { emit(it) }

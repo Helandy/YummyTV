@@ -75,7 +75,7 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
         setState { copy(isLoading = true, error = null) }
         runSuspendCatching { getAnimeDetails(animeId) }.fold(
             onSuccess = { details ->
-                // Как в деталке: у каждой карточки цепочка TMDB, Tenrai, Yani.
+                // Как в деталке: у каждой карточки цепочка TMDB, Yani.
                 val frames = runSuspendCatching { getAnimeEpisodeFrames(animeId) }.getOrDefault(AnimeEpisodeFrames())
                 setState {
                     copy(

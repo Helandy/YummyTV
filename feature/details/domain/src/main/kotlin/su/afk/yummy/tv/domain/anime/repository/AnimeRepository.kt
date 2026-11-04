@@ -35,7 +35,7 @@ interface AnimeRepository {
     /** Задники, кадры серии 1 и кадры всех серий из TMDB (через YummyTV API); пустая модель, если данных нет. */
     suspend fun getAnimeTmdbImages(animeId: Int): AnimeTmdbImages
 
-    /** Кадры серии 1 из TMDB и кадры первых серий из Tenrai для ряда «Скриншоты»; пустая модель, если данных нет. */
+    /** Кадры серии 1 из TMDB для ряда «Скриншоты»; пустая модель, если данных нет. */
     suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames
 
     /**
@@ -44,8 +44,6 @@ interface AnimeRepository {
      */
     fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>>
 
-    /** Ссылки на превью серий по номеру серии (Tenrai); пустая мапа, если данных нет. */
-    suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String>
     suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer>
     suspend fun getAnimeRelation(reference: AnimeRelationReference): AnimeRelation
     suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation>
