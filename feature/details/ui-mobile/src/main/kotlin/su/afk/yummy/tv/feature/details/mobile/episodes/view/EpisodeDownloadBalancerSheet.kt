@@ -44,9 +44,9 @@ internal fun EpisodeDownloadBalancerSheet(
             )
         } else {
             val items = remember(selection.options) {
-                selection.options.map { option ->
+                selection.options.mapIndexed { index, option ->
                     MobilePickerItem(
-                        key = "${option.video.id}|${option.video.iframeUrl}",
+                        key = "${option.video.id}|${option.video.iframeUrl}|$index",
                         title = option.title,
                         logoName = option.title,
                         logoRes = balancerLogoRes(option.title),

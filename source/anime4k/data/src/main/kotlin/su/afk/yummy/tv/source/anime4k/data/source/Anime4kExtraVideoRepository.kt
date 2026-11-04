@@ -39,7 +39,8 @@ internal class Anime4kExtraVideoRepository @Inject constructor(
         val title = getTitle(lookup) ?: return emptyList()
 
         return title.episodes.flatMap { episode ->
-            episode.dubbings.map { team ->
+            // Сервер может отдать одну озвучку серии дважды (два 2160p-плеера у студии): одинаковый URL даёт одинаковый id.
+            episode.dubbings.distinct().map { team ->
                 val url = Anime4kTarget(malId, episode.season, episode.number, team).toSourceUrl()
                 AnimeVideo(
                     // Отрицательный id: серверу Yani такие видео неизвестны, прогресс остаётся локальным.
