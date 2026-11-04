@@ -99,6 +99,13 @@ private val DUBBING_LOGOS: Map<String, Int> = mapOf(
     "crunchyroll" to R.drawable.dub_crunchyroll,
     "anidub" to R.drawable.dub_anidub,
     "anidubonline" to R.drawable.dub_anidub,
+    // Studio MIR: «Studio MIR», «Студия МИР», «Студия Mir» и прочие смешанные написания дают разные ключи
+    "studiomir" to R.drawable.dub_studiomir,
+    "студиямир" to R.drawable.dub_studiomir,
+    "студияmir" to R.drawable.dub_studiomir,
+    "studiyamir" to R.drawable.dub_studiomir,
+    "студиомир" to R.drawable.dub_studiomir,
+    "творческаястудиямир" to R.drawable.dub_studiomir,
     "studioband" to R.drawable.dub_studioband,
     "onwave" to R.drawable.dub_onwave,
     "subvost" to R.drawable.dub_subvost,
