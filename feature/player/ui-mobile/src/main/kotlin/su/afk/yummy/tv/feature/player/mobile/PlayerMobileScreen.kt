@@ -4,23 +4,23 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,16 +51,16 @@ import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.mapper.loadingTextRes
 import su.afk.yummy.tv.feature.player.common.PlayerResolveLogView
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
+import su.afk.yummy.tv.feature.player.mapper.loadingTextRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.mobile.view.MobileNativePlayer
-import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerEpisodesList
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerBalancerSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerDubbingSheet
+import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerEpisodesList
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerMessage
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerSkipToast
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
@@ -137,12 +137,13 @@ fun PlayerMobileScreen(
     HideMobilePlayerSystemBars(hide = !episodesBelowPlayer)
     ApplyPlayerOrientation(state.playerOrientationMode)
 
+    val context = LocalContext.current
     BackHandler {
         if (showErrorBalancerSheet) {
             showErrorBalancerSheet = false
         } else if (showErrorDubbingSheet) {
             showErrorDubbingSheet = false
-        } else {
+        } else if (!MobilePlayerPipController.enterOnBack(context)) {
             onEvent(PlayerState.Event.Back)
         }
     }

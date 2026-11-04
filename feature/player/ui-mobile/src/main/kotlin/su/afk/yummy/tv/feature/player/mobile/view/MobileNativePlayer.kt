@@ -610,7 +610,11 @@ internal fun MobileNativePlayer(
             episode = ui.activeEpisode,
             dubbing = ui.activeDubbing,
             playerName = ui.activeBalancerLabel,
-            onBack = { onEvent(PlayerState.Event.Back) },
+            onBack = {
+                if (activity == null || !MobilePlayerPipController.enterOnBack(activity)) {
+                    onEvent(PlayerState.Event.Back)
+                }
+            },
             onDetails = { onEvent(PlayerState.Event.OpenDetails) },
             onPictureInPicture = { activity?.let(pipSession::enter) },
             onLockClick = {

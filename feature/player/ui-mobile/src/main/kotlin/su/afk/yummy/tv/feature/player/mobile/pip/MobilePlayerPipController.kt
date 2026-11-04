@@ -73,6 +73,13 @@ object MobilePlayerPipController {
         return currentSession?.enterIfPlaying(activity) == true
     }
 
+    /**
+     * Назад из играющего плеера сворачивает его в PiP (если он включён в настройках), а не закрывает.
+     * `false` - PiP недоступен или видео не играет: вызывающий выполняет обычный выход.
+     */
+    fun enterOnBack(context: Context): Boolean =
+        findActivity(context)?.let(::enterIfPlaying) == true
+
     fun enter(activity: Activity): Boolean =
         currentSession?.enter(activity) == true
 
