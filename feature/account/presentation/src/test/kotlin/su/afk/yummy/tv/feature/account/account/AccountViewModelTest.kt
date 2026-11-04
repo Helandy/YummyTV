@@ -28,6 +28,7 @@ import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
+import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -35,14 +36,13 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.account.AccountState.AccountTab
 import su.afk.yummy.tv.feature.account.account.AccountState.Effect
 import su.afk.yummy.tv.feature.account.account.AccountState.Event
+import su.afk.yummy.tv.feature.account.account.handler.AccountCachedHub
 import su.afk.yummy.tv.feature.account.account.handler.AccountHubHandler
-import su.afk.yummy.tv.feature.account.account.handler.AccountHubLoadResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountLoginResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationOutcome
-import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationsLoadResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountOpenNotificationResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountRefreshResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountSessionHandler
@@ -97,7 +97,7 @@ class AccountViewModelTest : BaseUnitTest() {
         every { sessionHandler.isHubLoadedFor(any()) } returns false
         every { sessionHandler.markProfileChanged() } just Runs
         every { sessionHandler.completeMissingProfileRecovery() } just Runs
-        coEvery { hubHandler.loadHub(any()) } returns hubResult()
+        stubHub()
     }
 
     private fun createViewModel() = AccountViewModel(
@@ -138,16 +138,18 @@ class AccountViewModelTest : BaseUnitTest() {
         isNewEpisode = slug != null,
     )
 
-    private fun hubResult(
-        notifications: List<ProfileNotification> = emptyList(),
-        counts: List<NotificationCount> = emptyList(),
-    ) = AccountHubLoadResult(
-        profileSummary = UserProfileSummary(userId = USER_ID, nickname = "sandy"),
-        profileSummaryError = null,
-        stats = null,
-        statsError = null,
-        notifications = AccountNotificationsLoadResult.Success(notifications, counts),
-    )
+    private fun stubHub(
+        summary: Result<UserProfileSummary> = Result.success(UserProfileSummary(userId = USER_ID, nickname = "sandy")),
+        stats: Result<UserStats> = Result.failure(IllegalStateException("stats")),
+        notifications: Result<List<ProfileNotification>> = Result.success(emptyList()),
+        counts: Result<List<NotificationCount>> = Result.success(emptyList()),
+    ) {
+        coEvery { hubHandler.loadCached(any()) } returns AccountCachedHub(null, null, null)
+        coEvery { hubHandler.loadProfileSummary(any()) } returns summary
+        coEvery { hubHandler.loadStats(any()) } returns stats
+        coEvery { hubHandler.loadNotifications() } returns notifications
+        coEvery { hubHandler.loadNotificationCounts() } returns counts
+    }
 
     @Test
     fun `signed-in session resolves the screen and loads the hub`() {
@@ -188,12 +190,9 @@ class AccountViewModelTest : BaseUnitTest() {
 
     @Test
     fun `hub failure without any data shows the hub error`() {
-        coEvery { hubHandler.loadHub(any()) } returns AccountHubLoadResult(
-            profileSummary = null,
-            profileSummaryError = AccountUiError.LOAD_PROFILE_STATISTICS_FAILED,
-            stats = null,
-            statsError = null,
-            notifications = AccountNotificationsLoadResult.Failure(AccountUiError.LOAD_NOTIFICATIONS_FAILED),
+        stubHub(
+            summary = Result.failure(IllegalStateException("summary")),
+            notifications = Result.failure(IllegalStateException("notifications")),
         )
 
         val state = createViewModel().currentState
@@ -323,7 +322,7 @@ class AccountViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.RefreshProfileSelected)
 
         verify(exactly = 1) { sessionHandler.markProfileChanged() }
-        coVerify(atLeast = 2) { hubHandler.loadHub(USER_ID) }
+        coVerify(atLeast = 2) { hubHandler.loadProfileSummary(USER_ID) }
 
         coEvery { sessionHandler.refreshProfile() } returns AccountRefreshResult.Failure
         vm.setEvent(Event.RefreshProfileSelected)
@@ -377,10 +376,58 @@ class AccountViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `a full first page offers more notifications and a short one does not`() {
+        stubHub(notifications = Result.success(List(20) { notification(it) }))
+        assertTrue(createViewModel().currentState.hasMoreNotifications)
+
+        stubHub(notifications = Result.success(List(19) { notification(it) }))
+        assertFalse(createViewModel().currentState.hasMoreNotifications)
+    }
+
+    @Test
+    fun `load more appends the next page by offset without duplicates`() {
+        stubHub(notifications = Result.success(List(20) { notification(it) }))
+        coEvery { hubHandler.loadNotifications(20) } returns Result.success(listOf(notification(19), notification(20)))
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NotificationsLoadMoreSelected)
+
+        assertEquals((0..20).toList(), vm.currentState.notifications.map { it.id })
+        assertFalse(vm.currentState.hasMoreNotifications)
+        assertFalse(vm.currentState.isNotificationsLoadingMore)
+        coVerify(exactly = 1) { hubHandler.loadNotifications(20) }
+    }
+
+    @Test
+    fun `failed load more keeps the list and allows a retry`() {
+        stubHub(notifications = Result.success(List(20) { notification(it) }))
+        coEvery { hubHandler.loadNotifications(20) } returns Result.failure(IllegalStateException("network"))
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NotificationsLoadMoreSelected)
+
+        assertEquals(20, vm.currentState.notifications.size)
+        assertTrue(vm.currentState.hasMoreNotifications)
+        assertFalse(vm.currentState.isNotificationsLoadingMore)
+        assertEquals(AccountUiError.LOAD_NOTIFICATIONS_FAILED, vm.currentState.hubError)
+    }
+
+    @Test
+    fun `load more does nothing without a next page`() {
+        stubHub(notifications = Result.success(listOf(notification(1))))
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NotificationsLoadMoreSelected)
+
+        // Единственный запрос — первая страница при открытии экрана.
+        coVerify(exactly = 1) { hubHandler.loadNotifications(any()) }
+    }
+
+    @Test
     fun `marking a notification read applies immediately and syncs the server`() {
-        coEvery { hubHandler.loadHub(any()) } returns hubResult(
-            notifications = listOf(notification(1), notification(2, viewed = true)),
-            counts = listOf(NotificationCount("anime", 1)),
+        stubHub(
+            notifications = Result.success(listOf(notification(1), notification(2, viewed = true))),
+            counts = Result.success(listOf(NotificationCount("anime", 1))),
         )
         coEvery { notificationMutationHandler.markNotificationRead(1) } returns AccountNotificationMutationOutcome.Success
         val vm = createViewModel()
@@ -394,9 +441,9 @@ class AccountViewModelTest : BaseUnitTest() {
 
     @Test
     fun `failed notification mutation reverts the list`() {
-        coEvery { hubHandler.loadHub(any()) } returns hubResult(
-            notifications = listOf(notification(1)),
-            counts = listOf(NotificationCount("anime", 1)),
+        stubHub(
+            notifications = Result.success(listOf(notification(1))),
+            counts = Result.success(listOf(NotificationCount("anime", 1))),
         )
         coEvery { notificationMutationHandler.deleteNotification(1) } returns
             AccountNotificationMutationOutcome.Failure(AccountUiError.UPDATE_NOTIFICATION_FAILED)
@@ -410,9 +457,9 @@ class AccountViewModelTest : BaseUnitTest() {
 
     @Test
     fun `new episode notification opens the title and marks itself read`() {
-        coEvery { hubHandler.loadHub(any()) } returns hubResult(
-            notifications = listOf(notification(1, slug = "slug")),
-            counts = listOf(NotificationCount("anime", 1)),
+        stubHub(
+            notifications = Result.success(listOf(notification(1, slug = "slug"))),
+            counts = Result.success(listOf(NotificationCount("anime", 1))),
         )
         coEvery { notificationHandler.resolveAnimeId("slug") } returns AccountOpenNotificationResult.Navigate(55)
         coEvery { notificationMutationHandler.markNotificationRead(1) } returns AccountNotificationMutationOutcome.Success
@@ -428,7 +475,7 @@ class AccountViewModelTest : BaseUnitTest() {
 
     @Test
     fun `unresolvable notification shows the open error`() {
-        coEvery { hubHandler.loadHub(any()) } returns hubResult(notifications = listOf(notification(1, slug = "slug")))
+        stubHub(notifications = Result.success(listOf(notification(1, slug = "slug"))))
         coEvery { notificationHandler.resolveAnimeId(any()) } returns AccountOpenNotificationResult.Failure
         val vm = createViewModel()
 

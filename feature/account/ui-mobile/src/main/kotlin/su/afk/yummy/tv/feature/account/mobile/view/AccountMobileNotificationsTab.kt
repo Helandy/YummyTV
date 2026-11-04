@@ -154,6 +154,16 @@ internal fun AccountMobileNotificationsTab(
                         },
                     )
                 }
+                if (state.isNotificationsLoadingMore) {
+                    AccountMobileLoadingIndicator()
+                } else if (state.hasMoreNotifications) {
+                    TextButton(
+                        onClick = { onEvent(AccountState.Event.NotificationsLoadMoreSelected) },
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    ) {
+                        Text(stringResource(R.string.account_notifications_load_more))
+                    }
+                }
             }
         }
     }

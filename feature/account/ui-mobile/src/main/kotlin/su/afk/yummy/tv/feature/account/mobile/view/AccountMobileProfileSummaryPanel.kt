@@ -13,6 +13,7 @@ import su.afk.yummy.tv.domain.account.model.UserStats
 internal fun AccountMobileProfileSummaryPanel(
     summary: UserProfileSummary,
     stats: UserStats?,
+    isStatsLoading: Boolean = false,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         AccountMobileSurfacePanel {
@@ -23,7 +24,7 @@ internal fun AccountMobileProfileSummaryPanel(
             )
         }
         AccountMobileSurfacePanel {
-            AccountMobileProfileStatsPager(summary = summary, stats = stats)
+            AccountMobileProfileStatsPager(summary = summary, stats = stats, isStatsLoading = isStatsLoading)
         }
     }
 }

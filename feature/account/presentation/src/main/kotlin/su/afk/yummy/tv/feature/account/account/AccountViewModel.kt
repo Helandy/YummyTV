@@ -4,6 +4,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -17,6 +19,8 @@ import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.UserProfileSummary
+import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.isExpandable
 import su.afk.yummy.tv.domain.account.model.totalUnreadCount
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -27,10 +31,10 @@ import su.afk.yummy.tv.feature.account.account.handler.AccountLoginResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationOutcome
-import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationsLoadResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountOpenNotificationResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountRefreshResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountSessionHandler
+import su.afk.yummy.tv.feature.account.account.handler.NOTIFICATIONS_PAGE_LIMIT
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.account.utils.decrementCount
@@ -299,6 +303,8 @@ class AccountViewModel @Inject internal constructor(
                 deleteAllNotificationsOptimistically()
             }
 
+            AccountState.Event.NotificationsLoadMoreSelected -> loadMoreNotifications()
+
             is AccountState.Event.NotificationDeleteSelected -> {
                 analytics.eventNotificationDeleteSelected(event.id)
                 deleteNotificationOptimistically(event.id)
@@ -551,51 +557,112 @@ class AccountViewModel @Inject internal constructor(
         if (!sessionHandler.markHubLoadIfNeeded(state, force)) return
         viewModelScope.launch {
             setState { copy(isStatsLoading = true, isNotificationsLoading = true, hubError = null, hubErrorDetails = null) }
-            val result = hubHandler.loadHub(state.userId)
-            setState {
-                var next = copy(isStatsLoading = false)
-                if (result.profileSummary != null) {
-                    next = next.copy(profileSummary = result.profileSummary)
+            showCachedHub(state.userId)
+            // Каждая часть хаба показывается по мере прихода, не дожидаясь самой медленной.
+            coroutineScope {
+                val summary = async { hubHandler.loadProfileSummary(state.userId).also(::applyProfileSummary) }
+                val stats = async { hubHandler.loadStats(state.userId).also(::applyStats) }
+                val notifications = async { hubHandler.loadNotifications().also(::applyNotifications) }
+                val counts = async { hubHandler.loadNotificationCounts().also(::applyNotificationCounts) }
+                launch { finishStatistics(summary.await(), stats.await()) }
+                launch {
+                    notifications.await()
+                    counts.await()
+                    setState { copy(isNotificationsLoading = false) }
                 }
-                if (result.stats != null) {
-                    next = next.copy(stats = result.stats)
-                }
-                val hasAnyStatistics = next.profileSummary != null || next.stats != null
-                if (!hasAnyStatistics) {
-                    val error = result.profileSummaryError ?: result.statsError
-                    if (error != null) {
-                        next = next.copy(hubError = error)
-                    }
-                }
-                next
             }
-            applyNotificationsLoadResult(result.notifications)
         }
     }
 
-    private fun applyNotificationsLoadResult(result: AccountNotificationsLoadResult) {
-        when (result) {
-            is AccountNotificationsLoadResult.Success -> {
-                setState {
-                    copy(
-                        notifications = result.notifications.distinctBy { it.id }.toImmutableList(),
-                        notificationCounts = result.counts.toImmutableList(),
-                        isNotificationsLoading = false,
-                    )
-                }
-            }
-
-            is AccountNotificationsLoadResult.Failure -> {
-                val details = result.cause?.let { errorHandler.parse(it).toDisplayDetails() }
-                setState {
-                    copy(
-                        isNotificationsLoading = false,
-                        hubError = result.error,
-                        hubErrorDetails = details,
-                    )
-                }
-            }
+    /** Показывает сохранённое, пусть и просроченное, чтобы экран не ждал сеть; свежее заменит его. */
+    private suspend fun showCachedHub(userId: Int) {
+        val cached = hubHandler.loadCached(userId)
+        setState {
+            copy(
+                profileSummary = profileSummary ?: cached.profileSummary,
+                stats = stats ?: cached.stats,
+                notifications = if (notifications.isEmpty() && cached.notifications != null) {
+                    cached.notifications.distinctBy { it.id }.toImmutableList()
+                } else {
+                    notifications
+                },
+            )
         }
+    }
+
+    private fun applyProfileSummary(result: Result<UserProfileSummary>) {
+        result.onSuccess { summary -> setState { copy(profileSummary = summary) } }
+    }
+
+    private fun applyStats(result: Result<UserStats>) {
+        result.onSuccess { stats -> setState { copy(stats = stats) } }
+    }
+
+    private fun finishStatistics(summary: Result<UserProfileSummary>, stats: Result<UserStats>) {
+        setState {
+            val hasAnyStatistics = profileSummary != null || this.stats != null
+            copy(
+                isStatsLoading = false,
+                hubError = if (!hasAnyStatistics && (summary.isFailure || stats.isFailure)) {
+                    hubError ?: AccountUiError.LOAD_PROFILE_STATISTICS_FAILED
+                } else {
+                    hubError
+                },
+            )
+        }
+    }
+
+    private fun applyNotifications(result: Result<List<ProfileNotification>>) {
+        result.fold(
+            onSuccess = { notifications ->
+                setState {
+                    copy(
+                        notifications = notifications.distinctBy { it.id }.toImmutableList(),
+                        hasMoreNotifications = notifications.size >= NOTIFICATIONS_PAGE_LIMIT,
+                    )
+                }
+            },
+            onFailure = { error ->
+                val details = errorHandler.parse(error).toDisplayDetails()
+                setState {
+                    copy(hubError = AccountUiError.LOAD_NOTIFICATIONS_FAILED, hubErrorDetails = details)
+                }
+            },
+        )
+    }
+
+    /** Подгружает одну следующую страницу; смещение — число уже загруженных, удалённые уходят и с сервера. */
+    private fun loadMoreNotifications() {
+        val state = currentState
+        if (state.isNotificationsLoadingMore || !state.hasMoreNotifications) return
+        setState { copy(isNotificationsLoadingMore = true) }
+        viewModelScope.launch {
+            hubHandler.loadNotifications(offset = state.notifications.size).fold(
+                onSuccess = { page ->
+                    setState {
+                        copy(
+                            notifications = (notifications + page).distinctBy { it.id }.toImmutableList(),
+                            hasMoreNotifications = page.size >= NOTIFICATIONS_PAGE_LIMIT,
+                            isNotificationsLoadingMore = false,
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    val details = errorHandler.parse(error).toDisplayDetails()
+                    setState {
+                        copy(
+                            isNotificationsLoadingMore = false,
+                            hubError = AccountUiError.LOAD_NOTIFICATIONS_FAILED,
+                            hubErrorDetails = details,
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun applyNotificationCounts(result: Result<List<NotificationCount>>) {
+        result.onSuccess { counts -> setState { copy(notificationCounts = counts.toImmutableList()) } }
     }
 
     // Notification mutations apply to local state immediately so the UI never waits on a

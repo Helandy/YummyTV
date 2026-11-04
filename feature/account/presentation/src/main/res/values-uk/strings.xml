@@ -32,6 +32,7 @@
     <string name="account_unread_count">Непрочитано: %1$d</string>
     <string name="account_stats_empty">Статистики поки немає</string>
     <string name="account_notifications_empty">Сповіщень поки немає</string>
+    <string name="account_notifications_load_more">Показати ще</string>
     <string name="account_stats_genres">Улюблені жанри</string>
     <string name="account_stats_ratings">Оцінки</string>
     <string name="account_profile_registered">Реєстрація</string>

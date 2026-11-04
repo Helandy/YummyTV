@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,6 +43,7 @@ internal fun AccountMobileProfileStatsPager(
     summary: UserProfileSummary,
     stats: UserStats?,
     modifier: Modifier = Modifier,
+    isStatsLoading: Boolean = false,
 ) {
     val pages = buildList {
         add(
@@ -102,6 +104,10 @@ internal fun AccountMobileProfileStatsPager(
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
             AccountMobileProfileStatsPage(page = pages[page])
+        }
+        // Остальные страницы появятся, когда придёт статистика: до этого показываем загрузку.
+        if (isStatsLoading && stats == null) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
         if (pages.size > 1) {
             Row(

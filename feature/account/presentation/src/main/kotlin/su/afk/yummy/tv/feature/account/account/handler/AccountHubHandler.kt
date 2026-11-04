@@ -9,78 +9,64 @@ import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.totalUnreadCount
+import su.afk.yummy.tv.domain.account.usecase.GetCachedProfileNotificationsUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetCachedUserProfileSummaryUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetCachedUserStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserProfileSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserStatsUseCase
-import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import javax.inject.Inject
 
-/** Loads account hub data and keeps unread notification count preferences in sync. */
+internal const val NOTIFICATIONS_PAGE_LIMIT = 20
+
+/**
+ * Loads account hub data in independent parts so each one can be shown as soon as it arrives,
+ * and keeps unread notification count preferences in sync.
+ */
 internal class AccountHubHandler @Inject constructor(
     private val settingsStore: YaniAccountSettingsStore,
     private val getUserProfileSummary: GetUserProfileSummaryUseCase,
     private val getUserStats: GetUserStatsUseCase,
     private val getNotifications: GetProfileNotificationsUseCase,
     private val getNotificationCounts: GetNotificationCountsUseCase,
+    private val getCachedUserProfileSummary: GetCachedUserProfileSummaryUseCase,
+    private val getCachedUserStats: GetCachedUserStatsUseCase,
+    private val getCachedNotifications: GetCachedProfileNotificationsUseCase,
 ) {
-    suspend fun loadHub(userId: Int): AccountHubLoadResult = coroutineScope {
-        val profileSummaryDeferred = async { runSuspendCatching { getUserProfileSummary(userId) } }
-        val statsDeferred = async { runSuspendCatching { getUserStats(userId) } }
-        val notificationsDeferred = async { loadNotifications() }
-
-        val profileSummaryResult = profileSummaryDeferred.await()
-        val statsResult = statsDeferred.await()
-        val notificationsResult = notificationsDeferred.await()
-        AccountHubLoadResult(
-            profileSummary = profileSummaryResult.getOrNull(),
-            profileSummaryError = if (profileSummaryResult.isFailure) {
-                AccountUiError.LOAD_PROFILE_STATISTICS_FAILED
-            } else {
-                null
-            },
-            stats = statsResult.getOrNull(),
-            statsError = if (statsResult.isFailure) {
-                AccountUiError.LOAD_PROFILE_STATISTICS_FAILED
-            } else {
-                null
-            },
-            notifications = notificationsResult,
+    /** Reads whatever the local cache holds, of any age, so the screen has content before the network answers. */
+    suspend fun loadCached(userId: Int): AccountCachedHub = coroutineScope {
+        val profileSummary = async { runSuspendCatching { getCachedUserProfileSummary(userId) }.getOrNull() }
+        val stats = async { runSuspendCatching { getCachedUserStats(userId) }.getOrNull() }
+        val notifications = async {
+            runSuspendCatching { getCachedNotifications(NOTIFICATIONS_PAGE_LIMIT) }.getOrNull()
+        }
+        AccountCachedHub(
+            profileSummary = profileSummary.await(),
+            stats = stats.await(),
+            notifications = notifications.await(),
         )
     }
 
-    suspend fun loadNotifications(): AccountNotificationsLoadResult =
+    suspend fun loadProfileSummary(userId: Int): Result<UserProfileSummary> =
+        runSuspendCatching { getUserProfileSummary(userId) }
+
+    suspend fun loadStats(userId: Int): Result<UserStats> =
+        runSuspendCatching { getUserStats(userId) }
+
+    suspend fun loadNotifications(offset: Int = 0): Result<List<ProfileNotification>> =
+        runSuspendCatching { getNotifications(limit = NOTIFICATIONS_PAGE_LIMIT, offset = offset) }
+
+    /** Counts are derived from the full notification list, so they are loaded apart from the first page. */
+    suspend fun loadNotificationCounts(): Result<List<NotificationCount>> =
         runSuspendCatching {
-            getNotifications(limit = 20) to getNotificationCounts()
-        }.fold(
-            onSuccess = { (notifications, counts) ->
-                settingsStore.setYaniUnreadNotificationsCount(counts.totalUnreadCount())
-                AccountNotificationsLoadResult.Success(
-                    notifications = notifications,
-                    counts = counts,
-                )
-            },
-            onFailure = {
-                AccountNotificationsLoadResult.Failure(AccountUiError.LOAD_NOTIFICATIONS_FAILED, it)
-            },
-        )
+            getNotificationCounts().also { settingsStore.setYaniUnreadNotificationsCount(it.totalUnreadCount()) }
+        }
 }
 
-/** Combined account hub payload with independent stats and notification outcomes. */
-internal data class AccountHubLoadResult(
+/** Hub data found in the local cache; a part is `null` when nothing is stored for it. */
+internal data class AccountCachedHub(
     val profileSummary: UserProfileSummary?,
-    val profileSummaryError: AccountUiError?,
     val stats: UserStats?,
-    val statsError: AccountUiError?,
-    val notifications: AccountNotificationsLoadResult,
+    val notifications: List<ProfileNotification>?,
 )
-
-/** Result of loading profile notifications and their unread counters. */
-internal sealed interface AccountNotificationsLoadResult {
-    data class Success(
-        val notifications: List<ProfileNotification>,
-        val counts: List<NotificationCount>,
-    ) : AccountNotificationsLoadResult
-
-    data class Failure(val error: AccountUiError, val cause: Throwable? = null) : AccountNotificationsLoadResult
-}

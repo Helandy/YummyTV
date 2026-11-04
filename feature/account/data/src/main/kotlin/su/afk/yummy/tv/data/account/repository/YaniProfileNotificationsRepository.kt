@@ -32,6 +32,14 @@ class YaniProfileNotificationsRepository(
             getNotificationsPage(userId, languageCode, limit, offset)
         }
 
+    override suspend fun getCachedNotifications(limit: Int): List<ProfileNotification>? =
+        withContext(Dispatchers.IO) {
+            val userId = settingsStore.currentUserId()
+            if (userId <= 0) return@withContext null
+            accountStorage.getNotifications(userId, settingsStore.currentLanguageCode(), limit, 0)
+                ?.toNotifications()
+        }
+
     override suspend fun getNotificationCounts(): List<NotificationCount> =
         withContext(Dispatchers.IO) {
             val userId = settingsStore.currentUserId()

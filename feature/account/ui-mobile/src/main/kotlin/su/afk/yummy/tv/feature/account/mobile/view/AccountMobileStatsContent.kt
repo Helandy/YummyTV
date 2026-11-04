@@ -24,9 +24,10 @@ import su.afk.yummy.tv.feature.account.common.utils.label
 internal fun AccountMobileStatsContent(
     profileSummary: UserProfileSummary?,
     stats: UserStats?,
+    isStatsLoading: Boolean = false,
 ) {
     if (profileSummary != null) {
-        AccountMobileProfileSummaryPanel(summary = profileSummary, stats = stats)
+        AccountMobileProfileSummaryPanel(summary = profileSummary, stats = stats, isStatsLoading = isStatsLoading)
     } else if (stats != null && !stats.isEmpty()) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),

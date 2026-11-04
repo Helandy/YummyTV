@@ -36,4 +36,10 @@ class YaniUserProfileRepository(
                 },
             )
         }
+
+    override suspend fun getCachedUserProfileSummary(userId: Int): UserProfileSummary? =
+        withContext(Dispatchers.IO) {
+            accountStorage.getUserProfileSummary(userId, settingsStore.currentLanguageCode())
+                ?.toUserProfileSummary()
+        }
 }

@@ -21,7 +21,11 @@ internal fun AccountMobileStatsTab(
         when {
             isLoading && stats == null && profileSummary == null -> AccountMobileLoadingIndicator()
             stats == null && profileSummary == null -> AccountMobileEmptyText(stringResource(R.string.account_stats_empty))
-            else -> AccountMobileStatsContent(profileSummary = profileSummary, stats = stats)
+            else -> AccountMobileStatsContent(
+                profileSummary = profileSummary,
+                stats = stats,
+                isStatsLoading = isLoading,
+            )
         }
     }
 }

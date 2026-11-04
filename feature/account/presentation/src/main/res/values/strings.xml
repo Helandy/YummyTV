@@ -33,6 +33,7 @@
     <string name="account_unread_count">Unread: %1$d</string>
     <string name="account_stats_empty">No statistics yet</string>
     <string name="account_notifications_empty">No notifications yet</string>
+    <string name="account_notifications_load_more">Show more</string>
     <string name="account_stats_genres">Favorite genres</string>
     <string name="account_stats_ratings">Ratings</string>
     <string name="account_profile_registered">Registered</string>

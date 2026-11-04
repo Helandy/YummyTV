@@ -40,6 +40,9 @@ class AccountState {
         val expandedNotificationIds: PersistentSet<Int> = persistentSetOf(),
         val isStatsLoading: Boolean = false,
         val isNotificationsLoading: Boolean = false,
+        val isNotificationsLoadingMore: Boolean = false,
+        /** Последняя страница оказалась полной — на сервере могут быть ещё уведомления. */
+        val hasMoreNotifications: Boolean = false,
         val isCaptchaRequired: Boolean = false,
         val captchaSiteKey: String = YANI_HCAPTCHA_SITE_KEY,
         val captchaChallengeId: Int = 0,
@@ -148,6 +151,9 @@ class AccountState {
 
         /** Пользователь удалил все уведомления. */
         data object AllNotificationsDeleteSelected : Event
+
+        /** Пользователь запросил следующую страницу уведомлений. */
+        data object NotificationsLoadMoreSelected : Event
 
         /** Пользователь удалил уведомление с указанным идентификатором. */
         data class NotificationDeleteSelected(val id: Int) : Event
