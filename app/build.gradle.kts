@@ -96,6 +96,8 @@ dependencies {
     findProject(":source:ailiberty:data")?.let { implementation(it) }
     // Необязательный источник «AniDub» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:anidub:data")?.let { implementation(it) }
+    // Необязательный источник «Studio MIR» (нужен source/availability): нет каталога, нет и зависимости.
+    findProject(":source:studiomir:data")?.let { implementation(it) }
     // Общий разбор плеера Ashdi для AnimeON и Mikai: нет каталога source/ashdi, нет и зависимости.
     findProject(":source:ashdi:data")?.let { implementation(it) }
     // Общий разбор плеера Fenix для AnimeON и Mikai: нет каталога source/fenix, нет и зависимости.

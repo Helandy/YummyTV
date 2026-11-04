@@ -165,6 +165,7 @@ private val EXTERNAL_SOURCE_KEYS = setOf(
     "anime4k",
     "ailiberty",
     "anidub",
+    "studiomir",
     "animebesst",
     "animeon",
     "animevost",

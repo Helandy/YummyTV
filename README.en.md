@@ -178,7 +178,7 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
 The built-in player is based on **Media3 / ExoPlayer** and supports:
 
 - quality, voice-over, and balancer selection (Kodik, Aksor, Alloha, CVH, VK, Rutube, Sibnet,
-  Zedfilm, Aniboom, Anistar, Amedia, AniLibria, AniDub, AiLiberty, AnimeVost, Animebesst, Ashdi,
+  Zedfilm, Aniboom, Anistar, Amedia, AniLibria, AniDub, AiLiberty, Studio MIR, AnimeVost, Animebesst, Ashdi,
   Fenix, Dream Cast, 4K);
 - playback speed, scale and zoom, and automatic opening/ending skip;
 - previous/next episode navigation and auto-play of the next episode;
