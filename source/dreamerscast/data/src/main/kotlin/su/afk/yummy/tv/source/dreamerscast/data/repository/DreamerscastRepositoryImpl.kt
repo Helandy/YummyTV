@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.dreamerscast.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.dreamerscast.data.network.DreamerscastApi
 import su.afk.yummy.tv.source.dreamerscast.data.utils.dreamerscastHls
 import su.afk.yummy.tv.source.dreamerscast.data.utils.dreamerscastPageUrl
@@ -22,8 +24,11 @@ internal class DreamerscastRepositoryImpl @Inject constructor(
      */
     override suspend fun getStreams(target: DreamerscastTarget): DreamerscastStreams? {
         val page = api.getText(dreamerscastPageUrl(target.slug)) ?: return null
-        val playlist = dreamerscastPlaylist(page) ?: return null
-        val masterUrl = dreamerscastHls(playlist, target.episode) ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
+        val playlist = dreamerscastPlaylist(page) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
+        val masterUrl = dreamerscastHls(playlist, target.episode) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
         val master = api.getText(masterUrl) ?: return null
         return DreamerscastStreams(qualities = dreamerscastQualities(master), masterUrl = masterUrl)
     }

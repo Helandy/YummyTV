@@ -20,6 +20,7 @@ import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import java.net.URL
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
@@ -74,6 +75,7 @@ internal class AllohaExtractor @Inject constructor(
                 preferredQualityLabel = request.autoQualityLabel,
                 fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
                 context = context,
+                onStatus = request.onStatus,
             )
         ) {
             is AllohaOpenResult.Unavailable -> PlayerStreamResolveResult.Unavailable(result.message)
@@ -99,6 +101,7 @@ internal class AllohaExtractor @Inject constructor(
                 preferredQualityLabel = request.autoQualityLabel,
                 fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
                 context = context,
+                onStatus = request.onStatus,
             ) as? AllohaOpenResult.Ready
             )?.session
     }
@@ -115,7 +118,9 @@ internal class AllohaExtractor @Inject constructor(
         preferredQualityLabel: String?,
         fallbackTtlSeconds: Int?,
         context: Context,
+        onStatus: (PlayerStreamResolveStatus) -> Unit,
     ): AllohaOpenResult = suspendCancellableCoroutine { continuation ->
+        onStatus(PlayerStreamResolveStatus.OpeningSession)
         val handler = Handler(Looper.getMainLooper())
         var delivered = false
         var streamReady = false
@@ -201,6 +206,7 @@ internal class AllohaExtractor @Inject constructor(
             if (delivered || streamReady) return@Runnable
             if (wrapperReloads >= MAX_WRAPPER_RELOADS) return@Runnable
             wrapperReloads++
+            onStatus(PlayerStreamResolveStatus.Retrying)
             analyticsTracker.log(LOG_TAG) {
                 "no signal after ${NO_SIGNAL_TIMEOUT_MS}ms, reloading wrapper " +
                     "attempt=$wrapperReloads/$MAX_WRAPPER_RELOADS"
@@ -231,6 +237,7 @@ internal class AllohaExtractor @Inject constructor(
         val bridge = object {
             @JavascriptInterface
             fun onReady(responseJson: String, headersJson: String) {
+                onStatus(PlayerStreamResolveStatus.ParsingPage)
                 extractorScope.launch {
                     val parsed = runCatching {
                         Pair(
@@ -246,6 +253,7 @@ internal class AllohaExtractor @Inject constructor(
                             liveSession.updateHeaders(headers)
                             fallbackTtlSeconds?.let(liveSession::ensureFallbackExpiry)
                             streamReady = true
+                            onStatus(PlayerStreamResolveStatus.RequestingStream)
                             handler.removeCallbacks(noSignalTimeout)
                             analyticsTracker.log(LOG_TAG) { "ready headers=${liveSession.safeHeaderState()}" }
                             deliverWhenReady()

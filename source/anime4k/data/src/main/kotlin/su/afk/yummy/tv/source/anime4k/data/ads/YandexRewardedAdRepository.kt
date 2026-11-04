@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.anime4k.data.ads
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import android.app.Activity
 import com.yandex.mobile.ads.common.AdError
 import com.yandex.mobile.ads.common.AdRequest
@@ -15,11 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import su.afk.yummy.tv.core.common.player.ResolveProgress
 import su.afk.yummy.tv.core.utils.system.ForegroundAdGate
 import su.afk.yummy.tv.source.anime4k.data.BuildConfig
 import su.afk.yummy.tv.source.anime4k.domain.repository.RewardedAdRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 
 /**
@@ -43,6 +47,7 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
         get() = adsBypassed || BuildConfig.YANDEX_REWARDED_AD_UNIT_ID.isNotBlank()
 
     override suspend fun askConsent(): Boolean {
+        reportResolveStep(PlayerStreamResolveStatus.AskingConsent)
         val grantedAt = preOpenConsentAtMs
         preOpenConsentAtMs = 0L
         return (grantedAt != 0L && System.currentTimeMillis() - grantedAt < PRE_OPEN_CONSENT_TTL_MS) || ask()
@@ -62,6 +67,7 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
     }
 
     override suspend fun showRewardedAd(): Boolean = withContext(Dispatchers.Main) {
+        coroutineContext[ResolveProgress]?.report(PlayerStreamResolveStatus.WaitingForAd)
         if (adsBypassed) return@withContext true
         if (!isAvailable) return@withContext false
         val activity = CurrentActivityTracker.current() ?: return@withContext false

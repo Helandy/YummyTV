@@ -13,6 +13,7 @@ android {
 
 dependencies {
     implementation(project(":core:preferences:api"))
+    api(project(":core:common"))
     implementation(project(":core:utils"))
 
     api(libs.ktor.client.core)

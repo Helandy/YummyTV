@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.sameband.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.source.sameband.data.mapper.toEpisodes
 import su.afk.yummy.tv.source.sameband.data.model.SamebandEpisode
@@ -29,7 +31,7 @@ internal class SamebandRepositoryImpl @Inject constructor(
      */
     override suspend fun getStreams(target: SamebandTarget): SamebandStreams? {
         val ua = userAgents.userAgent
-        val episode = loadEpisodes(target.slug, ua).firstOrNull { it.number == target.episode } ?: return null
+        val episode = loadEpisodes(target.slug, ua).firstOrNull { it.number == target.episode } ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
         val headers = mapOf("User-Agent" to ua, "Accept" to "*/*", "Referer" to "$SAMEBAND_BASE_URL/")
         return SamebandStreams(episode.qualities, headers)
     }
@@ -37,9 +39,11 @@ internal class SamebandRepositoryImpl @Inject constructor(
     private suspend fun loadEpisodes(slug: String, ua: String): List<SamebandEpisode> {
         val pageUrl = samebandPageUrl(slug)
         val page = api.getText(pageUrl, "$SAMEBAND_BASE_URL/", ua) ?: return emptyList()
-        val playerUrl = samebandPlayerUrl(page) ?: return emptyList()
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
+        val playerUrl = samebandPlayerUrl(page) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return emptyList() }
         val player = api.getText(playerUrl, pageUrl, ua) ?: return emptyList()
-        val playlistUrl = samebandPlaylistUrl(player) ?: return emptyList()
+        val playlistUrl = samebandPlaylistUrl(player) ?: run { reportResolveStep(PlayerStreamResolveStatus.LinkNotFound); return emptyList() }
+        reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
         val playlist = api.getText(playlistUrl, playerUrl, ua) ?: return emptyList()
         return parseSamebandPlaylist(playlist).toEpisodes()
     }

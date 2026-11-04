@@ -51,6 +51,8 @@ import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.mapper.loadingTextRes
+import su.afk.yummy.tv.feature.player.common.PlayerResolveLogView
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
@@ -276,8 +278,9 @@ fun PlayerMobileScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         YummyLoadingIndicator(color = Color.White, strokeWidth = 2.dp)
-                        Text(stringResource(R.string.player_loading_stream), color = Color.White)
+                        Text(stringResource(state.resolveStatus.loadingTextRes()), color = Color.White)
                     }
+                    PlayerResolveLogView(state.resolveLog, modifier = Modifier.padding(horizontal = 24.dp))
                     if (state.showChangePlayerHint && (uiState.canChangePlayer || uiState.canChangeDubbing)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             if (uiState.canChangePlayer) {

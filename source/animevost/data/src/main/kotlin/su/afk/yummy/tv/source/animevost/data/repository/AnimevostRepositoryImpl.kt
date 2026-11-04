@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.animevost.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.animevost.data.network.AnimevostApi
 import su.afk.yummy.tv.source.animevost.data.utils.animevostEpisodeId
 import su.afk.yummy.tv.source.animevost.data.utils.animevostFrameUrl
@@ -23,8 +25,15 @@ internal class AnimevostRepositoryImpl @Inject constructor(
      */
     override suspend fun getStreams(target: AnimevostTarget): AnimevostStreams? {
         val page = api.getText(animevostPageUrl(target.typePath, target.slug)) ?: return null
-        val episodeId = animevostEpisodeId(page, target.episode) ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
+        val episodeId = animevostEpisodeId(page, target.episode) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
         val frame = api.getText(animevostFrameUrl(episodeId)) ?: return null
-        return animevostQualities(frame).takeIf { it.isNotEmpty() }?.let { AnimevostStreams(it) }
+        val qualities = animevostQualities(frame)
+        if (qualities.isEmpty()) {
+            reportResolveStep(PlayerStreamResolveStatus.LinkNotFound)
+            return null
+        }
+        return AnimevostStreams(qualities)
     }
 }

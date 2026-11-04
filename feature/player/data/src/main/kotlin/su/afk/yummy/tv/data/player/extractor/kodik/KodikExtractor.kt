@@ -21,6 +21,7 @@ import su.afk.yummy.tv.data.player.network.PlayerHttpResponse
 import su.afk.yummy.tv.data.player.network.streamHeaders
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import java.net.URLEncoder
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -58,13 +59,15 @@ internal class KodikExtractor @Inject constructor(
     private val HLS_QUALITY_MANIFEST_PATTERN =
         Regex("""/(\d+)\.mp4:hls:manifest\.m3u8(?=$|[?#])""")
 
+    override val reportsOwnProgress: Boolean = true
+
     override fun supports(url: String): Boolean = url.isKodikPlayerUrl()
 
     override suspend fun extract(
         request: PlayerStreamRequest,
         context: android.content.Context,
     ): PlayerStreamResolveResult =
-        when (val result = extractStream(request.iframeUrl)) {
+        when (val result = extractStream(request.iframeUrl, request.onStatus)) {
             is KodikResult.Stream -> result.toStream()
             is KodikResult.Blocked -> PlayerStreamResolveResult.KodikBlocked(
                 message = result.message,
@@ -74,7 +77,10 @@ internal class KodikExtractor @Inject constructor(
             is KodikResult.Failed -> PlayerStreamResolveResult.Failed(result.reason)
         }
 
-    private suspend fun extractStream(iframeUrl: String): KodikResult =
+    private suspend fun extractStream(
+        iframeUrl: String,
+        onStatus: (PlayerStreamResolveStatus) -> Unit,
+    ): KodikResult =
         withContext(Dispatchers.IO) {
             val fullUrl = when {
                 iframeUrl.startsWith("//") -> "https:$iframeUrl"
@@ -82,8 +88,10 @@ internal class KodikExtractor @Inject constructor(
                 else -> "https://$iframeUrl"
             }
             try {
+                onStatus(PlayerStreamResolveStatus.FetchingPage)
                 // Cookies from the page load are required for /ftor auth
                 val (html, cookies) = fetchHtmlWithCookies(fullUrl, referer = "https://yani.tv/")
+                onStatus(PlayerStreamResolveStatus.ParsingPage)
                 val flat = html.replace("\n", "").replace("\r", "")
 
                 val urlParamsStr = Regex("""\burlParams\s*=\s*'([^']+)'""").find(flat)
@@ -130,7 +138,10 @@ internal class KodikExtractor @Inject constructor(
                 val origin = playerScriptUrl.substringBefore("/assets/js/")
 
                 val endpointPath = endpointPathByScriptUrl[playerScriptUrl]
-                    ?: fetchEndpointPath(playerScriptUrl, referer = fullUrl)
+                    ?: run {
+                        onStatus(PlayerStreamResolveStatus.LoadingPlayerScript)
+                        fetchEndpointPath(playerScriptUrl, referer = fullUrl)
+                    }
                         ?.also { endpointPathByScriptUrl[playerScriptUrl] = it }
                     ?: DEFAULT_ENDPOINT_PATH
 
@@ -153,6 +164,7 @@ internal class KodikExtractor @Inject constructor(
                     append("&info=%7B%7D")
                 }
 
+                onStatus(PlayerStreamResolveStatus.RequestingStream)
                 val response = try {
                     postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
                 } catch (e: Exception) {
@@ -161,7 +173,7 @@ internal class KodikExtractor @Inject constructor(
                 }
                 val responseText = response.body
 
-                val qualities = parseQualityMap(responseText)
+                val qualities = parseQualityMap(responseText, onStatus)
                 val streamUrl = qualities?.values?.lastOrNull()
                 if (streamUrl != null) {
                     KodikResult.Stream(
@@ -217,8 +229,12 @@ internal class KodikExtractor @Inject constructor(
             .firstOrNull()
     }
 
-    private suspend fun parseQualityMap(response: String): LinkedHashMap<String, String>? {
+    private suspend fun parseQualityMap(
+        response: String,
+        onStatus: (PlayerStreamResolveStatus) -> Unit,
+    ): LinkedHashMap<String, String>? {
         return try {
+            onStatus(PlayerStreamResolveStatus.DecodingLinks)
             val json = JSONObject(response)
             val links = json.optJSONObject("links") ?: return null
             val streams = QUALITY_ORDER.mapNotNull { quality ->
@@ -229,6 +245,7 @@ internal class KodikExtractor @Inject constructor(
                 val decoded = if (src.contains("//")) src else decodeKodikSrc(src) ?: return@mapNotNull null
                 quality to fixProtocol(decoded)
             }
+            onStatus(PlayerStreamResolveStatus.CheckingQualities)
             // HEAD-проверки качеств независимы — параллельно, но порядок качеств сохраняется.
             val resolved = coroutineScope {
                 streams.map { (quality, streamUrl) ->

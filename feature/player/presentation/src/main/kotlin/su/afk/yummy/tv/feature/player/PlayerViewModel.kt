@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.player
 
+import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.feature.player.utils.withResolveDetail
+import su.afk.yummy.tv.feature.player.utils.withResolveStep
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -912,6 +915,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     preserveCurrentStream = preserveStreamDuringRecovery,
                 )
             }
+            val resolveStartedAtMs = System.currentTimeMillis()
             val s = currentState
             val pendingResume = s.dubbingResumeMs.takeIf { canPreserveCurrent && it > 0L }
                 ?: destinationResumeMs
@@ -927,6 +931,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                     selectedQualityOverride = selectedQualityOverride,
                     forceRefresh = forceRefresh,
                     retryAttempts = sourceBehaviors.maxOfOrNull { it.retryAttempts } ?: 0,
+                    onStatus = { status ->
+                        setState { withResolveStep(status, System.currentTimeMillis() - resolveStartedAtMs) }
+                    },
+                    onDetail = { detail ->
+                        setState { withResolveDetail(detail, System.currentTimeMillis() - resolveStartedAtMs) }
+                    },
                 )
             ) {
                 is PlayerStreamLoadResult.RefreshSources -> {
@@ -975,6 +985,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 },
                 isPlaybackRecovering = completedRecovery && !resolveFailed,
                 showChangePlayerHint = false,
+                resolveStatus = null,
+                resolveLog = persistentListOf(),
             )
         }
         if (resolveFailed) return

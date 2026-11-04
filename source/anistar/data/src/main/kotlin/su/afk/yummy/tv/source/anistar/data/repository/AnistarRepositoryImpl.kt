@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.anistar.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.anistar.data.network.AnistarApi
 import su.afk.yummy.tv.source.anistar.data.utils.parseAnistarPlaylist
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarStreams
@@ -25,10 +27,12 @@ internal class AnistarRepositoryImpl @Inject constructor(
         val (usedMirror, html) = try {
             current to api.getPlayerPage(current, target.newsId)
         } catch (_: IOException) {
+            reportResolveStep(PlayerStreamResolveStatus.Retrying)
             val fresh = currentMirror(refresh = true)
             fresh to api.getPlayerPage(fresh, target.newsId)
         }
-        val entry = parseAnistarPlaylist(html).firstOrNull { it.number == target.episode } ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
+        val entry = parseAnistarPlaylist(html).firstOrNull { it.number == target.episode } ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
         return AnistarStreams(entry.hlsByQuality, referer = "$usedMirror/")
     }
 

@@ -20,6 +20,7 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.network.dns.tmdbImageDns
 import su.afk.yummy.tv.core.network.dns.tmdbImageTimeouts
+import su.afk.yummy.tv.core.network.progress.ResolveProgressPlugin
 import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
@@ -53,6 +54,7 @@ object NetworkModule {
             gzip()
             deflate()
         }
+        install(ResolveProgressPlugin)
     }
 
     /**
@@ -74,6 +76,7 @@ object NetworkModule {
                 requestTimeoutMillis = REQUEST_TIMEOUT_MS
             }
             install(ContentNegotiation) { json(json) }
+            install(ResolveProgressPlugin)
             install(ContentEncoding) {
                 gzip()
                 deflate()

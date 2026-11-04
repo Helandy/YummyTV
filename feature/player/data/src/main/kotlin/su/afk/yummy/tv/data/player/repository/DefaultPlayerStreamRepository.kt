@@ -8,8 +8,10 @@ import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.core.common.player.ResolveProgress
 import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 internal class DefaultPlayerStreamRepository @Inject constructor(
@@ -44,19 +46,35 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
         )
 
         // Источники модулей (`source://`) сами решают, когда нужен новый доступ: ссылку в общий кэш не кладём.
-        if (url.isExtraSourceUrl()) return extractor.extract(request, context)
+        if (url.isExtraSourceUrl()) return extractWithProgress(extractor, request)
 
         val cacheKey = "$url|${request.autoQualityLabel}"
         if (!request.forceRefresh) {
             cachedStream(cacheKey)?.let { return it }
         }
 
-        val result = extractor.extract(request, context)
+        val result = extractWithProgress(extractor, request)
         if (result is PlayerStreamResolveResult.Stream) {
             rememberStream(cacheKey, result)
         }
         return result
     }
+
+    /**
+     * Экстракторы без собственных шагов (Rutube, Sibnet, VK, источники `source://`…) получают шаги от
+     * сетевого плагина: он читает [ResolveProgress] из контекста корутины.
+     */
+    private suspend fun extractWithProgress(
+        extractor: PlayerStreamExtractor,
+        request: PlayerStreamRequest,
+    ): PlayerStreamResolveResult =
+        withContext(
+            ResolveProgress(
+                onStatus = request.onStatus,
+                onDetail = request.onDetail,
+                emitsSteps = !extractor.reportsOwnProgress,
+            ),
+        ) { extractor.extract(request, context) }
 
     override suspend fun openAllohaSession(request: PlayerStreamRequest): AllohaStreamSession? {
         val extractor = sessionAwareExtractors.firstOrNull { it.supports(request.iframeUrl) }

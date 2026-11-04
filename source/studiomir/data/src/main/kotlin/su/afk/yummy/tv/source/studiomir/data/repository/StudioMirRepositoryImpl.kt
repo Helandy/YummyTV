@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.studiomir.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.studiomir.data.network.StudioMirApi
 import su.afk.yummy.tv.source.studiomir.data.utils.studioMirEpisodeQualities
 import su.afk.yummy.tv.source.studiomir.data.utils.studioMirPageUrl
@@ -17,8 +19,9 @@ internal class StudioMirRepositoryImpl @Inject constructor(
     /** Страница тайтла → плейлист плеера в HTML → HLS-варианты нужной серии. Ссылки не подписаны, мастера у серии нет. */
     override suspend fun getStreams(target: StudioMirTarget): StudioMirStreams? {
         val page = api.getText(studioMirPageUrl(target.slug)) ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
         val qualities = studioMirEpisodeQualities(page, target.episode)
-        val best = qualities.values.lastOrNull() ?: return null
+        val best = qualities.values.lastOrNull() ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
         return StudioMirStreams(qualities = qualities, masterUrl = best)
     }
 }

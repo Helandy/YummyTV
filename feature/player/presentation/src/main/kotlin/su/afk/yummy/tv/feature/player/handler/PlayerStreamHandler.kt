@@ -12,6 +12,11 @@ import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.ResolveDetail
+import su.afk.yummy.tv.feature.player.utils.toText
+import su.afk.yummy.tv.feature.player.mapper.failedStepTextRes
+import su.afk.yummy.tv.feature.player.mapper.resolveProblemText
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.InvalidatePlayerStreamCacheUseCase
@@ -46,6 +51,8 @@ internal class PlayerStreamHandler @Inject constructor(
         reuseAllohaPlaybackSession: Boolean = true,
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
+        onStatus: (PlayerStreamResolveStatus) -> Unit = {},
+        onDetail: (ResolveDetail) -> Unit = {},
     ): PlayerStreamResult = coroutineScope {
         val request = PlayerStreamRequest(
             iframeUrl = activeIframeUrl(state),
@@ -53,6 +60,8 @@ internal class PlayerStreamHandler @Inject constructor(
             sessionFallbackTtlSeconds = ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS,
             reusePlaybackSession = reuseAllohaPlaybackSession,
             forceRefresh = forceRefresh,
+            onStatus = onStatus,
+            onDetail = onDetail,
         )
         // Started before the extraction is awaited: neither depends on it, and on the Alloha path
         // openAllohaStreamSession() drives a WebView for seconds, during which a DataStore read and
@@ -157,6 +166,34 @@ internal class PlayerStreamHandler @Inject constructor(
         if (connectivity.isOffline.value) R.string.player_no_connection else R.string.player_stream_error,
     )
 
+    /**
+     * Делает из общей ошибки понятную: что именно не так (код ответа, обрыв, сбой разбора) и на каком шаге.
+     * Для общих сбоев ([replaceGenericMessage]) заменяет типовую фразу, для остальных дописывает под ней.
+     * Без сети остаётся «нет соединения».
+     */
+    fun withFailedStep(
+        message: String,
+        step: PlayerStreamResolveStatus?,
+        details: List<ResolveDetail> = emptyList(),
+        replaceGenericMessage: Boolean = false,
+        technicalReason: String? = null,
+    ): String {
+        if (step == null || connectivity.isOffline.value) return message
+        val problem = resolveProblemText(strings, step, details)
+        return buildString {
+            if (problem != null && replaceGenericMessage) {
+                append(problem)
+            } else {
+                append(message)
+                append("\n")
+                append(problem ?: strings.get(step.failedStepTextRes()))
+            }
+            // Последние запросы: по ним видно, какой хост молчит или отвечает ошибкой.
+            details.takeLast(FAILED_STEP_DETAILS).forEach { append("\n").append(it.toText()) }
+            technicalReason?.trim()?.takeIf { it.isNotEmpty() }?.let { append("\n").append(it.take(TECHNICAL_REASON_MAX)) }
+        }
+    }
+
     fun playbackErrorMessage(message: String, errorCode: String? = null): String {
         if (connectivity.isOffline.value) return strings.get(R.string.player_no_connection)
         val detail = message.trim().takeIf { it.isNotBlank() }
@@ -200,6 +237,8 @@ internal class PlayerStreamHandler @Inject constructor(
     private companion object {
         const val ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS = 120
         const val ANIME4K_URL_PREFIX = "source://anime4k/"
+        const val FAILED_STEP_DETAILS = 3
+        const val TECHNICAL_REASON_MAX = 120
     }
 }
 

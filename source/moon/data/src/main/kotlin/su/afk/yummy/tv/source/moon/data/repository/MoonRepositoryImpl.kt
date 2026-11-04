@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.moon.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.moon.data.network.MoonApi
 import su.afk.yummy.tv.source.moon.data.utils.moonManifest
 import su.afk.yummy.tv.source.moon.data.utils.moonPage
@@ -20,8 +22,9 @@ internal class MoonRepositoryImpl @Inject constructor(
         val moonPage = moonPage(pageUrl) ?: return MoonStreamsResult.Failed("moon: bad url")
         val cleanUrl = moonPage.url
         val page = api.getPage(cleanUrl) ?: return MoonStreamsResult.NotFound
-        val script = moonScript(page) ?: return MoonStreamsResult.Failed("moon: payload")
-        val manifest = moonManifest(script) ?: return MoonStreamsResult.Failed("moon: manifest")
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
+        val script = moonScript(page) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return MoonStreamsResult.Failed("moon: payload") }
+        val manifest = moonManifest(script) ?: run { reportResolveStep(PlayerStreamResolveStatus.LinkNotFound); return MoonStreamsResult.Failed("moon: manifest") }
         return MoonStreamsResult.Success(MoonStreams(manifest.url, MoonApi.streamHeaders(cleanUrl, moonPage.origin), manifest.qualities))
     }
 }

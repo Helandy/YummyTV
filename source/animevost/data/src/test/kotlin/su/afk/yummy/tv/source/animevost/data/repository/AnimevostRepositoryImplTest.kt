@@ -3,10 +3,13 @@ package su.afk.yummy.tv.source.animevost.data.repository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.ResolveProgress
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.animevost.data.network.AnimevostApi
 import su.afk.yummy.tv.source.animevost.domain.model.AnimevostTarget
@@ -49,5 +52,28 @@ class AnimevostRepositoryImplTest : BaseUnitTest() {
         coEvery { api.getText(any()) } throws IOException("down")
 
         assertThrows(IOException::class.java) { kotlinx.coroutines.runBlocking { createRepository().getStreams(target) } }
+    }
+
+    @Test
+    fun `missing episode and missing link are reported as steps`() = runTest {
+        coEvery { api.getText(pageUrl) } returns resource("animevost-page.html")
+        val steps = mutableListOf<PlayerStreamResolveStatus>()
+
+        withContext(ResolveProgress(onStatus = { steps += it })) {
+            createRepository().getStreams(target.copy(episode = 9))
+        }
+        assertEquals(listOf(PlayerStreamResolveStatus.SearchingEpisode, PlayerStreamResolveStatus.EpisodeNotFound), steps)
+
+        steps.clear()
+        coEvery { api.getText("https://animevost.org/frame5.php?play=1606941982&old=1") } returns "<html>empty</html>"
+        withContext(ResolveProgress(onStatus = { steps += it })) { createRepository().getStreams(target) }
+        assertEquals(
+            listOf(
+                PlayerStreamResolveStatus.SearchingEpisode,
+                PlayerStreamResolveStatus.ExtractingLink,
+                PlayerStreamResolveStatus.LinkNotFound,
+            ),
+            steps,
+        )
     }
 }

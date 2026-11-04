@@ -20,6 +20,7 @@ import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.data.player.network.streamHeaders
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URLDecoder
 import javax.inject.Inject
@@ -42,6 +43,8 @@ internal class CvhExtractor @Inject constructor(
     private val AGGREGATOR = "mali"
     private val REFERER = "https://ru.yummyani.me/"
 
+    override val reportsOwnProgress: Boolean = true
+
     override fun supports(url: String): Boolean = url.isCvhPlayerUrl()
 
     override suspend fun extract(
@@ -51,6 +54,7 @@ internal class CvhExtractor @Inject constructor(
         extractQualities(
             iframeUrl = request.iframeUrl,
             useFailoverHost = request.forceRefresh,
+            onStatus = request.onStatus,
         )
 
     /**
@@ -61,6 +65,7 @@ internal class CvhExtractor @Inject constructor(
     private suspend fun extractQualities(
         iframeUrl: String,
         useFailoverHost: Boolean,
+        onStatus: (PlayerStreamResolveStatus) -> Unit,
     ): PlayerStreamResolveResult = withContext(Dispatchers.IO) {
         try {
             val fullUrl = if (iframeUrl.startsWith("//")) "https:$iframeUrl" else iframeUrl
@@ -76,9 +81,12 @@ internal class CvhExtractor @Inject constructor(
             val dubbingCode = params["dubbing_code"] ?: ""
             val dubbingLabel = params["dubbing"] ?: ""
 
+            onStatus(PlayerStreamResolveStatus.FetchingPage)
             val playlistJson = fetchJsonWithRetry(
                 url = "$PLAYLIST_URL?pub=$PUBLISHER_ID&id=$animeId&aggr=$AGGREGATOR",
+                onStatus = onStatus,
             )
+            onStatus(PlayerStreamResolveStatus.ParsingPage)
             val tags = playlistJson.optJSONArray("tags")
                 ?.let { array -> (0 until array.length()).map(array::optInt) }
                 .orEmpty()
@@ -105,6 +113,7 @@ internal class CvhExtractor @Inject constructor(
                 )
             }
 
+            onStatus(PlayerStreamResolveStatus.SelectingDubbing)
             val item = selectCvhItem(
                 items = playlistItems,
                 isSerial = isSerial,
@@ -125,8 +134,10 @@ internal class CvhExtractor @Inject constructor(
                 return@withContext PlayerStreamResolveResult.Failed("playlist item has no vkId")
             }
 
+            onStatus(PlayerStreamResolveStatus.RequestingStream)
             val videoJson =
-                fetchJsonWithRetry(url = "$VIDEO_URL/$vkId")
+                fetchJsonWithRetry(url = "$VIDEO_URL/$vkId", onStatus = onStatus)
+            onStatus(PlayerStreamResolveStatus.DecodingLinks)
             val failoverHost = videoJson.optString("failoverHost").takeIf { it.isNotBlank() }
             val sources = videoJson.optJSONObject("sources") ?: run {
                 logFailure(iframeUrl, "video response has no sources")
@@ -175,12 +186,16 @@ internal class CvhExtractor @Inject constructor(
      * HTTP-ошибка бросает исключение (а не маскируется под JSONException на HTML-теле), один
      * повтор после короткой паузы закрывает кратковременные сбои сети на слабых приставках.
      */
-    private suspend fun fetchJsonWithRetry(url: String): JSONObject {
+    private suspend fun fetchJsonWithRetry(
+        url: String,
+        onStatus: (PlayerStreamResolveStatus) -> Unit,
+    ): JSONObject {
         val headers = jsonHeaders(REFERER)
         return try {
             httpClient.fetchJson(url = url, headers = headers, throwOnFailure = true)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
+            onStatus(PlayerStreamResolveStatus.Retrying)
             delay(RETRY_DELAY_MS)
             httpClient.fetchJson(url = url, headers = headers, throwOnFailure = true)
         }

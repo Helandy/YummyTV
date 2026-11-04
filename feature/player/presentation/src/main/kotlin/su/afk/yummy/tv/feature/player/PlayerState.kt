@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.feature.player
 
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.feature.player.model.PlayerResolveLogEntry
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -56,6 +60,10 @@ class PlayerState {
         val zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val playerError: String? = null,
+        /** Текущий шаг получения потока; null, пока резолв не идёт. */
+        val resolveStatus: PlayerStreamResolveStatus? = null,
+        /** Журнал шагов и сетевых запросов текущего резолва. */
+        val resolveLog: ImmutableList<PlayerResolveLogEntry> = persistentListOf(),
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
         val playbackPositionMs: Long = 0L,

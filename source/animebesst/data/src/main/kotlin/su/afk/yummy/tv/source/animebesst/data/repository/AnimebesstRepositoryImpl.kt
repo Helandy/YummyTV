@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.animebesst.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.animebesst.data.network.AnimebesstApi
 import su.afk.yummy.tv.source.animebesst.data.utils.animebesstMaster
 import su.afk.yummy.tv.source.animebesst.data.utils.animebesstPageUrl
@@ -25,8 +27,11 @@ internal class AnimebesstRepositoryImpl @Inject constructor(
      */
     override suspend fun getStreams(target: AnimebesstTarget): AnimebesstStreams? {
         val page = page(target) ?: return null
-        val playerUrl = animebesstPlayerUrl(page, target.episode) ?: return null
-        val masterUrl = animebesstMaster(api.getText(playerUrl) ?: return null) ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
+        val playerUrl = animebesstPlayerUrl(page, target.episode) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
+        val masterUrl = animebesstMaster(api.getText(playerUrl) ?: return null) ?: run { reportResolveStep(PlayerStreamResolveStatus.LinkNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
         val master = api.getText(masterUrl) ?: return null
         return AnimebesstStreams(qualities = animebesstQualities(master, masterUrl), masterUrl = masterUrl)
     }

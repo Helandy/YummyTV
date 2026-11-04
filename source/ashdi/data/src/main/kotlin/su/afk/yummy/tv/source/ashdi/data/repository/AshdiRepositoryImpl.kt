@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.ashdi.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.ashdi.data.network.AshdiApi
 import su.afk.yummy.tv.source.ashdi.data.utils.ashdiMaster
 import su.afk.yummy.tv.source.ashdi.data.utils.ashdiQualities
@@ -23,8 +25,15 @@ internal class AshdiRepositoryImpl @Inject constructor(
     override suspend fun getStreams(pageUrl: String): AshdiStreamsResult {
         if (!isAshdiVodUrl(pageUrl)) return AshdiStreamsResult.NotFound
         val page = api.getText(pageUrl) ?: return AshdiStreamsResult.NotFound
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
         val masterUrl = ashdiMaster(page)
-            ?: return if (ashdiRegionBlocked(page)) AshdiStreamsResult.RegionBlocked else AshdiStreamsResult.NotFound
+            ?: return if (ashdiRegionBlocked(page)) {
+                AshdiStreamsResult.RegionBlocked
+            } else {
+                reportResolveStep(PlayerStreamResolveStatus.LinkNotFound)
+                AshdiStreamsResult.NotFound
+            }
+        reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
         val master = api.getText(masterUrl) ?: return AshdiStreamsResult.NotFound
         return AshdiStreamsResult.Success(AshdiStreams(qualities = ashdiQualities(master), masterUrl = masterUrl))
     }

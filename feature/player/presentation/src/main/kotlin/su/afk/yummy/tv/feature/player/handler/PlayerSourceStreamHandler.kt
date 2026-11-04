@@ -3,6 +3,9 @@ package su.afk.yummy.tv.feature.player.handler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.common.player.ResolveDetail
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
@@ -136,6 +139,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             streamFailoverHost = null,
             playerError = null,
             kodikBlockedError = null,
+            resolveStatus = PlayerStreamResolveStatus.Preparing,
+            resolveLog = persistentListOf(),
             dubbingResumeMs = if (preservePlaybackPosition) state.dubbingResumeMs else -1L,
             resumeFromMs = if (preservePlaybackPosition) state.resumeFromMs else 0L,
             playbackPositionMs = if (preservePlaybackPosition) state.playbackPositionMs else 0L,
@@ -168,6 +173,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             streamFailoverHost = null,
             playerError = null,
             kodikBlockedError = null,
+            resolveStatus = PlayerStreamResolveStatus.Preparing,
+            resolveLog = persistentListOf(),
             resumeFromMs = 0L,
             playbackPositionMs = 0L,
             playbackDurationMs = 0L,
@@ -196,7 +203,11 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
         retryAttempts: Int = 0,
+        onStatus: (PlayerStreamResolveStatus) -> Unit = {},
+        onDetail: (ResolveDetail) -> Unit = {},
     ): PlayerStreamLoadResult {
+        var lastStatus: PlayerStreamResolveStatus? = null
+        val details = java.util.Collections.synchronizedList(ArrayList<ResolveDetail>())
         val result = runSuspendCatching {
             streamHandler.resolve(
                 state = state,
@@ -204,6 +215,14 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                 reuseAllohaPlaybackSession = reuseAllohaPlaybackSession,
                 selectedQualityOverride = selectedQualityOverride,
                 forceRefresh = forceRefresh,
+                onStatus = { status ->
+                    lastStatus = status
+                    onStatus(status)
+                },
+                onDetail = { detail ->
+                    details += detail
+                    onDetail(detail)
+                },
             )
         }.getOrElse { exception ->
             analytics.eventStreamResolveFailed(
@@ -221,8 +240,13 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                         streamUrl = null,
                         streamHeaders = emptyMap(),
                         streamQualityMap = null,
-                        playerError = streamHandler.playbackErrorMessage(
-                            exception.localizedMessage ?: exception.message.orEmpty()
+                        playerError = streamHandler.withFailedStep(
+                            streamHandler.playbackErrorMessage(
+                                exception.localizedMessage ?: exception.message.orEmpty()
+                            ),
+                            lastStatus,
+                            details.toList(),
+                            replaceGenericMessage = true,
                         ),
                     ),
                     consumedDestinationResume = false,
@@ -287,7 +311,13 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                     PlayerStreamLoadResult.RefreshSources(resumeMode)
                 } else {
                     PlayerStreamLoadResult.State(
-                        state.copy(playerError = result.message),
+                        state.copy(playerError = streamHandler.withFailedStep(
+                                result.message,
+                                lastStatus,
+                                details.toList(),
+                                replaceGenericMessage = result.reason == PlayerStreamResult.REASON_FAILED,
+                                technicalReason = result.detail,
+                            )),
                         consumedDestinationResume = false,
                     )
                 }

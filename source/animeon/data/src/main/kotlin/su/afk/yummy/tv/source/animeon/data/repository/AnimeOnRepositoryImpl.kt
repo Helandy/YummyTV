@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.animeon.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.source.animeon.data.network.AnimeOnApi
 import su.afk.yummy.tv.source.animeon.data.utils.animeOnEpisodeId
 import su.afk.yummy.tv.source.animeon.data.utils.animeOnEpisodesUrl
@@ -36,11 +38,13 @@ internal class AnimeOnRepositoryImpl @Inject constructor(
      * приходит без карты качеств: плеер играет мастер адаптивно, а гео-блока у Fenix и Moon нет.
      */
     override suspend fun getStreams(target: AnimeOnTarget): AnimeOnStreamsResult {
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
         val episodes = api.getText(animeOnEpisodesUrl(target.titleKey, target.playerId, target.translationId, target.episode))
             ?: return AnimeOnStreamsResult.NotFound
-        val episodeId = animeOnEpisodeId(episodes, target.episode) ?: return AnimeOnStreamsResult.NotFound
+        val episodeId = animeOnEpisodeId(episodes, target.episode) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return AnimeOnStreamsResult.NotFound }
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
         val video = api.getText(animeOnVideoUrl(episodeId)) ?: return AnimeOnStreamsResult.NotFound
-        val playerUrl = animeOnPlayerUrl(video) ?: return AnimeOnStreamsResult.NotFound
+        val playerUrl = animeOnPlayerUrl(video) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return AnimeOnStreamsResult.NotFound }
         return when {
             isMoonPlayerUrl(playerUrl) -> getMoonStreams(playerUrl)
             isFenixPlayerUrl(playerUrl) -> getFenixStreams(playerUrl, animeOnPlayerTrack(video))

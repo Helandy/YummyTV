@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.fenix.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -33,20 +35,24 @@ internal class FenixRepositoryImpl @Inject constructor(
      * проверяется на обоих хостах параллельно, см. [firstReachable].
      */
     override suspend fun getStreams(pageUrl: String, track: String?): FenixStreamsResult {
-        val page = parseFenixPage(pageUrl) ?: return FenixStreamsResult.NotFound
+        val page = parseFenixPage(pageUrl) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return FenixStreamsResult.NotFound }
         val html = api.getText("https://fenixplay.xyz${page.path}") ?: return FenixStreamsResult.NotFound
-        val playlist = fenixPlaylist(html) ?: return FenixStreamsResult.NotFound
-        val token = fenixAccessToken(html) ?: return FenixStreamsResult.NotFound
-        val indexed = fenixEpisode(playlist, page) ?: return FenixStreamsResult.NotFound
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
+        val playlist = fenixPlaylist(html) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return FenixStreamsResult.NotFound }
+        val token = fenixAccessToken(html) ?: run { reportResolveStep(PlayerStreamResolveStatus.LinkNotFound); return FenixStreamsResult.NotFound }
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
+        val indexed = fenixEpisode(playlist, page) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return FenixStreamsResult.NotFound }
         val episode = if (indexed.hasStreams()) {
             indexed
         } else {
-            val path = fenixEpisodeDetailPath(playlist.slug, indexed) ?: return FenixStreamsResult.NotFound
+            reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
+            val path = fenixEpisodeDetailPath(playlist.slug, indexed) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return FenixStreamsResult.NotFound }
             val access = playlist.playback?.token?.takeIf { it.isNotBlank() } ?: return FenixStreamsResult.NotFound
             api.getPlayback(path, access)?.let(::fenixEpisodeDetail) ?: return FenixStreamsResult.NotFound
         }
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
         val master = fenixEpisodeMaster(episode, page, track)?.let { signedFenixMaster(it, token) }
-            ?: return FenixStreamsResult.NotFound
+            ?: run { reportResolveStep(PlayerStreamResolveStatus.LinkNotFound); return FenixStreamsResult.NotFound }
         val edgeMaster = fenixEdgeAccess(html)?.let { signedFenixEdgeMaster(master, it) }
             ?: return FenixStreamsResult.Success(FenixStreams(masterUrl = master))
         return FenixStreamsResult.Success(FenixStreams(masterUrl = firstReachable(master, edgeMaster)))

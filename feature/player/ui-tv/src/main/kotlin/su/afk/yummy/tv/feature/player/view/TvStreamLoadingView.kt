@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.feature.player.common.PlayerResolveLogView
+import su.afk.yummy.tv.feature.player.model.PlayerResolveLogEntry
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun TvStreamLoadingView(
+    @StringRes messageRes: Int = R.string.player_loading_stream,
+    resolveLog: List<PlayerResolveLogEntry> = emptyList(),
     onChangePlayer: (() -> Unit)? = null,
     onChangeDubbing: (() -> Unit)? = null,
 ) {
@@ -39,11 +45,12 @@ internal fun TvStreamLoadingView(
                 YummyLoadingIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    text = stringResource(R.string.player_loading_stream),
+                    text = stringResource(messageRes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                 )
             }
+            PlayerResolveLogView(resolveLog, fontSize = 14.sp)
             if (onChangePlayer != null || onChangeDubbing != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (onChangePlayer != null) {

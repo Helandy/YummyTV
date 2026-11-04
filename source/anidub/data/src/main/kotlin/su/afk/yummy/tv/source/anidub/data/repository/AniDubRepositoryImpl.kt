@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.source.anidub.data.repository
 
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.source.anidub.data.network.AniDubApi
 import su.afk.yummy.tv.source.anidub.data.utils.ANIDUB_BASE_URL
@@ -42,7 +44,9 @@ internal class AniDubRepositoryImpl @Inject constructor(
         val ua = userAgents.userAgent
         val page = api.getText(aniDubPageUrl(target.slug), userAgent = ua) ?: return null
         // Тайтл без плеера (только Sibnet) приложением не играется: для него серии нет.
-        val player = aniDubPlayer(page) ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
+        val player = aniDubPlayer(page) ?: run { reportResolveStep(PlayerStreamResolveStatus.PlayerNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
         val playlist = try {
             api.getText(player.playlistUrl(), referer = "$ANIDUB_BASE_URL/", userAgent = ua)
         } catch (e: CancellationException) {
@@ -50,7 +54,9 @@ internal class AniDubRepositoryImpl @Inject constructor(
         } catch (_: IOException) {
             null
         }
-        val episodeHash = aniDubEpisodeHash(playlist, target.episode, player.hash) ?: return null
+        reportResolveStep(PlayerStreamResolveStatus.SearchingEpisode)
+        val episodeHash = aniDubEpisodeHash(playlist, target.episode, player.hash) ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
+        reportResolveStep(PlayerStreamResolveStatus.ExtractingLink)
         return masterStreams(player, player.masterUrl(episodeHash), aniDubReleaseHeight(playlist), ua)
     }
 
@@ -64,8 +70,10 @@ internal class AniDubRepositoryImpl @Inject constructor(
         val headers = mapOf("User-Agent" to ua, "Accept" to "*/*", "Referer" to "${player.host}/", "Origin" to player.host)
         var last: AniDubStreams? = null
         var lastBad: AniDubStreams? = null
-        repeat(MAX_ATTEMPTS) {
-            val master = api.getText(masterUrl, referer = "${player.host}/", userAgent = ua) ?: return null
+        repeat(MAX_ATTEMPTS) { attempt ->
+            if (attempt > 0) reportResolveStep(PlayerStreamResolveStatus.Retrying)
+            reportResolveStep(PlayerStreamResolveStatus.LoadingPlaylist)
+            val master = api.getText(masterUrl, referer = "${player.host}/", userAgent = ua) ?: run { reportResolveStep(PlayerStreamResolveStatus.LinkNotFound); return null }
             val qualities = aniDubQualities(master, releaseHeight)
             if (qualities.isEmpty()) {
                 // Мастер без вариантов: плеер играет его адаптивно, узел проверить нечем.
