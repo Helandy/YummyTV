@@ -52,7 +52,33 @@ class AllohaResponseParsingTest : BaseUnitTest() {
     }
 
     @Test
-    fun `mirror urls keep the first one`() {
+    fun `the mirror picker decides which of the listed urls plays`() {
+        val sources = parseSources(
+            """{"hlsSource":[{"quality":{"720":"//a/720.m3u8 or //b/720.m3u8","480":"//a/480.m3u8"}}]}""",
+            analytics,
+            pickMirror = { mirrors -> mirrors.last() },
+        )
+
+        val ladder = sources.audioTracks.single().qualities
+        assertEquals("https://b/720.m3u8", ladder["720p"])
+        assertEquals("https://a/480.m3u8", ladder["480p"])
+    }
+
+    @Test
+    fun `the picker gets every mirror of a quality normalized`() {
+        val seen = mutableListOf<List<String>>()
+
+        parseSources(
+            """{"hlsSource":[{"quality":{"720":" //a/720.m3u8  or  //b/720.m3u8 "}}]}""",
+            analytics,
+            pickMirror = { mirrors -> mirrors.also(seen::add).first() },
+        )
+
+        assertEquals(listOf(listOf("https://a/720.m3u8", "https://b/720.m3u8")), seen)
+    }
+
+    @Test
+    fun `without a picker the first mirror plays`() {
         val sources = parse(
             """{"hlsSource":[{"quality":{"720":"//a/720.m3u8 or //b/720.m3u8"}}]}""",
         )

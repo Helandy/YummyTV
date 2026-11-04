@@ -7,8 +7,10 @@ import okhttp3.Request
 import org.json.JSONException
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import java.io.IOException
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 /** What one HTTP round trip to the player produced: parsed sources plus the headers the CDN expects. */
 internal data class AllohaOpenedSession(
@@ -40,13 +42,32 @@ internal class AllohaHttpSessionOpener(
             ?: throw IOException("Alloha: active media id is missing")
 
         val origin = originOf(iframeUrl)
+        val headers = allohaCdnHeaders(origin, userAgent)
         val bnsi = fetchBnsi(origin, iframeUrl, activeId, token, allohaBorthHeader(viewporti))
+        val picker = AllohaMirrorPicker { url -> isReachable(url, headers) }
         val sources = try {
-            parseSources(bnsi, analytics)
+            parseSources(bnsi, analytics, picker::pick)
         } catch (error: JSONException) {
             throw IOException("Alloha: bnsi is not valid json", error)
         }
-        return AllohaOpenedSession(sources = sources, headers = allohaCdnHeaders(origin, userAgent))
+        return AllohaOpenedSession(sources = sources, headers = headers)
+    }
+
+    /**
+     * Whether the CDN serves [url] to a request that looks like the player's. The playlist is a few
+     * hundred bytes and only the status is read, so a mirror that answers 403 or does not answer
+     * within [MIRROR_PROBE_TIMEOUT_MS] is skipped.
+     */
+    private fun isReachable(url: String, headers: Map<String, String>): Boolean = try {
+        val request = Request.Builder().url(url).apply {
+            headers.forEach { (name, value) -> header(name, value) }
+        }.build()
+        client.newBuilder().callTimeout(MIRROR_PROBE_TIMEOUT_MS, TimeUnit.MILLISECONDS).build()
+            .newCall(request).execute().use { it.isSuccessful }
+    } catch (error: IOException) {
+        false
+    }.also { reachable ->
+        if (!reachable) analytics.log(LOG_TAG) { "mirror is not reachable, using the next one host=${url.hostOf()}" }
     }
 
     private fun fetchPage(iframeUrl: String): String {
@@ -103,7 +124,12 @@ internal class AllohaHttpSessionOpener(
         return runCatching { JSONObject(json).getJSONObject("active").getLong("id") }.getOrNull()
     }
 
+    private fun String.hostOf(): String = runCatching { toHttpUrl().host }.getOrDefault("unknown")
+
     private companion object {
+        const val LOG_TAG = PersistedLogTags.ALLOHA_EXTRACTOR
+        const val MIRROR_PROBE_TIMEOUT_MS = 4_000L
+
         // The page is served only to a visitor that arrives from the site that embeds it.
         const val PAGE_REFERER = "https://ru.yummyani.me/"
         const val ACCEPT_LANGUAGE = "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7"

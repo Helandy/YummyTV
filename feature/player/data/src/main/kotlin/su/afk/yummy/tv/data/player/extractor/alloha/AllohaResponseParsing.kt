@@ -13,9 +13,14 @@ internal data class AllohaParsedSources(
     val subtitles: List<AllohaSubtitleTrack>,
 )
 
+/**
+ * @param pickMirror chooses the URL to play out of the mirrors listed for one quality; the first
+ * one by default.
+ */
 internal fun parseSources(
     responseJson: String,
     analytics: AnalyticsTracker,
+    pickMirror: (mirrors: List<String>) -> String = { it.first() },
 ): AllohaParsedSources {
     val root = JSONObject(responseJson)
     val sources = root.optJSONArray("hlsSource")
@@ -27,13 +32,12 @@ internal fun parseSources(
             val quality = source.optJSONObject("quality") ?: continue
             val qualities = linkedMapOf<String, String>()
             quality.keys().forEach { label ->
-                (quality.optNonBlankString(label) ?: return@forEach)
+                val mirrors = (quality.optNonBlankString(label) ?: return@forEach)
                     .split(" or ")
-                    .firstOrNull()
-                    ?.trim()
-                    ?.normalizeStreamUrl()
-                    ?.takeIf(String::isNotBlank)
-                    ?.let { qualities.putIfAbsent(label.normalizeQualityLabel(), it) }
+                    .map { it.trim().normalizeStreamUrl() }
+                    .filter(String::isNotBlank)
+                if (mirrors.isEmpty()) return@forEach
+                qualities.putIfAbsent(label.normalizeQualityLabel(), pickMirror(mirrors))
             }
             if (qualities.isEmpty()) continue
             val sorted = qualities.entries
