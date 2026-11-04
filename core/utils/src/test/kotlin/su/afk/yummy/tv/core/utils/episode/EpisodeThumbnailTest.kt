@@ -30,7 +30,7 @@ class EpisodeThumbnailTest : BaseUnitTest() {
     fun `known episode key is versioned so frames cached before TMDB are not reused`() {
         val thumbnail = EpisodeThumbnail(10, "01", iframeUrl = "//kodikplayer.com/season/1/a/720p?episode=1")
 
-        assertEquals("episode_thumb_v2:10:1", thumbnail.cacheKey)
+        assertEquals("episode_thumb_v3:10:1", thumbnail.cacheKey)
     }
 
     @Test

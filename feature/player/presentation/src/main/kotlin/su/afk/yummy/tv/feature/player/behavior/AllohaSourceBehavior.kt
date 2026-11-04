@@ -9,7 +9,6 @@ import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
-import su.afk.yummy.tv.feature.player.handler.PlayerAllohaSessionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaTrackPreferenceHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
@@ -18,20 +17,17 @@ import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.awaitOnline
+import su.afk.yummy.tv.feature.player.utils.withAllohaAudio
 import javax.inject.Inject
 
 /**
- * Поведение Alloha: живая подписанная сессия, восстановление воспроизведения свежей сессией
- * и запомненный выбор аудиодорожки/субтитров.
+ * Поведение Alloha: открытая по HTTP сессия с прямыми CDN-URL, восстановление воспроизведения
+ * свежей сессией и запомненный выбор аудиодорожки/субтитров.
  *
- * `session.selectAudioTrack()` затирает подписанный master сырым bnsi-URL, поэтому сохранённая
- * дорожка применяется только после того, как поток пошёл ([afterStreamApplied] идёт после
- * [onStreamActivated]), иначе часть CDN отвечает 403 `token_decrypt`. Сессия активируется только
- * при успешном резолве, а перед каждой новой попыткой восстановления закрывается, чтобы не
- * отдавать протухший токен. Порядок проверять на устройстве, а не упрощать по чтению.
+ * Сессия активируется только при успешном резолве, а перед каждой новой попыткой восстановления
+ * закрывается: ссылки живут не вечно, и ошибка воспроизведения лечится открытием новой сессии.
  */
 internal class AllohaSourceBehavior @Inject constructor(
-    private val session: PlayerAllohaSessionHandler,
     private val recovery: PlayerAllohaRecoveryHandler,
     private val trackPreference: PlayerAllohaTrackPreferenceHandler,
     private val analytics: PlayerAnalytics,
@@ -97,13 +93,6 @@ internal class AllohaSourceBehavior @Inject constructor(
     override fun recoveryResumePositionMs(): Long? =
         recovery.positionMs.takeIf { recovery.isRecovering && it > 0L }
 
-    override fun onStreamActivated(result: PlayerStreamLoadResult.State) {
-        session.activate(result.allohaSession, host.scope)
-        result.state.selectedQuality?.let { quality ->
-            session.selectQuality(quality)
-        }
-    }
-
     override fun retriesFailedResolve(): Boolean {
         if (!recovery.isRecovering || !handles(host.state)) return false
         // Провал резолва во время восстановления считается такой же попыткой, как ошибка
@@ -145,33 +134,19 @@ internal class AllohaSourceBehavior @Inject constructor(
         recoveryJob?.cancel()
     }
 
-    override fun close(immediately: Boolean) {
-        session.close(immediately)
-    }
-
-    /** Качество меняется внутри живой сессии; идущее восстановление подхватит его же. */
+    /** Идущее восстановление подхватит выбранное качество. */
     fun onQualitySelected(quality: String) {
         if (recovery.isRecovering) {
             recovery.selectedQuality = quality
         }
-        session.selectQuality(quality)
     }
 
     fun onAudioTrackSelected(audioId: String, positionMs: Long) {
         val position = positionMs.coerceAtLeast(0L)
-        // Same live session, different stream URL - no re-extraction, like quality.
-        val stream = session.selectAudioTrack(audioId) ?: return
+        // Same loaded stream, different dubbing ladder - no re-extraction, like quality.
+        if (host.state.withAllohaAudio(audioId) == null) return
         host.update {
-            copy(
-                selectedAllohaAudioId = stream.selectedAllohaAudioId,
-                streamQualityMap = stream.qualities,
-                selectedQuality = selectedQuality?.takeIf {
-                    stream.qualities?.containsKey(it) == true
-                },
-                streamUrl = stream.url,
-                resumeFromMs = position,
-                playbackPositionMs = position,
-            )
+            (withAllohaAudio(audioId) ?: this).copy(resumeFromMs = position, playbackPositionMs = position)
         }
         saveAudioPreference(audioId)
     }
@@ -197,7 +172,6 @@ internal class AllohaSourceBehavior @Inject constructor(
     ) {
         host.cancelStreamLoad()
         recoveryJob?.cancel()
-        session.close()
         val resumePosition = positionMs.coerceAtLeast(0L)
         recovery.start(resumePosition, selectedQuality)
         host.changePlayerHint.cancel()
@@ -262,8 +236,7 @@ internal class AllohaSourceBehavior @Inject constructor(
                 handles(host.state) &&
                 recovery.isRecovering
             ) {
-                session.close()
-                analytics.debugLog {
+                        analytics.debugLog {
                     "Opening fresh Alloha playback session " +
                         "attempt=$attempt/${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} " +
                         "positionMs=${recovery.positionMs}"
@@ -271,7 +244,7 @@ internal class AllohaSourceBehavior @Inject constructor(
                 host.loadStream(
                     PlayerStreamLoadRequest(
                         refreshSourcesOnFailure = false,
-                        forceFreshAllohaSession = true,
+                        forceRefresh = true,
                         selectedQualityOverride = recovery.selectedQuality,
                     ),
                 )
@@ -298,19 +271,7 @@ internal class AllohaSourceBehavior @Inject constructor(
 
         val audioId = match.audioId
         if (audioId != null && audioId != host.state.selectedAllohaAudioId) {
-            val stream = session.selectAudioTrack(audioId)
-            if (stream != null) {
-                host.update {
-                    copy(
-                        selectedAllohaAudioId = stream.selectedAllohaAudioId,
-                        streamQualityMap = stream.qualities,
-                        selectedQuality = selectedQuality?.takeIf {
-                            stream.qualities?.containsKey(it) == true
-                        },
-                        streamUrl = stream.url,
-                    )
-                }
-            }
+            host.update { withAllohaAudio(audioId) ?: this }
         }
 
         if (match.applySubtitleChange && match.subtitleIndex != host.state.selectedAllohaSubtitleIndex) {

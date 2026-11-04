@@ -38,7 +38,7 @@
   медиа-сессии, подключение UI, различия ТВ и мобилки.
 - [other-extractors.md](other-extractors.md) — как iframe-URL превращается в поток: общая схема и
   Kodik, VK, Rutube, Sibnet, Aksor, Zedfilm.
-- [alloha-player.md](alloha-player.md) — Alloha: добыча сессии через WebView, loopback-прокси,
+- [alloha-player.md](alloha-player.md) — Alloha: сессия по HTTP (Borth + bnsi), loopback-прокси,
   ротация, лестница отказа. Открывать при любой правке `extractor/alloha/`.
 - [cvh-player.md](cvh-player.md) — CVH: подписанные ссылки okcdn, переезд на резервный узел,
   User-Agent, Cast.

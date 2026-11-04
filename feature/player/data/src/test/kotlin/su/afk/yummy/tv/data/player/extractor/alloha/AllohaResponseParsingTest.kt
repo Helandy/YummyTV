@@ -91,8 +91,8 @@ class AllohaResponseParsingTest : BaseUnitTest() {
             ]}""",
         )
 
-        val first = sources.audioTracks[0].track
-        val second = sources.audioTracks[1].track
+        val first = sources.audioTracks[0]
+        val second = sources.audioTracks[1]
         assertEquals("0", first.id)
         assertEquals("#1", first.label)
         assertFalse(first.isDefault)
@@ -107,7 +107,7 @@ class AllohaResponseParsingTest : BaseUnitTest() {
             """{"hlsSource":["junk",{"label":"no ladder"},{"quality":{"720":"//a/2.m3u8"}}]}""",
         )
 
-        val track = sources.audioTracks.single().track
+        val track = sources.audioTracks.single()
         assertEquals("2", track.id)
         assertEquals("#3", track.label)
     }
@@ -137,18 +137,6 @@ class AllohaResponseParsingTest : BaseUnitTest() {
         val sources = parse("""{"hlsSource":[{"quality":{"720":"//a/0.m3u8"}}]}""")
 
         assertTrue(sources.subtitles.isEmpty())
-    }
-
-    @Test
-    fun `headers are lowercased and blank values dropped`() {
-        val headers = parseHeaders("""{"User-Agent":"UA","Referer":"  ","X-Token":"abc"}""")
-
-        assertEquals(mapOf("user-agent" to "UA", "x-token" to "abc"), headers)
-    }
-
-    @Test
-    fun `malformed headers are a json error`() {
-        assertThrows(JSONException::class.java) { parseHeaders("nope") }
     }
 
     @Test

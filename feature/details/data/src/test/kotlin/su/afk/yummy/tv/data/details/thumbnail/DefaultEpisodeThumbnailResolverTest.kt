@@ -21,6 +21,11 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
     private val cachedVideos: GetCachedAnimeVideosUseCase = mockk()
     private val kodik: ResolveKodikThumbnailUrlUseCase = mockk()
 
+    init {
+        // по умолчанию своей копии кадра нет; нужные тесты переопределяют
+        coEvery { tmdb.mirrorUrl(any(), any()) } returns null
+    }
+
     private fun resolver() = DefaultEpisodeThumbnailResolver(tmdb, cachedVideos, kodik)
 
     @Test
@@ -43,6 +48,17 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
         coVerify(exactly = 0) { kodik(any()) }
         // готовая картинка записи у известной серии в цепочке не участвует
         assertEquals(listOf(TMDB, KODIK_THUMB), candidates.toList())
+    }
+
+    @Test
+    fun `own avif copy goes right after tmdb and before kodik`() = runTest {
+        coEvery { tmdb.previewUrl(ANIME_ID, "1") } returns TMDB
+        coEvery { tmdb.mirrorUrl(ANIME_ID, "1") } returns MIRROR
+        coEvery { kodik(IFRAME) } returns KODIK_THUMB
+
+        val candidates = resolver().candidateUrls(EpisodeThumbnail(ANIME_ID, "1", IFRAME, IMAGE))
+
+        assertEquals(listOf(TMDB, MIRROR, KODIK_THUMB), candidates.toList())
     }
 
     @Test
@@ -99,6 +115,7 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
 
     private companion object {
         const val ANIME_ID = 5
+        const val MIRROR = "https://static.afk.su/img/still/abc.avif"
         const val TMDB = "https://image.tmdb.org/t/p/w300/tmdb.jpg"
         const val IMAGE = "https://i.kodikres.com/screenshots/1.jpg"
         const val IFRAME = "//kodikplayer.com/season/1/a/720p?episode=1"

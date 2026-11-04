@@ -62,9 +62,6 @@ internal interface PlayerSourceBehavior {
     /** Позиция, с которой продолжить после восстановления, или null. */
     fun recoveryResumePositionMs(): Long? = null
 
-    /** Поток успешно получен — можно активировать связанную с ним сессию. */
-    fun onStreamActivated(result: PlayerStreamLoadResult.State) {}
-
     /** Резолв провалился. true — поведение само запланировало новую попытку, результат не применять. */
     fun retriesFailedResolve(): Boolean = false
 
@@ -80,7 +77,4 @@ internal interface PlayerSourceBehavior {
 
     /** Смена серии/источника: сбросить счётчики и отменить отложенные попытки. */
     fun reset()
-
-    /** Освободить сессии источника. Отложенные попытки не отменяет — для этого [reset]. */
-    fun close(immediately: Boolean = true) {}
 }

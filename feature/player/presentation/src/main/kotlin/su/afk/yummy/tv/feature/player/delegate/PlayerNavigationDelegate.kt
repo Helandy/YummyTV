@@ -27,11 +27,10 @@ internal class PlayerNavigationDelegate @Inject constructor(
 
     private var isLeaving = false
 
-    fun back(host: PlayerStateHost, beforeLeave: () -> Unit) {
+    fun back(host: PlayerStateHost) {
         if (isLeaving) return
         isLeaving = true
         navigateAndSaveProgress(host) {
-            beforeLeave()
             nav.back()
         }
     }
@@ -61,11 +60,10 @@ internal class PlayerNavigationDelegate @Inject constructor(
      * на той серии, с которой его когда-то открыли. Сохранение прогресса уезжает в
      * [ioScope]: `nav.replace` уничтожает NavEntry плеера, и `viewModelScope` вместе с ним.
      */
-    fun returnToDetailsAfterTvBackground(host: PlayerStateHost, beforeLeave: () -> Unit) {
+    fun returnToDetailsAfterTvBackground(host: PlayerStateHost) {
         if (isNavigatingToChildScreen) return
         val animeId = host.state.animeId
         navigateAndSaveProgress(host) {
-            beforeLeave()
             if (animeId <= 0) {
                 nav.back()
             } else {

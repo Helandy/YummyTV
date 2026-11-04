@@ -241,7 +241,7 @@
     <string name="settings_subtitle_edge_shadow">Shadow</string>
     <string name="settings_player_buffer_title">Player buffer size</string>
     <string name="settings_player_buffer_minimal">Minimal</string>
-    <string name="settings_player_buffer_minimal_hint">5–15 s ahead, up to 16 MB of RAM. Fastest start, but rebuffers more often. Alloha may pause while its session refreshes.</string>
+    <string name="settings_player_buffer_minimal_hint">5–15 s ahead, up to 16 MB of RAM. Fastest start, but rebuffers more often.</string>
     <string name="settings_player_buffer_small">Small</string>
     <string name="settings_player_buffer_small_hint">18–30 s ahead, up to 24 MB of RAM. Easy on memory.</string>
     <string name="settings_player_buffer_medium">Medium</string>

@@ -30,7 +30,6 @@ class ExtraSourceExtractorTest : BaseUnitTest() {
     private fun request(url: String) = PlayerStreamRequest(
         iframeUrl = url,
         autoQualityLabel = "auto",
-        reusePlaybackSession = true,
         forceRefresh = false,
     )
 

@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.data.videodownload.strategy
 
 import su.afk.yummy.tv.data.videodownload.worker.utils.StreamKind
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 
 /**
@@ -10,11 +9,6 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
  */
 internal interface DownloadPlayerStrategy {
     val playerLabel: String
-
-    /** Whether this player's stream is served through a live, rotating session (only Alloha today). */
-    fun usesLiveSession(streamKind: StreamKind): Boolean
-
-    suspend fun openLiveSession(item: VideoDownloadItem): AllohaStreamSession?
 
     /**
      * Ротируются ли у источника подписанные URL сегментов. Определяет, чем считать идентичность

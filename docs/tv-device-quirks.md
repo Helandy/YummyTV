@@ -67,9 +67,6 @@ AndroidKeyStore бывает нерабочим, и тогда приложен�
 
 ## Сеть
 
-- Прокси Alloha слушает `InetAddress.getByName("127.0.0.1")`, а не `getLoopbackAddress()`: на
-  устройстве с предпочтением IPv6 последний даёт `::1`, и выдаваемые URL, ведущие на `127.0.0.1`,
-  получили бы `ConnectException` (комментарий в `AllohaStreamProxy`).
 - `network_security_config` разрешает cleartext только для `127.0.0.1` и `localhost`; запрос на
   LAN-адрес через OkHttp не проходит, поэтому передача сессии использует CIO-клиент
   ([local-auth-session-transfer.md](local-auth-session-transfer.md)).

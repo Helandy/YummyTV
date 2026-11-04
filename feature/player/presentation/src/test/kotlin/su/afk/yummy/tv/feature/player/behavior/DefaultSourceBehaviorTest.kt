@@ -48,7 +48,6 @@ class DefaultSourceBehaviorTest : BaseUnitTest() {
 
         runCurrent()
         assertEquals(0, harness.state.retryKey)
-        verify(exactly = 1) { harness.host.closeSourceSessions() }
         val request = harness.loadRequests.single()
         assertTrue(request.forceRefresh)
         assertTrue(request.refreshSourcesOnFailure)

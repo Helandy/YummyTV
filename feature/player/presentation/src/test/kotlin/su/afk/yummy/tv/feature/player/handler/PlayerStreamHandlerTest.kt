@@ -10,7 +10,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -20,12 +19,11 @@ import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
+import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.InvalidatePlayerStreamCacheUseCase
-import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
@@ -40,7 +38,6 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     private val settingsStore: PlayerSettingsStore = mockk()
     private val resolvePlayerStream: ResolvePlayerStreamUseCase = mockk()
     private val invalidateCache: InvalidatePlayerStreamCacheUseCase = mockk(relaxed = true)
-    private val openAllohaSession: OpenAllohaStreamSessionUseCase = mockk()
     private val strings: StringProvider = mockk()
     private val offline = MutableStateFlow(false)
     private val connectivity: NetworkConnectivityMonitor = mockk { every { isOffline } returns offline }
@@ -151,14 +148,22 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     }
 
     @Test
-    fun `alloha plays the session stream and gets the selected quality`() = runTest {
-        val session = allohaSession(stream("720p", "1080p"))
+    fun `alloha is resolved like any other source and carries its dubbing ladders`() = runTest {
+        val tracks = listOf(
+            AllohaAudioTrack("a", "A", true, linkedMapOf("720p" to "https://cdn/a720")),
+            AllohaAudioTrack("b", "B", false, linkedMapOf("720p" to "https://cdn/b720")),
+        )
+        coEvery { resolvePlayerStream(any()) } returns stream("720p", "1080p").copy(
+            allohaAudioTracks = tracks,
+            selectedAllohaAudioId = "a",
+        )
 
         val result = createHandler().resolve(state(ALLOHA_URL), null) as PlayerStreamResult.Stream
 
-        assertSame(session, result.allohaSession)
-        verify { session.selectQuality("720p") }
-        coVerify(exactly = 0) { resolvePlayerStream(any()) }
+        assertEquals("720p", result.selectedQuality)
+        assertEquals(tracks, result.allohaAudioTracks)
+        assertEquals("a", result.selectedAllohaAudioId)
+        coVerify(exactly = 1) { resolvePlayerStream(any()) }
     }
 
     @Test
@@ -187,65 +192,10 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
     }
 
     @Test
-    fun `fresh alloha session is closed on a crash, a reused one is kept`() = runTest {
-        val session = allohaSession(stream("720p"))
-        every { session.selectQuality(any()) } throws IllegalStateException("webview died")
-        val handler = createHandler()
-
-        runCatching { handler.resolve(state(ALLOHA_URL), null, reuseAllohaPlaybackSession = true) }
-        verify(exactly = 0) { session.close() }
-
-        runCatching { handler.resolve(state(ALLOHA_URL), null, reuseAllohaPlaybackSession = false) }
-        verify(exactly = 1) { session.close() }
-    }
-
-    @Test
-    fun `source refusals become presentation errors`() = runTest {
-        val handler = createHandler()
-
-        coEvery { resolvePlayerStream(any()) } returns PlayerStreamResolveResult.KodikBlocked(message = "blocked")
-        assertEquals(PlayerStreamResult.KodikBlocked("blocked"), handler.resolve(state(KODIK_URL), null))
-
-        coEvery { resolvePlayerStream(any()) } returns
-            PlayerStreamResolveResult.Unavailable(cause = PlayerStreamUnavailableCause.RegionBlocked)
-        assertEquals(
-            PlayerStreamResult.PlayerError(
-                "res${R.string.player_region_blocked}",
-                PlayerStreamResult.REASON_UNAVAILABLE,
-                PlayerStreamUnavailableCause.RegionBlocked.name,
-            ),
-            handler.resolve(state(KODIK_URL), null),
-        )
-
-        coEvery { resolvePlayerStream(any()) } returns PlayerStreamResolveResult.Unsupported
-        assertEquals(
-            PlayerStreamResult.PlayerError("res${R.string.player_unsupported}", PlayerStreamResult.REASON_UNSUPPORTED),
-            handler.resolve(state(KODIK_URL), null),
-        )
-    }
-
-    @Test
-    fun `playback error message lists the detail and a distinct code`() {
-        val handler = createHandler()
-        val base = "res${R.string.player_stream_error}"
-
-        assertEquals("$base\nSource error\n4003", handler.playbackErrorMessage(" Source error ", "4003"))
-        assertEquals("$base\n4003", handler.playbackErrorMessage("4003", "4003"))
-        assertEquals(base, handler.playbackErrorMessage("  ", null))
-    }
-
-    @Test
     fun `cache invalidation goes to the repository`() {
         createHandler().invalidateCache(KODIK_URL)
 
         verify { invalidateCache(KODIK_URL) }
-    }
-
-    private fun allohaSession(initial: PlayerStreamResolveResult.Stream): AllohaStreamSession {
-        val session: AllohaStreamSession = mockk(relaxed = true)
-        every { session.initialStream } returns initial
-        coEvery { openAllohaSession(any()) } returns session
-        return session
     }
 
     private fun stream(vararg qualities: String) = PlayerStreamResolveResult.Stream(
@@ -293,7 +243,6 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
         settingsStore = settingsStore,
         resolvePlayerStream = resolvePlayerStream,
         invalidatePlayerStreamCache = invalidateCache,
-        openAllohaStreamSession = openAllohaSession,
         strings = strings,
         connectivity = connectivity,
     )

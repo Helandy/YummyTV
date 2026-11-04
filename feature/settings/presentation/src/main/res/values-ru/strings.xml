@@ -241,7 +241,7 @@
     <string name="settings_subtitle_edge_shadow">Тень</string>
     <string name="settings_player_buffer_title">Размер буфера плеера</string>
     <string name="settings_player_buffer_minimal">Минимальный</string>
-    <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 16 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка. У Alloha возможны остановки при обновлении сессии.</string>
+    <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 16 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка.</string>
     <string name="settings_player_buffer_small">Малый</string>
     <string name="settings_player_buffer_small_hint">18–30 с запаса, до 24 МБ ОЗУ. Экономит память.</string>
     <string name="settings_player_buffer_medium">Средний</string>

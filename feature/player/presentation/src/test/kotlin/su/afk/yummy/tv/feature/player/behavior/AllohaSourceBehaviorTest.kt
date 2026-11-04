@@ -16,28 +16,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
+import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.repository.AllohaTrackPreferenceRepository
 import su.afk.yummy.tv.domain.player.usecase.GetAllohaTrackPreferenceUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveAllohaAudioSelectionUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveAllohaSubtitleSelectionUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
-import su.afk.yummy.tv.feature.player.handler.PlayerAllohaSessionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaTrackPreferenceHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 
 class AllohaSourceBehaviorTest : BaseUnitTest() {
 
-    private val sessions: AllohaPlaybackSessionRepository = mockk(relaxed = true)
     private val trackPreferences: AllohaTrackPreferenceRepository = mockk(relaxed = true)
 
     @Before
     fun setUp() {
-        with(sessions) {
-            every { find(any()) } returns null
-            every { activate(any()) } answers { firstArg() }
-        }
         with(trackPreferences) {
             coEvery { get(any(), any(), any()) } returns null
         }
@@ -48,7 +42,6 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
     ): Pair<AllohaSourceBehavior, PlayerSourceHostMock> {
         val harness = PlayerSourceHostMock(backgroundScope, onlineState("Alloha").copy(selectedQuality = "720p"))
         val behavior = AllohaSourceBehavior(
-            session = PlayerAllohaSessionHandler(sessions),
             recovery = PlayerAllohaRecoveryHandler(),
             trackPreference = PlayerAllohaTrackPreferenceHandler(
                 getPreference = GetAllohaTrackPreferenceUseCase(trackPreferences),
@@ -89,7 +82,7 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
 
         advanceTimeBy(1_001L)
         val request = harness.loadRequests.single()
-        assertTrue(request.forceFreshAllohaSession)
+        assertTrue(request.forceRefresh)
         assertFalse(request.refreshSourcesOnFailure)
         assertEquals("720p", request.selectedQualityOverride)
     }
@@ -105,7 +98,7 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
 
         online.value = true
         runCurrent()
-        assertTrue(harness.loadRequests.single().forceFreshAllohaSession)
+        assertTrue(harness.loadRequests.single().forceRefresh)
     }
 
     @Test
@@ -160,5 +153,36 @@ class AllohaSourceBehaviorTest : BaseUnitTest() {
     fun `failed resolve is not retried outside of recovery`() = runTest {
         val (behavior, _) = createBehavior()
         assertFalse(behavior.retriesFailedResolve())
+    }
+
+    @Test
+    fun `audio switch swaps the ladder from state and keeps the position`() = runTest {
+        val (behavior, harness) = createBehavior()
+        harness.update {
+            copy(
+                allohaAudioTracks = listOf(
+                    AllohaAudioTrack("a", "A", true, linkedMapOf("720p" to "https://cdn/a720")),
+                    AllohaAudioTrack("b", "B", false, linkedMapOf("720p" to "https://cdn/b720", "1080p" to "https://cdn/b1080")),
+                ),
+                selectedAllohaAudioId = "a",
+            )
+        }
+
+        behavior.onAudioTrackSelected("b", positionMs = 90_000L)
+
+        assertEquals("b", harness.state.selectedAllohaAudioId)
+        assertEquals("https://cdn/b720", harness.state.streamUrl)
+        assertEquals(90_000L, harness.state.resumeFromMs)
+        assertEquals(90_000L, harness.state.playbackPositionMs)
+    }
+
+    @Test
+    fun `audio switch to an unknown dubbing is ignored`() = runTest {
+        val (behavior, harness) = createBehavior()
+        val before = harness.state
+
+        behavior.onAudioTrackSelected("zzz", positionMs = 5_000L)
+
+        assertEquals(before, harness.state)
     }
 }

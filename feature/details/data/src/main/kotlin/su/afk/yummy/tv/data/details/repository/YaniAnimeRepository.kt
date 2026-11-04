@@ -100,7 +100,7 @@ private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v5"
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
 // v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
-private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v2"
+private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v3"
 private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 30 * 24 * 60 * 60 * 1000L
 private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 24 * 60 * 60 * 1000L
 

@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.details.mapper
 
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.model.anime.AnimeTmdbImages
+import su.afk.yummy.tv.data.details.dto.YummyEpisodeDto
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 import su.afk.yummy.tv.data.details.utils.sizedUrl
 
@@ -13,10 +14,14 @@ internal fun YummyEpisodesDto.toAnimeTmdbImages(): AnimeTmdbImages = AnimeTmdbIm
         ?.stills.orEmpty()
         .mapNotNull { it.sizedUrl(STILL_SIZE) }
         .distinct(),
-    episodePreviewUrls = episodes.asSequence()
+    episodePreviewUrls = episodeUrls { it.previewUrl },
+    episodeMirrorUrls = episodeUrls { it.previewMirrorUrl },
+)
+
+private fun YummyEpisodesDto.episodeUrls(select: (YummyEpisodeDto) -> String?): Map<String, String> =
+    episodes.asSequence()
         .filter { it.episodeNumber > 0 }
         .mapNotNull { episode ->
-            episode.previewUrl?.takeIf { it.isNotBlank() }?.let { episode.episodeNumber.toString().episodeGroupKey() to it }
+            select(episode)?.takeIf { it.isNotBlank() }?.let { episode.episodeNumber.toString().episodeGroupKey() to it }
         }
-        .toMap(),
-)
+        .toMap()

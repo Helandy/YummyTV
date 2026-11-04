@@ -21,16 +21,13 @@ import java.io.IOException
  * Диагностика остановок на буферизацию: сколько длилась, с какого источника, при каком профиле и
  * какой запас был, когда началась последняя подкачка.
  *
- * Нужна, чтобы тюнинг буфера опирался на данные с приставки, а не на догадки. Главный вопрос,
- * на который она отвечает: попадают ли остановки на удержание сегмента в прокси Alloha при
- * обновлении сессии (`AllohaStreamProxy.SEGMENT_HOLD_FOR_REFRESH_MS`, 14 с). Если подкачка началась
- * при запасе меньше удержания ([lastLoadBufferedMs]), а остановка идёт рядом с логом прокси про
- * обновление сессии, то минимальный порог профиля слишком мал.
- *
+ * Нужна, чтобы тюнинг буфера опирался на данные с приставки, а не на догадки: по `lastLoadBufferedMs`
+ * видно, с какого запаса началась последняя подкачка, и не мал ли минимальный порог профиля.
+
  * Пишет только в [AnalyticsTracker.log] (в дебаге logcat, в релизе — в файл логов приложения, тег
  * входит в `PersistedLogTags`), событий в аналитику не шлёт: объём и приватность этого потока
  * решаются отдельно. Ссылок и токенов в строках нет — только метка источника и хост CDN.
- * Читать: `adb logcat -s PlayerBuffering:D AllohaStreamProxy:D` или дамп «Поделиться логами».
+ * Читать: `adb logcat -s PlayerBuffering:D AllohaExtractor:D` или дамп «Поделиться логами».
  * Описание — `docs/player-buffering.md`.
  *
  * @param currentUriHost хост текущего media item; вызывается на потоке плеера.
@@ -221,14 +218,12 @@ internal class PlayerBufferingAnalyticsListener(
     private fun labelOf(host: String?): String =
         when {
             host == null -> "unknown"
-            host == LOOPBACK_HOST -> "alloha-proxy"
             host.isOkCdnHost() -> "okcdn"
             else -> "other"
         }
 
     private companion object {
         const val LOG_TAG = PersistedLogTags.PLAYER_BUFFERING
-        const val LOOPBACK_HOST = "127.0.0.1"
         const val KIND_START = "start"
         const val KIND_SEEK = "seek"
         const val KIND_REBUFFER = "rebuffer"

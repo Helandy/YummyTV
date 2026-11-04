@@ -23,5 +23,7 @@ data class YummyEpisodeDto(
     val title: String? = null,
     val overview: String? = null,
     val previewUrl: String? = null,
+    /** Своя копия кадра в AVIF на нашем хосте; файла может ещё не быть (404), тогда берётся следующий источник. */
+    val previewMirrorUrl: String? = null,
     val stills: List<YummyImageDto>? = null,
 )

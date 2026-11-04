@@ -5,6 +5,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.model.anime.AnimeTmdbImages
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
@@ -29,32 +30,41 @@ class TmdbEpisodePreviews @Inject constructor(
     private val clock: AppClock,
 ) {
 
-    private class Entry(val previews: Deferred<Map<String, String>>, val createdAtMs: Long)
+    private class Entry(val previews: Deferred<AnimeTmdbImages>, val createdAtMs: Long)
 
     private val entries = ConcurrentHashMap<Int, Entry>()
 
     /** Ссылка на кадр серии или `null`, если серия не опознана, кадра нет или он не загрузился. */
     suspend fun previewUrl(animeId: Int, episode: String): String? {
         if (animeId <= 0 || episode.isBlank()) return null
-        val url = previewsOf(animeId)[episode.episodeGroupKey()] ?: return null
+        val url = previewsOf(animeId).episodePreviewUrls[episode.episodeGroupKey()] ?: return null
         val size = if (interfaceModePreferences.selectedMode == AppInterfaceMode.TV) TV_SIZE_SEGMENT else MOBILE_SIZE_SEGMENT
         return url.replace(SERVED_SIZE_SEGMENT, size)
     }
 
-    private suspend fun previewsOf(animeId: Int): Map<String, String> {
+    /**
+     * Своя копия кадра серии в AVIF (хост YummyTV) или `null`, если API её не назвал. Файла на хосте может ещё не быть:
+     * тогда загрузка вернёт 404, и берётся следующий источник цепочки.
+     */
+    suspend fun mirrorUrl(animeId: Int, episode: String): String? {
+        if (animeId <= 0 || episode.isBlank()) return null
+        return previewsOf(animeId).episodeMirrorUrls[episode.episodeGroupKey()]
+    }
+
+    private suspend fun previewsOf(animeId: Int): AnimeTmdbImages {
         val now = clock.nowMillis()
         val entry = entries.compute(animeId) { _, current ->
             if (current != null && !current.isStaleEmpty(now)) {
                 current
             } else {
-                Entry(scope.async { getAnimeTmdbImages(animeId).episodePreviewUrls }, now)
+                Entry(scope.async { getAnimeTmdbImages(animeId) }, now)
             }
         }!!
         return entry.previews.await()
     }
 
     private fun Entry.isStaleEmpty(now: Long): Boolean =
-        previews.isCompleted && now - createdAtMs > EMPTY_TTL_MS && previews.getCompleted().isEmpty()
+        previews.isCompleted && now - createdAtMs > EMPTY_TTL_MS && previews.getCompleted().let { it.episodePreviewUrls.isEmpty() && it.episodeMirrorUrls.isEmpty() }
 
     private companion object {
         const val EMPTY_TTL_MS = 60_000L

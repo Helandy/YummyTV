@@ -32,9 +32,6 @@ internal interface PlayerSourceHost : PlayerStateHost {
     /** Отменяет идущее получение потока. */
     fun cancelStreamLoad()
 
-    /** Закрывает сессии всех источников (сейчас это живая сессия Alloha). */
-    fun closeSourceSessions()
-
     /**
      * Забывает закэшированный поток активного источника: его ссылки ведут на отказавший узел CDN,
      * и без сброса повторный резолв в пределах TTL поднял бы их снова.
@@ -49,7 +46,6 @@ internal interface PlayerSourceHost : PlayerStateHost {
 internal data class PlayerStreamLoadRequest(
     val resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
     val refreshSourcesOnFailure: Boolean = true,
-    val forceFreshAllohaSession: Boolean = false,
     val selectedQualityOverride: String? = null,
     val forceRefresh: Boolean = false,
 )

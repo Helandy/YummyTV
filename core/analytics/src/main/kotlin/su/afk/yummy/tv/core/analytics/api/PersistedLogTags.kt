@@ -15,7 +15,6 @@ object PersistedLogTags {
     const val PLAYER_LOUDNESS = "PlayerLoudness"
     const val PLAYER_EXTRACTOR = "PlayerExtractor"
     const val ALLOHA_EXTRACTOR = "AllohaExtractor"
-    const val ALLOHA_STREAM_PROXY = "AllohaStreamProxy"
     const val CVH_EXTRACTOR = "CvhExtractor"
 
     val persisted: Set<String> = setOf(
@@ -25,7 +24,6 @@ object PersistedLogTags {
         PLAYER_LOUDNESS,
         PLAYER_EXTRACTOR,
         ALLOHA_EXTRACTOR,
-        ALLOHA_STREAM_PROXY,
         CVH_EXTRACTOR,
     )
 }

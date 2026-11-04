@@ -3,16 +3,11 @@ package su.afk.yummy.tv.data.videodownload.strategy
 import su.afk.yummy.tv.data.videodownload.worker.utils.StreamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.withDownloadRequestHeaders
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 
 /** Generic download behavior used by every player without its own strategy (Kodik, Aksor, VK, Rutube, Sibnet, Zedfilm). */
 internal object DefaultDownloadStrategy : DownloadPlayerStrategy {
     override val playerLabel: String = "Default"
-
-    override fun usesLiveSession(streamKind: StreamKind): Boolean = false
-
-    override suspend fun openLiveSession(item: VideoDownloadItem): AllohaStreamSession? = null
 
     override fun usesRotatingSegmentUrls(streamKind: StreamKind): Boolean = false
 

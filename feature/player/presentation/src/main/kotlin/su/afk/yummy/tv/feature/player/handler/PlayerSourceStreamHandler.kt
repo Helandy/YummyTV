@@ -6,7 +6,6 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.core.common.player.ResolveDetail
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
@@ -199,7 +198,6 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         destinationResumeMs: Long?,
         resumeMode: PlayerStreamResumeMode,
         refreshSourcesOnFailure: Boolean,
-        reuseAllohaPlaybackSession: Boolean = true,
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
         retryAttempts: Int = 0,
@@ -212,7 +210,6 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             streamHandler.resolve(
                 state = state,
                 pendingResumeMs = pendingResume,
-                reuseAllohaPlaybackSession = reuseAllohaPlaybackSession,
                 selectedQualityOverride = selectedQualityOverride,
                 forceRefresh = forceRefresh,
                 onStatus = { status ->
@@ -277,7 +274,6 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                     ),
                     consumedDestinationResume =
                         destinationResumeMs != null && pendingResume == destinationResumeMs,
-                    allohaSession = result.allohaSession,
                 )
             }
 
@@ -359,7 +355,6 @@ internal sealed interface PlayerStreamLoadResult {
     data class State(
         val state: PlayerState.State,
         val consumedDestinationResume: Boolean,
-        val allohaSession: AllohaStreamSession? = null,
     ) : PlayerStreamLoadResult
 
     /** Получение потока один раз упало, вызывающая сторона должна обновить источники и повторить. */

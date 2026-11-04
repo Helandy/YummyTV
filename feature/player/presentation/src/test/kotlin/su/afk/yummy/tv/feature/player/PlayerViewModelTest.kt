@@ -86,7 +86,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         every { sourceStreamHandler.preparingStreamResolve(any(), any()) } answers { firstArg() }
         every { sourceStreamHandler.playbackErrorMessage(any(), any()) } returns "friendly error"
         coEvery {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns PlayerStreamLoadResult.State(state = streamState, consumedDestinationResume = false)
     }
 
@@ -151,7 +151,7 @@ class PlayerViewModelTest : BaseUnitTest() {
     @Test
     fun `failed stream shows the player error and no stream`() {
         coEvery {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns PlayerStreamLoadResult.State(
             state = PlayerState.State(playerError = "no stream"),
             consumedDestinationResume = false,
@@ -174,7 +174,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         val state = createViewModel(dest(downloadId = 7L)).currentState
 
         assertTrue(state.isOfflinePlayback)
-        coVerify(exactly = 0) { sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -307,7 +307,7 @@ class PlayerViewModelTest : BaseUnitTest() {
 
         assertEquals(1, vm.currentState.retryKey)
         coVerify(exactly = 2) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
         verify(exactly = 1) { analytics.eventRetryStream(ANIME_ID) }
     }
@@ -468,11 +468,11 @@ class PlayerViewModelTest : BaseUnitTest() {
         vm.setEvent(PlayerState.Event.ManageSubscriptions)
         vm.setEvent(PlayerState.Event.TvAppBackgrounded)
 
-        verify(exactly = 1) { navigation.back(any(), any()) }
+        verify(exactly = 1) { navigation.back(any()) }
         verify(exactly = 1) { navigation.openDetails(any()) }
         verify(exactly = 1) { navigation.openRating(any()) }
         verify(exactly = 1) { navigation.openSubscriptions(any()) }
-        verify(exactly = 1) { navigation.returnToDetailsAfterTvBackground(any(), any()) }
+        verify(exactly = 1) { navigation.returnToDetailsAfterTvBackground(any()) }
     }
 
     @Test
@@ -493,20 +493,19 @@ class PlayerViewModelTest : BaseUnitTest() {
         vm.setEvent(PlayerState.Event.NavigateToDestination(dest()))
 
         coVerify(exactly = 1) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
     }
 
     @Test
-    fun `new destination closes the old sessions and loads the new episode`() {
+    fun `new destination loads the new episode`() {
         val vm = createViewModel()
 
         vm.setEvent(PlayerState.Event.NavigateToDestination(dest().copy(episode = "2", iframeUrl = "https://kodik.example/seria/2")))
 
         assertEquals("Anime", vm.currentState.animeTitle)
-        verify(atLeast = 1) { allohaSource.close(any()) }
         coVerify(exactly = 2) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
     }
 

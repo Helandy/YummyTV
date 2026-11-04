@@ -195,7 +195,6 @@ internal class DefaultSourceBehavior @Inject constructor(
         val purgeCache = sourceRefreshes == 1
         retryJob = host.scope.launch {
             if (!host.state.isOfflinePlayback) {
-                host.closeSourceSessions()
                 if (purgeCache) purgeStreamingCache()
                 host.refreshSourcesAndReloadStream()
             }
@@ -237,7 +236,6 @@ internal class DefaultSourceBehavior @Inject constructor(
             ) {
                 // retryKey не трогаем: старый URL мёртв, а ViewModel сам пересоберёт MediaItem
                 // после резолва (completedRecovery в applyResolvedStream).
-                host.closeSourceSessions()
                 host.loadStream(
                     PlayerStreamLoadRequest(
                         refreshSourcesOnFailure = true,

@@ -132,7 +132,6 @@ KDoc функции: в файл логов, который пользовате
 | `PlayerLoudness`     | `PlayerLoudnessNormalizer`                                                     |
 | `PlayerExtractor`    | `PlayerExtractorLog` (`extractor/common/`), [other-extractors.md](other-extractors.md) |
 | `AllohaExtractor`    | [alloha-player.md](alloha-player.md)                                           |
-| `AllohaStreamProxy`  | [alloha-player.md](alloha-player.md)                                           |
 | `CvhExtractor`       | [cvh-player.md](cvh-player.md)                                                 |
 
 KDoc `PersistedLogTags`: это единственное место, где решается, что именно сохраняется; модули

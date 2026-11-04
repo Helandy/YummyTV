@@ -7,13 +7,11 @@ import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
@@ -154,15 +152,13 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `resolved stream is merged into the state`() = runTest {
-        val session: AllohaStreamSession = mockk()
-        coEvery { streamHandler.resolve(any(), 20_000L, any(), any(), any(), any(), any()) } returns PlayerStreamResult.Stream(
+        coEvery { streamHandler.resolve(any(), 20_000L, any(), any(), any(), any()) } returns PlayerStreamResult.Stream(
             url = STREAM,
             headers = mapOf("Referer" to "r"),
             qualities = linkedMapOf("720p" to "u"),
             selectedQuality = "720p",
             resumeFromMs = 20_000L,
             consumedPendingResume = true,
-            allohaSession = session,
             failoverHost = "cdn2",
         )
         val state = state().copy(dubbingResumeMs = 20_000L)
@@ -181,13 +177,12 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
         assertEquals(20_000L, result.state.resumeFromMs)
         assertEquals(-1L, result.state.dubbingResumeMs)
         assertTrue(result.consumedDestinationResume)
-        assertSame(session, result.allohaSession)
         verify { analytics.eventStreamStarted(state) }
     }
 
     @Test
     fun `first failure asks for fresh sources, the final one shows the error`() = runTest {
-        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any(), any()) } returns
+        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any()) } returns
             PlayerStreamResult.PlayerError(message = "unavailable", reason = PlayerStreamResult.REASON_UNAVAILABLE)
         val handler = createHandler()
 
@@ -203,7 +198,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `kodik block is shown in its own error`() = runTest {
-        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any(), any()) } returns PlayerStreamResult.KodikBlocked("blocked")
+        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any()) } returns PlayerStreamResult.KodikBlocked("blocked")
 
         val result = createHandler().resolveStream(
             state(), null, null, PlayerStreamResumeMode.PreserveCurrent, refreshSourcesOnFailure = false,
@@ -215,7 +210,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `crash while resolving becomes a stream error`() = runTest {
-        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
+        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
 
         val result = createHandler().resolveStream(
             state().copy(streamUrl = STREAM), null, null, PlayerStreamResumeMode.PreserveCurrent, refreshSourcesOnFailure = false,

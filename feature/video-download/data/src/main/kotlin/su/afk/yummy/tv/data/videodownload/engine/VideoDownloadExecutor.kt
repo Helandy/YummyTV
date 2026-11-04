@@ -18,7 +18,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
@@ -77,46 +76,6 @@ internal class VideoDownloadExecutor @Inject constructor(
         onProgressPercent: (Int) -> Unit,
     ) = coroutineScope {
         val streamKind = item.streamUrl.streamKind()
-        val liveSession = if (strategy.usesLiveSession(streamKind)) {
-            strategy.openLiveSession(item)
-                ?: error("${strategy.playerLabel} live session is not ready")
-        } else {
-            null
-        }
-        val sessionRefreshTimer = liveSession?.let { session ->
-            launch {
-                // Срок, для которого refresh() уже вызван, и момент вызова. Пока expiresAtMs не сдвинулся,
-                // повторный refresh() раньше ALLOHA_SESSION_REFRESH_RETRY_MS не нужен: он асинхронный,
-                // а без этой паузы цикл крутился без остановки (delay(0) не отдаёт поток) и сотни раз в
-                // миллисекунду перезапускал WebView-сессию, поэтому загрузка не двигалась.
-                var refreshedFor: Long? = null
-                var refreshedAt = 0L
-                while (true) {
-                    val expiresAt = session.expiresAtMs()
-                    if (expiresAt == null) {
-                        delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
-                        continue
-                    }
-                    val now = System.currentTimeMillis()
-                    val untilRefresh = expiresAt - now - ALLOHA_SESSION_REFRESH_LEAD_MS
-                    if (untilRefresh > 0L) {
-                        delay(untilRefresh)
-                        continue
-                    }
-                    val alreadyRequested = expiresAt == refreshedFor &&
-                        now - refreshedAt < ALLOHA_SESSION_REFRESH_RETRY_MS
-                    if (alreadyRequested) {
-                        delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
-                        continue
-                    }
-                    analyticsTracker.logDownloadInfo { "Refreshing live ${strategy.playerLabel} session id=$id before TTL expiry" }
-                    refreshedFor = expiresAt
-                    refreshedAt = now
-                    session.refresh()
-                    delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
-                }
-            }
-        }
         analyticsTracker.logDownloadInfo {
             "Starting download id=$id animeId=${item.animeId} videoId=${item.videoId} " +
                 "player=${item.playerName} quality=${item.qualityLabel} " +
@@ -131,11 +90,7 @@ internal class VideoDownloadExecutor @Inject constructor(
         val progressUpdates = Channel<ProgressSnapshot>(Channel.CONFLATED)
         var progressWriter: Job? = null
         try {
-            val downloadHeaders = if (liveSession != null) {
-                emptyMap()
-            } else {
-                strategy.decorateHeaders(item.headers, item.iframeUrl)
-            }
+            val downloadHeaders = strategy.decorateHeaders(item.headers, item.iframeUrl)
             val requestHeaders =
                 downloadHeaders.filterKeys { !it.equals(USER_AGENT_HEADER, ignoreCase = true) }
             val httpUpstream = createHttpUpstream(
@@ -147,7 +102,7 @@ internal class VideoDownloadExecutor @Inject constructor(
             val throttledUpstream = strategy.downloadBytesPerSecond
                 ?.let { RateLimitedDataSource.Factory(httpUpstream, it) }
                 ?: httpUpstream
-            val downloadUrl = liveSession?.initialStream?.url ?: item.streamUrl
+            val downloadUrl = item.streamUrl
             val cacheDataSource = CacheDataSource.Factory()
                 .setCache(cacheProvider.cache)
                 .setUpstreamDataSourceFactory(throttledUpstream)
@@ -173,7 +128,7 @@ internal class VideoDownloadExecutor @Inject constructor(
             analyticsTracker.logDownloadDebug {
                 "Prepared downloader id=$id kind=$streamKind cacheKeyHash=${item.cacheKey.hashCode()} " +
                     "headers=${downloadHeaders.safeHeaderNames()} retryUsed=$retriedAfterForbidden " +
-                    "player=${strategy.playerLabel} liveSessionUsed=${liveSession != null}"
+                    "player=${strategy.playerLabel}"
             }
             progressWriter = launch {
                 for (snapshot in progressUpdates) {
@@ -243,8 +198,6 @@ internal class VideoDownloadExecutor @Inject constructor(
             progressUpdates.close()
             withContext(NonCancellable) { progressWriter?.join() }
             cancellationWatcher?.cancel()
-            sessionRefreshTimer?.cancel()
-            liveSession?.close()
         }
     }
 
@@ -288,9 +241,6 @@ internal class VideoDownloadExecutor @Inject constructor(
     private companion object {
         const val ADAPTIVE_HTTP_TIMEOUT_MS = 30_000
         const val PROGRESS_LOG_STEP = 10
-        const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
-        const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
-        const val ALLOHA_SESSION_REFRESH_RETRY_MS = 10_000L
     }
 }
 

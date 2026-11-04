@@ -9,11 +9,7 @@ package su.afk.yummy.tv.core.model.settings
  * Память ограничена [targetBufferBytes] и [maxBufferMs] (размер главнее времени), а [minBufferMs] -
  * это порог, ниже которого загрузчик снова начинает подкачку, то есть гарантированный минимум запаса
  * после первого заполнения. Поэтому повышение минимума потолок ОЗУ не двигает.
- *
- * У Alloha прокси держит запрос сегмента до 14 с, пока обновляется сессия
- * (`AllohaStreamProxy.SEGMENT_HOLD_FOR_REFRESH_MS`), и плеер всё это время доигрывает буфер: минимум
- * должен быть заметно больше 14 с. [SMALL] и [MEDIUM] это покрывают. [MINIMAL] (максимум 15 с) -
- * принципиально нет: у него удержание способно опустошить буфер. См. `docs/player-buffering.md`.
+ * См. `docs/player-buffering.md`.
  */
 enum class PlayerBufferProfile(
     val minBufferMs: Int,

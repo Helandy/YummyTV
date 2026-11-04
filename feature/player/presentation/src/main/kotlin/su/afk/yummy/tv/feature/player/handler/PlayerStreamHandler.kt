@@ -3,13 +3,11 @@ package su.afk.yummy.tv.feature.player.handler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
-import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
@@ -20,7 +18,6 @@ import su.afk.yummy.tv.feature.player.mapper.resolveProblemText
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.InvalidatePlayerStreamCacheUseCase
-import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -38,7 +35,6 @@ internal class PlayerStreamHandler @Inject constructor(
     private val settingsStore: PlayerSettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val invalidatePlayerStreamCache: InvalidatePlayerStreamCacheUseCase,
-    private val openAllohaStreamSession: OpenAllohaStreamSessionUseCase,
     private val strings: StringProvider,
     private val connectivity: NetworkConnectivityMonitor,
 ) {
@@ -48,7 +44,6 @@ internal class PlayerStreamHandler @Inject constructor(
     suspend fun resolve(
         state: PlayerState.State,
         pendingResumeMs: Long?,
-        reuseAllohaPlaybackSession: Boolean = true,
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
         onStatus: (PlayerStreamResolveStatus) -> Unit = {},
@@ -57,20 +52,12 @@ internal class PlayerStreamHandler @Inject constructor(
         val request = PlayerStreamRequest(
             iframeUrl = activeIframeUrl(state),
             autoQualityLabel = strings.get(R.string.player_quality_auto),
-            sessionFallbackTtlSeconds = ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS,
-            reusePlaybackSession = reuseAllohaPlaybackSession,
             forceRefresh = forceRefresh,
             onStatus = onStatus,
             onDetail = onDetail,
         )
-        // Started before the extraction is awaited: neither depends on it, and on the Alloha path
-        // openAllohaStreamSession() drives a WebView for seconds, during which a DataStore read and
-        // a Room read would otherwise just sit in the queue behind it.
-        //
-        // The saved dubbing is deliberately NOT applied here: selectAudioTrack() resets the live
-        // session's master URL to the bnsi one parsed out of the source list, and that URL carries
-        // a path token the CDN answers with 403 token_decrypt once the session is live. It may only
-        // run after the correctly-signed master is in play, which is why it stays in the ViewModel.
+        // Started before the extraction is awaited: neither depends on it, so a DataStore read and
+        // a Room read overlap the network instead of queueing behind it.
         // Адаптивный режим стартует с лучшего не выше выбранного качества (оно же потолок политики);
         // «Лучшее» в нём означает потолок по умолчанию.
         val preferredHeightAsync = async {
@@ -85,72 +72,52 @@ internal class PlayerStreamHandler @Inject constructor(
             pendingResumeMs ?: loadResumePosition(state.animeId, activeEpisode(state))
         }
 
-        val session = if (request.iframeUrl.isAllohaPlayerUrl()) {
-            openAllohaStreamSession(request)
-        } else {
-            null
-        }
-        // Свежая сессия (без переиспользования) ещё никому не принадлежит — её регистрирует activate
-        // во ViewModel. Отмена или сбой на await ниже иначе оставили бы открытыми WebView и прокси.
-        // Переиспользованную сессию не трогаем: она живая и принадлежит менеджеру сессий.
-        try {
-            val resolved = session?.initialStream ?: resolvePlayerStream(request)
-            when (val result = resolved) {
-                is PlayerStreamResolveResult.Stream -> {
-                    val selectedQuality = selectedQualityOverride
-                        ?.takeIf { quality -> result.qualities?.containsKey(quality) == true }
-                        ?: selectedQuality(result.qualities, preferredHeightAsync.await())
-                    if (selectedQuality != null) session?.selectQuality(selectedQuality)
-                    rememberAnime4kDubbing(state, request.iframeUrl)
-                    PlayerStreamResult.Stream(
-                        url = result.url,
-                        headers = result.headers,
-                        qualities = result.qualities,
-                        selectedQuality = selectedQuality,
-                        resumeFromMs = resumeAsync.await() ?: 0L,
-                        consumedPendingResume = pendingResumeMs != null,
-                        allohaSession = session,
-                        allohaAudioTracks = result.allohaAudioTracks,
-                        selectedAllohaAudioId = result.selectedAllohaAudioId,
-                        allohaSubtitles = result.allohaSubtitles,
-                        failoverHost = result.failoverHost,
-                    )
-                }
-
-                is PlayerStreamResolveResult.KodikBlocked -> {
-                    session?.close()
-                    PlayerStreamResult.KodikBlocked(message = result.toMessage(strings))
-                }
-
-                is PlayerStreamResolveResult.Unavailable -> {
-                    session?.close()
-                    PlayerStreamResult.PlayerError(
-                        message = result.toMessage(strings),
-                        reason = PlayerStreamResult.REASON_UNAVAILABLE,
-                        detail = result.cause?.name,
-                    )
-                }
-
-                is PlayerStreamResolveResult.Failed -> {
-                    session?.close()
-                    PlayerStreamResult.PlayerError(
-                        message = streamFailureMessage(),
-                        reason = PlayerStreamResult.REASON_FAILED,
-                        detail = result.reason,
-                    )
-                }
-
-                PlayerStreamResolveResult.Unsupported -> {
-                    session?.close()
-                    PlayerStreamResult.PlayerError(
-                        message = strings.get(R.string.player_unsupported),
-                        reason = PlayerStreamResult.REASON_UNSUPPORTED,
-                    )
-                }
+        when (val result = resolvePlayerStream(request)) {
+            is PlayerStreamResolveResult.Stream -> {
+                val selectedQuality = selectedQualityOverride
+                    ?.takeIf { quality -> result.qualities?.containsKey(quality) == true }
+                    ?: selectedQuality(result.qualities, preferredHeightAsync.await())
+                rememberAnime4kDubbing(state, request.iframeUrl)
+                PlayerStreamResult.Stream(
+                    url = result.url,
+                    headers = result.headers,
+                    qualities = result.qualities,
+                    selectedQuality = selectedQuality,
+                    resumeFromMs = resumeAsync.await() ?: 0L,
+                    consumedPendingResume = pendingResumeMs != null,
+                    allohaAudioTracks = result.allohaAudioTracks,
+                    selectedAllohaAudioId = result.selectedAllohaAudioId,
+                    allohaSubtitles = result.allohaSubtitles,
+                    failoverHost = result.failoverHost,
+                )
             }
-        } catch (e: Throwable) {
-            if (!request.reusePlaybackSession) session?.close()
-            throw e
+
+            is PlayerStreamResolveResult.KodikBlocked -> {
+                PlayerStreamResult.KodikBlocked(message = result.toMessage(strings))
+            }
+
+            is PlayerStreamResolveResult.Unavailable -> {
+                PlayerStreamResult.PlayerError(
+                    message = result.toMessage(strings),
+                    reason = PlayerStreamResult.REASON_UNAVAILABLE,
+                    detail = result.cause?.name,
+                )
+            }
+
+            is PlayerStreamResolveResult.Failed -> {
+                PlayerStreamResult.PlayerError(
+                    message = streamFailureMessage(),
+                    reason = PlayerStreamResult.REASON_FAILED,
+                    detail = result.reason,
+                )
+            }
+
+            PlayerStreamResolveResult.Unsupported -> {
+                PlayerStreamResult.PlayerError(
+                    message = strings.get(R.string.player_unsupported),
+                    reason = PlayerStreamResult.REASON_UNSUPPORTED,
+                )
+            }
         }
     }
 
@@ -235,7 +202,6 @@ internal class PlayerStreamHandler @Inject constructor(
     }
 
     private companion object {
-        const val ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS = 120
         const val ANIME4K_URL_PREFIX = "source://anime4k/"
         const val FAILED_STEP_DETAILS = 3
         const val TECHNICAL_REASON_MAX = 120
@@ -251,7 +217,6 @@ internal sealed interface PlayerStreamResult {
         val selectedQuality: String?,
         val resumeFromMs: Long,
         val consumedPendingResume: Boolean,
-        val allohaSession: AllohaStreamSession?,
         val allohaAudioTracks: List<AllohaAudioTrack> = emptyList(),
         val selectedAllohaAudioId: String? = null,
         val allohaSubtitles: List<AllohaSubtitleTrack> = emptyList(),

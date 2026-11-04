@@ -41,6 +41,7 @@ data class EpisodeThumbnail(
  * Ключ превью серии, не зависящий от озвучки: `"01"` и `"1"` — одна серия.
  * v2: кадры TMDB встали первыми в цепочке источников, поэтому прежние кадры Tenrai/Kodik под старым ключом
  * (`episode_thumb:`, `tenrai_thumb:`, `kodik_thumb:`) больше не читаем: иначе диск отдал бы их мимо резолвера.
+ * v3: в цепочке появилась своя копия кадра в AVIF (static.afk.su), старые снимки диска отдаются мимо неё.
  */
 fun episodeThumbnailCacheKey(animeId: Int, episode: String): String =
-    "episode_thumb_v2:$animeId:${episode.episodeGroupKey()}"
+    "episode_thumb_v3:$animeId:${episode.episodeGroupKey()}"

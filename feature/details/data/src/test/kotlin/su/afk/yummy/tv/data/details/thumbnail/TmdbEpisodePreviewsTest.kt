@@ -66,7 +66,26 @@ class TmdbEpisodePreviewsTest : BaseUnitTest() {
         coVerify(exactly = 1) { repository.getAnimeTmdbImages(ANIME_ID) }
     }
 
+    @Test
+    fun `mirror url is taken by the episode group key and is not resized`() = runTest {
+        coEvery { repository.getAnimeTmdbImages(ANIME_ID) } returns
+            AnimeTmdbImages(episodeMirrorUrls = mapOf("1" to MIRROR))
+
+        assertEquals(MIRROR, previews(AppInterfaceMode.TV).mirrorUrl(ANIME_ID, "01"))
+    }
+
+    @Test
+    fun `no mirror url for unknown episode`() = runTest {
+        coEvery { repository.getAnimeTmdbImages(ANIME_ID) } returns
+            AnimeTmdbImages(episodeMirrorUrls = mapOf("1" to MIRROR))
+        val previews = previews(AppInterfaceMode.MOBILE)
+
+        assertNull(previews.mirrorUrl(ANIME_ID, "2"))
+        assertNull(previews.mirrorUrl(0, "1"))
+    }
+
     private companion object {
+        const val MIRROR = "https://static.afk.su/img/still/abc.avif"
         const val ANIME_ID = 7
         const val W300 = "https://image.tmdb.org/t/p/w300/a.jpg"
     }

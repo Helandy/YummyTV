@@ -43,6 +43,18 @@ class YummyImagesMapperTest {
     }
 
     @Test
+    fun `mirror urls are mapped separately from tmdb previews`() {
+        val dto = YummyEpisodesDto(
+            episodes = listOf(
+                YummyEpisodeDto(episodeNumber = 1, previewUrl = "https://image.tmdb.org/t/p/w300/a.jpg", previewMirrorUrl = "https://static.afk.su/img/still/a.avif"),
+                YummyEpisodeDto(episodeNumber = 2, previewUrl = "https://image.tmdb.org/t/p/w300/b.jpg"),
+            ),
+        )
+
+        assertEquals(mapOf("1" to "https://static.afk.su/img/still/a.avif"), dto.toAnimeTmdbImages().episodeMirrorUrls)
+    }
+
+    @Test
     fun `missing images give an empty model`() {
         val images = YummyEpisodesDto().toAnimeTmdbImages()
 
