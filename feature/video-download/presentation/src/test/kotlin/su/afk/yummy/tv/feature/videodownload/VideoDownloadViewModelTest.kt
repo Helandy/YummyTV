@@ -97,6 +97,7 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
         checkExportedFileExists = CheckExportedFileExistsUseCase(exportRepository),
         playerNavigator = playerNavigator,
         detailsNavigator = detailsNavigator,
+        watchLaterNavigator = mockk(relaxed = true),
     )
 
     private fun item(

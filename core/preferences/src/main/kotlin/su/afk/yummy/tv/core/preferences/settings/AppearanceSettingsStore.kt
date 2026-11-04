@@ -37,6 +37,9 @@ interface AppearanceSettingsStore {
     /** Показывать ли праздничное оформление (гирлянда, тыквы) в сезон. */
     val seasonalDecorationsEnabled: Flow<Boolean>
 
+    /** Показывать ли пункты аккаунта (FAQ, глоссарий, поиск, сообщения, «Смотреть позже») отдельными кнопками. */
+    val accountShortcutsExpanded: Flow<Boolean>
+
     /** Показывать ли на главной блок новых серий из списков пользователя. */
     val newEpisodesSectionEnabled: Flow<Boolean>
 
@@ -75,6 +78,7 @@ interface AppearanceSettingsStore {
     suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
     suspend fun setSeasonalDecorationsEnabled(enabled: Boolean)
+    suspend fun setAccountShortcutsExpanded(expanded: Boolean)
 
     /** Запоминает праздничный период, о котором пользователю уже показали диалог. */
     suspend fun setSeasonalAnnouncedKey(key: String)

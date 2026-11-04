@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,6 +21,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -51,7 +53,6 @@ import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
-import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
@@ -63,12 +64,12 @@ class AccountViewModelTest : BaseUnitTest() {
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val settingsStore: YaniAccountSettingsStore = mockk(relaxed = true)
+    private val appearanceSettingsStore: AppearanceSettingsStore = mockk(relaxed = true)
+    private val watchLaterNavigator: IWatchLaterNavigator = mockk(relaxed = true)
     private val accountRepository: AccountRepository = mockk()
     private val detailsNavigator: IDetailsNavigator = mockk(relaxed = true)
     private val videoDownloadNavigator: IVideoDownloadNavigator = mockk(relaxed = true)
-    private val watchLaterNavigator: IWatchLaterNavigator = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk(relaxed = true)
-    private val messagesNavigator: IMessagesNavigator = mockk(relaxed = true)
     private val faqNavigator: IFaqNavigator = mockk(relaxed = true)
     private val glossaryNavigator: IGlossaryNavigator = mockk(relaxed = true)
     private val sitePagesNavigator: ISitePagesNavigator = mockk(relaxed = true)
@@ -89,6 +90,7 @@ class AccountViewModelTest : BaseUnitTest() {
     fun setUp() {
         every { accountRepository.observeSession() } returns session
         every { settingsStore.yaniNickname } returns nickname
+        every { appearanceSettingsStore.accountShortcutsExpanded } returns flowOf(false)
         every { settingsStore.yaniAvatarUrl } returns avatarUrl
         every { sessionHandler.onSessionSnapshot(any()) } just Runs
         every { sessionHandler.isAuthorized() } answers { session.value.isAuthorized }
@@ -105,12 +107,12 @@ class AccountViewModelTest : BaseUnitTest() {
         retryStorage = retryStorage,
         nav = nav,
         settingsStore = settingsStore,
+        appearanceSettingsStore = appearanceSettingsStore,
+        watchLaterNavigator = watchLaterNavigator,
         observeAccountSession = ObserveAccountSessionUseCase(accountRepository),
         detailsNavigator = detailsNavigator,
         videoDownloadNavigator = videoDownloadNavigator,
-        watchLaterNavigator = watchLaterNavigator,
         accountNavigator = accountNavigator,
-        messagesNavigator = messagesNavigator,
         faqNavigator = faqNavigator,
         glossaryNavigator = glossaryNavigator,
         sitePagesNavigator = sitePagesNavigator,
@@ -336,7 +338,6 @@ class AccountViewModelTest : BaseUnitTest() {
 
         vm.setEvent(Event.DownloadedEpisodesSelected)
         vm.setEvent(Event.WatchLaterSelected)
-        vm.setEvent(Event.MessagesSelected)
         vm.setEvent(Event.UserSearchSelected)
         vm.setEvent(Event.FriendsSelected)
         vm.setEvent(Event.FaqSelected)
@@ -348,7 +349,7 @@ class AccountViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.PasswordResetSelected)
         vm.setEvent(Event.RegistrationSelected)
 
-        verify(exactly = 13) { nav.navigate(any()) }
+        verify(exactly = 12) { nav.navigate(any()) }
     }
 
     @Test
@@ -356,7 +357,6 @@ class AccountViewModelTest : BaseUnitTest() {
         session.value = AccountSession(isAuthorized = false, userId = 0)
         val vm = createViewModel()
 
-        vm.setEvent(Event.MessagesSelected)
         vm.setEvent(Event.FriendsSelected)
         vm.setEvent(Event.MySubscriptionsSelected)
         vm.setEvent(Event.ProfileEditSelected)

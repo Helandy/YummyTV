@@ -38,5 +38,6 @@ data class SettingsSnapshot(
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val seasonalDecorationsEnabled: Boolean = true,
+    val accountShortcutsExpanded: Boolean = false,
     val libraryTabOrder: List<LibraryTabKind> = LibraryTabKind.entries,
 )

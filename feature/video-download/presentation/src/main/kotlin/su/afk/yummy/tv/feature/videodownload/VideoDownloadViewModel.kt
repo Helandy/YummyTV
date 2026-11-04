@@ -34,6 +34,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.ResumeAllVideoDownloadsUseCa
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.watchlater.IWatchLaterNavigator
 import su.afk.yummy.tv.feature.videodownload.mapper.toGroups
 import su.afk.yummy.tv.feature.videodownload.mapper.toWatchProgressByDownload
 import su.afk.yummy.tv.feature.videodownload.utils.isActive
@@ -61,6 +62,7 @@ class VideoDownloadViewModel @Inject constructor(
     private val checkExportedFileExists: CheckExportedFileExistsUseCase,
     private val playerNavigator: IPlayerNavigator,
     private val detailsNavigator: IDetailsNavigator,
+    private val watchLaterNavigator: IWatchLaterNavigator,
 ) : BaseViewModel<VideoDownloadState.State, VideoDownloadState.Event, VideoDownloadState.Effect>() {
     private var pendingExportIds: List<Long> = emptyList()
 
@@ -105,6 +107,7 @@ class VideoDownloadViewModel @Inject constructor(
             }
 
             VideoDownloadState.Event.BackSelected -> nav.back()
+            VideoDownloadState.Event.WatchLaterSelected -> nav.navigate(watchLaterNavigator.getWatchLaterDest())
             is VideoDownloadState.Event.GroupToggled -> setState {
                 copy(
                     expandedGroupKeys = if (event.key in expandedGroupKeys) {

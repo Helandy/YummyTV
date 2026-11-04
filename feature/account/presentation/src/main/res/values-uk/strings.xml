@@ -1,11 +1,16 @@
 <resources>
         <string name="account_faq">FAQ розробника</string>
+    <string name="account_communication">Спілкування</string>
+    <string name="account_faq_developer_hint">Про застосунок і розробника</string>
+    <string name="account_faq_site_hint">Правила та відповіді з сайту</string>
+    <string name="account_faq_glossary_hint">Пояснення аніме-термінів</string>
+    <string name="account_faq_group">FAQ</string>
         <string name="account_glossary">Глосарій</string>
     <string name="account_site_pages">FAQ і правила сайту</string>
     <string name="account_unknown_user">Невідомий користувач</string>
     <string name="account_refresh">Оновити профіль</string>
     <string name="account_settings">Налаштування</string>
-    <string name="account_downloaded_episodes">Завантажені серії</string>
+    <string name="account_downloaded_episodes">Завантажене</string>
     <string name="account_watch_later">Відкладений перегляд</string>
         <string name="account_logout">Вийти</string>
     <string name="account_login_placeholder">Email або нікнейм</string>

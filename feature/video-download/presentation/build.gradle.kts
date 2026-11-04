@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(project(":core:deeplink:api"))
     implementation(project(":feature:video-download:api"))
+    implementation(project(":feature:watch-later:api"))
     implementation(project(":core:error:api"))
     implementation(project(":core:network"))
     implementation(project(":core:preferences"))

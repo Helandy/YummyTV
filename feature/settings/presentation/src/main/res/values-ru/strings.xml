@@ -99,6 +99,8 @@
     <string name="settings_details_button_move_down">Переместить ниже</string>
     <string name="settings_watch_next_label">Продолжить просмотр</string>
     <string name="settings_watch_next_enabled">Синхронизируется с TV Home</string>
+    <string name="settings_account_shortcuts_expanded">Отдельные кнопки в аккаунте</string>
+    <string name="settings_account_shortcuts_expanded_hint">Показывать «Поиск пользователей» и «Отложенный просмотр» отдельными кнопками на вкладке аккаунта</string>
     <string name="settings_seasonal_decorations">Праздничное оформление</string>
     <string name="settings_seasonal_decorations_halloween">Хэллоуинское оформление: с 20.10 по 02.11</string>
     <string name="settings_seasonal_decorations_new_year">Новогоднее оформление: с 15.12 по 10.01</string>

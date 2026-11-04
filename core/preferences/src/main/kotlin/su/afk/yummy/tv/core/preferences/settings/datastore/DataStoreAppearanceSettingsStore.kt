@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryT
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountShortcutsExpandedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.titleCardLayoutKey
@@ -54,6 +55,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override val seasonalDecorationsEnabled: Flow<Boolean> =
         store.boolean(seasonalDecorationsEnabledKey, true)
+
+    override val accountShortcutsExpanded: Flow<Boolean> =
+        store.boolean(accountShortcutsExpandedKey, false)
 
     override val newEpisodesSectionEnabled: Flow<Boolean> =
         store.boolean(newEpisodesSectionEnabledKey, true)
@@ -112,6 +116,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setSeasonalDecorationsEnabled(enabled: Boolean) =
         store.setBoolean(seasonalDecorationsEnabledKey, enabled)
+
+    override suspend fun setAccountShortcutsExpanded(expanded: Boolean) =
+        store.setBoolean(accountShortcutsExpandedKey, expanded)
 
     override suspend fun setSeasonalAnnouncedKey(key: String) {
         store.edit { prefs -> prefs[seasonalAnnouncedKey] = key }

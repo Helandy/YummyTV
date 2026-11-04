@@ -47,4 +47,5 @@
         <item quantity="many">%d серій</item>
         <item quantity="other">%d серії</item>
     </plurals>
+    <string name="video_download_watch_later">Дивитися пізніше</string>
 </resources>

@@ -1,11 +1,16 @@
 <resources>
         <string name="account_faq">FAQ разработчика</string>
+    <string name="account_communication">Общение</string>
+    <string name="account_faq_developer_hint">О приложении и разработчике</string>
+    <string name="account_faq_site_hint">Правила и ответы с сайта</string>
+    <string name="account_faq_glossary_hint">Объяснение аниме-терминов</string>
+    <string name="account_faq_group">FAQ</string>
         <string name="account_glossary">Глоссарий</string>
     <string name="account_site_pages">FAQ и правила сайта</string>
     <string name="account_unknown_user">Неизвестный пользователь</string>
     <string name="account_refresh">Обновить профиль</string>
     <string name="account_settings">Настройки</string>
-    <string name="account_downloaded_episodes">Скачанные серии</string>
+    <string name="account_downloaded_episodes">Скачанное</string>
     <string name="account_watch_later">Отложенный просмотр</string>
         <string name="account_logout">Выйти</string>
     <string name="account_login_placeholder">Email или никнейм</string>

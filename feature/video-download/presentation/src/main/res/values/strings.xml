@@ -45,4 +45,5 @@
         <item quantity="one">%d episode</item>
         <item quantity="other">%d episodes</item>
     </plurals>
+    <string name="video_download_watch_later">Watch later</string>
 </resources>

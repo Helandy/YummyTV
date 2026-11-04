@@ -23,6 +23,8 @@ class AccountState {
         /** false, пока не пришёл первый снапшот сессии: экран ещё не знает, авторизован ли пользователь. */
         val isSessionResolved: Boolean = false,
         val isSignedIn: Boolean = false,
+        /** Пункты аккаунта показываются отдельными кнопками, а не сгруппированы (настройка). */
+        val shortcutsExpanded: Boolean = false,
         val userId: Int = 0,
         val nickname: String = "",
         val avatarUrl: String = "",
@@ -104,9 +106,8 @@ class AccountState {
 
         /** Пользователь открыл скачанные серии на устройстве. */
         data object DownloadedEpisodesSelected : Event
-
         data object WatchLaterSelected : Event
-        data object MessagesSelected : Event
+
 
         /** Экран показан — перечитываем уведомления, если их кэш успел устареть. */
         data object ScreenShown : Event

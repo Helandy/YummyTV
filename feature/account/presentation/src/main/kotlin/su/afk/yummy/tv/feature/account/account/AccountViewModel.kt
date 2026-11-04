@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.model.error.toDisplayDetails
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
@@ -42,7 +43,6 @@ import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
-import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
@@ -55,12 +55,12 @@ class AccountViewModel @Inject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val settingsStore: YaniAccountSettingsStore,
+    private val appearanceSettingsStore: AppearanceSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
     private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val watchLaterNavigator: IWatchLaterNavigator,
     private val accountNavigator: IAccountNavigator,
-    private val messagesNavigator: IMessagesNavigator,
     private val faqNavigator: IFaqNavigator,
     private val glossaryNavigator: IGlossaryNavigator,
     private val sitePagesNavigator: ISitePagesNavigator,
@@ -110,6 +110,9 @@ class AccountViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
         settingsStore.yaniNickname
             .onEach { setState { copy(nickname = it) } }
+            .launchIn(viewModelScope)
+        appearanceSettingsStore.accountShortcutsExpanded
+            .onEach { setState { copy(shortcutsExpanded = it) } }
             .launchIn(viewModelScope)
         settingsStore.yaniAvatarUrl
             .onEach { setState { copy(avatarUrl = it) } }
@@ -242,16 +245,12 @@ class AccountViewModel @Inject internal constructor(
                 maybeLoadHub(force = true)
             }
 
-            AccountState.Event.DownloadedEpisodesSelected -> {
-                nav.navigate(videoDownloadNavigator.getVideoDownloadDest())
-            }
-
             AccountState.Event.WatchLaterSelected -> {
                 nav.navigate(watchLaterNavigator.getWatchLaterDest())
             }
 
-            AccountState.Event.MessagesSelected -> {
-                if (currentState.isSignedIn) nav.navigate(messagesNavigator.dialogs())
+            AccountState.Event.DownloadedEpisodesSelected -> {
+                nav.navigate(videoDownloadNavigator.getVideoDownloadDest())
             }
 
             AccountState.Event.ScreenShown ->

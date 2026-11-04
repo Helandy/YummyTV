@@ -61,6 +61,12 @@ internal fun SettingsMobileAppearanceContent(
                 enabled = state.seasonalDecorationsEnabled,
                 onClick = { onEvent(SettingsState.Event.SeasonalDecorationsToggled) },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_account_shortcuts_expanded),
+                hint = stringResource(R.string.settings_account_shortcuts_expanded_hint),
+                enabled = state.accountShortcutsExpanded,
+                onClick = { onEvent(SettingsState.Event.AccountShortcutsToggled) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_section_posters)) {
             SettingsMobileIconChoiceRow(

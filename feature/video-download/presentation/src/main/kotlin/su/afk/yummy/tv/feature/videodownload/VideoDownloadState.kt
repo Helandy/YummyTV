@@ -61,6 +61,9 @@ class VideoDownloadState {
         data object NotificationPermissionRequested : Event
 
         data object BackSelected : Event
+
+        /** Пользователь открыл список «Смотреть позже». */
+        data object WatchLaterSelected : Event
         data class GroupToggled(val key: String) : Event
         data class ItemSelected(val id: Long) : Event
         data class DetailsSelected(val animeId: Int) : Event
