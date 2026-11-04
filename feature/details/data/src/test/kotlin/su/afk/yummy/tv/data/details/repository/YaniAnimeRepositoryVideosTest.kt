@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.data.details.dto.YaniAnimeVideosDto
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
+import su.afk.yummy.tv.data.details.network.YummyEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -62,6 +63,7 @@ class YaniAnimeRepositoryVideosTest : BaseUnitTest() {
         api = api,
         episodesApi = mockk<YummyEpisodesApi>(relaxed = true),
         episodeFlagsApi = mockk<MalEpisodeFlagsApi>(relaxed = true),
+        episodeFlagsBackupApi = mockk<YummyEpisodeFlagsApi>(relaxed = true),
         animeStorage = animeStorage,
         accountStorage = mockk<AccountStorage>(relaxed = true),
         settingsStore = settingsStore,
