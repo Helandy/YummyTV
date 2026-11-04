@@ -81,6 +81,8 @@ class SettingsState {
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
+        /** Аудиофокус плеера отключён пользователем. */
+        val audioFocusDisabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
         val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
         /** Сжатие динамического диапазона (DynamicsProcessing) доступно только с Android 9 (API 28). */
@@ -218,6 +220,9 @@ class SettingsState {
 
         /** Пользователь переключил стабилизацию громкости (сжатие динамического диапазона). */
         data object VolumeStabilizationToggled : Event
+
+        /** Переключить отключение аудиофокуса (включение подтверждается диалогом на экране). */
+        data object AudioFocusToggled : Event
 
         /** Пользователь запросил повторный показ обучения жестам мобильного плеера. */
         data object MobilePlayerGestureTutorialReset : Event

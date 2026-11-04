@@ -1,6 +1,10 @@
 package su.afk.yummy.tv.feature.settings.view.category
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -12,6 +16,7 @@ import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.DetailsButtonOrderResetRow
+import su.afk.yummy.tv.feature.settings.view.TvAudioFocusConfirmationDialog
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
@@ -116,6 +121,33 @@ internal fun SettingsTvPlayerContent(
             onClick = {
                 onEvent(SettingsState.Event.VolumeStabilizationToggled)
             },
+        )
+    }
+    SettingsDivider()
+    var audioFocusConfirmVisible by remember { mutableStateOf(false) }
+    ToggleRow(
+        label = stringResource(R.string.settings_audio_focus_label),
+        hint = if (state.audioFocusDisabled) {
+            stringResource(R.string.settings_audio_focus_enabled)
+        } else {
+            stringResource(R.string.settings_audio_focus_disabled)
+        },
+        enabled = state.audioFocusDisabled,
+        onClick = {
+            if (state.audioFocusDisabled) {
+                onEvent(SettingsState.Event.AudioFocusToggled)
+            } else {
+                audioFocusConfirmVisible = true
+            }
+        },
+    )
+    if (audioFocusConfirmVisible) {
+        TvAudioFocusConfirmationDialog(
+            onConfirm = {
+                audioFocusConfirmVisible = false
+                onEvent(SettingsState.Event.AudioFocusToggled)
+            },
+            onDismiss = { audioFocusConfirmVisible = false },
         )
     }
     if (state.tvPlayerControlsTutorialDismissed) {

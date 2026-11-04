@@ -175,6 +175,12 @@
     <string name="settings_volume_stabilization_label">Стабилизация громкости</string>
     <string name="settings_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>
     <string name="settings_volume_stabilization_disabled">Звук играет со своим исходным динамическим диапазоном</string>
+    <string name="settings_audio_focus_label">Отключить аудиофокус</string>
+    <string name="settings_audio_focus_enabled">Плеер не реагирует на перехват фокуса другими приложениями. Включите, если воспроизведение само ставится на паузу</string>
+    <string name="settings_audio_focus_disabled">Плеер ставится на паузу или приглушается, когда фокус забирают другие приложения</string>
+    <string name="settings_audio_focus_confirm_title">Отключить аудиофокус?</string>
+    <string name="settings_audio_focus_confirm_message">Без аудиофокуса видео не будет останавливаться при звонках и звуке других приложений, не будет приглушаться уведомлениями и может играть поверх них. На некоторых устройствах это может работать некорректно. Отключайте, только если воспроизведение само ставится на паузу.</string>
+    <string name="settings_audio_focus_confirm">Отключить</string>
     <string name="settings_player_gesture_tutorial_reset">Повторить обучение жестам</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Показать обучалку при следующем открытии видео</string>
     <string name="settings_player_gesture_tutorial_reset_done">Обучалка будет показана при следующем открытии видео</string>

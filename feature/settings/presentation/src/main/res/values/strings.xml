@@ -175,6 +175,12 @@
     <string name="settings_volume_stabilization_label">Volume stabilization</string>
     <string name="settings_volume_stabilization_enabled">Evens out loud and quiet scenes: quiet dialogue is boosted, loud moments are tamed</string>
     <string name="settings_volume_stabilization_disabled">Audio plays with its original dynamic range</string>
+    <string name="settings_audio_focus_label">Disable audio focus</string>
+    <string name="settings_audio_focus_enabled">Player ignores other apps taking audio focus. Use it if playback keeps pausing by itself</string>
+    <string name="settings_audio_focus_disabled">Player pauses and ducks when other apps take audio focus</string>
+    <string name="settings_audio_focus_confirm_title">Disable audio focus?</string>
+    <string name="settings_audio_focus_confirm_message">Without audio focus the video will not pause for calls or other apps, will not be ducked by notifications, and may play over other audio. Some devices may behave unexpectedly. Disable only if playback keeps pausing by itself.</string>
+    <string name="settings_audio_focus_confirm">Disable</string>
     <string name="settings_player_gesture_tutorial_reset">Replay gesture tutorial</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Show the tutorial the next time a video is opened</string>
     <string name="settings_player_gesture_tutorial_reset_done">The tutorial will be shown the next time a video is opened</string>

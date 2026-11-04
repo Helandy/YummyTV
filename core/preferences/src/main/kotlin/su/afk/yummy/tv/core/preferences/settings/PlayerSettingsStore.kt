@@ -60,6 +60,9 @@ interface PlayerSettingsStore {
     /** Стабилизация громкости (сжатие динамического диапазона аудио). */
     val volumeStabilizationEnabled: Flow<Boolean>
 
+    /** Аудиофокус плеера отключён пользователем (плеер не реагирует на перехват фокуса другими приложениями). */
+    val audioFocusDisabled: Flow<Boolean>
+
     /** Размер оперативного буфера ExoPlayer: запас видео впереди позиции и лимит памяти под него. */
     val playerBufferProfile: Flow<PlayerBufferProfile>
 
@@ -111,6 +114,7 @@ interface PlayerSettingsStore {
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
+    suspend fun setAudioFocusDisabled(disabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
     suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)

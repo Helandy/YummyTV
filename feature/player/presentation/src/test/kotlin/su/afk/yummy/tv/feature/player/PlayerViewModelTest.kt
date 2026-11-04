@@ -105,6 +105,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         destinationStateMapper = PlayerDestinationStateMapper(),
         sourceSelectionHandler = PlayerSourceSelectionHandler(),
         episodeProgressHandler = mockk(relaxed = true),
+        episodeFlagsHandler = mockk(relaxed = true),
         offlineSources = offlineSources,
         navigation = navigation,
         strings = strings,

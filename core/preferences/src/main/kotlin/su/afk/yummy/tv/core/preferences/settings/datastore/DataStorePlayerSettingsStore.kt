@@ -47,6 +47,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoMana
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerControlsTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedLongRemainingMinutesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedMediumRemainingMinutesKey
@@ -135,6 +136,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val volumeStabilizationEnabled: Flow<Boolean> =
         store.boolean(volumeStabilizationEnabledKey, false)
+
+    override val audioFocusDisabled: Flow<Boolean> =
+        store.boolean(audioFocusDisabledKey, false)
 
     override val playerBufferProfile: Flow<PlayerBufferProfile> =
         store.enumFlow(playerBufferProfileKey, PlayerBufferProfile.SMALL)
@@ -286,6 +290,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setVolumeStabilizationEnabled(enabled: Boolean) =
         store.setBoolean(volumeStabilizationEnabledKey, enabled)
+
+    override suspend fun setAudioFocusDisabled(disabled: Boolean) =
+        store.setBoolean(audioFocusDisabledKey, disabled)
 
     override suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile) =
         store.setEnum(playerBufferProfileKey, profile)

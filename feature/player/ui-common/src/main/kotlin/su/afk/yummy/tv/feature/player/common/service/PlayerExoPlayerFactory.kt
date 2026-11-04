@@ -55,14 +55,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             // Фокус нужен, чтобы чужая музыка вставала на паузу при старте серии, а звонок или
             // навигатор ставили на паузу/приглушали нас. MOVIE, а не SPEECH: при duck-потере
             // ExoPlayer приглушает звук вместо паузы.
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
-                /* handleAudioFocus = */
-                true,
-            )
+            .setAudioAttributes(MEDIA_AUDIO_ATTRIBUTES, /* handleAudioFocus = */ !readAudioFocusDisabled())
             .setHandleAudioBecomingNoisy(true)
             .build()
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
@@ -89,10 +82,24 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             }
         } ?: PlayerBufferProfile.SMALL
 
+    /** Читается блокирующе по той же причине, что и [readBufferProfile]. */
+    private fun readAudioFocusDisabled(): Boolean =
+        runBlocking {
+            withTimeoutOrNull(BUFFER_PROFILE_READ_TIMEOUT_MS) {
+                settingsStore.audioFocusDisabled.first()
+            }
+        } ?: false
+
     private fun Context.isLowRamDevice(): Boolean =
         (getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
 
-    private companion object {
-        const val BUFFER_PROFILE_READ_TIMEOUT_MS = 500L
+    internal companion object {
+        /** Атрибуты воспроизведения; используются и при живой смене режима аудиофокуса. */
+        val MEDIA_AUDIO_ATTRIBUTES: AudioAttributes = AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+            .build()
+
+        private const val BUFFER_PROFILE_READ_TIMEOUT_MS = 500L
     }
 }

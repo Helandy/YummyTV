@@ -10,6 +10,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
@@ -67,6 +71,17 @@ class PlayerMediaSessionService : MediaSessionService() {
             initialAudioSessionId = exoPlayer.audioSessionId,
         )
         volumeStabilization = stabilization
+        // Начальное значение уже учтено при сборке плеера; дальше смена настройки действует сразу.
+        settingsStore.audioFocusDisabled
+            .distinctUntilChanged()
+            .drop(1)
+            .onEach { disabled ->
+                exoPlayer.setAudioAttributes(
+                    PlayerExoPlayerFactory.MEDIA_AUDIO_ATTRIBUTES,
+                    /* handleAudioFocus = */ !disabled,
+                )
+            }
+            .launchIn(serviceScope)
         val castPlayer = castPlayerFactory.createOrNull(this, exoPlayer)
         mediaSession = MediaSession.Builder(this, castPlayer ?: exoPlayer)
             .setSessionActivity(createPlayerSessionActivityIntent())
