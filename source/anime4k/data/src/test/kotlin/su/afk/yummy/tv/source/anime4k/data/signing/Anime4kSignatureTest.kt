@@ -63,7 +63,8 @@ class Anime4kSignatureTest : BaseUnitTest() {
         val noCert = SignatureHeaders(secret, null, "v", { 1L }, { nonce })
 
         assertTrue(!noSecret.isAvailable && !noCert.isAvailable)
-        assertTrue(noSecret.headers("GET", "/p", ByteArray(0)).isEmpty())
-        assertTrue(noCert.headers("GET", "/p", ByteArray(0)).isEmpty())
+        // Подписи нет, но версия приложения уходит всегда.
+        assertEquals(mapOf("X-App-Version" to "v"), noSecret.headers("GET", "/p", ByteArray(0)))
+        assertEquals(mapOf("X-App-Version" to "v"), noCert.headers("GET", "/p", ByteArray(0)))
     }
 }

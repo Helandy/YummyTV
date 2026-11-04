@@ -13,7 +13,7 @@ internal class SignatureHeaders(
 
     override fun headers(method: String, path: String, body: ByteArray): Map<String, String> {
         val cert = certSha256Hex
-        if (secret.isBlank() || cert.isNullOrBlank()) return emptyMap()
+        if (secret.isBlank() || cert.isNullOrBlank()) return mapOf("X-App-Version" to appVersion)
         val ts = nowSeconds().toString()
         val nonceValue = nonce()
         val key = Anime4kSignature.signingKey(secret, cert)
