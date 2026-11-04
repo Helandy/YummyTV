@@ -65,12 +65,14 @@ import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
+import su.afk.yummy.tv.feature.home.utils.withShuffledHero
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import javax.inject.Inject
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -130,6 +132,9 @@ class HomeViewModel @Inject internal constructor(
 
     /** Лента без скрытых рекомендаций — из неё тайтл возвращается при откате. */
     private var rawFeed: HomeFeed? = null
+
+    /** Зерно порядка «Аниме сезона»: новое на каждый заход, но стабильное, пока жива VM. */
+    private val heroShuffleSeed = Random.nextLong()
 
     /** Тайтлы из выбранных в настройках списков — из них собирается секция новых серий. */
     private var libraryAnimeIds: Set<Int> = emptySet()
@@ -875,6 +880,7 @@ class HomeViewModel @Inject internal constructor(
     /** Лента в том виде, в котором её видит пользователь: без скрытого, с новыми сериями. */
     private fun HomeFeed.toVisibleFeed(hiddenIds: Set<Int>): HomeFeed =
         withoutHiddenRecommendations(hiddenIds)
+            .withShuffledHero(Random(heroShuffleSeed))
             .let { feed ->
                 if (!newEpisodesSectionEnabled) {
                     feed
