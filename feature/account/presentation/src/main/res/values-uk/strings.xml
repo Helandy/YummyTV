@@ -1,5 +1,6 @@
 <resources>
         <string name="account_faq">FAQ розробника</string>
+        <string name="account_glossary">Глосарій</string>
     <string name="account_site_pages">FAQ і правила сайту</string>
     <string name="account_unknown_user">Невідомий користувач</string>
     <string name="account_refresh">Оновити профіль</string>

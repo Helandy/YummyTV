@@ -170,6 +170,8 @@ dependencies {
     implementation(project(":feature:details:data"))
     implementation(project(":feature:faq:api"))
     implementation(project(":feature:faq:ui-mobile"))
+    implementation(project(":feature:glossary:api"))
+    implementation(project(":feature:glossary:ui-mobile"))
     implementation(project(":feature:pages:api"))
     implementation(project(":feature:pages:data"))
     implementation(project(":feature:pages:ui-mobile"))

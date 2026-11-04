@@ -50,6 +50,7 @@ import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
+import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
@@ -69,6 +70,7 @@ class AccountViewModelTest : BaseUnitTest() {
     private val accountNavigator: IAccountNavigator = mockk(relaxed = true)
     private val messagesNavigator: IMessagesNavigator = mockk(relaxed = true)
     private val faqNavigator: IFaqNavigator = mockk(relaxed = true)
+    private val glossaryNavigator: IGlossaryNavigator = mockk(relaxed = true)
     private val sitePagesNavigator: ISitePagesNavigator = mockk(relaxed = true)
     private val settingsNavigator: ISettingsNavigator = mockk(relaxed = true)
     private val sessionHandler: AccountSessionHandler = mockk()
@@ -110,6 +112,7 @@ class AccountViewModelTest : BaseUnitTest() {
         accountNavigator = accountNavigator,
         messagesNavigator = messagesNavigator,
         faqNavigator = faqNavigator,
+        glossaryNavigator = glossaryNavigator,
         sitePagesNavigator = sitePagesNavigator,
         settingsNavigator = settingsNavigator,
         sessionHandler = sessionHandler,
@@ -338,6 +341,7 @@ class AccountViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.UserSearchSelected)
         vm.setEvent(Event.FriendsSelected)
         vm.setEvent(Event.FaqSelected)
+        vm.setEvent(Event.GlossarySelected)
         vm.setEvent(Event.SitePagesSelected)
         vm.setEvent(Event.SettingsSelected)
         vm.setEvent(Event.MySubscriptionsSelected)
@@ -345,7 +349,7 @@ class AccountViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.PasswordResetSelected)
         vm.setEvent(Event.RegistrationSelected)
 
-        verify(exactly = 12) { nav.navigate(any()) }
+        verify(exactly = 13) { nav.navigate(any()) }
     }
 
     @Test

@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:faq:api"))
+    implementation(project(":feature:glossary:api"))
     implementation(project(":feature:messages:api"))
     implementation(project(":feature:pages:api"))
     implementation(project(":feature:posts:api"))

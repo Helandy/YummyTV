@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":feature:commonScreen:api"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:faq:api"))
+    implementation(project(":feature:glossary:api"))
     implementation(project(":feature:home:api"))
     implementation(project(":feature:home:ui-mobile"))
     implementation(project(":feature:library:api"))

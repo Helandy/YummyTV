@@ -37,6 +37,7 @@ import su.afk.yummy.tv.feature.account.utils.decrementCount
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
+import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
@@ -57,6 +58,7 @@ class AccountViewModel @Inject internal constructor(
     private val accountNavigator: IAccountNavigator,
     private val messagesNavigator: IMessagesNavigator,
     private val faqNavigator: IFaqNavigator,
+    private val glossaryNavigator: IGlossaryNavigator,
     private val sitePagesNavigator: ISitePagesNavigator,
     private val settingsNavigator: ISettingsNavigator,
     private val sessionHandler: AccountSessionHandler,
@@ -260,6 +262,7 @@ class AccountViewModel @Inject internal constructor(
                 if (currentState.isSignedIn) nav.navigate(accountNavigator.getUserFriendsDest(currentState.userId))
 
             AccountState.Event.FaqSelected -> nav.navigate(faqNavigator.getFaqDest())
+            AccountState.Event.GlossarySelected -> nav.navigate(glossaryNavigator.getGlossaryDest())
 
             AccountState.Event.SitePagesSelected -> nav.navigate(sitePagesNavigator.pages())
 

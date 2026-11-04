@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
@@ -166,6 +167,14 @@ fun AccountMobileScreen(
                 )
                 add(
                     AccountMobileQuickAction(
+                        key = "glossary",
+                        title = stringResource(R.string.account_glossary),
+                        icon = Icons.AutoMirrored.Filled.MenuBook,
+                        onClick = { onEvent(AccountState.Event.GlossarySelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
                         key = "site_pages",
                         title = stringResource(R.string.account_site_pages),
                         icon = Icons.Filled.Language,
@@ -235,6 +244,14 @@ fun AccountMobileScreen(
                         title = stringResource(R.string.account_faq),
                         icon = Icons.Filled.Info,
                         onClick = { onEvent(AccountState.Event.FaqSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
+                        key = "glossary",
+                        title = stringResource(R.string.account_glossary),
+                        icon = Icons.AutoMirrored.Filled.MenuBook,
+                        onClick = { onEvent(AccountState.Event.GlossarySelected) },
                     ),
                 )
                 add(
