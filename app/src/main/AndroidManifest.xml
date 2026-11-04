@@ -76,7 +76,6 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:resizeableActivity="true"
-            android:supportsPictureInPicture="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />

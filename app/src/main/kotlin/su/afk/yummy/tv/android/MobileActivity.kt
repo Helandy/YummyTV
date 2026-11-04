@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.android
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
@@ -26,7 +25,6 @@ import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
-import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -94,17 +92,4 @@ class MobileActivity : ComponentActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
         keyboardShortcuts.handle(event, onBack = onBackPressedDispatcher::onBackPressed) ||
             super.onKeyDown(keyCode, event)
-
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        MobilePlayerPipController.enterIfPlaying(this)
-    }
-
-    override fun onPictureInPictureModeChanged(
-        isInPictureInPictureMode: Boolean,
-        newConfig: Configuration,
-    ) {
-        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        MobilePlayerPipController.updatePictureInPictureMode(isInPictureInPictureMode)
-    }
 }

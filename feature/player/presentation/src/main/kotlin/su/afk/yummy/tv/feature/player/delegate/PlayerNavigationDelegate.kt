@@ -4,10 +4,10 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
-import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
+import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
 import javax.inject.Inject
 
@@ -16,7 +16,7 @@ import javax.inject.Inject
  * `viewModelScope`), дочерние экраны открываются поверх деталей.
  */
 internal class PlayerNavigationDelegate @Inject constructor(
-    private val nav: INavigationManager,
+    private val nav: PlayerHostNavigation,
     private val detailsNavigator: IDetailsNavigator,
     private val progress: PlayerPlaybackProgressHandler,
     @IoApplicationScope private val ioScope: CoroutineScope,
@@ -39,7 +39,7 @@ internal class PlayerNavigationDelegate @Inject constructor(
         val animeId = host.state.animeId
         if (animeId <= 0) return
         navigateAndSaveProgress(host) {
-            nav.navigate(detailsNavigator.getDetailsDest(animeId))
+            nav.openDetails(detailsNavigator.getDetailsDest(animeId))
         }
     }
 
@@ -64,17 +64,9 @@ internal class PlayerNavigationDelegate @Inject constructor(
         if (isNavigatingToChildScreen) return
         val animeId = host.state.animeId
         navigateAndSaveProgress(host) {
-            if (animeId <= 0) {
-                nav.back()
-            } else {
-                val detailsDestination = detailsNavigator.getDetailsDest(animeId)
-                val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
-                if (previousDestination == detailsDestination) {
-                    nav.back()
-                } else {
-                    nav.replace(detailsDestination)
-                }
-            }
+            nav.returnToDetailsAfterTvBackground(
+                detailsNavigator.getDetailsDest(animeId).takeIf { animeId > 0 },
+            )
         }
     }
 
@@ -88,14 +80,7 @@ internal class PlayerNavigationDelegate @Inject constructor(
     }
 
     private fun navigateFromPlayerToChild(animeId: Int, childDestination: NavKey) {
-        val detailsDestination = detailsNavigator.getDetailsDest(animeId)
-        val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
-        if (previousDestination == detailsDestination) {
-            nav.replace(childDestination)
-        } else {
-            nav.replace(detailsDestination)
-            nav.navigate(childDestination)
-        }
+        nav.openChild(detailsNavigator.getDetailsDest(animeId), childDestination)
     }
 
     /**

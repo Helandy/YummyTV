@@ -26,6 +26,7 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
 import su.afk.yummy.tv.feature.player.delegate.PlayerNavigationDelegate
+import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
@@ -94,7 +95,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         dest = dest,
         errorHandler = errorHandler,
         retryStorage = retryStorage,
-        nav = nav,
+        nav = PlayerHostNavigation(nav),
         sourceStreamHandler = sourceStreamHandler,
         playbackProgressHandler = playbackProgressHandler,
         preferences = preferences,

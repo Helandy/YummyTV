@@ -22,13 +22,13 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.mvi.BaseViewModel
-import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.PlayerSourceBehavior
 import su.afk.yummy.tv.feature.player.delegate.PlayerNavigationDelegate
+import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
@@ -83,7 +83,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     @Assisted private val dest: PlayerDestination,
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
-    private val nav: INavigationManager,
+    private val nav: PlayerHostNavigation,
     private val sourceStreamHandler: PlayerSourceStreamHandler,
     private val playbackProgressHandler: PlayerPlaybackProgressHandler,
     private val preferences: PlayerPreferencesBinder,
@@ -646,7 +646,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         // Как в сетевой ветке: поток гасим сразу и сразу переключаем выбранную серию. Иначе плеер ещё
         // держит позицию прежней серии, а отчёт прогресса уже строится по новой и пишет её не туда.
         setState { sourceStreamHandler.preparingStreamLoad(state, PlayerStreamResumeMode.SelectedSourceOnly) }
-        if (nav.backStack.lastOrNull() is PlayerDestination) nav.replace(destination)
+        if (nav.isPlayerCurrent) nav.replacePlayer(destination)
         loadDownloadedDestination(downloadId)
     }
 
@@ -701,11 +701,11 @@ class PlayerViewModel @AssistedInject internal constructor(
         if (destination == activeDest) return
         // Ключ и activeDest двигаются только вместе: разъехавшись, они дадут повторный
         // NavigateToDestination со старой серией, если запись пересоздадут.
-        if (nav.backStack.lastOrNull() !is PlayerDestination) return
+        if (!nav.isPlayerCurrent) return
         // activeDest обновляем до replace: экран пришлёт NavigateToDestination с новым ключом,
         // и loadDestination должен схлопнуться на guard, а не перезапустить загрузку.
         activeDest = destination
-        nav.replace(destination)
+        nav.replacePlayer(destination)
     }
 
     private fun saveContinueTarget(state: PlayerState.State) {

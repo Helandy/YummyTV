@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
+        <activity
+            android:name="su.afk.yummy.tv.feature.player.mobile.activity.PlayerActivity"
+            android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true" />
+
         <receiver
             android:name="su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipActionReceiver"
             android:exported="false" />
