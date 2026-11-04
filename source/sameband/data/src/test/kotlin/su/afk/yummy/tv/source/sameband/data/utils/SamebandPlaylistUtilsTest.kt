@@ -30,6 +30,21 @@ class SamebandPlaylistUtilsTest {
     }
 
     @Test
+    fun `paths with spaces are kept whole and encoded`() {
+        val file = "[480p]/v/anime/Grand Blue Season 3/Grand Blue Season 3 - 01_RUS_2/index.m3u8," +
+            "[720p]/v/anime/Grand Blue Season 3/Grand Blue Season 3 - 01_RUS_1/index.m3u8," +
+            "[1080p]/v/anime/Grand Blue Season 3/Grand Blue Season 3 - 01_RUS_0/index.m3u8"
+
+        val qualities = samebandQualities(file)
+
+        assertEquals(listOf("480p", "720p", "1080p"), qualities.keys.toList())
+        assertEquals(
+            "https://sameband.studio/v/anime/Grand%20Blue%20Season%203/Grand%20Blue%20Season%203%20-%2001_RUS_0/index.m3u8",
+            qualities["1080p"],
+        )
+    }
+
+    @Test
     fun `episodes come from titles and skip items without files`() {
         val episodes = parseSamebandPlaylist(playlist).toEpisodes()
 
