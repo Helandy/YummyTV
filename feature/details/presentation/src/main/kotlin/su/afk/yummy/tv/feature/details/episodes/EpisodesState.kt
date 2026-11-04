@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchFilter
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
 class EpisodesState {
@@ -45,6 +46,10 @@ class EpisodesState {
         val expandedEpisodeDescriptions: PersistentSet<String> = persistentSetOf(),
         /** Видео, сгруппированные по серии и отсортированные по номеру. */
         val episodeGroups: ImmutableList<EpisodeGroup> = persistentListOf(),
+        /** Выбранный фильтр по статусу просмотра (только мобильный список). */
+        val watchFilter: EpisodeWatchFilter = EpisodeWatchFilter.All,
+        /** [episodeGroups] после применения [watchFilter]. */
+        val visibleEpisodeGroups: ImmutableList<EpisodeGroup> = persistentListOf(),
         /** Озвучка с наибольшим числом просмотров среди kodik-источников. */
         val bestDubbing: String = "",
         /** Приоритетный статус загрузки на серию: busy > paused > downloaded > failed. */
@@ -174,6 +179,9 @@ class EpisodesState {
 
         /** Пользователь свернул или раскрыл описание серии. */
         data class EpisodeDescriptionToggled(val episode: String) : Event
+
+        /** Пользователь выбрал фильтр серий по статусу просмотра. */
+        data class WatchFilterSelected(val filter: EpisodeWatchFilter) : Event
 
         /** Пользователь выбрал серию из списка. */
         data class EpisodeSelected(val video: AnimeVideo) : Event

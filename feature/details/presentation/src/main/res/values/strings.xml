@@ -43,6 +43,10 @@
     <string name="details_full_description">Description</string>
     <string name="details_episodes">Episodes</string>
     <string name="details_episodes_empty">No episodes yet</string>
+    <string name="details_episodes_filter_all">All</string>
+    <string name="details_episodes_filter_unwatched">Unwatched</string>
+    <string name="details_episodes_filter_watched">Watched</string>
+    <string name="details_episodes_filter_empty">No episodes match the filter</string>
     <string name="details_sections_hint">You can press down to see more sections: description, rating, the title’s universe and similar titles. Give it a try — it’s easy</string>
     <string name="details_sections_hint_dismiss">Got it</string>
     <string name="details_subscriptions">Subscriptions</string>

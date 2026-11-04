@@ -43,6 +43,10 @@
     <string name="details_full_description">Опис</string>
     <string name="details_episodes">Серії</string>
     <string name="details_episodes_empty">Серій поки немає</string>
+    <string name="details_episodes_filter_all">Усі</string>
+    <string name="details_episodes_filter_unwatched">Непереглянуті</string>
+    <string name="details_episodes_filter_watched">Переглянуті</string>
+    <string name="details_episodes_filter_empty">Немає серій під обраний фільтр</string>
     <string name="details_sections_hint">Ви можете натискати вниз, щоб побачити більше секцій: опис, рейтинг, всесвіт тайтлу та схожі тайтли. Спробуйте — це легко</string>
     <string name="details_sections_hint_dismiss">Добре, запам’ятав</string>
     <string name="details_subscriptions">Підписки</string>

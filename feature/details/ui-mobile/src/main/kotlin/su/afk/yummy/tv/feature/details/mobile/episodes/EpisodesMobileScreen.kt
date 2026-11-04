@@ -2,13 +2,18 @@ package su.afk.yummy.tv.feature.details.mobile.episodes
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -17,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -43,6 +49,7 @@ import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadQuali
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadedActionSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDubbingDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeMobileCard
+import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeWatchFilterAction
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodesMobileSkeleton
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -79,6 +86,14 @@ fun EpisodesMobileScreen(
             MobileTopBar(
                 title = stringResource(R.string.details_episodes),
                 onBack = { onEvent(EpisodesState.Event.BackSelected) },
+                actions = {
+                    if (state.videosState is VideosUiState.Content) {
+                        EpisodeWatchFilterAction(
+                            selected = state.watchFilter,
+                            onSelected = { onEvent(EpisodesState.Event.WatchFilterSelected(it)) },
+                        )
+                    }
+                },
             )
         },
     ) {
@@ -94,72 +109,85 @@ fun EpisodesMobileScreen(
                 EpisodesMobileSkeleton(modifier = Modifier.mobileContentMaxWidth())
                 return@MobileStateContent
             }
-            LazyColumn(
-                modifier = Modifier
-                    .mobileContentMaxWidth()
-                    .navigationBarsPadding(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    top = 12.dp,
-                    end = 16.dp,
-                    bottom = 16.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(state.episodeGroups, key = { it.episode }) { group ->
-                    val video = group.videos.representativeVideo(state.bestDubbing)
-                    val thumbnail = EpisodeThumbnail(
-                        iframeUrl = group.videos.kodikThumbnailIframeUrl(state.bestDubbing).orEmpty(),
-                        animeId = state.animeId,
-                        episode = group.episode,
+            Column(modifier = Modifier.mobileContentMaxWidth()) {
+                if (state.visibleEpisodeGroups.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.details_episodes_filter_empty),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
                     )
-                    val downloadStatus = state.resolvedDownloadStatuses[group.episode]
-                    val downloadKeys = remember(group.videos) {
-                        group.videos.map { video ->
-                            listOf(video.id.toString(), video.iframeUrl).joinToString("|")
-                        }
-                    }
-                    val downloadResolving = downloadKeys.any { it in state.resolvingDownloadKeys }
-                    val downloadAwaitingQualitySelection = state.pendingDownloadQualitySelection
-                        ?.let { selection -> group.videos.any { it.id == selection.videoId } }
-                        ?: false
-                    val episodeInfo = state.episodeInfo[group.episode]
-                    EpisodeMobileCard(
-                        video = video,
-                        episodeNumber = group.episode,
-                        watchStatus = group.videos.watchStatus(state.watchProgress),
-                        isInWatchLater = group.episode.episodeGroupKey() in state.watchLaterEpisodes,
-                        flags = state.episodeFlags[group.episode.episodeGroupKey()],
-                        thumbnail = thumbnail,
-                        episodeTitle = episodeInfo?.title,
-                        episodeDescription = episodeInfo?.description,
-                        descriptionExpanded = group.episode in state.expandedEpisodeDescriptions,
-                        downloadStatus = downloadStatus,
-                        downloadResolving = downloadResolving,
-                        downloadAwaitingQualitySelection = downloadAwaitingQualitySelection,
-                        onToggleDescription = {
-                            onEvent(EpisodesState.Event.EpisodeDescriptionToggled(group.episode))
-                        },
-                        onDownloadClick = {
-                            if (downloadStatus?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded) {
-                                onEvent(
-                                    EpisodesState.Event.DownloadedEpisodeSelected(
-                                        videos = group.videos,
-                                        download = downloadStatus,
-                                    ),
-                                )
-                            } else {
-                                onEvent(EpisodesState.Event.EpisodeDownloadSelected(group.videos))
+                }
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .navigationBarsPadding(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        top = 12.dp,
+                        end = 16.dp,
+                        bottom = 16.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(state.visibleEpisodeGroups, key = { it.episode }) { group ->
+                        val video = group.videos.representativeVideo(state.bestDubbing)
+                        val thumbnail = EpisodeThumbnail(
+                            iframeUrl = group.videos.kodikThumbnailIframeUrl(state.bestDubbing).orEmpty(),
+                            animeId = state.animeId,
+                            episode = group.episode,
+                        )
+                        val downloadStatus = state.resolvedDownloadStatuses[group.episode]
+                        val downloadKeys = remember(group.videos) {
+                            group.videos.map { video ->
+                                listOf(video.id.toString(), video.iframeUrl).joinToString("|")
                             }
-                        },
-                        onOpenDownloadsClick = {
-                            onEvent(EpisodesState.Event.OpenDownloadsScreenSelected)
-                        },
-                        onClick = { onEvent(EpisodesState.Event.EpisodeSelected(video)) },
-                        onLongClick = {
-                            onEvent(EpisodesState.Event.EpisodeActionsRequested(group.videos))
-                        },
-                    )
+                        }
+                        val downloadResolving = downloadKeys.any { it in state.resolvingDownloadKeys }
+                        val downloadAwaitingQualitySelection = state.pendingDownloadQualitySelection
+                            ?.let { selection -> group.videos.any { it.id == selection.videoId } }
+                            ?: false
+                        val episodeInfo = state.episodeInfo[group.episode]
+                        EpisodeMobileCard(
+                            video = video,
+                            episodeNumber = group.episode,
+                            watchStatus = group.videos.watchStatus(state.watchProgress),
+                            isInWatchLater = group.episode.episodeGroupKey() in state.watchLaterEpisodes,
+                            flags = state.episodeFlags[group.episode.episodeGroupKey()],
+                            thumbnail = thumbnail,
+                            episodeTitle = episodeInfo?.title,
+                            episodeDescription = episodeInfo?.description,
+                            descriptionExpanded = group.episode in state.expandedEpisodeDescriptions,
+                            downloadStatus = downloadStatus,
+                            downloadResolving = downloadResolving,
+                            downloadAwaitingQualitySelection = downloadAwaitingQualitySelection,
+                            onToggleDescription = {
+                                onEvent(EpisodesState.Event.EpisodeDescriptionToggled(group.episode))
+                            },
+                            onDownloadClick = {
+                                if (downloadStatus?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded) {
+                                    onEvent(
+                                        EpisodesState.Event.DownloadedEpisodeSelected(
+                                            videos = group.videos,
+                                            download = downloadStatus,
+                                        ),
+                                    )
+                                } else {
+                                    onEvent(EpisodesState.Event.EpisodeDownloadSelected(group.videos))
+                                }
+                            },
+                            onOpenDownloadsClick = {
+                                onEvent(EpisodesState.Event.OpenDownloadsScreenSelected)
+                            },
+                            onClick = { onEvent(EpisodesState.Event.EpisodeSelected(video)) },
+                            onLongClick = {
+                                onEvent(EpisodesState.Event.EpisodeActionsRequested(group.videos))
+                            },
+                        )
+                    }
                 }
             }
         }

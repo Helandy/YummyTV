@@ -66,6 +66,7 @@ import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadPrepareRe
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchLaterHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
 import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeGroups
+import su.afk.yummy.tv.feature.details.episodes.utils.filterEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.isActive
 import su.afk.yummy.tv.feature.details.episodes.utils.resolveDownloadStatuses
 import su.afk.yummy.tv.feature.details.episodes.utils.uiStatusKey
@@ -204,6 +205,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
             EpisodesState.Event.BackSelected -> nav.back()
             EpisodesState.Event.RetryVideosSelected -> viewModelScope.launch { loadVideos() }
+            is EpisodesState.Event.WatchFilterSelected -> setState {
+                copy(watchFilter = event.filter).withVisibleGroups()
+            }
+
             is EpisodesState.Event.EpisodeDescriptionToggled -> setState {
                 copy(
                     expandedEpisodeDescriptions = if (event.episode in expandedEpisodeDescriptions) {
@@ -480,7 +485,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         copy(
                             videosState = VideosUiState.Error(UiText.Failure(it)),
                             watchProgress = DetailsWatchProgressIndex.Empty,
-                        )
+                        ).withVisibleGroups()
                     }
                 }
             },
@@ -541,15 +546,18 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 episodeGroups = derived.groups,
                 bestDubbing = derived.bestDubbing,
                 resolvedDownloadStatuses = resolveDownloadStatuses(derived.groups, downloadStatuses),
-            )
+            ).withVisibleGroups()
         }
     }
 
     private fun updateMergedWatchProgress(
         serverVideos: List<AnimeVideo> = (currentState.videosState as? VideosUiState.Content)?.videos.orEmpty(),
     ) {
-        setState { copy(watchProgress = buildWatchProgressIndex(serverVideos)) }
+        setState { copy(watchProgress = buildWatchProgressIndex(serverVideos)).withVisibleGroups() }
     }
+
+    private fun EpisodesState.State.withVisibleGroups(): EpisodesState.State =
+        copy(visibleEpisodeGroups = filterEpisodeGroups(episodeGroups, watchProgress, watchFilter))
 
     private fun buildWatchProgressIndex(
         videos: List<AnimeVideo>,
