@@ -77,10 +77,10 @@
     <string name="settings_player_orientation_title">Орієнтація плеєра</string>
     <string name="settings_player_orientation_system">Системна</string>
     <string name="settings_player_orientation_system_hint">Слідувати системному налаштуванню повороту екрана</string>
-    <string name="settings_player_orientation_left">Ліворуч</string>
-    <string name="settings_player_orientation_left_hint">Завжди альбомна орієнтація (ліворуч), навіть якщо поворот екрана заблокований у системі</string>
-    <string name="settings_player_orientation_right">Праворуч</string>
-    <string name="settings_player_orientation_right_hint">Завжди альбомна орієнтація (праворуч), навіть якщо поворот екрана заблокований у системі</string>
+    <string name="settings_player_orientation_sensor_landscape">Альбомна (датчик)</string>
+    <string name="settings_player_orientation_sensor_landscape_hint">Завжди альбомна орієнтація, сторона (ліворуч або праворуч) визначається датчиком</string>
+    <string name="settings_player_orientation_portrait">Вертикально</string>
+    <string name="settings_player_orientation_portrait_hint">Завжди вертикальна орієнтація, навіть якщо в системі увімкнено автоповорот</string>
     <string name="settings_adaptive_video_quality_title">Адаптивна якість</string>
     <string name="settings_adaptive_video_quality_hint">Підлаштовується під пристрій і мережу: знижується при підвисаннях, повертається при покращенні. Вище бажаної якості не підіймається</string>
     <string name="settings_preferred_video_quality_title">Бажана якість</string>

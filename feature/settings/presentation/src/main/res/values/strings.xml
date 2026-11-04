@@ -77,10 +77,10 @@
     <string name="settings_player_orientation_title">Player orientation</string>
     <string name="settings_player_orientation_system">System</string>
     <string name="settings_player_orientation_system_hint">Follow the system rotation setting</string>
-    <string name="settings_player_orientation_left">Left</string>
-    <string name="settings_player_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
-    <string name="settings_player_orientation_right">Right</string>
-    <string name="settings_player_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
+    <string name="settings_player_orientation_sensor_landscape">Landscape (sensor)</string>
+    <string name="settings_player_orientation_sensor_landscape_hint">Always landscape; left or right follows the sensor</string>
+    <string name="settings_player_orientation_portrait">Portrait</string>
+    <string name="settings_player_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
     <string name="settings_adaptive_video_quality_title">Adaptive quality</string>
     <string name="settings_adaptive_video_quality_hint">Adjusts to your device and network: drops when playback stutters, returns when it improves. Never goes above the preferred quality</string>
     <string name="settings_preferred_video_quality_title">Preferred video quality</string>

@@ -343,8 +343,8 @@ private fun ApplyPlayerOrientation(mode: PlayerOrientationMode) {
     DisposableEffect(activity, mode) {
         activity?.requestedOrientation = when (mode) {
             PlayerOrientationMode.SYSTEM -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-            PlayerOrientationMode.LEFT -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-            PlayerOrientationMode.RIGHT -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            PlayerOrientationMode.SENSOR_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            PlayerOrientationMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         onDispose {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED

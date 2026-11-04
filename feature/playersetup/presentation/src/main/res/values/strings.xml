@@ -25,14 +25,14 @@
     <string name="player_setup_mobile_section_episodes">Episodes</string>
     <string name="player_setup_mobile_section_playback">Playback</string>
     <string name="player_setup_mobile_orientation_label">Player orientation</string>
-    <string name="player_setup_mobile_orientation_hint">System follows auto-rotate; Left and Right always use landscape</string>
+    <string name="player_setup_mobile_orientation_hint">System follows auto-rotate; the other modes lock the orientation</string>
     <string name="player_setup_mobile_orientation_system">System</string>
-    <string name="player_setup_mobile_orientation_left">Left</string>
-    <string name="player_setup_mobile_orientation_right">Right</string>
+    <string name="player_setup_mobile_orientation_portrait">Portrait</string>
     <string name="player_setup_mobile_pip_label">Picture-in-Picture (PiP)</string>
     <string name="player_setup_mobile_pip_hint">Switch on automatically when leaving the app during playback</string>
     <string name="player_setup_mobile_section_general">General</string>
     <string name="player_setup_mobile_orientation_system_hint">Follow the system rotation setting</string>
-    <string name="player_setup_mobile_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
-    <string name="player_setup_mobile_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
+    <string name="player_setup_mobile_orientation_sensor_landscape">Landscape (sensor)</string>
+    <string name="player_setup_mobile_orientation_sensor_landscape_hint">Always landscape; left or right follows the sensor</string>
+    <string name="player_setup_mobile_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
 </resources>

@@ -138,10 +138,10 @@
     <string name="player_mobile_orientation">Ориентация экрана</string>
     <string name="player_mobile_orientation_system">Системный</string>
     <string name="player_mobile_orientation_system_hint">Следовать системной настройке поворота экрана</string>
-    <string name="player_mobile_orientation_left">Влево</string>
-    <string name="player_mobile_orientation_left_hint">Всегда альбомная ориентация (влево), даже если поворот экрана заблокирован в системе</string>
-    <string name="player_mobile_orientation_right">Вправо</string>
-    <string name="player_mobile_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
+    <string name="player_mobile_orientation_sensor_landscape">Альбомная (датчик)</string>
+    <string name="player_mobile_orientation_sensor_landscape_hint">Всегда альбомная ориентация, сторона (влево или вправо) выбирается по датчику</string>
+    <string name="player_mobile_orientation_portrait">Вертикально</string>
+    <string name="player_mobile_orientation_portrait_hint">Всегда вертикальная ориентация, даже если в системе включён автоповорот</string>
     <string name="player_toast_dubbing_changed">Озвучка: %1$s</string>
     <string name="player_toast_balancer_changed">Плеер: %1$s</string>
     <string name="player_side_panel_title">Настройки плеера</string>

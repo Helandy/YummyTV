@@ -25,14 +25,14 @@
     <string name="player_setup_mobile_section_episodes">Серии</string>
     <string name="player_setup_mobile_section_playback">Воспроизведение</string>
     <string name="player_setup_mobile_orientation_label">Ориентация плеера</string>
-    <string name="player_setup_mobile_orientation_hint">Системная следует автоповороту; влево и вправо — всегда альбомная</string>
+    <string name="player_setup_mobile_orientation_hint">Системная следует автоповороту; остальные режимы фиксируют ориентацию</string>
     <string name="player_setup_mobile_orientation_system">Системная</string>
-    <string name="player_setup_mobile_orientation_left">Влево</string>
-    <string name="player_setup_mobile_orientation_right">Вправо</string>
+    <string name="player_setup_mobile_orientation_portrait">Вертикально</string>
     <string name="player_setup_mobile_pip_label">Плавающий режим (PiP)</string>
     <string name="player_setup_mobile_pip_hint">Включать при выходе из приложения во время воспроизведения</string>
     <string name="player_setup_mobile_section_general">Общее</string>
     <string name="player_setup_mobile_orientation_system_hint">Следовать системной настройке поворота экрана</string>
-    <string name="player_setup_mobile_orientation_left_hint">Всегда альбомная ориентация (влево), даже если поворот экрана заблокирован в системе</string>
-    <string name="player_setup_mobile_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
+    <string name="player_setup_mobile_orientation_sensor_landscape">Альбомная (датчик)</string>
+    <string name="player_setup_mobile_orientation_sensor_landscape_hint">Всегда альбомная ориентация, сторона (влево или вправо) выбирается по датчику</string>
+    <string name="player_setup_mobile_orientation_portrait_hint">Всегда вертикальная ориентация, даже если в системе включён автоповорот</string>
 </resources>

@@ -34,7 +34,7 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
     private val suggestNext = MutableStateFlow(false)
     private val adaptive = MutableStateFlow(false)
     private val quality = MutableStateFlow(PreferredVideoQuality.P720)
-    private val orientation = MutableStateFlow(PlayerOrientationMode.RIGHT)
+    private val orientation = MutableStateFlow(PlayerOrientationMode.SENSOR_LANDSCAPE)
     private val pip = MutableStateFlow(false)
     private val language = MutableStateFlow(YaniContentLanguage.ENGLISH)
 
@@ -63,7 +63,7 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
                 suggestNextEpisodeOnWatched = false,
                 adaptiveVideoQualityEnabled = false,
                 preferredVideoQuality = PreferredVideoQuality.P720,
-                playerOrientationMode = PlayerOrientationMode.RIGHT,
+                playerOrientationMode = PlayerOrientationMode.SENSOR_LANDSCAPE,
                 pictureInPictureEnabled = false,
                 contentLanguage = YaniContentLanguage.ENGLISH,
             ),
@@ -89,13 +89,13 @@ class PlayerSetupSettingsHandlerTest : BaseUnitTest() {
 
         handler.setContentLanguage(YaniContentLanguage.RUSSIAN)
         handler.setPreferredVideoQuality(PreferredVideoQuality.P1080)
-        handler.setPlayerOrientationMode(PlayerOrientationMode.LEFT)
+        handler.setPlayerOrientationMode(PlayerOrientationMode.PORTRAIT)
         handler.setPictureInPictureEnabled(true)
 
         coVerify {
             accountStore.setYaniContentLanguage(YaniContentLanguage.RUSSIAN)
             store.setPreferredVideoQuality(PreferredVideoQuality.P1080)
-            store.setPlayerOrientationMode(PlayerOrientationMode.LEFT)
+            store.setPlayerOrientationMode(PlayerOrientationMode.PORTRAIT)
             store.setPictureInPictureEnabled(true)
         }
     }

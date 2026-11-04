@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.settings.mobile.utils
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.RotateLeft
-import androidx.compose.material.icons.rounded.RotateRight
 import androidx.compose.material.icons.rounded.ScreenRotation
+import androidx.compose.material.icons.rounded.StayCurrentLandscape
+import androidx.compose.material.icons.rounded.StayCurrentPortrait
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -46,8 +46,8 @@ internal fun LibraryContinueWatchingCardSize.hint(): String = stringResource(
 internal fun PlayerOrientationMode.label(): String = stringResource(
     when (this) {
         PlayerOrientationMode.SYSTEM -> R.string.settings_player_orientation_system
-        PlayerOrientationMode.LEFT -> R.string.settings_player_orientation_left
-        PlayerOrientationMode.RIGHT -> R.string.settings_player_orientation_right
+        PlayerOrientationMode.SENSOR_LANDSCAPE -> R.string.settings_player_orientation_sensor_landscape
+        PlayerOrientationMode.PORTRAIT -> R.string.settings_player_orientation_portrait
     },
 )
 
@@ -55,13 +55,13 @@ internal fun PlayerOrientationMode.label(): String = stringResource(
 internal fun PlayerOrientationMode.hint(): String = stringResource(
     when (this) {
         PlayerOrientationMode.SYSTEM -> R.string.settings_player_orientation_system_hint
-        PlayerOrientationMode.LEFT -> R.string.settings_player_orientation_left_hint
-        PlayerOrientationMode.RIGHT -> R.string.settings_player_orientation_right_hint
+        PlayerOrientationMode.SENSOR_LANDSCAPE -> R.string.settings_player_orientation_sensor_landscape_hint
+        PlayerOrientationMode.PORTRAIT -> R.string.settings_player_orientation_portrait_hint
     },
 )
 
 internal fun PlayerOrientationMode.icon(): ImageVector = when (this) {
     PlayerOrientationMode.SYSTEM -> Icons.Rounded.ScreenRotation
-    PlayerOrientationMode.RIGHT -> Icons.Rounded.RotateRight
-    PlayerOrientationMode.LEFT -> Icons.Rounded.RotateLeft
+    PlayerOrientationMode.SENSOR_LANDSCAPE -> Icons.Rounded.StayCurrentLandscape
+    PlayerOrientationMode.PORTRAIT -> Icons.Rounded.StayCurrentPortrait
 }

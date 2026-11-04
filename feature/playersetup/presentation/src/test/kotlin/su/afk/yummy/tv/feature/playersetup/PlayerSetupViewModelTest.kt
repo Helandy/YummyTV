@@ -84,12 +84,12 @@ class PlayerSetupViewModelTest : BaseUnitTest() {
 
         viewModel.setEvent(Event.ContentLanguageSelected(YaniContentLanguage.UKRAINIAN))
         viewModel.setEvent(Event.PreferredVideoQualitySelected(PreferredVideoQuality.P1440))
-        viewModel.setEvent(Event.PlayerOrientationModeSelected(PlayerOrientationMode.LEFT))
+        viewModel.setEvent(Event.PlayerOrientationModeSelected(PlayerOrientationMode.PORTRAIT))
 
         coVerify {
             settingsHandler.setContentLanguage(YaniContentLanguage.UKRAINIAN)
             settingsHandler.setPreferredVideoQuality(PreferredVideoQuality.P1440)
-            settingsHandler.setPlayerOrientationMode(PlayerOrientationMode.LEFT)
+            settingsHandler.setPlayerOrientationMode(PlayerOrientationMode.PORTRAIT)
         }
     }
 

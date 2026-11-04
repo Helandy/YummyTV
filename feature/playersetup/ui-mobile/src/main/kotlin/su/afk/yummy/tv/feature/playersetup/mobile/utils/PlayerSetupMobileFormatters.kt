@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.playersetup.mobile.utils
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.RotateLeft
-import androidx.compose.material.icons.rounded.RotateRight
 import androidx.compose.material.icons.rounded.ScreenRotation
+import androidx.compose.material.icons.rounded.StayCurrentLandscape
+import androidx.compose.material.icons.rounded.StayCurrentPortrait
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -20,15 +20,15 @@ internal fun PreferredVideoQuality.setupLabel(): String =
 internal fun PlayerOrientationMode.setupLabel(): String = stringResource(
     when (this) {
         PlayerOrientationMode.SYSTEM -> R.string.player_setup_mobile_orientation_system
-        PlayerOrientationMode.LEFT -> R.string.player_setup_mobile_orientation_left
-        PlayerOrientationMode.RIGHT -> R.string.player_setup_mobile_orientation_right
+        PlayerOrientationMode.SENSOR_LANDSCAPE -> R.string.player_setup_mobile_orientation_sensor_landscape
+        PlayerOrientationMode.PORTRAIT -> R.string.player_setup_mobile_orientation_portrait
     },
 )
 
 internal fun PlayerOrientationMode.setupIcon(): ImageVector = when (this) {
     PlayerOrientationMode.SYSTEM -> Icons.Rounded.ScreenRotation
-    PlayerOrientationMode.RIGHT -> Icons.Rounded.RotateRight
-    PlayerOrientationMode.LEFT -> Icons.Rounded.RotateLeft
+    PlayerOrientationMode.SENSOR_LANDSCAPE -> Icons.Rounded.StayCurrentLandscape
+    PlayerOrientationMode.PORTRAIT -> Icons.Rounded.StayCurrentPortrait
 }
 
 @Composable
@@ -44,8 +44,8 @@ internal fun YaniContentLanguage.setupLabel(): String = stringResource(
 internal fun PlayerOrientationMode.setupHint(): String = stringResource(
     when (this) {
         PlayerOrientationMode.SYSTEM -> R.string.player_setup_mobile_orientation_system_hint
-        PlayerOrientationMode.LEFT -> R.string.player_setup_mobile_orientation_left_hint
-        PlayerOrientationMode.RIGHT -> R.string.player_setup_mobile_orientation_right_hint
+        PlayerOrientationMode.SENSOR_LANDSCAPE -> R.string.player_setup_mobile_orientation_sensor_landscape_hint
+        PlayerOrientationMode.PORTRAIT -> R.string.player_setup_mobile_orientation_portrait_hint
     },
 )
 

@@ -138,10 +138,10 @@
     <string name="player_mobile_orientation">Screen orientation</string>
     <string name="player_mobile_orientation_system">System</string>
     <string name="player_mobile_orientation_system_hint">Follow the system rotation setting</string>
-    <string name="player_mobile_orientation_left">Left</string>
-    <string name="player_mobile_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
-    <string name="player_mobile_orientation_right">Right</string>
-    <string name="player_mobile_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
+    <string name="player_mobile_orientation_sensor_landscape">Landscape (sensor)</string>
+    <string name="player_mobile_orientation_sensor_landscape_hint">Always landscape; left or right follows the sensor</string>
+    <string name="player_mobile_orientation_portrait">Portrait</string>
+    <string name="player_mobile_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
     <string name="player_toast_dubbing_changed">Dubbing: %1$s</string>
     <string name="player_toast_balancer_changed">Player: %1$s</string>
     <string name="player_side_panel_title">Player settings</string>
