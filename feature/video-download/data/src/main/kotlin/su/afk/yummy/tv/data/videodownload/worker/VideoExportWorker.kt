@@ -17,6 +17,7 @@ import androidx.media3.transformer.DefaultAssetLoaderFactory
 import androidx.media3.transformer.DefaultDecoderFactory
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.InAppMp4Muxer
 import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.work.CoroutineWorker
@@ -137,7 +138,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                 runCatching {
                     DocumentsContract.deleteDocument(
                         applicationContext.contentResolver,
-                        uri
+                        uri,
                     )
                 }
             }
@@ -198,6 +199,13 @@ class VideoExportWorker @AssistedInject internal constructor(
         val transformer = withContext(Dispatchers.Main.immediate) {
             Transformer.Builder(applicationContext)
                 .setAssetLoaderFactory(assetLoaderFactory)
+                // Результат копируется в SAF целиком, «moov в начале» не нужен. Без него муксер не
+                // пересобирает весь moov (и не аллоцирует буферы до 400 КБ) каждую секунду медиа,
+                // что на быстром экспорте давило на кучу 256 МБ (OOM в 1.27.4).
+                .setMuxerFactory(
+                    InAppMp4Muxer.Factory(null)
+                        .setAttemptStreamableOutputEnabled(false),
+                )
                 .addListener(
                     object : Transformer.Listener {
                         override fun onCompleted(
@@ -214,7 +222,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                         ) {
                             completion.complete(KotlinResult.failure(exportException))
                         }
-                    }
+                    },
                 )
                 .build()
                 .also { transformer ->
@@ -276,7 +284,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                 titleDirectoryUri,
                 MP4_MIME_TYPE,
                 requestedName,
-            )
+            ),
         ) { applicationContext.getString(R.string.video_export_error_create_file) }
     }
 
@@ -297,7 +305,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                 parentDocumentUri,
                 DocumentsContract.Document.MIME_TYPE_DIR,
                 name,
-            )
+            ),
         ) { applicationContext.getString(R.string.video_export_error_create_directory) }
     }
 
@@ -330,7 +338,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                             documentId = cursor.getString(idIndex).orEmpty(),
                             name = cursor.getString(nameIndex).orEmpty(),
                             mimeType = cursor.getString(mimeIndex).orEmpty(),
-                        )
+                        ),
                     )
                 }
             }
@@ -364,7 +372,9 @@ class VideoExportWorker @AssistedInject internal constructor(
                         copied += read
                         val copyFraction = if (source.length() > 0L) {
                             copied.toFloat() / source.length().toFloat()
-                        } else 0f
+                        } else {
+                            0f
+                        }
                         updateProgress(
                             item,
                             TRANSFORM_PROGRESS_SHARE +
@@ -391,7 +401,7 @@ class VideoExportWorker @AssistedInject internal constructor(
             notificationService.createForegroundInfo(
                 item,
                 (progress.coerceIn(0f, 1f) * 100).roundToInt(),
-            )
+            ),
         )
     }
 
@@ -422,8 +432,11 @@ class VideoExportWorker @AssistedInject internal constructor(
 
     private fun Throwable.userFacingExportError(): String {
         val message = message?.takeIf(String::isNotBlank).orEmpty()
-        return if (message.isNotBlank()) message else
+        return if (message.isNotBlank()) {
+            message
+        } else {
             applicationContext.getString(R.string.video_export_error_unknown)
+        }
     }
 
     companion object {
