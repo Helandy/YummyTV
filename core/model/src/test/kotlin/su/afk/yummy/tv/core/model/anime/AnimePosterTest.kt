@@ -55,7 +55,7 @@ class AnimePosterTest : BaseUnitTest() {
         assertEquals(
             listOf(
                 "https://static.yani.tv/posters/mega/1636989985.avif?v=431865090",
-                "https://static.afk.su/posters/mega/1636989985.avif?v=431865090",
+                "https://static.self.made/posters/mega/1636989985.avif?v=431865090",
             ),
             avif.urlsByQuality(PosterQuality.MEGA),
         )

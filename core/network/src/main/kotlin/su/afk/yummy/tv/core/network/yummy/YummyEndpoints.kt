@@ -1,4 +1,6 @@
 package su.afk.yummy.tv.core.network.yummy
 
-/** Собственный сервис с названиями, описаниями и превью серий (данные TMDB). */
-const val YUMMY_TV_API_BASE_URL = "https://v2.yummytv.afk.su/api"
+import su.afk.yummy.tv.core.network.BuildConfig
+
+/** Собственный сервис (адрес из `local.properties`: `yummytv.apiBaseUrl`) с названиями, описаниями и превью серий (данные TMDB). */
+const val YUMMY_TV_API_BASE_URL = BuildConfig.YUMMY_TV_API_BASE_URL

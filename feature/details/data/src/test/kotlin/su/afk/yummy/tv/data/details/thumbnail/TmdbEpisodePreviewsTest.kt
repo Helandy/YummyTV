@@ -85,7 +85,7 @@ class TmdbEpisodePreviewsTest : BaseUnitTest() {
     }
 
     private companion object {
-        const val MIRROR = "https://static.afk.su/img/still/abc.avif"
+        const val MIRROR = "https://static.self.made/img/still/abc.avif"
         const val ANIME_ID = 7
         const val W300 = "https://image.tmdb.org/t/p/w300/a.jpg"
     }

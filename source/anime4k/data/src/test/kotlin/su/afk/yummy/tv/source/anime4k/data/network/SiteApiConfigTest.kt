@@ -38,7 +38,7 @@ class SiteApiConfigTest : BaseUnitTest() {
     @Test
     fun `static folder follows the api host`() {
         val config = SiteApiConfig()
-        assertEquals("https://v2.yummytv.afk.su/static/", config.staticBaseUrl)
+        assertEquals(YUMMY_TV_API_BASE_URL.removeSuffix("/api") + "/static/", config.staticBaseUrl)
 
         config.apply("https://v2.example/api/", "")
         assertEquals("https://v2.example/static/", config.staticBaseUrl)

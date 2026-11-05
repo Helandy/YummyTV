@@ -25,6 +25,7 @@ import su.afk.yummy.tv.android.startup.CoilImageLoaderInstaller
 import su.afk.yummy.tv.android.startup.StartupMetricsTracker
 import su.afk.yummy.tv.android.startup.WatchedEpisodeRuleSync
 import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
+import su.afk.yummy.tv.core.model.anime.utils.PosterMirrorConfig
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
@@ -117,6 +118,7 @@ class YummyTvApplication :
         // Hilt инжектит поля в super.onCreate(), поэтому начало замеряем до него
         val onCreateStartedAt = SystemClock.uptimeMillis()
         trace("App.hiltInject") { super.onCreate() }
+        PosterMirrorConfig.host = BuildConfig.STATIC_HOST
         // Файловый дамп logcat для передачи разработчику (Настройки → О приложении)
         appLogCollector.start()
         startupMetricsTracker.start(this, onCreateStartedAt)

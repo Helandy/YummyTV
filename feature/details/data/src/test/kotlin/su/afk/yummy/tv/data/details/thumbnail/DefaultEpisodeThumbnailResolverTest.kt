@@ -115,7 +115,7 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
 
     private companion object {
         const val ANIME_ID = 5
-        const val MIRROR = "https://static.afk.su/img/still/abc.avif"
+        const val MIRROR = "https://static.self.made/img/still/abc.avif"
         const val TMDB = "https://image.tmdb.org/t/p/w300/tmdb.jpg"
         const val IMAGE = "https://i.kodikres.com/screenshots/1.jpg"
         const val IFRAME = "//kodikplayer.com/season/1/a/720p?episode=1"

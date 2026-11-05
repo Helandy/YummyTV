@@ -1,3 +1,4 @@
+import su.afk.yummy.tv.buildlogic.buildConfigProperty
 import su.afk.yummy.tv.buildlogic.buildConfigSecret
 
 plugins {
@@ -27,6 +28,8 @@ android {
 
         buildConfigField("String", "APPMETRICA_API_KEY", buildConfigSecret("yummytv.appmetricaApiKey"))
         buildConfigField("String", "VARIOQUB_CLIENT_ID", buildConfigSecret("yummytv.varioqubClientId"))
+        // Хост своей статики (копии постеров); домен в git не хранится, задаётся в local.properties
+        buildConfigField("String", "STATIC_HOST", buildConfigProperty("yummytv.staticHost", "static.self.made"))
     }
 
     buildTypes {

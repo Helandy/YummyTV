@@ -15,6 +15,8 @@
 | `yummytv.versionName`   | `1.25`            | Версия для пользователя, сравнивается компаратором        |
 | `yummytv.versionCode`   | `128`             | Только растёт, иначе APK не встанет поверх установленного |
 
+Адрес своего сервера в git не хранится: `yummytv.apiBaseUrl` (например `https://api.example/api`) и `yummytv.staticHost` (хост статики, без схемы) тоже берутся из `local.properties`, по умолчанию заглушки `self.made`.
+
 Ключи (`yummytv.appmetricaApiKey`, `yummytv.varioqubClientId`) читаются из `local.properties`
 (комментарий в `gradle.properties`) и попадают в `BuildConfig` через `buildConfigSecret`
 (`build-logic/.../BuildSecrets.kt`). KDoc: не найден — пустая строка, сборка проходит,

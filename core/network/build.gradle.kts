@@ -1,3 +1,5 @@
+import su.afk.yummy.tv.buildlogic.buildConfigProperty
+
 plugins {
     id("yummytv.android.library")
     alias(libs.plugins.kotlinSerialization)
@@ -8,6 +10,10 @@ android {
     namespace = "su.afk.yummy.tv.core.network"
     buildFeatures {
         buildConfig = true
+    }
+    defaultConfig {
+        // Адрес своего сервера задаётся в local.properties (yummytv.apiBaseUrl); в git лежит заглушка
+        buildConfigField("String", "YUMMY_TV_API_BASE_URL", buildConfigProperty("yummytv.apiBaseUrl", "https://api.self.made/api"))
     }
 }
 

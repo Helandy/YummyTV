@@ -16,6 +16,15 @@ fun Project.buildConfigSecret(property: String): String {
 }
 
 /**
+ * Несекретная настройка из `local.properties` для `buildConfigField("String", ...)` (например, домен своего сервера):
+ * не задана — [default], чтобы в git лежал только заглушечный адрес.
+ */
+fun Project.buildConfigProperty(property: String, default: String): String {
+    val value = rootProject.localProperties().getProperty(property).orEmpty().trim()
+    return (value.ifEmpty { default }).toBuildConfigString()
+}
+
+/**
  * Секрет для `buildConfigField("String", ...)` в виде Java-выражения: четыре XOR-доли и соль
  * передаются в [decoderFqn] `.decode(byte[], byte[], byte[], byte[], byte[])`. Открытой строки и
  * готового ключа в константах класса нет, `strings`/grep/jadx по APK секрет не находят. Доли и соль
