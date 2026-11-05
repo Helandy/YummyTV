@@ -72,7 +72,7 @@ internal fun AccountHeader(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     summary?.let { AccountHeaderProfileMeta(summary = it) }
-                    val unreadCount = state.notificationCounts.sumOf { it.count }
+                    val unreadCount = state.unreadNotificationCount
                     if (unreadCount > 0) {
                         AccountHeaderMetaLine(
                             icon = Icons.Filled.Notifications,

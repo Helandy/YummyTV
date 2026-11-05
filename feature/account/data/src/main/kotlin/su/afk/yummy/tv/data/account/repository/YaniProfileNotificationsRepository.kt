@@ -10,12 +10,14 @@ import su.afk.yummy.tv.core.storage.account.AccountNotificationsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
+import su.afk.yummy.tv.data.account.dto.notifications.YaniNotificationDto
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationAnimeEntry
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationCounts
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationCountsCache
 import su.afk.yummy.tv.data.account.storage.mapper.toNotifications
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationsPageCache
+import su.afk.yummy.tv.data.account.storage.mapper.toUnreadNotificationCounts
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
@@ -49,7 +51,7 @@ class YaniProfileNotificationsRepository(
                 isFresh = { it.isFresh(ACCOUNT_NOTIFICATIONS_TTL_MS) },
                 toDomain = { it.toNotificationCounts() },
                 fetchAndSave = {
-                    val cache = api.getNotificationCounts().toNotificationCountsCache(
+                    val cache = fetchUnreadNotifications().toUnreadNotificationCounts().toNotificationCountsCache(
                         userId = userId,
                         cachedAt = System.currentTimeMillis(),
                     )
@@ -134,6 +136,10 @@ class YaniProfileNotificationsRepository(
         return cache
     }
 
+    /** Непрочитанные берём с первой страницы ленты: свежие уведомления всегда в её начале. */
+    private suspend fun fetchUnreadNotifications(): List<YaniNotificationDto> =
+        api.getNotifications(limit = UNREAD_SCAN_PAGE_SIZE, offset = 0)
+
     private suspend fun fetchNotificationAnime(slug: String): AccountNotificationAnimeEntry {
         val entry = api.getNotificationAnimeId(slug)
             .toNotificationAnimeEntry(
@@ -148,5 +154,9 @@ class YaniProfileNotificationsRepository(
         if (userId <= 0) return
         accountStorage.deleteNotifications(userId)
         accountStorage.deleteNotificationCounts(userId)
+    }
+
+    private companion object {
+        const val UNREAD_SCAN_PAGE_SIZE = 50
     }
 }

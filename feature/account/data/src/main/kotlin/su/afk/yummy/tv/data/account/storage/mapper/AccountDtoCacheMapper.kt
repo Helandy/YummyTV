@@ -240,6 +240,16 @@ internal fun List<YaniNotificationDto>.toNotificationsPageCache(
         },
     )
 
+/**
+ * Серверный /counts считает и прочитанные уведомления, поэтому непрочитанные по типам собираем
+ * из ленты по флагу `viewed`.
+ */
+internal fun List<YaniNotificationDto>.toUnreadNotificationCounts(): List<YaniNotificationCountDto> =
+    filterNot { it.viewed }
+        .groupingBy { it.type }
+        .eachCount()
+        .map { (type, count) -> YaniNotificationCountDto(type = type, count = count) }
+
 internal fun List<YaniNotificationCountDto>.toNotificationCountsCache(
     userId: Int,
     cachedAt: Long,

@@ -22,7 +22,7 @@ internal fun AccountHubPanel(
         .fillMaxHeight()
         .fillMaxWidth(0.96f)
         .widthIn(max = 1680.dp)
-    val unreadCount = state.notificationCounts.sumOf { it.count }
+    val unreadCount = state.unreadNotificationCount
 
     when (state.selectedTab) {
         AccountState.AccountTab.STATS -> StatsTab(
