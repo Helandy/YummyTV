@@ -40,6 +40,8 @@
   Kodik, VK, Rutube, Sibnet, Aksor, Zedfilm.
 - [alloha-player.md](alloha-player.md) — Alloha: сессия по HTTP (Borth + bnsi), loopback-прокси,
   ротация, лестница отказа. Открывать при любой правке `extractor/alloha/`.
+- [alloha-session-investigation.md](alloha-session-investigation.md) — Alloha: журнал расследования блока
+  `session_blocked` (что пробовали, из каких репозиториев, что помогло)
 - [cvh-player.md](cvh-player.md) — CVH: подписанные ссылки okcdn, переезд на резервный узел,
   User-Agent, Cast.
 - [player-buffering.md](player-buffering.md) — буфер `DefaultLoadControl`, различия Kodik, CVH и

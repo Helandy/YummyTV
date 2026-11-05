@@ -912,6 +912,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                     selectedQualityOverride = selectedQualityOverride,
                     forceRefresh = forceRefresh,
                     retryAttempts = sourceBehaviors.maxOfOrNull { it.retryAttempts } ?: 0,
+                    positionMs = { currentState.playbackPositionMs },
+                    durationMs = { currentState.playbackDurationMs },
                     onStatus = { status ->
                         setState { withResolveStep(status, System.currentTimeMillis() - resolveStartedAtMs) }
                     },

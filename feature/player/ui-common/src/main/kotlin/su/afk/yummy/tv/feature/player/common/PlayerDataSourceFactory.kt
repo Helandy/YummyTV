@@ -4,6 +4,7 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.common.player.AllohaEdgeHash
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,12 +22,31 @@ class PlayerDataSourceFactory @Inject constructor(
     private val playerClient: OkHttpClient by lazy {
         okHttpClient.newBuilder()
             .dispatcher(Dispatcher())
+            .addInterceptor { chain ->
+                // Alloha's edge hash rotates during playback; only requests that carry it are touched.
+                val fresh = AllohaEdgeHash.current
+                val request = chain.request()
+                val alloha = request.header(AllohaEdgeHash.HEADER) != null
+                val response = chain.proceed(
+                    if (fresh != null && alloha) {
+                        request.newBuilder().header(AllohaEdgeHash.HEADER, fresh).build()
+                    } else {
+                        request
+                    },
+                )
+                if (alloha && response.isSuccessful) {
+                    response.body.contentLength().takeIf { it > 0 }?.let(AllohaEdgeHash.bytesLoaded::addAndGet)
+                }
+                response
+            }
             .connectTimeout(CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
             .readTimeout(READ_TIMEOUT_MS, TimeUnit.MILLISECONDS)
             .build()
     }
 
-    fun create(headers: Map<String, String>): DataSource.Factory =
+    fun create(headers: Map<String, String>): DataSource.Factory = okHttpFactory(headers)
+
+    private fun okHttpFactory(headers: Map<String, String>): DataSource.Factory =
         OkHttpDataSource.Factory(playerClient).apply {
             headers.userAgent()?.takeIf { it.isNotBlank() }?.let(::setUserAgent)
             val requestHeaders =

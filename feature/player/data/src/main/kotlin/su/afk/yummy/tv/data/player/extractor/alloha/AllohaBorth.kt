@@ -1,20 +1,16 @@
 package su.afk.yummy.tv.data.player.extractor.alloha
 
 /**
- * Fingerprint the player page puts in front of the permuted seed (a 64-char hex hash there). The site
- * does not verify it: zeros get the same 200 from `bnsi` as a real hash, so a fixed value is enough.
- */
-private val BORTH_FINGERPRINT = "0".repeat(64)
-
-/**
- * Builds the `Borth` request header for `bnsi`: `<fingerprint>|<permuted viewporti>`.
+ * Builds the `Borth` request header for `bnsi`: `<fingerprint>|<permuted viewporti>`. The fingerprint is the
+ * install's own ([allohaFingerprint]): a random 64-hex is refused with `client_blocked`, a hash built the way
+ * the page builds it is accepted.
  *
  * `viewporti` is the per-page-load seed from `<meta name="viewporti">`. The player script does not
  * encrypt it, it only shuffles its characters, so the server can tell a client that ran the page
  * code from one that merely replayed a URL. The shuffle must be reproduced exactly.
  */
-internal fun allohaBorthHeader(viewporti: String): String =
-    "$BORTH_FINGERPRINT|${allohaBorthTail(viewporti)}"
+internal fun allohaBorthHeader(fingerprint: String, viewporti: String): String =
+    "$fingerprint|${allohaBorthTail(viewporti)}"
 
 /** The seed after the page's three permutation passes. */
 internal fun allohaBorthTail(seed: String): String =

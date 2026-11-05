@@ -48,6 +48,8 @@ internal class PlayerStreamHandler @Inject constructor(
         forceRefresh: Boolean = false,
         onStatus: (PlayerStreamResolveStatus) -> Unit = {},
         onDetail: (ResolveDetail) -> Unit = {},
+        positionMs: () -> Long = { 0L },
+        durationMs: () -> Long = { 0L },
     ): PlayerStreamResult = coroutineScope {
         val request = PlayerStreamRequest(
             iframeUrl = activeIframeUrl(state),
@@ -55,6 +57,8 @@ internal class PlayerStreamHandler @Inject constructor(
             forceRefresh = forceRefresh,
             onStatus = onStatus,
             onDetail = onDetail,
+            positionMs = positionMs,
+            durationMs = durationMs,
         )
         // Started before the extraction is awaited: neither depends on it, so a DataStore read and
         // a Room read overlap the network instead of queueing behind it.

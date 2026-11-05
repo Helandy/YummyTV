@@ -44,4 +44,70 @@ class PlayerAllohaRecoveryHandlerTest : BaseUnitTest() {
         assertEquals(0L, handler.positionMs)
         assertTrue(handler.canRetry())
     }
+
+    private fun handlerAt(time: LongArray) = PlayerAllohaRecoveryHandler().apply { clock = { time[0] } }
+
+    @Test
+    fun `an error right after a recovery at the same place continues the attempt count`() {
+        val time = longArrayOf(0L)
+        val handler = handlerAt(time)
+        handler.start(positionMs = 455_000L, selectedQuality = null)
+        handler.nextAttempt()
+        handler.complete()
+
+        time[0] = 2_000L
+        handler.start(positionMs = 455_800L, selectedQuality = null)
+
+        assertEquals(1, handler.retryCount)
+    }
+
+    @Test
+    fun `repeated failures at one place run out of attempts`() {
+        val time = longArrayOf(0L)
+        val handler = handlerAt(time)
+
+        repeat(PlayerAllohaRecoveryHandler.MAX_ATTEMPTS) {
+            handler.start(positionMs = 455_000L, selectedQuality = null)
+            handler.nextAttempt()
+            handler.complete()
+            time[0] += 2_000L
+        }
+        handler.start(positionMs = 455_000L, selectedQuality = null)
+
+        assertFalse(handler.canRetry())
+    }
+
+    @Test
+    fun `a failure later or elsewhere starts a fresh budget`() {
+        val time = longArrayOf(0L)
+        val handler = handlerAt(time)
+        handler.start(positionMs = 455_000L, selectedQuality = null)
+        handler.nextAttempt()
+        handler.complete()
+
+        time[0] = 120_000L
+        handler.start(positionMs = 455_000L, selectedQuality = null)
+        assertEquals(0, handler.retryCount)
+
+        handler.nextAttempt()
+        handler.complete()
+        time[0] += 2_000L
+        handler.start(positionMs = 900_000L, selectedQuality = null)
+        assertEquals(0, handler.retryCount)
+    }
+
+    @Test
+    fun `reset forgets the streak`() {
+        val time = longArrayOf(0L)
+        val handler = handlerAt(time)
+        handler.start(positionMs = 455_000L, selectedQuality = null)
+        handler.nextAttempt()
+        handler.complete()
+        handler.reset()
+
+        time[0] = 1_000L
+        handler.start(positionMs = 455_000L, selectedQuality = null)
+
+        assertEquals(0, handler.retryCount)
+    }
 }

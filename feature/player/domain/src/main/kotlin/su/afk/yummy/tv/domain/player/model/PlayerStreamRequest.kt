@@ -12,4 +12,8 @@ data class PlayerStreamRequest(
     val onStatus: (PlayerStreamResolveStatus) -> Unit = {},
     /** Подробности сетевых запросов резолва (хост, код ответа, время); вызывается из потока резолвера. */
     val onDetail: (ResolveDetail) -> Unit = {},
+    /** Текущая позиция воспроизведения, мс; источник, следящий за просмотром (Alloha), сверяет с ней сессию. */
+    val positionMs: () -> Long = { 0L },
+    /** Длительность текущего видео, мс; 0, пока неизвестна. */
+    val durationMs: () -> Long = { 0L },
 )

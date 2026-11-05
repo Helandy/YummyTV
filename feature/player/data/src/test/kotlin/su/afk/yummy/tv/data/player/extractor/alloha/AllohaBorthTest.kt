@@ -38,11 +38,12 @@ class AllohaBorthTest {
 
     @Test
     fun `header is a 64 char hex fingerprint then the permuted seed`() {
-        val header = allohaBorthHeader("abcde")
+        val header = allohaBorthHeader("0123456789abcdef".repeat(4), "abcde")
 
         val (fingerprint, tail) = header.split("|")
         assertEquals(64, fingerprint.length)
         assertTrue(fingerprint.all { it in '0'..'9' || it in 'a'..'f' })
+        assertEquals("0123456789abcdef".repeat(4), fingerprint)
         assertEquals("cbade", tail)
     }
 }

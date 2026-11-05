@@ -142,9 +142,14 @@ internal class PlayerBufferingAnalyticsListener(
         wasCanceled: Boolean,
     ) {
         tracker.log(LOG_TAG) {
-            val http = (error as? HttpDataSource.InvalidResponseCodeException)?.responseCode
+            val rejected = error as? HttpDataSource.InvalidResponseCodeException
+            val http = rejected?.responseCode
+            // Marker the CDN gives with a refusal (token_decrypt, client_blocked, session_blocked...).
+            val marker = rejected?.headerFields?.entries
+                ?.firstOrNull { it.key.equals("X-VD", ignoreCase = true) }?.value?.firstOrNull()
             "load error type=${mediaLoadData.dataType} ${loadEventInfo.describe()} " +
-                "error=${error.javaClass.simpleName} http=${http ?: "-"} canceled=$wasCanceled " +
+                "error=${error.javaClass.simpleName} http=${http ?: "-"} xVd=${marker ?: "-"} " +
+                "file=${loadEventInfo.uri.lastPathSegment?.take(MAX_MESSAGE_CHARS) ?: "-"} canceled=$wasCanceled " +
                 "loadMs=${loadEventInfo.loadDurationMs} bufferedMs=${eventTime.totalBufferedDurationMs} " +
                 "positionMs=${eventTime.currentPlaybackPositionMs} msg=${error.message?.take(MAX_MESSAGE_CHARS)}"
         }

@@ -17,16 +17,23 @@ internal fun allohaCdnHeaders(origin: String, userAgent: String): Map<String, St
     put("sec-fetch-mode", "cors")
     put("sec-fetch-site", "cross-site")
     CHROME_VERSION.find(userAgent)?.groupValues?.get(1)?.let { major ->
+        val android = userAgent.contains("Android", ignoreCase = true)
+        // Chrome on Android lists its brands in this order, the desktop one starts with Chromium.
         put(
             "sec-ch-ua",
-            "\"Chromium\";v=\"$major\", \"Google Chrome\";v=\"$major\", \"Not_A Brand\";v=\"24\"",
+            if (android) {
+                "\"Google Chrome\";v=\"$major\", \"Chromium\";v=\"$major\", \"Not)A;Brand\";v=\"24\""
+            } else {
+                "\"Chromium\";v=\"$major\", \"Google Chrome\";v=\"$major\", \"Not_A Brand\";v=\"24\""
+            },
         )
-        put("sec-ch-ua-mobile", "?0")
+        put("sec-ch-ua-mobile", if (userAgent.contains("Mobile")) "?1" else "?0")
         put("sec-ch-ua-platform", platformHintFor(userAgent))
     }
 }
 
 private fun platformHintFor(userAgent: String): String = when {
+    userAgent.contains("Android", ignoreCase = true) -> "\"Android\""
     userAgent.contains("Windows", ignoreCase = true) -> "\"Windows\""
     userAgent.contains("Macintosh", ignoreCase = true) -> "\"macOS\""
     else -> "\"Linux\""

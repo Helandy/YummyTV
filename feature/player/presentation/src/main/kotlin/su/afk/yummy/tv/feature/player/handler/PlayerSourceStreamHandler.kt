@@ -203,6 +203,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         retryAttempts: Int = 0,
         onStatus: (PlayerStreamResolveStatus) -> Unit = {},
         onDetail: (ResolveDetail) -> Unit = {},
+        positionMs: () -> Long = { 0L },
+        durationMs: () -> Long = { 0L },
     ): PlayerStreamLoadResult {
         var lastStatus: PlayerStreamResolveStatus? = null
         val details = java.util.Collections.synchronizedList(ArrayList<ResolveDetail>())
@@ -220,6 +222,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                     details += detail
                     onDetail(detail)
                 },
+                positionMs = positionMs,
+                durationMs = durationMs,
             )
         }.getOrElse { exception ->
             analytics.eventStreamResolveFailed(

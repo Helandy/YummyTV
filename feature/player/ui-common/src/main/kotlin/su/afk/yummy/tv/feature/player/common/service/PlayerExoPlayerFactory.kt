@@ -2,12 +2,14 @@ package su.afk.yummy.tv.feature.player.common.service
 
 import android.app.ActivityManager
 import android.content.Context
+import android.os.Build
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import kotlinx.coroutines.flow.first
@@ -44,6 +46,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
         // упирающийся в тот же самый сломанный железный декодер.
         val renderersFactory = DefaultRenderersFactory(context)
             .setEnableDecoderFallback(true)
+            .setMediaCodecSelector(emulatorSoftwareFirstSelector())
         val bufferProfile = readBufferProfile()
         val exoPlayer = ExoPlayer.Builder(context, renderersFactory)
             .setTrackSelector(trackSelector)
@@ -54,8 +57,8 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             .setLoadControl(PlayerLoadControlFactory.create(bufferProfile))
             // Фокус нужен, чтобы чужая музыка вставала на паузу при старте серии, а звонок или
             // навигатор ставили на паузу/приглушали нас. MOVIE, а не SPEECH: при duck-потере
-            // ExoPlayer приглушает звук вместо паузы.
-            .setAudioAttributes(MEDIA_AUDIO_ATTRIBUTES, /* handleAudioFocus = */ !readAudioFocusDisabled())
+            // ExoPlayer приглушает звук вместо паузы. Второй аргумент — handleAudioFocus.
+            .setAudioAttributes(MEDIA_AUDIO_ATTRIBUTES, !readAudioFocusDisabled())
             .setHandleAudioBecomingNoisy(true)
             .build()
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
@@ -68,6 +71,22 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             ),
         )
         return PlayerExoPlayerBundle(exoPlayer, trackSelector)
+    }
+
+    /**
+     * На эмуляторе аппаратный AVC-декодер (`c2.goldfish.h264.decoder`) на части образов падает уже после старта
+     * (`ERROR_CODE_DECODING_FAILED`), и fallback его не обходит. Только для эмулятора (по `Build.HARDWARE`) программные
+     * декодеры идут первыми; на реальных устройствах порядок остаётся системным.
+     */
+    private fun emulatorSoftwareFirstSelector(): MediaCodecSelector {
+        val emulator = Build.HARDWARE.equals("ranchu", ignoreCase = true) ||
+            Build.HARDWARE.equals("goldfish", ignoreCase = true)
+        if (!emulator) return MediaCodecSelector.DEFAULT
+        return MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+            MediaCodecSelector.DEFAULT
+                .getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                .sortedBy { it.hardwareAccelerated }
+        }
     }
 
     /**
