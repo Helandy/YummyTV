@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailFetcher
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailKeyer
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailCacheIO
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,6 +47,7 @@ class CoilImageLoaderInstaller @Inject constructor(
     private val episodeThumbnailResolver: EpisodeThumbnailResolver,
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
     private val siteApiConfig: SiteApiConfig,
+    private val logRecordingSettings: AppLogRecordingSettings,
 ) {
 
     @OptIn(ExperimentalCoilApi::class)
@@ -66,7 +68,7 @@ class CoilImageLoaderInstaller @Inject constructor(
             // приставках, а при DPAD-скролле её всё равно не видно.
             val isTvInterface = interfaceModePreferences.selectedMode == AppInterfaceMode.TV
             ImageLoader.Builder(it)
-                .logger(CoilErrorLogger())
+                .logger(CoilErrorLogger(logRecordingSettings))
                 .crossfade(!isTvInterface)
                 .memoryCache {
                     MemoryCache.Builder()
