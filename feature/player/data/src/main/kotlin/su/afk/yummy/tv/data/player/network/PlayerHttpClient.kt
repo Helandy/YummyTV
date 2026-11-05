@@ -10,6 +10,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.HttpMethod
 import io.ktor.util.toMap
+import su.afk.yummy.tv.core.network.di.PlayerResolveClient
 import java.nio.charset.Charset
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -57,7 +58,7 @@ internal data class PlayerHttpResponse(
 
 @Singleton
 internal class KtorPlayerHttpClient @Inject constructor(
-    private val httpClient: HttpClient,
+    @PlayerResolveClient private val httpClient: HttpClient,
 ) : PlayerHttpClient {
 
     override suspend fun getText(

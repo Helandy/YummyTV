@@ -39,17 +39,20 @@ object NetworkModule {
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder().dns(tmdbImageDns()).addInterceptor(tmdbImageTimeouts()).build()
 
+    /**
+     * Клиент резолва потоков плееров. Отдельный, чтобы `ResolveProgressPlugin` не ловил запросы
+     * остальных частей приложения; пул соединений общий с остальными через [okHttpClient].
+     */
     @Provides
     @Singleton
-    fun provideHttpClient(okHttpClient: OkHttpClient): HttpClient = HttpClient(OkHttp) {
+    @PlayerResolveClient
+    fun providePlayerResolveClient(okHttpClient: OkHttpClient): HttpClient = HttpClient(OkHttp) {
         engine { preconfigured = okHttpClient }
         install(HttpTimeout) {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
             requestTimeoutMillis = REQUEST_TIMEOUT_MS
         }
-        // Нагружено: экстракторы полагаются на этот плагин. Он добавляет Accept-Encoding и
-        // декодирует ответ, а часть страниц плееров (Zedfilm) без gzip отвечает 404. Убрать или
-        // заменить клиент без него нельзя, не проверив ZedfilmExtractor.
+        // Нагружено: Zedfilm без gzip отвечает 404, плагин добавляет Accept-Encoding и декодирует ответ.
         install(ContentEncoding) {
             gzip()
             deflate()
@@ -76,7 +79,6 @@ object NetworkModule {
                 requestTimeoutMillis = REQUEST_TIMEOUT_MS
             }
             install(ContentNegotiation) { json(json) }
-            install(ResolveProgressPlugin)
             install(ContentEncoding) {
                 gzip()
                 deflate()

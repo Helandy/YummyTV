@@ -215,7 +215,7 @@ internal class ZedfilmExtractor @Inject constructor(
     //
     // Accept-Language and Accept-Encoding are explicit on purpose: without both the site answers
     // the iframe URL with 404 "video not found". gzip is safe here only because the injected
-    // client has the ContentEncoding plugin (NetworkModule.provideHttpClient), which decodes the
+    // client has the ContentEncoding plugin (NetworkModule.providePlayerResolveClient), which decodes the
     // body even when the header is set by the caller. Neither header may go into stream headers:
     // those are replayed by Media3, which sends `Accept-Encoding: identity` for media.
     private suspend fun fetchIframeHtml(url: String): String =
