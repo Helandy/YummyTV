@@ -60,6 +60,7 @@ import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
+import su.afk.yummy.tv.data.details.utils.episodeTextLanguage
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
@@ -407,10 +408,12 @@ class YaniAnimeRepository(
     private suspend fun loadYummyEpisodes(animeId: Int): YummyEpisodesDto? {
         val details = getAnimeDetails(animeId)
         val malId = details.malId ?: return null
+        val language = episodeTextLanguage()
         return documentCache.getOrFetchJson<YummyEpisodesDto>(
-            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId",
+            // Язык в ключе: смена языка интерфейса не должна показывать описания в старом
+            cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId:$language",
             ttlMs = ANIME_EPISODE_INFO_TTL_MS,
-            fetch = { episodesApi.getEpisodes(malId) },
+            fetch = { episodesApi.getEpisodes(malId, language) },
         )
     }
 

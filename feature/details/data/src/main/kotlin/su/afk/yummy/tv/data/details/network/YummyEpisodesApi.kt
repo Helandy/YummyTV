@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.details.network
 import io.ktor.client.call.body
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
@@ -24,10 +25,12 @@ class YummyEpisodesApi(
     /**
      * Серии записи. Смещение серий франшизы, которую TMDB хранит сквозной нумерацией, сервер считает сам.
      * 404 (нет маппинга MAL→TMDB либо смещение посчитать не удалось) — валидный ответ «серий нет», а не ошибка.
+     * [language] — язык названий и описаний (ru, uk, en); там, где перевода нет, сервер оставляет русский.
      */
-    suspend fun getEpisodes(malId: Int): YummyEpisodesDto {
+    suspend fun getEpisodes(malId: Int, language: String): YummyEpisodesDto {
         val url = "${siteApiConfig.baseUrl}/anime/mal/$malId"
         val response = clientProvider.get().get(url) {
+            parameter("lang", language)
             signSiteRequest(signers, "GET", url)
             // Статус разбирается ниже: 404 — «серий нет», а не ошибка.
             expectSuccess = false
