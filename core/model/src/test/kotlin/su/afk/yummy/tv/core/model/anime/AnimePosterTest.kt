@@ -17,30 +17,21 @@ class AnimePosterTest : BaseUnitTest() {
     )
 
     @Test
-    fun `urls follow the order of the chosen quality`() {
-        assertEquals(
-            listOf("medium", "big", "fullsize", "small", "mega"),
-            poster.urlsByQuality(PosterQuality.LOW),
-        )
-        assertEquals(
-            listOf("big", "medium", "fullsize", "small", "mega"),
-            poster.urlsByQuality(PosterQuality.STANDARD),
-        )
-        assertEquals(
-            listOf("mega", "big", "medium", "fullsize", "small"),
-            poster.urlsByQuality(PosterQuality.MEGA),
-        )
-        assertEquals(
-            listOf("fullsize", "mega", "big", "medium", "small"),
-            poster.urlsByQuality(PosterQuality.HIGH),
-        )
+    fun `only the version of the chosen quality is returned`() {
+        assertEquals(listOf("medium"), poster.urlsByQuality(PosterQuality.LOW))
+        assertEquals(listOf("big"), poster.urlsByQuality(PosterQuality.STANDARD))
+        assertEquals(listOf("mega"), poster.urlsByQuality(PosterQuality.MEGA))
+        assertEquals(listOf("fullsize"), poster.urlsByQuality(PosterQuality.HIGH))
     }
 
     @Test
-    fun `missing blank and duplicate urls are dropped`() {
-        val sparse = AnimePoster(small = null, medium = " ", big = "same", fullsize = "same", mega = null)
+    fun `missing or blank chosen version gives no urls`() {
+        val sparse = AnimePoster(small = "small", medium = " ", big = "big", fullsize = null, mega = null)
 
-        assertEquals(listOf("same"), sparse.urlsByQuality(PosterQuality.MEGA))
+        assertEquals(emptyList<String>(), sparse.urlsByQuality(PosterQuality.MEGA))
+        assertEquals(emptyList<String>(), sparse.urlsByQuality(PosterQuality.LOW))
+        assertEquals(emptyList<String>(), sparse.urlsByQuality(PosterQuality.HIGH))
+        assertEquals(listOf("big"), sparse.urlsByQuality(PosterQuality.STANDARD))
     }
 
     @Test

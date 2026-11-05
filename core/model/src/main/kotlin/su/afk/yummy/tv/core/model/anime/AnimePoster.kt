@@ -11,18 +11,18 @@ data class AnimePoster(
 )
 
 /**
- * Все доступные ссылки на постер без дублей, в порядке предпочтения для выбранного [quality]:
- * первая — желаемая версия, остальные — запасные на случай, если она не загрузится.
+ * Ссылка на постер ровно той версии, что выбрана в настройках [quality], без запасных версий.
+ * Пусто, если у постера этой версии нет.
  */
 fun AnimePoster?.urlsByQuality(quality: PosterQuality): List<String> {
     if (this == null) return emptyList()
-    val ordered = when (quality) {
-        PosterQuality.LOW -> listOf(medium, big, fullsize, small, mega)
-        PosterQuality.STANDARD -> listOf(big, medium, fullsize, small, mega)
-        PosterQuality.MEGA -> listOf(mega, big, medium, fullsize, small)
-        PosterQuality.HIGH -> listOf(fullsize, mega, big, medium, small)
+    val selected = when (quality) {
+        PosterQuality.LOW -> medium
+        PosterQuality.STANDARD -> big
+        PosterQuality.MEGA -> mega
+        PosterQuality.HIGH -> fullsize
     }
-    return ordered.filterNotNull().filter { it.isNotBlank() }.distinct()
+    return listOfNotNull(selected?.takeIf { it.isNotBlank() })
 }
 
 /** Желаемая для выбранного [quality] ссылка на постер (первая из [urlsByQuality]). */
