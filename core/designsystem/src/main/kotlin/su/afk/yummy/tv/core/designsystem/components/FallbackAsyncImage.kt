@@ -11,7 +11,9 @@ import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.HttpException
 import coil3.request.ImageRequest
+import su.afk.yummy.tv.core.model.anime.utils.isPosterMirrorUrl
 
 /**
  * Картинка с цепочкой запасных моделей: если текущая не загрузилась (битая версия на сервере,
@@ -48,6 +50,19 @@ fun FallbackAsyncImage(
         contentScale = contentScale,
         alignment = alignment,
         alpha = alpha,
-        onError = { if (index < models.lastIndex) index++ },
+        onError = { state ->
+            val next = models.getOrNull(index + 1)
+            if (next != null && shouldFallback(next, state.result.throwable)) index++
+        },
     )
+}
+
+/**
+ * К копии постера на нашем хосте переходим только когда yani ответил 404 или 5xx: сбой сети или таймаут
+ * не повод слать лишние запросы на свой узел. К остальным запасным моделям (Kodik-превью и т.п.) идём при любой ошибке.
+ */
+private fun shouldFallback(next: Any, error: Throwable): Boolean {
+    if (next !is String || !isPosterMirrorUrl(next)) return true
+    val code = (error as? HttpException)?.response?.code ?: return false
+    return code == 404 || code in 500..599
 }

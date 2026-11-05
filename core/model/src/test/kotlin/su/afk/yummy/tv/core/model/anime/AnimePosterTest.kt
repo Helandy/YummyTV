@@ -47,4 +47,26 @@ class AnimePosterTest : BaseUnitTest() {
         assertEquals(emptyList<String>(), none.urlsByQuality(PosterQuality.MEGA))
         assertNull(none.urlFor(PosterQuality.MEGA))
     }
+
+    @Test
+    fun `yani mega avif gets a mirror on our host with the same query`() {
+        val avif = AnimePoster(null, null, null, null, "https://static.yani.tv/posters/mega/1636989985.avif?v=431865090")
+
+        assertEquals(
+            listOf(
+                "https://static.yani.tv/posters/mega/1636989985.avif?v=431865090",
+                "https://static.afk.su/posters/mega/1636989985.avif?v=431865090",
+            ),
+            avif.urlsByQuality(PosterQuality.MEGA),
+        )
+        assertEquals("https://static.yani.tv/posters/mega/1636989985.avif?v=431865090", avif.urlFor(PosterQuality.MEGA))
+    }
+
+    @Test
+    fun `other versions and extensions have no mirror`() {
+        val jpg = AnimePoster(null, null, null, "https://static.yani.tv/posters/full/1.jpg", "https://static.yani.tv/posters/mega/1.jpg")
+
+        assertEquals(listOf("https://static.yani.tv/posters/full/1.jpg"), jpg.urlsByQuality(PosterQuality.HIGH))
+        assertEquals(listOf("https://static.yani.tv/posters/mega/1.jpg"), jpg.urlsByQuality(PosterQuality.MEGA))
+    }
 }

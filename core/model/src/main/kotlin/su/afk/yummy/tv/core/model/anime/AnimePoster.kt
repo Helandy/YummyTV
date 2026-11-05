@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.model.anime
 
+import su.afk.yummy.tv.core.model.anime.utils.posterMirrorUrl
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 
 data class AnimePoster(
@@ -12,7 +13,8 @@ data class AnimePoster(
 
 /**
  * Ссылка на постер ровно той версии, что выбрана в настройках [quality], без запасных версий.
- * Пусто, если у постера этой версии нет.
+ * Пусто, если у постера этой версии нет. У AVIF-версии `mega` следом идёт копия на нашем хосте
+ * ([posterMirrorUrl]): к ней картинка переходит только при 404/5xx от yani.
  */
 fun AnimePoster?.urlsByQuality(quality: PosterQuality): List<String> {
     if (this == null) return emptyList()
@@ -22,7 +24,8 @@ fun AnimePoster?.urlsByQuality(quality: PosterQuality): List<String> {
         PosterQuality.MEGA -> mega
         PosterQuality.HIGH -> fullsize
     }
-    return listOfNotNull(selected?.takeIf { it.isNotBlank() })
+    val url = selected?.takeIf { it.isNotBlank() } ?: return emptyList()
+    return listOfNotNull(url, posterMirrorUrl(url))
 }
 
 /** Желаемая для выбранного [quality] ссылка на постер (первая из [urlsByQuality]). */
