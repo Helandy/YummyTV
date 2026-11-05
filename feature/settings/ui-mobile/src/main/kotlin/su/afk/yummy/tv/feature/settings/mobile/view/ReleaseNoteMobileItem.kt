@@ -17,9 +17,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.ReleaseNotesMarkdown
+import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.model.ReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.common.utils.color
 
 /** Карточка релиза в шторке «Что нового»: версия с отметками, дата и список изменений. */
 @Composable
@@ -50,7 +50,8 @@ internal fun ReleaseNoteMobileItem(
             if (item.isPrerelease) {
                 ReleaseNoteMobileBadge(
                     text = stringResource(R.string.settings_release_notes_beta),
-                    color = MaterialTheme.colorScheme.tertiary,
+                    // tertiary в теме — тёмный primaryContainer, бейдж на тёмном фоне не читался.
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
             if (item.isCurrent) {

@@ -43,7 +43,8 @@ internal fun ReleaseNoteTvItem(
             if (item.isPrerelease) {
                 ReleaseNoteTvBadge(
                     text = stringResource(R.string.settings_release_notes_beta),
-                    color = MaterialTheme.colorScheme.tertiary,
+                    // tertiary в теме — тёмный primaryContainer, бейдж на тёмном фоне не читался.
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
             if (item.isCurrent) {

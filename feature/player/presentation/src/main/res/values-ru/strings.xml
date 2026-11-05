@@ -188,7 +188,7 @@
     <string name="player_resolve_failed_checking_qualities">Сбой на шаге: проверка качеств потока</string>
     <string name="player_resolve_failed_opening_session">Сбой на шаге: открытие плеера</string>
     <string name="player_resolve_response_error">Источник ответил ошибкой…</string>
-    <string name="player_resolve_waiting_for_ad">Ждём рекламу…</string>
+    <string name="player_resolve_waiting_for_ad">Готовим доступ…</string>
     <string name="player_resolve_failed_response_error">Сбой на шаге: источник ответил ошибкой — возможно, он недоступен или блокирует запросы</string>
     <string name="player_resolve_loading_player_script">Загружаем скрипт плеера…</string>
     <string name="player_resolve_selecting_dubbing">Выбираем озвучку и серию…</string>
@@ -215,7 +215,7 @@
     <string name="player_resolve_searching_episode">Ищем серию…</string>
     <string name="player_resolve_extracting_link">Достаём ссылку на видео…</string>
     <string name="player_resolve_loading_playlist">Загружаем плейлист качеств…</string>
-    <string name="player_resolve_asking_consent">Ждём ваш выбор по рекламе…</string>
+    <string name="player_resolve_asking_consent">Ждём ваш выбор…</string>
     <string name="player_resolve_requesting_ticket">Запрашиваем доступ…</string>
     <string name="player_resolve_failed_extracting_link">Сбой на шаге: извлечение ссылки на видео</string>
     <string name="player_resolve_failed_loading_playlist">Сбой на шаге: загрузка плейлиста качеств</string>

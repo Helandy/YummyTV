@@ -188,7 +188,7 @@
     <string name="player_resolve_failed_checking_qualities">Збій на кроці: перевірка якостей потоку</string>
     <string name="player_resolve_failed_opening_session">Збій на кроці: відкриття плеєра</string>
     <string name="player_resolve_response_error">Джерело відповіло помилкою…</string>
-    <string name="player_resolve_waiting_for_ad">Чекаємо рекламу…</string>
+    <string name="player_resolve_waiting_for_ad">Готуємо доступ…</string>
     <string name="player_resolve_failed_response_error">Збій на кроці: джерело відповіло помилкою — можливо, воно недоступне або блокує запити</string>
     <string name="player_resolve_loading_player_script">Завантажуємо скрипт плеєра…</string>
     <string name="player_resolve_selecting_dubbing">Обираємо озвучення та серію…</string>
@@ -215,7 +215,7 @@
     <string name="player_resolve_searching_episode">Шукаємо серію…</string>
     <string name="player_resolve_extracting_link">Дістаємо посилання на відео…</string>
     <string name="player_resolve_loading_playlist">Завантажуємо плейлист якостей…</string>
-    <string name="player_resolve_asking_consent">Чекаємо ваш вибір щодо реклами…</string>
+    <string name="player_resolve_asking_consent">Чекаємо ваш вибір…</string>
     <string name="player_resolve_requesting_ticket">Запитуємо доступ…</string>
     <string name="player_resolve_failed_extracting_link">Збій на кроці: отримання посилання на відео</string>
     <string name="player_resolve_failed_loading_playlist">Збій на кроці: завантаження плейлиста якостей</string>
