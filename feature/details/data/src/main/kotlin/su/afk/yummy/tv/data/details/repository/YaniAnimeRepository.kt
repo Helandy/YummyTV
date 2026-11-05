@@ -21,12 +21,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
-import su.afk.yummy.tv.core.model.anime.AnimeTmdbImages
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationReaction
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.model.anime.AnimeTmdbImages
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
@@ -92,6 +92,7 @@ private const val ANIME_PUBLIC_EXTRAS_TTL_MS = 6 * 60 * 60 * 1000L
 private const val ANIME_RELATION_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_PERSONAL_RECOMMENDATIONS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations"
+
 // v2: документ содержит кадры TMDB (previewUrl, stills). v3: у записей, чьи серии в TMDB идут сквозной нумерацией с другой
 // записью, сервер больше не отдаёт чужие серии (раньше у 3-го сезона лежали кадры, названия и описания 1-го).
 // v4: запрос нёс смещение серий предыдущих сезонов франшизы (?offset=), оно входило в ключ.
@@ -101,8 +102,8 @@ private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
 // v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
 private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v3"
-private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 30 * 24 * 60 * 60 * 1000L
-private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 24 * 60 * 60 * 1000L
+private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 7 * 24 * 60 * 60 * 1000L
+private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
 // Резерв с нашего API кэшируется недолго и отдельно: как только Tenrai оживёт, снова берутся его данные.
 private const val MAL_EPISODES_BACKUP_CACHE_NAMESPACE = "anime-mal-episodes-backup-v1"

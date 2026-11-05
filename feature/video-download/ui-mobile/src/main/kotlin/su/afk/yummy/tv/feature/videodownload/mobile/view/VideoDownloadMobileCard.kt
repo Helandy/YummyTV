@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
@@ -70,6 +71,7 @@ internal fun VideoDownloadMobileCard(
     modifier: Modifier = Modifier,
     waitingForWifi: Boolean = false,
     watchProgress: VideoDownloadWatchProgress? = null,
+    flags: EpisodeFlags? = null,
 ) {
     val imageModels = episodeThumbnailModels(
         thumbnail = episodeThumbnailOf(item.animeId, item.episode, item.screenshotUrl),
@@ -123,6 +125,12 @@ internal fun VideoDownloadMobileCard(
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                         .padding(horizontal = 7.dp, vertical = 3.dp),
                 )
+                if (flags != null) {
+                    VideoDownloadEpisodeFlagBadge(
+                        flags = flags,
+                        modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
+                    )
+                }
                 // Зелёная точка: серия уже выгружена в папку экспорта
                 if (item.exportStatus == VideoExportStatus.Exported) {
                     Box(

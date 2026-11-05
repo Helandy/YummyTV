@@ -46,4 +46,6 @@
         <item quantity="other">%d episodes</item>
     </plurals>
     <string name="video_download_watch_later">Watch later</string>
+    <string name="video_download_episode_flag_filler">Filler</string>
+    <string name="video_download_episode_flag_recap">Recap</string>
 </resources>

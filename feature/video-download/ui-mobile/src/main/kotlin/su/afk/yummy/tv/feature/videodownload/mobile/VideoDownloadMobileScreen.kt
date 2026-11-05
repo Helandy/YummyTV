@@ -45,6 +45,7 @@ import su.afk.yummy.tv.feature.videodownload.VideoDownloadState
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.formatDiskSize
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.isEligibleForExport
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadDeleteConfirmationDialog
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadGroupCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadMobileCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportAllConfirmationDialog
@@ -189,6 +190,7 @@ fun VideoDownloadMobileScreen(
                                         item = item,
                                         waitingForWifi = state.waitingForWifi,
                                         watchProgress = state.watchProgress[item.id],
+                                        flags = state.episodeFlags[item.animeId]?.get(item.episode.episodeGroupKey()),
                                         onClick = { onEvent(VideoDownloadState.Event.ItemSelected(item.id)) },
                                         onDelete = { onEvent(VideoDownloadState.Event.DeleteSelected(item.id)) },
                                         onPause = { onEvent(VideoDownloadState.Event.PauseSelected(item.id)) },

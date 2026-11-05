@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.minus
 import kotlinx.collections.immutable.plus
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -35,6 +36,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestination
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.watchlater.IWatchLaterNavigator
+import su.afk.yummy.tv.feature.videodownload.handler.VideoDownloadEpisodeFlagsHandler
 import su.afk.yummy.tv.feature.videodownload.mapper.toGroups
 import su.afk.yummy.tv.feature.videodownload.mapper.toWatchProgressByDownload
 import su.afk.yummy.tv.feature.videodownload.utils.isActive
@@ -63,8 +65,10 @@ class VideoDownloadViewModel @Inject constructor(
     private val playerNavigator: IPlayerNavigator,
     private val detailsNavigator: IDetailsNavigator,
     private val watchLaterNavigator: IWatchLaterNavigator,
+    private val episodeFlagsHandler: VideoDownloadEpisodeFlagsHandler,
 ) : BaseViewModel<VideoDownloadState.State, VideoDownloadState.Event, VideoDownloadState.Effect>() {
     private var pendingExportIds: List<Long> = emptyList()
+    private val animeIds = MutableStateFlow<Set<Int>>(emptySet())
 
     init {
         appLifecycleSettingsStore.notificationPermissionRequested
@@ -82,6 +86,7 @@ class VideoDownloadViewModel @Inject constructor(
             .onEach { (items, watchProgress) ->
                 setState {
                     val groups = items.toGroups()
+                    animeIds.value = groups.filter { it.animeId > 0 }.mapTo(HashSet()) { it.animeId }
                     // Раскрытость живёт по ключу: исчезнувшие сериалы из набора выкидываем.
                     val liveKeys = groups.mapTo(HashSet()) { it.key }
                     copy(
@@ -92,6 +97,9 @@ class VideoDownloadViewModel @Inject constructor(
                     )
                 }
             }
+            .launchIn(viewModelScope)
+        episodeFlagsHandler.observe(animeIds)
+            .onEach { flags -> setState { copy(episodeFlags = flags) } }
             .launchIn(viewModelScope)
         observeExportDestination()
             .onEach { destination -> setState { copy(exportDestination = destination) } }

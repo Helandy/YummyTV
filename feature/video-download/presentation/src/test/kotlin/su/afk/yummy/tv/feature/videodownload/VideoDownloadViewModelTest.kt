@@ -6,6 +6,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.flowOf
+import su.afk.yummy.tv.feature.videodownload.handler.VideoDownloadEpisodeFlagsHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -98,6 +100,12 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
         playerNavigator = playerNavigator,
         detailsNavigator = detailsNavigator,
         watchLaterNavigator = mockk(relaxed = true),
+        episodeFlagsHandler = VideoDownloadEpisodeFlagsHandler(
+            observeEpisodeFlags = mockk(relaxed = true),
+            appearanceSettings = mockk(relaxed = true) {
+                every { showEpisodeFlags } returns flowOf(false)
+            },
+        ),
     )
 
     private fun item(

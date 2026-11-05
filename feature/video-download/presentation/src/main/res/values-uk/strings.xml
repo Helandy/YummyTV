@@ -48,4 +48,6 @@
         <item quantity="other">%d серії</item>
     </plurals>
     <string name="video_download_watch_later">Дивитися пізніше</string>
+    <string name="video_download_episode_flag_filler">Філер</string>
+    <string name="video_download_episode_flag_recap">Рекап</string>
 </resources>

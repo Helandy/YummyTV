@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportDestination
+import su.afk.yummy.tv.feature.videodownload.handler.VideoDownloadEpisodeFlags
 import su.afk.yummy.tv.feature.videodownload.model.VideoDownloadGroup
 import su.afk.yummy.tv.feature.videodownload.model.VideoDownloadWatchProgress
 
@@ -24,6 +25,8 @@ class VideoDownloadState {
         val groups: ImmutableList<VideoDownloadGroup> = persistentListOf(),
         /** Прогресс просмотра скачанных серий по id загрузки. */
         val watchProgress: ImmutableMap<Long, VideoDownloadWatchProgress> = persistentMapOf(),
+        /** Пометки «филлер»/«рекап»: animeId → номер серии ([episodeGroupKey]) → флаги. */
+        val episodeFlags: VideoDownloadEpisodeFlags = persistentMapOf(),
         /** Ключи раскрытых сериалов ([VideoDownloadGroup.key]). */
         val expandedGroupKeys: PersistentSet<String> = persistentSetOf(),
         val pendingDeleteItem: VideoDownloadItem? = null,
