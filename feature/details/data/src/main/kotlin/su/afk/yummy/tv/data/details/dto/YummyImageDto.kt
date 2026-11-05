@@ -7,4 +7,6 @@ import kotlinx.serialization.Serializable
 data class YummyImageDto(
     val url: String = "",
     val filePath: String = "",
+    /** Своя копия кадра в AVIF на нашем хосте; файла может ещё не быть (404). `null`, если хранилище выключено. */
+    val mirrorUrl: String? = null,
 )

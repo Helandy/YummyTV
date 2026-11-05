@@ -392,7 +392,12 @@ class YaniAnimeRepository(
         }
 
     override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
-        AnimeEpisodeFrames(tmdbStillUrls = getAnimeTmdbImages(animeId).firstEpisodeStillUrls)
+        getAnimeTmdbImages(animeId).let {
+            AnimeEpisodeFrames(
+                tmdbStillUrls = it.firstEpisodeStillUrls,
+                tmdbStillMirrorUrls = it.firstEpisodeStillMirrorUrls,
+            )
+        }
 
     /**
      * Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. Смещение серий франшизы,

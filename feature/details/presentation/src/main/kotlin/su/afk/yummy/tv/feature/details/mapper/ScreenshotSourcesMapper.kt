@@ -9,10 +9,10 @@ private const val FIRST_EPISODE = "1"
 private fun screenshotCacheKey(animeId: Int, index: Int): String = "screenshot_v1:$animeId:$index"
 
 /**
- * Скриншоты деталки из двух источников по приоритету: кадры серии 1 из TMDB, скриншоты Yani.
+ * Скриншоты деталки из трёх источников по приоритету: кадры серии 1 из TMDB, их копия на нашем хосте, скриншоты Yani.
  *
  * Число карточек задаёт TMDB, а у каждой карточки своя цепочка ссылок: на i-й позиции TMDB, если она не загрузится
- * (CDN заблокирован), то i-й скриншот Yani ([AnimeScreenshot.fallbackUrls]). Все ссылки карточки пишутся в кэш картинок
+ * (CDN заблокирован), то её копия на нашем хосте, затем i-й скриншот Yani ([AnimeScreenshot.fallbackUrls]). Все ссылки карточки пишутся в кэш картинок
  * под одним стабильным ключом ([AnimeScreenshot.cacheKey]). Если кадров TMDB нет, возвращаются скриншоты Yani как есть.
  */
 internal fun mergeScreenshotSources(
@@ -25,6 +25,7 @@ internal fun mergeScreenshotSources(
         val yaniScreenshot = yani.getOrNull(index)
         val urls = listOfNotNull(
             frames.tmdbStillUrls.getOrNull(index),
+            frames.tmdbStillMirrorUrls.getOrNull(index),
             yaniScreenshot?.url,
         ).filter { it.isNotBlank() }.distinct()
         AnimeScreenshot(

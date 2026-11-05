@@ -28,6 +28,19 @@ class ScreenshotSourcesMapperTest {
     }
 
     @Test
+    fun `chain is tmdb then our copy then yani, and a missing copy is skipped`() {
+        val frames = AnimeEpisodeFrames(
+            tmdbStillUrls = listOf("t1", "t2"),
+            tmdbStillMirrorUrls = listOf("m1", ""),
+        )
+
+        val merged = mergeScreenshotSources(ANIME_ID, frames, yani("y1", "y2"))
+
+        assertEquals(listOf("t1", "t2"), merged.map { it.url })
+        assertEquals(listOf(listOf("m1", "y1"), listOf("y2")), merged.map { it.fallbackUrls })
+    }
+
+    @Test
     fun `repeated and blank urls are dropped from the chain`() {
         val frames = AnimeEpisodeFrames(tmdbStillUrls = listOf("same"))
 
