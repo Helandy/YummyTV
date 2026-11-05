@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,6 +53,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.player.common.utils.thumbnailModels
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
+import su.afk.yummy.tv.feature.player.utils.timingLabel
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeProgress
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -186,7 +188,7 @@ private fun EpisodeCard(
                 is PlayerEpisodeProgress.InProgress -> LinearProgressIndicator(
                     progress = { progress.progress.coerceIn(0f, 1f) },
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                    color = YummySemanticColors.InProgress,
+                    color = primary,
                     trackColor = Color.Black.copy(alpha = 0.5f),
                 )
 
@@ -195,14 +197,35 @@ private fun EpisodeCard(
             TvPlayerEpisodeBadges(
                 item = item,
                 modifier = Modifier.matchParentSize(),
+                showTiming = false,
             )
         }
-        Text(
-            text = stringResource(R.string.player_episode_number, item.number),
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (focused) primary else Color.White,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.player_episode_number, item.number),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (focused) primary else Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            item.timingLabel()?.let { timing ->
+                Text(
+                    text = timing,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (item.progress == PlayerEpisodeProgress.None) {
+                        Color.White.copy(alpha = 0.7f)
+                    } else {
+                        YummySemanticColors.InProgress
+                    },
+                    maxLines = 1,
+                    modifier = Modifier.padding(end = 1.dp),
+                )
+            }
+        }
     }
 }

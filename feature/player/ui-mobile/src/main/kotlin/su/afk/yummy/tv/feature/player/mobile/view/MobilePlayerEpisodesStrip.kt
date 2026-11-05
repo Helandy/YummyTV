@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
-import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.player.common.utils.thumbnailModels
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
@@ -107,7 +106,7 @@ private fun StripCard(
                 is PlayerEpisodeProgress.InProgress -> LinearProgressIndicator(
                     progress = { progress.progress.coerceIn(0f, 1f) },
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                    color = YummySemanticColors.InProgress,
+                    color = MaterialTheme.colorScheme.primary,
                     trackColor = Color.Black.copy(alpha = 0.5f),
                 )
 

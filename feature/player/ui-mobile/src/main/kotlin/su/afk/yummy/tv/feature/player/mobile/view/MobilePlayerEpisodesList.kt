@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +39,7 @@ import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.player.common.utils.thumbnailModels
+import su.afk.yummy.tv.feature.player.mobile.utils.timingLabel
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeProgress
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -98,6 +101,7 @@ private fun EpisodeRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .clip(RoundedCornerShape(10.dp))
             .background(rowBackground)
             .clickable(onClick = onClick)
@@ -125,7 +129,7 @@ private fun EpisodeRow(
                 is PlayerEpisodeProgress.InProgress -> LinearProgressIndicator(
                     progress = { progress.progress.coerceIn(0f, 1f) },
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                    color = YummySemanticColors.InProgress,
+                    color = MaterialTheme.colorScheme.primary,
                     trackColor = Color.Black.copy(alpha = 0.5f),
                 )
 
@@ -134,11 +138,12 @@ private fun EpisodeRow(
             MobilePlayerEpisodeBadges(
                 item = item,
                 modifier = Modifier.matchParentSize(),
+                showTiming = false,
             )
         }
         Column(
             modifier = Modifier.weight(1f).fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = stringResource(R.string.player_episode_number, item.number),
@@ -147,6 +152,19 @@ private fun EpisodeRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            val timing = item.timingLabel()
+            if (timing != null) {
+                Text(
+                    text = timing,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (item.progress == PlayerEpisodeProgress.None) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        YummySemanticColors.InProgress
+                    },
+                    maxLines = 1,
+                )
+            }
         }
     }
 }

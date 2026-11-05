@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeItem
+import su.afk.yummy.tv.feature.player.utils.timingLabel
 import su.afk.yummy.tv.feature.player.model.PlayerEpisodeProgress
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -36,12 +37,10 @@ private val BadgeBackground = Color.Black.copy(alpha = 0.72f)
 internal fun TvPlayerEpisodeBadges(
     item: PlayerEpisodeItem,
     modifier: Modifier = Modifier,
+    /** `false` — тайминг показывает сам список под превью, на картинке его не рисуем. */
+    showTiming: Boolean = true,
 ) {
-    val timing = when (val progress = item.progress) {
-        PlayerEpisodeProgress.None -> item.durationLabel
-        is PlayerEpisodeProgress.InProgress -> progress.label
-        is PlayerEpisodeProgress.Watched -> progress.label
-    }
+    val timing = if (showTiming) item.timingLabel() else null
     val flag = item.flags?.let { flags ->
         when {
             flags.filler -> stringResource(R.string.player_episode_flag_filler) to FillerColor
