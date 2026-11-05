@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.model.anime.utils.PosterMirrorConfig
+import su.afk.yummy.tv.core.network.statics.AppVersionHeaderPlugin
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
@@ -29,6 +31,7 @@ import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailCacheIO
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -48,6 +51,7 @@ class CoilImageLoaderInstaller @Inject constructor(
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
     private val siteApiConfig: SiteApiConfig,
     private val logRecordingSettings: AppLogRecordingSettings,
+    @param:Named("appVersionName") private val appVersionName: String,
 ) {
 
     @OptIn(ExperimentalCoilApi::class)
@@ -61,6 +65,10 @@ class CoilImageLoaderInstaller @Inject constructor(
             val imageHttpClient = HttpClient(OkHttp) {
                 engine {
                     preconfigured = okHttpClient.newBuilder().build()
+                }
+                install(AppVersionHeaderPlugin) {
+                    host = { PosterMirrorConfig.host }
+                    version = appVersionName
                 }
             }
             // Лоадер собирается лениво, на первой картинке — интерфейс к этому моменту уже выбран.
