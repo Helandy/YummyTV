@@ -10,13 +10,16 @@ import java.util.concurrent.TimeUnit
  * или зависший узел должен отваливаться за секунды, и цепочка уходит на следующий источник. Остальные хосты не трогаем.
  */
 class HostTimeoutInterceptor(
-    private val hosts: Set<String>,
+    private val hosts: () -> Set<String>,
     private val connectTimeoutSeconds: Int,
     private val readTimeoutSeconds: Int,
 ) : Interceptor {
 
+    constructor(hosts: Set<String>, connectTimeoutSeconds: Int, readTimeoutSeconds: Int) :
+        this({ hosts }, connectTimeoutSeconds, readTimeoutSeconds)
+
     override fun intercept(chain: Interceptor.Chain): Response {
-        if (chain.request().url.host !in hosts) return chain.proceed(chain.request())
+        if (chain.request().url.host !in hosts()) return chain.proceed(chain.request())
         return chain
             .withConnectTimeout(connectTimeoutSeconds, TimeUnit.SECONDS)
             .withReadTimeout(readTimeoutSeconds, TimeUnit.SECONDS)

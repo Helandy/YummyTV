@@ -16,11 +16,16 @@ private const val TMDB_READ_TIMEOUT_SECONDS = 5
 private const val DOH_TIMEOUT_SECONDS = 3
 
 /**
- * Таймауты для картинок TMDB: соединение 3 с, чтение 5 с. У каждого кадра есть запасные источники (Tenrai, Kodik, yani),
- * поэтому при упавшем или зависшем узле CDN лучше быстро перейти к ним, чем ждать общие десять секунд.
+ * Таймауты для картинок: соединение 3 с, чтение 5 с. Для CDN TMDB и для своего хоста статики [staticHost] (копии кадров
+ * и постеров). У каждой картинки есть запасные источники (Tenrai, Kodik, yani, TMDB), поэтому при упавшем или зависшем
+ * узле лучше быстро перейти к ним, чем ждать общие десять секунд. Пустой [staticHost] — только TMDB.
  */
-fun tmdbImageTimeouts(): Interceptor =
-    HostTimeoutInterceptor(TMDB_IMAGE_HOSTS, TMDB_CONNECT_TIMEOUT_SECONDS, TMDB_READ_TIMEOUT_SECONDS)
+fun imageHostTimeouts(staticHost: String): Interceptor =
+    HostTimeoutInterceptor(
+        hosts = { if (staticHost.isBlank()) TMDB_IMAGE_HOSTS else TMDB_IMAGE_HOSTS + staticHost.lowercase() },
+        connectTimeoutSeconds = TMDB_CONNECT_TIMEOUT_SECONDS,
+        readTimeoutSeconds = TMDB_READ_TIMEOUT_SECONDS,
+    )
 
 /**
  * DNS общего OkHttp-клиента: хосты картинок TMDB при блокировке резолвятся через Quad9 (DNS-over-HTTPS, адрес

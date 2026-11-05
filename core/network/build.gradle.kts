@@ -12,7 +12,7 @@ android {
         buildConfig = true
     }
     defaultConfig {
-        // Адрес своего сервера задаётся в local.properties (yummytv.apiBaseUrl); в git лежит заглушка
+        buildConfigField("String", "STATIC_HOST", buildConfigProperty("yummytv.staticHost", "static.self.made"))
         buildConfigField("String", "YUMMY_TV_API_BASE_URL", buildConfigProperty("yummytv.apiBaseUrl", "https://api.self.made/api"))
     }
 }

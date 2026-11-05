@@ -19,7 +19,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.network.dns.tmdbImageDns
-import su.afk.yummy.tv.core.network.dns.tmdbImageTimeouts
+import su.afk.yummy.tv.core.network.dns.imageHostTimeouts
 import su.afk.yummy.tv.core.network.progress.ResolveProgressPlugin
 import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
@@ -37,7 +37,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder().dns(tmdbImageDns()).addInterceptor(tmdbImageTimeouts()).build()
+        OkHttpClient.Builder().dns(tmdbImageDns()).addInterceptor(imageHostTimeouts(BuildConfig.STATIC_HOST)).build()
 
     /**
      * Клиент резолва потоков плееров. Отдельный, чтобы `ResolveProgressPlugin` не ловил запросы

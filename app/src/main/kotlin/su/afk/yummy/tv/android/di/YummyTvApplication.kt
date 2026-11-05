@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
+import su.afk.yummy.tv.core.network.BuildConfig as NetworkBuildConfig
 import su.afk.yummy.tv.core.network.yani.YaniApiConfig
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
@@ -118,7 +119,7 @@ class YummyTvApplication :
         // Hilt инжектит поля в super.onCreate(), поэтому начало замеряем до него
         val onCreateStartedAt = SystemClock.uptimeMillis()
         trace("App.hiltInject") { super.onCreate() }
-        PosterMirrorConfig.host = BuildConfig.STATIC_HOST
+        PosterMirrorConfig.host = NetworkBuildConfig.STATIC_HOST
         // Файловый дамп logcat для передачи разработчику (Настройки → О приложении)
         appLogCollector.start()
         startupMetricsTracker.start(this, onCreateStartedAt)

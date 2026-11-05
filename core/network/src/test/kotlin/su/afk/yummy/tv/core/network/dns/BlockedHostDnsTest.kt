@@ -70,6 +70,54 @@ class BlockedHostDnsTest {
         assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) }
     }
 
+    @Test
+    fun `failed fallback is remembered so later images do not wait for the timeout again`() {
+        var calls = 0
+        val dns = dns(system = { loopback }, fallback = { calls++; throw UnknownHostException("doh down") })
+
+        repeat(3) { assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) } }
+        assertEquals(1, calls)
+
+        now += 31_000L
+        assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) }
+        assertEquals(2, calls)
+    }
+
+    @Test
+    fun `recovered fallback is used again and clears the failure`() {
+        var down = true
+        val dns = dns(system = { loopback }, fallback = { if (down) throw UnknownHostException("doh down") else real })
+
+        assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) }
+        now += 31_000L
+        down = false
+
+        assertEquals(real, dns.lookup(HOST))
+        assertEquals(real, dns.lookup(HOST))
+    }
+
+    @Test
+    fun `parallel lookups of one blocked host share a single fallback call`() {
+        val started = java.util.concurrent.CountDownLatch(1)
+        val dns = dns(
+            system = { loopback },
+            fallback = {
+                fallbackCalls++
+                started.await(2, java.util.concurrent.TimeUnit.SECONDS)
+                real
+            },
+        )
+        val results = java.util.Collections.synchronizedList(mutableListOf<List<InetAddress>>())
+        val threads = List(6) { Thread { results += dns.lookup(HOST) }.also { it.start() } }
+
+        Thread.sleep(100)
+        started.countDown()
+        threads.forEach { it.join(3_000) }
+
+        assertEquals(6, results.size)
+        assertEquals(1, fallbackCalls)
+    }
+
     private companion object {
         const val HOST = "image.tmdb.org"
     }
