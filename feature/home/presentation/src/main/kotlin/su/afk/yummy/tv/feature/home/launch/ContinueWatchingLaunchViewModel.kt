@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
+import su.afk.yummy.tv.domain.watching.usecase.ResolveRequestedPlaybackUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.navigator.ContinueWatchingLaunchDestination
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
@@ -28,7 +29,7 @@ import su.afk.yummy.tv.feature.player.getPlayerDest
  */
 @HiltViewModel(assistedFactory = ContinueWatchingLaunchViewModel.Factory::class)
 class ContinueWatchingLaunchViewModel @AssistedInject internal constructor(
-    @Assisted private val animeId: Int,
+    @Assisted private val destination: ContinueWatchingLaunchDestination,
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
@@ -36,6 +37,7 @@ class ContinueWatchingLaunchViewModel @AssistedInject internal constructor(
     private val playerNavigator: IPlayerNavigator,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
+    private val resolveRequestedPlayback: ResolveRequestedPlaybackUseCase,
     private val settingsStore: SettingsStore,
 ) : BaseViewModel<ContinueWatchingLaunchState.State, ContinueWatchingLaunchState.Event, ContinueWatchingLaunchState.Effect>() {
 
@@ -48,25 +50,40 @@ class ContinueWatchingLaunchViewModel @AssistedInject internal constructor(
     override fun onEvent(event: ContinueWatchingLaunchState.Event) = Unit
 
     private suspend fun launch() {
-        val destination = runSuspendCatching {
-            val entry = observeContinueWatching().first()
-                .firstOrNull { it.animeId == animeId }
-                ?.takeIf { it.hasPlayableTarget() }
-                ?: return@runSuspendCatching null
-            val launch = resolveContinueWatchingLaunch(
-                entry = entry,
-                refreshProgressOnLaunch = settingsStore.currentUserId() > 0,
-            ) ?: return@runSuspendCatching null
+        val animeId = destination.animeId
+        val target = runSuspendCatching {
+            val launch = if (destination.isExplicit) {
+                resolveRequestedPlayback(
+                    animeId = animeId,
+                    episode = destination.episode,
+                    player = destination.player,
+                    dubbing = destination.dubbing,
+                    positionMs = (destination.positionSeconds ?: 0L) * MS_IN_SECOND,
+                )
+            } else {
+                val entry = observeContinueWatching().first()
+                    .firstOrNull { it.animeId == animeId }
+                    ?.takeIf { it.hasPlayableTarget() }
+                    ?: return@runSuspendCatching null
+                resolveContinueWatchingLaunch(
+                    entry = entry,
+                    refreshProgressOnLaunch = settingsStore.currentUserId() > 0,
+                )
+            } ?: return@runSuspendCatching null
             playerNavigator.getPlayerDest(launch)
         }.getOrNull()
         // Пока шёл запуск, пользователь мог уйти назад или открыть другой ярлык: заменяем только
         // свой экран, иначе плеер встал бы поверх чужого ключа.
-        if (nav.backStack.lastOrNull() != ContinueWatchingLaunchDestination(animeId)) return
-        nav.replace(destination ?: detailsNavigator.getDetailsDest(animeId))
+        if (nav.backStack.lastOrNull() != destination) return
+        nav.replace(target ?: detailsNavigator.getDetailsDest(animeId))
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(animeId: Int): ContinueWatchingLaunchViewModel
+        fun create(destination: ContinueWatchingLaunchDestination): ContinueWatchingLaunchViewModel
+    }
+
+    private companion object {
+        const val MS_IN_SECOND = 1_000L
     }
 }

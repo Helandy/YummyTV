@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
+import su.afk.yummy.tv.domain.watching.usecase.ResolveRequestedPlaybackUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.navigator.ContinueWatchingLaunchDestination
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -33,6 +34,7 @@ class ContinueWatchingLaunchViewModelTest : BaseUnitTest() {
     private val playerNavigator: IPlayerNavigator = mockk()
     private val observeContinueWatching: ObserveContinueWatchingUseCase = mockk()
     private val resolveLaunch: ResolveContinueWatchingLaunchUseCase = mockk()
+    private val resolveRequested: ResolveRequestedPlaybackUseCase = mockk()
     private val settingsStore: SettingsStore = mockk()
 
     private val playerKey: NavKey = mockk()
@@ -55,6 +57,34 @@ class ContinueWatchingLaunchViewModelTest : BaseUnitTest() {
 
         coVerify { resolveLaunch(match { it.animeId == ANIME_ID }, refreshProgressOnLaunch = true) }
         verify { nav.replace(playerKey) }
+    }
+
+    @Test
+    fun `explicit link resolves the requested playback in milliseconds`() {
+        val destination = ContinueWatchingLaunchDestination(
+            animeId = ANIME_ID,
+            episode = "4",
+            player = "alloha",
+            positionSeconds = 900L,
+        )
+        every { nav.backStack } returns listOf(destination)
+        coEvery { resolveRequested(ANIME_ID, "4", "alloha", null, 900_000L) } returns launch()
+
+        createViewModel(destination)
+
+        verify { nav.replace(playerKey) }
+        coVerify(exactly = 0) { resolveLaunch(any(), any()) }
+    }
+
+    @Test
+    fun `explicit link without a matching video opens details`() {
+        val destination = ContinueWatchingLaunchDestination(animeId = ANIME_ID, player = "nothing")
+        every { nav.backStack } returns listOf(destination)
+        coEvery { resolveRequested(any(), any(), any(), any(), any()) } returns null
+
+        createViewModel(destination)
+
+        verify { nav.replace(detailsKey) }
     }
 
     @Test
@@ -135,8 +165,10 @@ class ContinueWatchingLaunchViewModelTest : BaseUnitTest() {
         resumeFromMs = 60_000L,
     )
 
-    private fun createViewModel() = ContinueWatchingLaunchViewModel(
-        animeId = ANIME_ID,
+    private fun createViewModel(
+        destination: ContinueWatchingLaunchDestination = ContinueWatchingLaunchDestination(ANIME_ID),
+    ) = ContinueWatchingLaunchViewModel(
+        destination = destination,
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,
@@ -144,6 +176,7 @@ class ContinueWatchingLaunchViewModelTest : BaseUnitTest() {
         playerNavigator = playerNavigator,
         observeContinueWatching = observeContinueWatching,
         resolveContinueWatchingLaunch = resolveLaunch,
+        resolveRequestedPlayback = resolveRequested,
         settingsStore = settingsStore,
     )
 

@@ -34,8 +34,8 @@ class HomeNavRegistrar @Inject constructor() : IMobileHomeEntry {
             }
             entry<ContinueWatchingLaunchDestination> { dest ->
                 val viewModel = hiltViewModel<ContinueWatchingLaunchViewModel, ContinueWatchingLaunchViewModel.Factory>(
-                    key = "mobile-continue-launch-${dest.animeId}",
-                    creationCallback = { factory -> factory.create(dest.animeId) },
+                    key = "mobile-continue-launch-$dest",
+                    creationCallback = { factory -> factory.create(dest) },
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     ContinueWatchingLaunchMobileScreen(state = state, effect = effect, onEvent = onEvent)
