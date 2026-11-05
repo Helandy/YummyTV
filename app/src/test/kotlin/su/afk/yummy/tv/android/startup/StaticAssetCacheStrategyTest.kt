@@ -33,6 +33,16 @@ class StaticAssetCacheStrategyTest : BaseUnitTest() {
     }
 
     @Test
+    fun `ожидаемая длина берётся из Content-Length только для несжатого тела`() {
+        fun headers(vararg h: Pair<String, String>) = NetworkHeaders.Builder().apply { h.forEach { set(it.first, it.second) } }.build()
+        assertEquals(91539L, StaticAssetCacheStrategy.expectedBodyLength(headers("Content-Length" to "91539")))
+        assertEquals(10L, StaticAssetCacheStrategy.expectedBodyLength(headers("Content-Length" to "10", "Content-Encoding" to "identity")))
+        assertEquals(null, StaticAssetCacheStrategy.expectedBodyLength(headers("Content-Length" to "10", "Content-Encoding" to "gzip")))
+        assertEquals(null, StaticAssetCacheStrategy.expectedBodyLength(headers()))
+        assertEquals(null, StaticAssetCacheStrategy.expectedBodyLength(headers("Content-Length" to "abc")))
+    }
+
+    @Test
     fun `свежесть статики и картинок — 30 дней`() {
         assertEquals(30.days, StaticAssetCacheStrategy.StaticFreshness)
     }
