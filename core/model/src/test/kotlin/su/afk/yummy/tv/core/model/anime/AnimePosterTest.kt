@@ -63,4 +63,26 @@ class AnimePosterTest : BaseUnitTest() {
 
         assertEquals(listOf("https://static.yani.tv/posters/full/1.jpg"), jpg.posterUrls())
     }
+
+    @Test
+    fun `mirror is built for any host and the invented one is corrected first`() {
+        val other = AnimePoster(null, null, null, null, "https://cdn.example.org/posters/mega/7.avif")
+        val invented = AnimePoster(null, null, null, null, "https://static-ru.yani.tv/posters/mega/7.avif?v=1")
+
+        assertEquals(
+            listOf("https://cdn.example.org/posters/mega/7.avif", "https://static.self.made/posters/mega/7.avif"),
+            other.posterUrls(),
+        )
+        assertEquals(
+            listOf("https://static.yani.tv/posters/mega/7.avif?v=1", "https://static.self.made/posters/mega/7.avif?v=1"),
+            invented.posterUrls(),
+        )
+    }
+
+    @Test
+    fun `a link to our own host gets no second mirror`() {
+        val own = AnimePoster(null, null, null, null, "https://static.self.made/posters/mega/7.avif")
+
+        assertEquals(listOf("https://static.self.made/posters/mega/7.avif"), own.posterUrls())
+    }
 }

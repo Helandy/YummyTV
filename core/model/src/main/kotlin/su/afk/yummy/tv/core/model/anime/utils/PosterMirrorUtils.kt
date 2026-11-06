@@ -9,14 +9,19 @@ object PosterMirrorConfig {
     var host: String = "static.self.made"
 }
 
-private val YANI_MEGA_POSTER = Regex("""^https?://static\.yani\.tv/posters/mega/(\d+\.avif(?:\?.*)?)$""", RegexOption.IGNORE_CASE)
+private val MEGA_POSTER = Regex("""^https?://([^/?#]+)/posters/mega/(\d+\.avif(?:\?.*)?)$""", RegexOption.IGNORE_CASE)
 
 /**
  * Ссылка на копию постера yani на нашем хосте: тот же путь и `?v=…`, другой домен.
- * Копия есть только у AVIF-версии `mega` (`static.yani.tv/posters/mega/<id>.avif`), для остальных ссылок `null`.
+ * Копия есть только у AVIF-версии `mega` (`<хост>/posters/mega/<id>.avif`), для остальных ссылок `null`. Хост исходной
+ * ссылки не важен: какой бы адрес ни пришёл от yani (в том числе некоректный), при его недоступности картинка берётся
+ * с нашего хоста. Ссылка, которая уже ведёт на наш хост, копии не получает.
  */
-fun posterMirrorUrl(yaniUrl: String): String? =
-    YANI_MEGA_POSTER.find(yaniUrl)?.let { "https://${PosterMirrorConfig.host}/posters/mega/${it.groupValues[1]}" }
+fun posterMirrorUrl(yaniUrl: String): String? {
+    val match = MEGA_POSTER.find(yaniUrl) ?: return null
+    if (match.groupValues[1].equals(PosterMirrorConfig.host, ignoreCase = true)) return null
+    return "https://${PosterMirrorConfig.host}/posters/mega/${match.groupValues[2]}"
+}
 
 /** Это ссылка на копию постера на нашем хосте (а не на сам yani). */
 fun isPosterMirrorUrl(url: String): Boolean =
