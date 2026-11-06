@@ -11,8 +11,6 @@ internal object DefaultDownloadStrategy : DownloadPlayerStrategy {
 
     override fun usesRotatingSegmentUrls(streamKind: StreamKind): Boolean = false
 
-    override fun preferOkHttpUpstream(streamKind: StreamKind): Boolean = false
-
     override fun decorateHeaders(
         headers: Map<String, String>,
         iframeUrl: String

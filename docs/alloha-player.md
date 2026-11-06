@@ -241,7 +241,7 @@ YummyDroid она вынимается из функции `Xk` и провер�
 
 **Номер сегмента и байты.** `PlayerDataSourceFactory` на каждом запросе к CDN Alloha: подставляет `AllohaEdgeHash.current`, на успешном ответе добавляет
 `Content-Length` в `AllohaEdgeHash.bytesLoaded`. Счётчик `bytesLoaded` нужен
-репортёру (`bytesLoadedTotal`). Сегменты и WS идут через OkHttp. Cronet (TLS Chrome) раньше
+репортёру (`bytesLoadedTotal`). Всё, что ходит к Alloha, использует `@AllohaOkHttp`, а сегменты `@StreamingOkHttp` (см. [network-and-auth.md](network-and-auth.md)); WS тоже на OkHttp. Cronet (TLS Chrome) раньше
 использовался для CDN Alloha, но прогон на 20 минут без него прошёл без блока (H16), и он удалён
 вместе с зависимостями `media3-datasource-cronet` и `play-services-cronet`.
 

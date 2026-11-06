@@ -5,15 +5,13 @@ import okhttp3.Interceptor
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.dnsoverhttps.DnsOverHttps
+import su.afk.yummy.tv.core.network.NetworkTimeouts
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
 /** CDN картинок TMDB: у части провайдеров его DNS-имена подменены на `127.0.0.1`, а узлы бывают медленными или упавшими. */
 private val TMDB_IMAGE_HOSTS = setOf("image.tmdb.org", "media.themoviedb.org")
 
-private const val TMDB_CONNECT_TIMEOUT_SECONDS = 3
-private const val TMDB_READ_TIMEOUT_SECONDS = 5
-private const val DOH_TIMEOUT_SECONDS = 3
 
 /**
  * Таймауты для картинок: соединение 3 с, чтение 5 с. Для CDN TMDB и для своего хоста статики [staticHost] (копии кадров
@@ -23,8 +21,8 @@ private const val DOH_TIMEOUT_SECONDS = 3
 fun imageHostTimeouts(staticHost: String): Interceptor =
     HostTimeoutInterceptor(
         hosts = { if (staticHost.isBlank()) TMDB_IMAGE_HOSTS else TMDB_IMAGE_HOSTS + staticHost.lowercase() },
-        connectTimeoutSeconds = TMDB_CONNECT_TIMEOUT_SECONDS,
-        readTimeoutSeconds = TMDB_READ_TIMEOUT_SECONDS,
+        connectTimeoutSeconds = NetworkTimeouts.IMAGE_HOST_CONNECT_SECONDS,
+        readTimeoutSeconds = NetworkTimeouts.IMAGE_HOST_READ_SECONDS,
     )
 
 /**
@@ -37,8 +35,8 @@ fun tmdbImageDns(): Dns {
         DnsOverHttps.Builder()
             .client(
                 OkHttpClient.Builder()
-                    .connectTimeout(DOH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
-                    .readTimeout(DOH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
+                    .connectTimeout(NetworkTimeouts.DOH_SECONDS.toLong(), TimeUnit.SECONDS)
+                    .readTimeout(NetworkTimeouts.DOH_SECONDS.toLong(), TimeUnit.SECONDS)
                     .build(),
             )
             .url("https://dns.quad9.net/dns-query".toHttpUrl())

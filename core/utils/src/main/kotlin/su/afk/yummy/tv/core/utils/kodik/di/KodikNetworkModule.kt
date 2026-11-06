@@ -8,30 +8,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.compression.ContentEncoding
-import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 internal object KodikNetworkModule {
-
-    @Provides
-    @Singleton
-    @KodikHttpClient
-    fun provideKodikHttpClient(okHttpClient: OkHttpClient): HttpClient = HttpClient(OkHttp) {
-        // Общий OkHttpClient приложения: пул соединений и TLS-сессии к Kodik переиспользуются
-        // вместо отдельного движка со своими пулом и потоками.
-        engine { preconfigured = okHttpClient }
-        install(HttpTimeout)
-        install(ContentEncoding) {
-            gzip()
-            deflate()
-        }
-    }
 
     /**
      * Отдельный маленький disk cache только для Kodik-превью серий: свой лимит, не зависящий

@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":core:deeplink:api"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:player:api"))

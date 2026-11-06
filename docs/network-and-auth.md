@@ -7,17 +7,46 @@ API — [yani-api.md](yani-api.md). Вход через
 
 ## Клиенты
 
-Все в `core/network/`. База — один `OkHttpClient()` без настроек (`NetworkModule`), клиенты Ktor
-строятся поверх него (`engine { preconfigured = okHttpClient }`), поэтому пул соединений и диспетчер
-общие.
+Все клиенты создаются в `core/network/` и строятся от одного базового `OkHttpClient` (`NetworkModule.provideOkHttpClient`).
+Он источник пула соединений, диспетчера и DNS (DoH для картинок TMDB при блокировке, короткие таймауты для хостов
+картинок). Остальные берут его через `newBuilder()` или `engine { preconfigured = okHttpClient }`. Все таймауты лежат в
+одном объекте `NetworkTimeouts` (`core/network/NetworkTimeouts.kt`), Ktor-клиенты собирает `okHttpKtorClient`
+(`HttpClientFactory.kt`): общий каркас (движок, `HttpTimeout`, `ContentEncoding`), профиль добавляет своё.
 
-| Клиент                          | Где                                   | Таймауты (connect / request)                                                               | Назначение                                                           |
-|---------------------------------|---------------------------------------|--------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| Yani (`YaniHttpClientProvider`) | `buildYaniHttpClient`                 | 20 с / 40 с (+ socket 40 с)                                                                | API yani: заголовки сессии, ретраи GET, `YaniApiJson`                |
-| Общий `HttpClient`              | `NetworkModule.provideHttpClient`     | 15 с / 20 с по умолчанию; `KtorPlayerHttpClient` ставит свои: GET 10 / 15 с, POST 8 / 10 с | Экстракторы: HTML, m3u8, без JSON и без токена; плагин `ContentEncoding` здесь нагружен (Zedfilm без gzip отвечает 404) |
-| `@UnauthenticatedJsonClient`    | `NetworkModule`                       | 15 с / 20 с                                                                                | Публичные сторонние API (GitHub): `ContentNegotiation`, без токена   |
-| `@LocalAuthHttpClient`          | `AccountDataModule` (feature/account) | 5 с / 10 с                                                                                 | Передача сессии по LAN, движок CIO                                   |
-| Coil                            | `CoilImageLoaderInstaller`            | по умолчанию                                                                               | Картинки, [image-loading-and-memory.md](image-loading-and-memory.md) |
+OkHttp (`newBuilder()` от базового, свой `Dispatcher`):
+
+| Квалификатор       | Профиль таймаутов (connect / read) | Кто использует                                                  |
+|--------------------|------------------------------------|------------------------------------------------------------------|
+| `@StreamingOkHttp` | `Streaming` 16 с / 16 с            | `PlayerDataSourceFactory`: сегменты и плейлисты при воспроизведении |
+| `@DownloadOkHttp`  | `Download` 30 с / 30 с             | `VideoDownloadExecutor`: загрузки серий всех источников          |
+| `@AllohaOkHttp`    | `Alloha` 10 с / 15 с               | `AllohaExtractor`: страница плеера, `bnsi`, отчёты, WebSocket     |
+
+Ktor:
+
+| Клиент                          | Где                          | Таймауты (connect / request)                       | Назначение                                                           |
+|---------------------------------|------------------------------|----------------------------------------------------|----------------------------------------------------------------------|
+| Yani (`YaniHttpClientProvider`) | `buildYaniHttpClient`        | `Yani` 10 с / 20 с (+ socket 15 с), ретрай GET     | API yani: заголовки сессии, `YaniApiJson`, `expectSuccess`            |
+| `@PlayerResolveClient`          | `NetworkModule`              | `Api` 10 с / 15 с; `KtorPlayerHttpClient`: GET 10 / 15 с (`ResolveGet`), POST 8 / 10 с (`ResolvePost`) | Экстракторы: HTML, m3u8, без JSON и без токена; `ContentEncoding` нагружен (Zedfilm без gzip отвечает 404) |
+| `@UnauthenticatedJsonClient`    | `NetworkModule`              | `Api` 10 с / 15 с                                  | Публичные сторонние API (GitHub, MAL): `ContentNegotiation`, без токена |
+| `@KodikHttpClient`              | `NetworkModule`              | без значений по умолчанию, запросы задают сами     | Превью серий Kodik                                                   |
+| Coil                            | `CoilImageLoaderInstaller`   | без таймаутов и gzip Ktor                          | Картинки, [image-loading-and-memory.md](image-loading-and-memory.md)  |
+
+### Исключения (вне `core/network`)
+
+| Что                                                  | Где                                        | Почему                                                              |
+|------------------------------------------------------|--------------------------------------------|---------------------------------------------------------------------|
+| `@LocalAuthHttpClient` на Ktor CIO, профиль `Lan` 5 с / 10 с | `AccountDataModule` (feature/account) | OkHttp не пускает cleartext на `192.168.x.x`, CIO работает на сырых сокетах |
+| OkHttp для DoH                                       | `TmdbImageDns` (`core/network`)            | иначе рекурсия DNS: резолвер сам не может резолвиться через себя     |
+| `Socket().connect` — TCP-проба                       | `AndroidNetworkConnectivityMonitor` (`core/network`) | проверка доступности без HTTP                                  |
+| WebView (`TrailerWebPlayer`, hCaptcha)               | `core/designsystem`, `feature/account`     | свой сетевой стек браузера, мы его не контролируем                   |
+| AppMetrica, Varioqub                                 | SDK                                        | собственная сеть, не наша                                            |
+
+`URL(...)` в экстракторах и `AllohaMirrorPicker` только разбирают адреса и в сеть не ходят.
+
+**Правило:** новый клиент создаётся только в `core/network` и берётся через DI. `OkHttpClient.Builder()`,
+`HttpClient(...)` (Ktor), `HttpURLConnection`, `DefaultHttpDataSource` вне `core/network` ломают
+`HttpClientGuardTest` (`core/network/src/test/.../guard`). Законное исключение добавляется в `ALLOWED` теста с причиной и
+в таблицу выше.
 
 Нельзя:
 

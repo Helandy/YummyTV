@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.model.mutation.PendingMutationFlusher
+import su.afk.yummy.tv.core.network.NetworkTimeouts
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
@@ -215,8 +216,8 @@ object AccountDataModule {
     @LocalAuthHttpClient
     internal fun provideLocalAuthHttpClient(json: Json): HttpClient = HttpClient(CIO) {
         install(HttpTimeout) {
-            connectTimeoutMillis = LOCAL_AUTH_CONNECT_TIMEOUT_MS
-            requestTimeoutMillis = LOCAL_AUTH_REQUEST_TIMEOUT_MS
+            connectTimeoutMillis = NetworkTimeouts.Lan.connectMs
+            requestTimeoutMillis = NetworkTimeouts.Lan.requestMs
         }
         install(ContentNegotiation) { json(json) }
     }
@@ -234,7 +235,4 @@ object AccountDataModule {
         discovery,
         transferClient,
     )
-
-    private const val LOCAL_AUTH_CONNECT_TIMEOUT_MS = 5_000L
-    private const val LOCAL_AUTH_REQUEST_TIMEOUT_MS = 10_000L
 }

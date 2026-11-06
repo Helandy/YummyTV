@@ -16,8 +16,6 @@ internal interface DownloadPlayerStrategy {
      */
     fun usesRotatingSegmentUrls(streamKind: StreamKind): Boolean
 
-    fun preferOkHttpUpstream(streamKind: StreamKind): Boolean
-
     fun decorateHeaders(headers: Map<String, String>, iframeUrl: String): Map<String, String>
 
     /** Cache resource key to evict on refresh so a fresh manifest is fetched while segments stay cached. */

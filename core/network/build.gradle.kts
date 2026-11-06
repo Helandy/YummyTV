@@ -33,3 +33,14 @@ dependencies {
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test.network)
 }
+
+// HttpClientGuardTest читает исходники всех модулей: без этого Gradle считал бы тест актуальным
+// после правки чужого модуля и не запускал бы сторожа.
+tasks.withType<Test>().configureEach {
+    inputs.files(
+        rootProject.fileTree(rootProject.layout.projectDirectory) {
+            include("**/src/main/**/*.kt", "**/src/main/**/*.java")
+            exclude("**/build/**")
+        },
+    ).withPropertyName("repositorySources").withPathSensitivity(PathSensitivity.RELATIVE)
+}

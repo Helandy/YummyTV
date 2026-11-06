@@ -10,6 +10,8 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.HttpMethod
 import io.ktor.util.toMap
+import su.afk.yummy.tv.core.network.HttpTimeouts
+import su.afk.yummy.tv.core.network.NetworkTimeouts
 import su.afk.yummy.tv.core.network.di.PlayerResolveClient
 import java.nio.charset.Charset
 import javax.inject.Inject
@@ -76,8 +78,7 @@ internal class KtorPlayerHttpClient @Inject constructor(
         method = HttpMethod.Post,
         headers = headers,
         body = body,
-        connectTimeoutMs = POST_CONNECT_TIMEOUT_MS,
-        requestTimeoutMs = POST_REQUEST_TIMEOUT_MS,
+        timeouts = NetworkTimeouts.ResolvePost,
     )
 
     override suspend fun head(
@@ -90,8 +91,7 @@ internal class KtorPlayerHttpClient @Inject constructor(
         method: HttpMethod,
         headers: Map<String, String>,
         body: String? = null,
-        connectTimeoutMs: Long = GET_CONNECT_TIMEOUT_MS,
-        requestTimeoutMs: Long = GET_REQUEST_TIMEOUT_MS,
+        timeouts: HttpTimeouts = NetworkTimeouts.ResolveGet,
     ): PlayerHttpResponse {
         val response: HttpResponse = httpClient.request(url) {
             this.method = method
@@ -99,8 +99,8 @@ internal class KtorPlayerHttpClient @Inject constructor(
             headers.forEach { (key, value) -> header(key, value) }
             if (body != null) setBody(body)
             timeout {
-                connectTimeoutMillis = connectTimeoutMs
-                requestTimeoutMillis = requestTimeoutMs
+                connectTimeoutMillis = timeouts.connectMs
+                requestTimeoutMillis = timeouts.requestMs
             }
         }
 
@@ -111,12 +111,5 @@ internal class KtorPlayerHttpClient @Inject constructor(
             headers = response.headers.toMap(),
             bodyBytes = bytes,
         )
-    }
-
-    private companion object {
-        const val GET_CONNECT_TIMEOUT_MS = 10_000L
-        const val GET_REQUEST_TIMEOUT_MS = 15_000L
-        const val POST_CONNECT_TIMEOUT_MS = 8_000L
-        const val POST_REQUEST_TIMEOUT_MS = 10_000L
     }
 }

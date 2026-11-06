@@ -16,8 +16,6 @@ internal class AllohaDownloadStrategy @Inject constructor() : DownloadPlayerStra
     override fun usesRotatingSegmentUrls(streamKind: StreamKind): Boolean =
         streamKind == StreamKind.Hls
 
-    override fun preferOkHttpUpstream(streamKind: StreamKind): Boolean = streamKind.isAdaptive
-
     override fun decorateHeaders(
         headers: Map<String, String>,
         iframeUrl: String

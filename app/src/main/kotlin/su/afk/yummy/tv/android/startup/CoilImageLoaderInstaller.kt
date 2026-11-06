@@ -13,13 +13,12 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.model.anime.utils.PosterMirrorConfig
+import su.afk.yummy.tv.core.network.okHttpKtorClient
 import su.afk.yummy.tv.core.network.statics.AppVersionHeaderPlugin
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
@@ -60,12 +59,8 @@ class CoilImageLoaderInstaller @Inject constructor(
             if (isLowRamDevice()) LOW_RAM_MEMORY_CACHE_PERCENT else MEMORY_CACHE_PERCENT
 
         SingletonImageLoader.setSafe {
-            // newBuilder(): общий пул соединений и диспетчер с API-клиентом,
-            // но независимая конфигурация — картинки кэширует сам Coil.
-            val imageHttpClient = HttpClient(OkHttp) {
-                engine {
-                    preconfigured = okHttpClient.newBuilder().build()
-                }
+            // Общий пул соединений и DNS с API-клиентом; картинки кэширует сам Coil, поэтому без таймаутов Ktor.
+            val imageHttpClient = okHttpKtorClient(okHttpClient) {
                 install(AppVersionHeaderPlugin) {
                     host = { PosterMirrorConfig.host }
                     version = appVersionName

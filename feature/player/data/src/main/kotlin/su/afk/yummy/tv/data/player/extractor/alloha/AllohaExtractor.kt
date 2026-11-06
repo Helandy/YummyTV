@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.common.player.AllohaEdgeHash
+import su.afk.yummy.tv.core.network.di.AllohaOkHttp
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
@@ -16,7 +17,6 @@ import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,6 +32,7 @@ import javax.inject.Singleton
 @Singleton
 internal class AllohaExtractor @Inject constructor(
     private val analyticsTracker: AnalyticsTracker,
+    @AllohaOkHttp private val httpClient: OkHttpClient,
 ) : PlayerStreamExtractor {
     @Volatile
     private var appContext: Context? = null
@@ -50,18 +51,13 @@ internal class AllohaExtractor @Inject constructor(
         allohaClientProfile(requireNotNull(appContext), sessionUserAgent)
     }
 
-    private val socketClient: OkHttpClient by lazy { OkHttpClient.Builder().build() }
-
     // One playback at a time: opening a session replaces the previous socket.
     private var activeSocket: AllohaPlaybackSocket? = null
     private var activeReporter: AllohaViewReporter? = null
 
     private val opener: AllohaHttpSessionOpener by lazy {
         AllohaHttpSessionOpener(
-            client = OkHttpClient.Builder()
-                .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                .build(),
+            client = httpClient,
             userAgent = sessionUserAgent,
             fingerprint = clientProfile.fingerprint,
             analytics = analyticsTracker,
@@ -117,7 +113,7 @@ internal class AllohaExtractor @Inject constructor(
         val resolution = track.qualities.keys.maxByOrNull { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
             ?.filter(Char::isDigit).orEmpty().ifEmpty { "1080" }
         val socket = AllohaPlaybackSocket(
-            client = socketClient,
+            client = httpClient,
             userAgent = sessionUserAgent,
             origin = opened.headers["origin"] ?: iframeUrl,
             analytics = analyticsTracker,
@@ -127,7 +123,7 @@ internal class AllohaExtractor @Inject constructor(
         opened.viewTicket?.let { view ->
             val origin = opened.headers["origin"] ?: iframeUrl
             activeReporter = AllohaViewReporter(
-                client = socketClient,
+                client = httpClient,
                 ticket = view,
                 stream = AllohaPlayedStream(
                     manifestUrl = track.qualities.entries.maxByOrNull {
@@ -179,8 +175,6 @@ internal class AllohaExtractor @Inject constructor(
 
         // Only when the system WebView's user agent cannot be read.
         const val FALLBACK_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:159.0) Gecko/20100101 Firefox/159.0"
-        const val CONNECT_TIMEOUT_SECONDS = 10L
-        const val READ_TIMEOUT_SECONDS = 15L
         const val MAX_ATTEMPTS = 2
         const val RETRY_DELAY_MS = 500L
     }
