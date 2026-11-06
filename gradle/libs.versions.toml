@@ -2,7 +2,7 @@
 # Android / Build
 android-compileSdk = "37"
 android-minSdk = "24"
-agp = "9.5.0"
+agp = "9.5.1"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin
@@ -21,7 +21,7 @@ jetbrains-navigation3 = "1.2.0"
 
 # Compose
 androidx-composeBom = "2026.09.00"
-material3 = "1.5.0-beta02"
+material3 = "1.5.0-rc01"
 
 # DI / Codegen
 hilt = "2.60.1"
@@ -43,7 +43,7 @@ glance = "1.2.0"
 # Media / Images
 coil = "3.6.3"
 libavif = "1.3.0.841110fd"
-jsoup = "1.23.2"
+jsoup = "1.24.1"
 media3 = "1.11.1"
 play-services-auth-blockstore = "16.4.0"
 play-services-base = "18.11.1"
@@ -69,7 +69,7 @@ androidx-espresso = "3.7.0"
 junit = "4.13.2"
 mockk = "1.14.11"
 org-json = "20260814"
-androidx-uiautomator = "2.4.0"
+androidx-uiautomator = "2.4.1"
 
 [libraries]
 stability-analyzer-gradle-plugin = { module = "com.github.skydoves.compose.stability.analyzer:com.github.skydoves.compose.stability.analyzer.gradle.plugin", version.ref = "stability-analyzer" }
