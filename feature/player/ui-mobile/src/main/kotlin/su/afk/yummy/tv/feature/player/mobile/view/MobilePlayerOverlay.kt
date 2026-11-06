@@ -133,7 +133,7 @@ internal fun MobilePlayerOverlay(
         ) {
             Row(
                 modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.Start),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MobilePlayerActionButton(
@@ -165,7 +165,7 @@ internal fun MobilePlayerOverlay(
             )
             Row(
                 modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (episodesAvailable) {

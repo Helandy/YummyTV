@@ -28,11 +28,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -66,11 +68,12 @@ internal fun MobilePlayerActionButton(
     val borderColor =
         if (primary) Color.Transparent else Color.White.copy(alpha = 0.18f)
     val holdProgress = remember { Animatable(0f) }
+    val buttonSize = actionButtonSize(primary)
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(if (primary) 64.dp else 48.dp)
+            .size(buttonSize)
             .clip(shape)
             .background(background)
             .border(1.dp, borderColor, shape)
@@ -107,6 +110,23 @@ internal fun MobilePlayerActionButton(
         }
     }
 }
+
+/**
+ * Размер кнопки подбирается по ширине экрана: ряд из семи кнопок в портрете на узких телефонах
+ * (360dp) иначе не помещается, а на широких экранах и в ландшафте нет причин мельчить.
+ */
+@Composable
+private fun actionButtonSize(primary: Boolean): Dp {
+    val widthDp = LocalConfiguration.current.screenWidthDp
+    return when {
+        widthDp >= WIDE_SCREEN_DP -> if (primary) 64.dp else 48.dp
+        widthDp >= MEDIUM_SCREEN_DP -> if (primary) 60.dp else 44.dp
+        else -> if (primary) 56.dp else 40.dp
+    }
+}
+
+private const val MEDIUM_SCREEN_DP = 392
+private const val WIDE_SCREEN_DP = 440
 
 /** Общая длительность удержания для подтверждения действия (разблокировка, смена серии). */
 internal const val HOLD_TO_CONFIRM_MS = 600
