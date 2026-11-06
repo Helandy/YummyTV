@@ -2,7 +2,7 @@
 
 Балансер dreamerscast.com (студия озвучки Dream Cast). Модули `source/dreamerscast/{domain,data}` необязательные, подключаются
 только вместе с `source/availability` (см. `settings.gradle.kts`, в `app/build.gradle.kts` нужны `:source:availability:data` и
-`:source:dreamerscast:data`). Серверная часть и расписание обхода: `YummyTV_API/docs/dreamerscast.md`.
+`:source:dreamerscast:data`).
 
 ## Как работает
 

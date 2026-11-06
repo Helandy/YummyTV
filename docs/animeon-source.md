@@ -5,7 +5,7 @@
 `source/animeon/{domain,data}` необязательные, подключаются только вместе с `source/availability`
 (см.
 `settings.gradle.kts`, в `app/build.gradle.kts` нужны `:source:availability:data` и
-`:source:animeon:data`). Серверная часть и расписание обхода: `YummyTV_API/docs/animeon.md`.
+`:source:animeon:data`).
 
 ## Как работает
 

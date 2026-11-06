@@ -4,8 +4,7 @@
 модули `source/anidub/{domain,data}`
 необязательные, подключаются только вместе с `source/availability` (см. `settings.gradle.kts`, в
 `app/build.gradle.kts` нужны
-`:source:availability:data` и `:source:anidub:data`). Серверная часть и расписание обхода:
-`YummyTV_API/docs/anidub.md`.
+`:source:availability:data` и `:source:anidub:data`).
 
 ## Как работает
 

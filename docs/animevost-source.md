@@ -2,7 +2,7 @@
 
 Балансер animevost.org (озвучка студии AnimeVost). Модули `source/animevost/{domain,data}` необязательные, подключаются только
 вместе с `source/availability` (см. `settings.gradle.kts`, в `app/build.gradle.kts` нужны `:source:availability:data` и
-`:source:animevost:data`). Серверная часть и расписание обхода: `YummyTV_API/docs/animevost.md`.
+`:source:animevost:data`).
 
 ## Как работает
 

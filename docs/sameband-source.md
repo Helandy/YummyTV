@@ -3,7 +3,7 @@
 Балансер sameband.studio (DLE-сайт, дубляж аниме, прямой HLS 480/720/1080 без авторизации). Устроен как
 [AniDub](anidub-source.md): модули `source/sameband/{domain,data}` необязательные, подключаются только вместе с
 `source/availability` (см. `settings.gradle.kts`; в `app/build.gradle.kts` нужны `:source:availability:data` и
-`:source:sameband:data`). Серверная часть (индекс наличия, `sourceId = "sameband"`): `YummyTV_API/docs/sameband.md`.
+`:source:sameband:data`).
 
 ## Как работает
 

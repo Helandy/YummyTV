@@ -2,7 +2,7 @@
 
 Балансер anime1.best (движок DLE). Модули `source/animebesst/{domain,data}` необязательные, подключаются только вместе с
 `source/availability` (см. `settings.gradle.kts`, в `app/build.gradle.kts` нужны `:source:availability:data` и
-`:source:animebesst:data`). Серверная часть и расписание обхода: `YummyTV_API/docs/animebesst.md`.
+`:source:animebesst:data`).
 
 ## Как работает
 

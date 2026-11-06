@@ -5,7 +5,7 @@
 `source/availability`, `source/ashdi` и `source/fenix` (см. `settings.gradle.kts`, в
 `app/build.gradle.kts` нужны
 `:source:availability:data`, `:source:ashdi:data`, `:source:fenix:data` и `:source:mikai:data`).
-Серверная часть и расписание обхода: `YummyTV_API/docs/mikai.md`. Собственного domain-модуля у Mikai
+Собственного domain-модуля у Mikai
 нет: поток разбирают общие `source/ashdi` и `source/fenix` (их же
 использует [AnimeON](animeon-source.md)).
 

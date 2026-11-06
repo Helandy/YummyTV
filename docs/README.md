@@ -27,6 +27,8 @@
   расписание.
 - [network-and-auth.md](network-and-auth.md) — HTTP-клиенты, токен и режимы хранения, ошибки,
   `network_security_config`.
+- [own-backend.md](own-backend.md) — свой сервер вместо моего: API не прокси; контракт ручек TMDB (серии),
+  `availability` (озвучки) и static (постеры), настройка в `local.properties`.
 - [storage-and-cache.md](storage-and-cache.md) — Room, DataStore, offline-first и TTL, очистка,
   очередь мутаций.
 - [watch-progress.md](watch-progress.md) — путь прогресса просмотра: локальная запись, отправка на
