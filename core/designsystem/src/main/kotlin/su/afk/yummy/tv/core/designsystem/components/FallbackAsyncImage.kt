@@ -14,6 +14,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.HttpException
 import coil3.request.ImageRequest
 import su.afk.yummy.tv.core.model.anime.utils.isPosterMirrorUrl
+import java.io.IOException
 
 /**
  * Картинка с цепочкой запасных моделей: если текущая не загрузилась (битая версия на сервере,
@@ -58,11 +59,13 @@ fun FallbackAsyncImage(
 }
 
 /**
- * К копии постера на нашем хосте переходим только когда yani ответил 404 или 5xx: сбой сети или таймаут
- * не повод слать лишние запросы на свой узел. К остальным запасным моделям (Kodik-превью и т.п.) идём при любой ошибке.
+ * К копии постера на нашем хосте переходим, когда yani ответил 404 или 5xx, а также при сетевом сбое (DNS, соединение,
+ * таймаут): картинки не будет ни с какой другой стороны, а копия лежит на своём узле. Ошибки не про сеть (например,
+ * не декодируется картинка) не повод слать лишние запросы на свой узел. К остальным запасным моделям (Kodik-превью и т.п.)
+ * идём при любой ошибке.
  */
 private fun shouldFallback(next: Any, error: Throwable): Boolean {
     if (next !is String || !isPosterMirrorUrl(next)) return true
-    val code = (error as? HttpException)?.response?.code ?: return false
-    return code == 404 || code in 500..599
+    if (error is HttpException) return error.response.code.let { it == 404 || it in 500..599 }
+    return error is IOException
 }
