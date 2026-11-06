@@ -57,6 +57,6 @@ class BlockedHostDns(
 
     private companion object {
         const val CACHE_TTL_MS = 5 * 60 * 1000L
-        const val FAILURE_TTL_MS = 30 * 1000L
+        const val FAILURE_TTL_MS = 60 * 1000L
     }
 }

@@ -78,7 +78,7 @@ class BlockedHostDnsTest {
         repeat(3) { assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) } }
         assertEquals(1, calls)
 
-        now += 31_000L
+        now += 61_000L
         assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) }
         assertEquals(2, calls)
     }
@@ -89,7 +89,7 @@ class BlockedHostDnsTest {
         val dns = dns(system = { loopback }, fallback = { if (down) throw UnknownHostException("doh down") else real })
 
         assertThrows(UnknownHostException::class.java) { dns.lookup(HOST) }
-        now += 31_000L
+        now += 61_000L
         down = false
 
         assertEquals(real, dns.lookup(HOST))
