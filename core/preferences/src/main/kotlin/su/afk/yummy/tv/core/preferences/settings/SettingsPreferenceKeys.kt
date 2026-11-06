@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 
 internal object SettingsPreferenceKeys {
-    val posterQualityKey = stringPreferencesKey("poster_quality")
     val posterCardSizeKey = stringPreferencesKey("poster_card_size")
     val titleCardLayoutKey = stringPreferencesKey("title_card_layout")
     val showCatalogTitleYearKey = booleanPreferencesKey("show_top_title_year")

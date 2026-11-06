@@ -11,7 +11,6 @@ import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
@@ -71,18 +70,6 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(
             EVENT_NAV_TRANSITION_STYLE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to style.name.lowercase()),
-        )
-    }
-
-    /**
-     * Пользователь изменил качество постеров.
-     *
-     * Параметры: value.
-     */
-    fun eventPosterQualitySelected(quality: PosterQuality) {
-        tracker.track(
-            EVENT_POSTER_QUALITY_SELECTED,
-            analyticsParamsOf(PARAM_VALUE to quality.name.lowercase()),
         )
     }
 
@@ -475,7 +462,6 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_library_continue_watching_card_size_selected"
         const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
         const val EVENT_TITLE_CARD_LAYOUT_SELECTED = "settings_title_card_layout_selected"
-        const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
         const val EVENT_PLAYER_BUFFER_PROFILE_SELECTED = "settings_player_buffer_profile_selected"
         const val EVENT_BROWSER_USER_AGENT_SELECTED = "settings_browser_user_agent_selected"
         const val EVENT_PREFERRED_VIDEO_QUALITY_SELECTED =

@@ -15,7 +15,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -133,23 +132,6 @@ internal fun SettingsMobileDialogsHost(
             onDismiss = { dialogs.activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.NavTransitionStyleSelected(it))
-                dialogs.activePicker = null
-            },
-        )
-
-        SettingsMobilePicker.POSTER_QUALITY -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_poster_quality_title),
-            selectedValue = state.posterQuality,
-            options = PosterQuality.entries.map {
-                SettingsMobilePickerOption(
-                    it,
-                    it.label(),
-                    it.hint(),
-                )
-            },
-            onDismiss = { dialogs.activePicker = null },
-            onSelected = {
-                onEvent(SettingsState.Event.PosterQualitySelected(it))
                 dialogs.activePicker = null
             },
         )

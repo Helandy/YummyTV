@@ -75,8 +75,6 @@ internal fun SettingsTvAppearanceContent(
         firstChoiceModifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
-    pickerRow(SettingsTvPicker.POSTER_QUALITY, Modifier)
-    SettingsDivider()
     ToggleRow(
         label = stringResource(R.string.settings_show_catalog_title_year),
         hint = if (state.showCatalogTitleYear) {

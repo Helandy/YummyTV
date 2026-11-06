@@ -5,7 +5,6 @@ internal enum class SettingsMobilePicker {
     THEME,
     BACKGROUND,
     NAV_TRANSITION,
-    POSTER_QUALITY,
     NEW_EPISODES_SOURCES,
     PLAYER_ORIENTATION,
     SUBTITLE_COLOR,

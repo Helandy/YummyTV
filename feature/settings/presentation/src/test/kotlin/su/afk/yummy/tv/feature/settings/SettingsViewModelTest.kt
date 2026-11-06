@@ -24,7 +24,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
@@ -134,7 +133,6 @@ class SettingsViewModelTest : BaseUnitTest() {
     ) = SettingsSnapshot(
         appTheme = AppTheme.entries.first(),
         backgroundStyle = BackgroundStyle.entries.first(),
-        posterQuality = PosterQuality.entries.first(),
         posterCardSize = PosterCardSize.entries.first(),
         showCatalogTitleYear = false,
         newEpisodesSectionEnabled = true,

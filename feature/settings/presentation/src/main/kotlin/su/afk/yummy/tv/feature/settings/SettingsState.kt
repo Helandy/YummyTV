@@ -16,7 +16,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
@@ -40,7 +39,6 @@ class SettingsState {
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
         val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
-        val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
         val showCatalogTitleYear: Boolean = false,
@@ -128,7 +126,6 @@ class SettingsState {
         data class InterfaceModeSelected(val mode: AppInterfaceMode) : Event
 
         /** Пользователь выбрал качество постеров. */
-        data class PosterQualitySelected(val quality: PosterQuality) : Event
 
         /** Пользователь выбрал размер карточек постеров. */
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event

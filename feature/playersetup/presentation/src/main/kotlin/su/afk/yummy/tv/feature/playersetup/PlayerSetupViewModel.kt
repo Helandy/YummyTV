@@ -27,7 +27,6 @@ class PlayerSetupViewModel @Inject internal constructor(
         settingsHandler.observe()
             .onEach { settings -> setState { settings } }
             .launchIn(viewModelScope)
-        launchWrite { settingsHandler.detectPosterQualityIfNeeded() }
     }
 
     override fun onEvent(event: PlayerSetupState.Event) {

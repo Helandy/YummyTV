@@ -67,7 +67,6 @@
     <string name="settings_interface_confirm">Switch</string>
     <string name="settings_interface_restart_failed">The interface will change the next time you open the app</string>
     <string name="settings_mobile_poster_size">Poster size</string>
-    <string name="settings_poster_quality_title">Poster quality</string>
     <string name="settings_show_catalog_title_year">Show title year in Catalog</string>
     <string name="settings_show_episode_flags">Show filler and recap marks on episodes</string>
     <string name="settings_show_episode_flags_enabled">Episodes are marked as filler or recap</string>
@@ -144,14 +143,6 @@
     <string name="settings_library_continue_watching_card_size_standard_hint">Balanced width for the library</string>
     <string name="settings_library_continue_watching_card_size_large">Large</string>
     <string name="settings_library_continue_watching_card_size_large_hint">Large full-width library cards</string>
-    <string name="settings_poster_quality_low">Low</string>
-    <string name="settings_poster_quality_low_hint">~15 KB · WebP</string>
-    <string name="settings_poster_quality_standard">Standard</string>
-    <string name="settings_poster_quality_standard_hint">~30 KB · WebP</string>
-    <string name="settings_poster_quality_mega">Mega</string>
-    <string name="settings_poster_quality_mega_hint">~50 KB · AVIF</string>
-    <string name="settings_poster_quality_high">High</string>
-    <string name="settings_poster_quality_high_hint">~250 KB · JPEG</string>
         <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
     <string name="settings_auto_skip_delay_label">Auto-skip delay</string>

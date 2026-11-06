@@ -45,11 +45,13 @@
 
 `PosterQuality`: `LOW`, `STANDARD`, `MEGA`, `HIGH`.
 
-- Значение по умолчанию (`DataStoreAppearanceSettingsStore.defaultPosterQuality`): на Android 12+
-  (`Build.VERSION_CODES.S`) `MEGA`, ниже `STANDARD`; в KDoc: на более старых устройствах стандартное,
-  «чтобы не упираться в лимит bitmap-кэша».
+- Настройки нет: качество определяется только устройством (`choosePosterQuality`): декодируется AVIF, то
+  `MEGA`; иначе WebP, то `STANDARD`; иначе `HIGH`. Проба форматов (`ImageFormatProbe`) выполняется один раз
+  за процесс. Тот же результат попадает в `Accept` запросов к API yani (`image/avif,image/webp`): без этих
+  форматов в `Accept` yani подменяет все размеры постера одним JPEG `posters/full`, и выбор размера теряет смысл.
+- Зеркало `static.afk.su` есть только у AVIF-версии `mega`, поэтому работает при `MEGA`.
 - В UI значение приходит через `LocalPosterQuality` (его задают `MobileMainGraph` / `TvMainGraph` из
-  состояния).
+  состояния `MainState`, куда `MainViewModel` кладёт вычисленное качество).
 - URL постера выбирается функциями вида `posterUrl(quality)` с цепочкой запасных размеров
   (`LibraryTvMappers.kt`): для `LOW` порядок `medium → big → fullsize → small`, для `STANDARD`
   `big → medium → fullsize → small`, для `MEGA` `mega → big → medium → fullsize → small`, для `HIGH`

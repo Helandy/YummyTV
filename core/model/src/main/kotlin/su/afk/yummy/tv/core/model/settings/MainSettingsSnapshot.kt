@@ -4,7 +4,6 @@ data class MainSettingsSnapshot(
     val appTheme: AppTheme,
     val backgroundStyle: BackgroundStyle,
     val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
-    val posterQuality: PosterQuality,
     val posterCardSize: PosterCardSize,
     val yaniNickname: String,
     val yaniAvatarUrl: String,

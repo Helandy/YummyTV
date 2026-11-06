@@ -17,7 +17,6 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
@@ -167,26 +166,6 @@ fun LibraryContinueWatchingCardSize.label(): String = stringResource(
 
         LibraryContinueWatchingCardSize.LARGE ->
             R.string.settings_library_continue_watching_card_size_large
-    },
-)
-
-@Composable
-fun PosterQuality.label(): String = stringResource(
-    when (this) {
-        PosterQuality.LOW -> R.string.settings_poster_quality_low
-        PosterQuality.STANDARD -> R.string.settings_poster_quality_standard
-        PosterQuality.MEGA -> R.string.settings_poster_quality_mega
-        PosterQuality.HIGH -> R.string.settings_poster_quality_high
-    },
-)
-
-@Composable
-fun PosterQuality.hint(): String = stringResource(
-    when (this) {
-        PosterQuality.LOW -> R.string.settings_poster_quality_low_hint
-        PosterQuality.STANDARD -> R.string.settings_poster_quality_standard_hint
-        PosterQuality.MEGA -> R.string.settings_poster_quality_mega_hint
-        PosterQuality.HIGH -> R.string.settings_poster_quality_high_hint
     },
 )
 

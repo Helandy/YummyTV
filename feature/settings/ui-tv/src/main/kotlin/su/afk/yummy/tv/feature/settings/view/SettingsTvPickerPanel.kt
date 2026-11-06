@@ -25,7 +25,6 @@ import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -48,7 +47,6 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.THEME -> state.appTheme.label()
     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
     SettingsTvPicker.NAV_TRANSITION -> state.navTransitionStyle.label()
-    SettingsTvPicker.POSTER_QUALITY -> state.posterQuality.label()
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
@@ -145,15 +143,6 @@ internal fun SettingsTvPickerPanel(
                 hintOf = { it.hint() },
                 focusRequester = entryFocusRequester,
                 onSelected = { select(SettingsState.Event.NavTransitionStyleSelected(it)) },
-            )
-
-            SettingsTvPicker.POSTER_QUALITY -> PickerOptions(
-                values = PosterQuality.entries,
-                selected = state.posterQuality,
-                labelOf = { it.label() },
-                hintOf = { it.hint() },
-                focusRequester = entryFocusRequester,
-                onSelected = { select(SettingsState.Event.PosterQualitySelected(it)) },
             )
 
             // Порядок кнопок правится по шагам, поэтому колонка остаётся открытой.

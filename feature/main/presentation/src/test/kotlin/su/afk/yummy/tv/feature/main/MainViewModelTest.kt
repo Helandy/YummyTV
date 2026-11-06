@@ -24,7 +24,6 @@ import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.YaniApplicationTokenState
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
@@ -106,12 +105,15 @@ class MainViewModelTest : BaseUnitTest() {
             // Середина июня 2025: вне праздничных периодов.
             override fun nowMillis() = 1_750_000_000_000L
         },
+        imageFormatSupport = mockk {
+            coEvery { isAvifSupported() } returns true
+            coEvery { isWebpSupported() } returns true
+        },
     )
 
     private fun snapshot(nickname: String, unread: Int) = MainSettingsSnapshot(
         appTheme = AppTheme.entries.first(),
         backgroundStyle = BackgroundStyle.entries.first(),
-        posterQuality = PosterQuality.entries.first(),
         posterCardSize = PosterCardSize.entries.first(),
         yaniNickname = nickname,
         yaniAvatarUrl = "avatar",

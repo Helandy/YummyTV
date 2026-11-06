@@ -83,12 +83,6 @@ internal fun SettingsMobileAppearanceContent(
                 selected = state.titleCardLayout,
                 onSelected = { onEvent(SettingsState.Event.TitleCardLayoutSelected(it)) },
             )
-            SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_poster_quality_title),
-                value = state.posterQuality.label(),
-                hint = state.posterQuality.hint(),
-                onClick = { onPickerRequested(SettingsMobilePicker.POSTER_QUALITY) },
-            )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_catalog_title_year),
                 hint = if (state.showCatalogTitleYear) {

@@ -11,12 +11,10 @@ import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 
 /** Оформление интерфейса: тема, постеры, порядок и размеры карточек. */
 interface AppearanceSettingsStore {
 
-    val posterQuality: Flow<PosterQuality>
     val posterCardSize: Flow<PosterCardSize>
     val titleCardLayout: Flow<TitleCardLayout>
     val showCatalogTitleYear: Flow<Boolean>
@@ -46,24 +44,6 @@ interface AppearanceSettingsStore {
     /** Списки, по которым блок новых серий отбирает тайтлы. */
     val newEpisodesSources: Flow<Set<NewEpisodesSource>>
 
-    suspend fun setPosterQuality(quality: PosterQuality)
-
-    /** Сохранено ли качество постеров явно (выбором пользователя или результатом пробы форматов). */
-    suspend fun isPosterQualityStored(): Boolean
-
-    /**
-     * Записывает [quality] как качество постеров, только если пользователь его ещё не выбирал и
-     * проба форматов не сохраняла результат. Выбор пользователя никогда не перезаписывается.
-     *
-     * @return `true`, если значение записано; `false`, если ключ уже был.
-     */
-    suspend fun initPosterQualityIfAbsent(quality: PosterQuality): Boolean
-
-    /**
-     * Для обновляющихся пользователей: если качество не сохранено, закрепляет то, что они фактически
-     * имели до появления пробы форматов (Android 12+ — Mega, иначе Standard).
-     */
-    suspend fun pinLegacyPosterQualityIfAbsent(): Boolean
     suspend fun setPosterCardSize(size: PosterCardSize)
     suspend fun setTitleCardLayout(layout: TitleCardLayout)
     suspend fun setShowCatalogTitleYear(enabled: Boolean)
