@@ -1,14 +1,13 @@
 package su.afk.yummy.tv.feature.player.view.player
 
-import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -53,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
+import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
 import su.afk.yummy.tv.core.designsystem.components.TvSourceStarButton
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 
@@ -100,7 +100,8 @@ internal fun TvPlayerSelectionPanel(
     ) {
         val maxPanelHeight = (LocalConfiguration.current.screenHeightDp * 0.7f).dp
         val listState = rememberLazyListState()
-        val scrollIndex = selectedIndex.coerceIn(0, items.lastIndex)
+        // Во время fadeOut контент ещё в композиции, а items уже может быть пустым.
+        val scrollIndex = selectedIndex.coerceIn(0, items.lastIndex.coerceAtLeast(0))
         ScrollToTopOnChange(order = items.toList(), state = listState)
 
         LaunchedEffect(visible, items.size, scrollIndex) {
