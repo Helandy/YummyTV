@@ -35,6 +35,10 @@ internal class GitHubUpdateRepository @Inject constructor(
 ) : UpdateRepository {
 
     override suspend fun latestRelease(currentVersion: String, includePrerelease: Boolean): AppRelease? {
+        // Стабильный канал: один маленький запрос вместо списка из сотни релизов (на слабых приставках список не успевал).
+        if (!includePrerelease) {
+            latestStableRelease(currentVersion)?.let { return it }
+        }
         // GitHub недоступен (ошибка, таймаут, пустой ответ) — резервный релиз по прямой ссылке из флагов.
         val releases = fetchReleasesOrNull()
             ?.mapNotNull { it.toDomain() }
@@ -45,6 +49,17 @@ internal class GitHubUpdateRepository @Inject constructor(
             ?: return fallbackRelease(currentVersion)
         val updatesCount = releases.count { isVersionNewer(currentVersion, it.version) }
         return latest.copy(updatesCount = updatesCount)
+    }
+
+    private suspend fun latestStableRelease(currentVersion: String): AppRelease? {
+        val release = try {
+            withTimeoutOrNull(GITHUB_TIMEOUT_MS) { fetchLatestRelease() }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }?.toDomain()?.takeUnless { it.isPrerelease } ?: return null
+        return release.copy(updatesCount = if (isVersionNewer(currentVersion, release.version)) 1 else 0)
     }
 
     override suspend fun releaseHistory(currentVersion: String, includePrerelease: Boolean): List<AppReleaseNotes> =
@@ -86,8 +101,16 @@ internal class GitHubUpdateRepository @Inject constructor(
         return response.body<List<GitHubReleaseDto>>()
     }
 
+    /** `/releases/latest` — последний опубликованный не-prerelease и не-draft релиз. */
+    private suspend fun fetchLatestRelease(): GitHubReleaseDto? {
+        val url = RELEASES_URL?.plus("/latest") ?: return null
+        val response: HttpResponse = httpClient.get(url) { header("Accept", GITHUB_ACCEPT) }
+        if (!response.status.isSuccess()) return null
+        return response.body<GitHubReleaseDto>()
+    }
+
     private companion object {
-        const val GITHUB_TIMEOUT_MS = 3_500L
+        const val GITHUB_TIMEOUT_MS = 10_000L
         const val GITHUB_ACCEPT = "application/vnd.github+json"
 
         /** Максимум GitHub на страницу: беты идут часто и не должны вытеснять последний стабильный релиз. */

@@ -83,7 +83,7 @@ internal class MainSideEffectsHandler @Inject constructor(
     }
 
     private companion object {
-        val GITHUB_UPDATE_TIMEOUT = 5.seconds
+        val GITHUB_UPDATE_TIMEOUT = 12.seconds
         val FORTY_EIGHT_HOURS = 48.hours
     }
 }
