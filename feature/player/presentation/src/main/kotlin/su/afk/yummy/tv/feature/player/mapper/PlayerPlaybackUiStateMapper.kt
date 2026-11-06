@@ -148,6 +148,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
             .takeIf { it.isNotBlank() && !isOfflinePlayback && !isConnectionError },
         canChangePlayer = canChangePlayer && !isConnectionError,
         canChangeDubbing = canChangeDubbing && !isConnectionError,
+        canChangeQuality = playerError != null && playerError == decoderErrorMessage && qualities.size > 1,
         showRecoveryHint = isPlaybackRecovering && showChangePlayerHint &&
             (canChangePlayer || canChangeDubbing),
         errorResumePositionMs = playbackPositionMs.takeIf { it > 0L }

@@ -60,6 +60,11 @@ class PlayerState {
         val zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val playerError: String? = null,
+        /**
+         * Текст [playerError], если он вызван ошибкой декодера устройства (подсказываем сменить качество).
+         * Сравнивается со [playerError], поэтому сам сбрасывать не нужно: другая ошибка — другой текст.
+         */
+        val decoderErrorMessage: String? = null,
         /** Текущий шаг получения потока; null, пока резолв не идёт. */
         val resolveStatus: PlayerStreamResolveStatus? = null,
         /** Журнал шагов и сетевых запросов текущего резолва. */
@@ -171,6 +176,12 @@ class PlayerState {
             val currentPosMs: Long,
             val auto: Boolean = false,
         ) : Event
+
+        /**
+         * Пользователь выбрал качество на экране ошибки декодера: поток перезапрашивается в этом
+         * качестве с позиции [currentPosMs].
+         */
+        data class ChangeQualityAfterError(val quality: String, val currentPosMs: Long) : Event
 
         /**
          * Пользователь выбрал озвучку из собственного списка Alloha (шестерёнка её плеера) —

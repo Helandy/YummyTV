@@ -31,10 +31,15 @@ internal fun TvStreamErrorOverlay(
     onRetry: (() -> Unit)?,
     onChangePlayer: (() -> Unit)? = null,
     onChangeDubbing: (() -> Unit)? = null,
+    onChangeQuality: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val retryFocusRequester = remember { FocusRequester() }
-    if (onRetry != null) {
+    // Ошибка декодера: «Сменить качество» — главное лекарство, фокус на нём.
+    val qualityFocusRequester = remember { FocusRequester() }
+    if (onChangeQuality != null) {
+        LaunchedEffect(Unit) { requestFocusUntilTimeout(qualityFocusRequester) }
+    } else if (onRetry != null) {
         LaunchedEffect(Unit) { requestFocusUntilTimeout(retryFocusRequester) }
     }
 
@@ -61,13 +66,21 @@ internal fun TvStreamErrorOverlay(
             color = Color.White,
             textAlign = TextAlign.Center,
         )
-        if (onRetry != null || onChangePlayer != null || onChangeDubbing != null) {
+        if (onRetry != null || onChangePlayer != null || onChangeDubbing != null || onChangeQuality != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (onChangeQuality != null) {
+                    TvOverlayButton(
+                        text = stringResource(R.string.player_change_quality),
+                        onClick = onChangeQuality,
+                        modifier = Modifier.focusRequester(qualityFocusRequester),
+                    )
+                }
                 if (onRetry != null) {
                     TvOverlayButton(
                         text = stringResource(CoreR.string.common_retry),
                         onClick = onRetry,
                         modifier = Modifier.focusRequester(retryFocusRequester),
+                        primary = onChangeQuality == null,
                     )
                 }
                 if (onChangePlayer != null) {

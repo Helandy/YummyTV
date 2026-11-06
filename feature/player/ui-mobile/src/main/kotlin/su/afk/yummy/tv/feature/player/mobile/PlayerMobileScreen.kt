@@ -59,6 +59,7 @@ import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.mobile.view.MobileNativePlayer
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerBalancerSheet
+import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerQualitySheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerDubbingSheet
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerEpisodesList
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerMessage
@@ -96,6 +97,7 @@ fun PlayerMobileScreen(
 ) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
+    var showErrorQualitySheet by rememberSaveable { mutableStateOf(false) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
     var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
     LaunchedEffect(effect) {
@@ -143,6 +145,8 @@ fun PlayerMobileScreen(
             showErrorBalancerSheet = false
         } else if (showErrorDubbingSheet) {
             showErrorDubbingSheet = false
+        } else if (showErrorQualitySheet) {
+            showErrorQualitySheet = false
         } else if (!MobilePlayerPipController.enterOnBack(context)) {
             onEvent(PlayerState.Event.Back)
         }
@@ -185,8 +189,17 @@ fun PlayerMobileScreen(
             state.playerError != null -> MobilePlayerMessage(
                 heading = uiState.errorBalancerLabel?.let { stringResource(R.string.player_balancer_error_title, it) },
                 title = state.playerError,
-                actionLabel = stringResource(CoreR.string.common_retry),
-                onAction = { onEvent(PlayerState.Event.RetryStream) },
+                // Ошибка декодера: повтор того же потока бесполезен, лечится другим качеством.
+                actionLabel = if (uiState.canChangeQuality) {
+                    stringResource(R.string.player_change_quality)
+                } else {
+                    stringResource(CoreR.string.common_retry)
+                },
+                onAction = if (uiState.canChangeQuality) {
+                    { showErrorQualitySheet = true }
+                } else {
+                    { onEvent(PlayerState.Event.RetryStream) }
+                },
                 secondaryActionLabel = if (uiState.canChangePlayer) {
                     stringResource(R.string.player_change_player)
                 } else {
@@ -316,6 +329,17 @@ fun PlayerMobileScreen(
                     onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))
                 },
                 onDismiss = { showErrorBalancerSheet = false },
+            )
+        }
+        if (showErrorQualitySheet && uiState.canChangeQuality) {
+            MobilePlayerQualitySheet(
+                qualities = uiState.qualityLabels,
+                activeQuality = uiState.activeQuality,
+                onQualitySelected = { quality ->
+                    showErrorQualitySheet = false
+                    onEvent(PlayerState.Event.ChangeQualityAfterError(quality, uiState.errorResumePositionMs))
+                },
+                onDismiss = { showErrorQualitySheet = false },
             )
         }
         if (showErrorDubbingSheet && uiState.canChangeDubbing) {

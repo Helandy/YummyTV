@@ -17,6 +17,7 @@ import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.awaitOnline
+import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
 import su.afk.yummy.tv.feature.player.utils.withAllohaAudio
 import javax.inject.Inject
 
@@ -49,6 +50,7 @@ internal class AllohaSourceBehavior @Inject constructor(
         !state.isOfflinePlayback && state.isAllohaSource()
 
     override fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean {
+        if (event.errorCode.isDecoderErrorCode()) return false
         if (recovery.isRecovering) {
             analytics.debugLog {
                 "Ignoring duplicate Alloha playback error during fresh-session recovery " +

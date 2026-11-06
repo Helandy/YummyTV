@@ -54,6 +54,8 @@ data class PlayerPlaybackUiState(
     val errorBalancerLabel: String?,
     val canChangePlayer: Boolean,
     val canChangeDubbing: Boolean,
+    /** Ошибка декодера и есть из чего выбрать: показать «Сменить качество». */
+    val canChangeQuality: Boolean,
     /** Восстановление затянулось и есть куда переключиться — показать «Сменить плеер/озвучку». */
     val showRecoveryHint: Boolean,
     /** Позиция, с которой продолжить после смены источника с экрана ошибки. */

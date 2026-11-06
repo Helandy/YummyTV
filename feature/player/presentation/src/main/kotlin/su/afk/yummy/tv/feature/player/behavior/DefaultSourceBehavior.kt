@@ -11,6 +11,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackRetryHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
+import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.availableFailoverHost
 import su.afk.yummy.tv.feature.player.utils.awaitOnline
@@ -64,6 +65,8 @@ internal class DefaultSourceBehavior @Inject constructor(
     override fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean {
         // Отголосок упавшего потока, пока резолвится новый: попытка уже потрачена.
         if (recovering) return true
+        // Ретраи и перерезолв декодеру не помогут: сразу показываем экран с выбором качества.
+        if (event.errorCode.isDecoderErrorCode()) return false
         analytics.debugLog {
             "Playback error code=${event.errorCode} http=${event.httpStatusCode} " +
                 "cause=${event.cause} " +

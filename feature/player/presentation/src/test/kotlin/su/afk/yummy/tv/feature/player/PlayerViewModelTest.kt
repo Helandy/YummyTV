@@ -279,6 +279,55 @@ class PlayerViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `decoder playback error marks the error for the quality hint`() {
+        val vm = createViewModel()
+
+        vm.setEvent(
+            PlayerState.Event.PlaybackError(
+                message = "Decoder failed",
+                errorCode = "ERROR_CODE_DECODING_FORMAT_UNSUPPORTED",
+            ),
+        )
+
+        assertEquals(vm.currentState.playerError, vm.currentState.decoderErrorMessage)
+    }
+
+    @Test
+    fun `decoder playback error is tracked as a plain event, not as an error report`() {
+        val vm = createViewModel()
+
+        vm.setEvent(
+            PlayerState.Event.PlaybackError(message = "boom", errorCode = "ERROR_CODE_DECODING_FAILED"),
+        )
+
+        verify(exactly = 1) { analytics.eventDecoderError(any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { analytics.eventPlaybackError(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `non decoder playback error is not marked as decoder error`() {
+        val vm = createViewModel()
+
+        vm.setEvent(PlayerState.Event.PlaybackError(message = "boom", errorCode = "ERROR_CODE_IO_UNSPECIFIED"))
+
+        assertNull(vm.currentState.decoderErrorMessage)
+    }
+
+    @Test
+    fun `change quality after error applies the quality and reloads the stream`() {
+        val vm = createViewModel()
+
+        vm.setEvent(PlayerState.Event.ChangeQualityAfterError("480p", 7_000L))
+
+        assertEquals("480p", vm.currentState.selectedQuality)
+        assertEquals(7_000L, vm.currentState.resumeFromMs)
+        assertEquals(1, vm.currentState.retryKey)
+        coVerify(exactly = 2) {
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
     fun `playback error handled by the source behavior keeps the stream`() {
         every { defaultSource.handles(any()) } returns true
         every { defaultSource.onPlaybackError(any()) } returns true

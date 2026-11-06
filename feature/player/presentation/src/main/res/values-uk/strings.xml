@@ -17,6 +17,8 @@
     <string name="player_change_player">Змінити плеєр</string>
     <string name="player_change_dubbing">Змінити озвучення</string>
     <string name="player_stream_error">Не вдалося отримати потік плеєра, спробуйте змінити плеєр або озвучення</string>
+    <string name="player_decoder_error">Пристрій не зміг декодувати відео, спробуйте нижчу якість</string>
+    <string name="player_change_quality">Змінити якість</string>
     <string name="player_no_connection">Немає підключення до інтернету. Відтворення продовжиться, коли мережа з’явиться</string>
     <string name="player_recovery_hint_title">Не вдається відновити відтворення</string>
     <string name="player_unsupported">Плеєр не підтримується</string>

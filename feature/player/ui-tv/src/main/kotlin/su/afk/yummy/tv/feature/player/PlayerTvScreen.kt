@@ -120,8 +120,10 @@ fun PlayerTvScreen(
     }
     var showErrorBalancerPanel by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingPanel by rememberSaveable { mutableStateOf(false) }
+    var showErrorQualityPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
     val selectedErrorDubbingFocusRequester = remember { FocusRequester() }
+    val selectedErrorQualityFocusRequester = remember { FocusRequester() }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -141,8 +143,16 @@ fun PlayerTvScreen(
         }
     }
 
+    LaunchedEffect(showErrorQualityPanel, uiState.canChangeQuality) {
+        if (showErrorQualityPanel && uiState.canChangeQuality) {
+            requestFocusUntilTimeout(selectedErrorQualityFocusRequester)
+        }
+    }
+
     BackHandler {
-        if (showErrorBalancerPanel) {
+        if (showErrorQualityPanel) {
+            showErrorQualityPanel = false
+        } else if (showErrorBalancerPanel) {
             showErrorBalancerPanel = false
         } else if (showErrorDubbingPanel) {
             showErrorDubbingPanel = false
@@ -212,6 +222,11 @@ fun PlayerTvScreen(
                     } else {
                         null
                     },
+                    onChangeQuality = if (uiState.canChangeQuality) {
+                        { showErrorQualityPanel = true }
+                    } else {
+                        null
+                    },
                 )
             }
 
@@ -277,6 +292,24 @@ fun PlayerTvScreen(
                 onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))
             },
             onExitDown = { showErrorBalancerPanel = false },
+        )
+        TvPlayerSelectionPanel(
+            visible = showErrorQualityPanel && uiState.canChangeQuality,
+            title = stringResource(R.string.player_quality_title),
+            items = uiState.qualityLabels,
+            selectedIndex = uiState.qualityLabels.indexOf(uiState.activeQuality),
+            selectedFocusRequester = selectedErrorQualityFocusRequester,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 48.dp, bottom = 72.dp),
+            itemMeta = { stringResource(R.string.player_quality_meta) },
+            onItemSelected = { index ->
+                showErrorQualityPanel = false
+                uiState.qualityLabels.getOrNull(index)?.let { quality ->
+                    onEvent(PlayerState.Event.ChangeQualityAfterError(quality, uiState.errorResumePositionMs))
+                }
+            },
+            onExitDown = { showErrorQualityPanel = false },
         )
         TvDubbingSelectionPanel(
             visible = showErrorDubbingPanel && uiState.canChangeDubbing,

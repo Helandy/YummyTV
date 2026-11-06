@@ -272,6 +272,53 @@ internal class PlayerAnalytics @Inject constructor(
     }
 
     /**
+     * Декодер устройства не справился с потоком (MediaCodecVideoRenderer и др.). Это свойство
+     * устройства и качества, а не баг приложения: обычное событие, а не non-fatal.
+     *
+     * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing, error_code,
+     * error_type, error_message, error_cause, quality, position, position_ms.
+     */
+    fun eventDecoderError(
+        state: PlayerState.State,
+        message: String,
+        errorCode: String?,
+        errorType: String?,
+        positionMs: Long,
+        errorCause: String? = null,
+    ) {
+        val source = state.analyticsSource()
+        tracker.track(
+            EVENT_DECODER_ERROR,
+            sourceParams(source) +
+                analyticsParamsOf(
+                    PARAM_ANIME_NAME to source.animeName,
+                    PARAM_ERROR_CODE to errorCode,
+                    PARAM_ERROR_TYPE to errorType,
+                    PARAM_ERROR_MESSAGE to message.analyticsMessage(),
+                    PARAM_ERROR_CAUSE to errorCause,
+                    PARAM_QUALITY to state.selectedQuality,
+                    PARAM_POSITION to positionMs.formatPlaybackTimecode(),
+                    PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
+                ),
+        )
+    }
+
+    /**
+     * Пользователь сменил качество с экрана ошибки декодера.
+     *
+     * Параметры: anime_id, quality (выбранное), from_quality.
+     */
+    fun eventDecoderQualityChanged(animeId: Int, fromQuality: String?, quality: String) {
+        tracker.track(
+            EVENT_DECODER_QUALITY_CHANGED,
+            playerParams(animeId) + analyticsParamsOf(
+                PARAM_QUALITY to quality,
+                PARAM_FROM_QUALITY to fromQuality,
+            ),
+        )
+    }
+
+    /**
      * Плееру не удалось получить playable stream URL из выбранного источника.
      *
      * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing, reason,
@@ -454,6 +501,7 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_ERROR_MESSAGE = "error_message"
         private const val PARAM_ERROR_TYPE = "error_type"
         private const val PARAM_FROM_MS = "from_ms"
+        private const val PARAM_FROM_QUALITY = "from_quality"
         private const val PARAM_HAS_NEXT_EPISODE = "has_next_episode"
         private const val PARAM_INDEX = "index"
         private const val PARAM_LEVEL = "level"
@@ -509,6 +557,8 @@ internal class PlayerAnalytics @Inject constructor(
         const val EVENT_EPISODE_COMPLETED = "player_episode_completed"
         const val EVENT_EPISODE_FULLY_COMPLETED = "player_episode_fully_completed"
         const val EVENT_PLAYER_ERROR = "player_error"
+        const val EVENT_DECODER_ERROR = "player_decoder_error"
+        const val EVENT_DECODER_QUALITY_CHANGED = "player_decoder_quality_changed"
         const val EVENT_SKIP_SEGMENT_SELECTED = "player_skip_segment_selected"
         const val EVENT_SPEED_SELECTED = "player_speed_selected"
         const val EVENT_STREAM_STARTED = "player_stream_started"

@@ -54,6 +54,18 @@ class DefaultSourceBehaviorTest : BaseUnitTest() {
     }
 
     @Test
+    fun `decoder error is not retried silently`() = runTest {
+        val (behavior, harness) = createBehavior()
+
+        val handled = behavior.onPlaybackError(
+            playbackError().copy(errorCode = "ERROR_CODE_DECODER_INIT_FAILED"),
+        )
+
+        assertFalse(handled)
+        assertFalse(harness.state.isPlaybackRecovering)
+    }
+
+    @Test
     fun `silent retry waits for the network instead of burning the budget`() = runTest {
         val online = MutableStateFlow(false)
         val (behavior, harness) = createBehavior(online)

@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.core.common.player.ResolveDetail
+import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
 import su.afk.yummy.tv.feature.player.utils.toText
 import su.afk.yummy.tv.feature.player.mapper.failedStepTextRes
 import su.afk.yummy.tv.feature.player.mapper.resolveProblemText
@@ -170,7 +171,11 @@ internal class PlayerStreamHandler @Inject constructor(
         val detail = message.trim().takeIf { it.isNotBlank() }
         val code = errorCode?.trim()?.takeIf { it.isNotBlank() && it != detail }
         return buildString {
-            append(strings.get(R.string.player_stream_error))
+            append(
+                strings.get(
+                    if (errorCode.isDecoderErrorCode()) R.string.player_decoder_error else R.string.player_stream_error,
+                ),
+            )
             if (detail != null) {
                 append("\n")
                 append(detail)

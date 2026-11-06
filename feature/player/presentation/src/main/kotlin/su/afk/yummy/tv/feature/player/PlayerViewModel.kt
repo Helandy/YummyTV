@@ -68,6 +68,7 @@ import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.artworkSource
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
+import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
 import su.afk.yummy.tv.feature.player.utils.preferredQualityForLabel
 import su.afk.yummy.tv.feature.player.utils.qualityHeight
 import su.afk.yummy.tv.feature.player.utils.streamQualities
@@ -315,37 +316,54 @@ class PlayerViewModel @AssistedInject internal constructor(
                 // Тихие ретраи исчерпаны (или offline) — сейчас юзеру показывается окно
                 // «повторить/сменить». Логируем именно здесь, а не на каждую ошибку плеера,
                 // чтобы не репортить транзиентные сбои, которые сами починились ретраем.
-                analytics.eventPlaybackError(
-                    state = currentState,
-                    message = event.message,
-                    errorCode = event.errorCode,
-                    errorType = event.errorType,
-                    // После перезагрузки источника ошибка может прилететь до seek'а на позицию
-                    // (currentPosition = 0) — тогда берём последнюю известную позицию.
-                    positionMs = event.positionMs.takeIf { it > 0L }
-                        ?: currentState.playbackPositionMs,
-                    retryAttempts = defaultSource.retryAttempts,
-                    errorCause = event.cause,
-                    sourceRefreshes = defaultSource.sourceRefreshes,
-                    iframeChanged = defaultSource.iframeChanged,
-                    hostFailovers = defaultSource.hostFailovers,
-                )
+                // После перезагрузки источника ошибка может прилететь до seek'а на позицию
+                // (currentPosition = 0) — тогда берём последнюю известную позицию.
+                val errorPositionMs = event.positionMs.takeIf { it > 0L }
+                    ?: currentState.playbackPositionMs
+                if (event.errorCode.isDecoderErrorCode()) {
+                    // Декодер устройства — не баг приложения: обычное событие, не non-fatal.
+                    analytics.eventDecoderError(
+                        state = currentState,
+                        message = event.message,
+                        errorCode = event.errorCode,
+                        errorType = event.errorType,
+                        positionMs = errorPositionMs,
+                        errorCause = event.cause,
+                    )
+                } else {
+                    analytics.eventPlaybackError(
+                        state = currentState,
+                        message = event.message,
+                        errorCode = event.errorCode,
+                        errorType = event.errorType,
+                        positionMs = errorPositionMs,
+                        retryAttempts = defaultSource.retryAttempts,
+                        errorCause = event.cause,
+                        sourceRefreshes = defaultSource.sourceRefreshes,
+                        iframeChanged = defaultSource.iframeChanged,
+                        hostFailovers = defaultSource.hostFailovers,
+                    )
+                }
                 defaultSource.reset()
                 changePlayerHint.cancel()
+                // Скачанная серия читается без сети: ошибка тут — битый или неполный кэш, а не плеер.
+                val errorMessage = if (currentState.isOfflinePlayback && !currentState.isLocalFile) {
+                    strings.get(R.string.player_download_corrupted)
+                } else {
+                    sourceStreamHandler.playbackErrorMessage(
+                        message = event.message,
+                        errorCode = event.errorCode,
+                    )
+                }
                 setState {
                     copy(
                         streamUrl = null,
                         streamFailoverHost = null,
                         isPlaybackRecovering = false,
-                        playerError = if (isOfflinePlayback && !isLocalFile) {
-                            // Скачанная серия читается без сети: ошибка тут — битый или неполный кэш, а не плеер.
-                            strings.get(R.string.player_download_corrupted)
-                        } else {
-                            sourceStreamHandler.playbackErrorMessage(
-                                message = event.message,
-                                errorCode = event.errorCode,
-                            )
+                        decoderErrorMessage = errorMessage.takeIf {
+                            event.errorCode.isDecoderErrorCode() && !isOfflinePlayback
                         },
+                        playerError = errorMessage,
                         showChangePlayerHint = false,
                     )
                 }
@@ -495,6 +513,27 @@ class PlayerViewModel @AssistedInject internal constructor(
                         },
                     )
                 }
+            }
+
+            is PlayerState.Event.ChangeQualityAfterError -> {
+                analytics.eventDecoderQualityChanged(
+                    animeId = currentState.animeId,
+                    fromQuality = activeQuality(currentState),
+                    quality = event.quality,
+                )
+                val position = event.currentPosMs.coerceAtLeast(0L)
+                allohaSource.onQualitySelected(event.quality)
+                defaultSource.reset()
+                setState {
+                    copy(
+                        selectedQuality = event.quality,
+                        resumeFromMs = position,
+                        playbackPositionMs = position,
+                        manualQualityEpisode = activeEpisode(currentState),
+                        retryKey = retryKey + 1,
+                    )
+                }
+                loadStream(refreshSourcesOnFailure = true, forceRefresh = true)
             }
 
             is PlayerState.Event.AllohaAudioTrackSelected ->
