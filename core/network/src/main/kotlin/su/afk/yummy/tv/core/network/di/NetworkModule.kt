@@ -15,16 +15,16 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
-import su.afk.yummy.tv.core.network.NetworkTimeouts
-import su.afk.yummy.tv.core.network.okHttpKtorClient
-import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
-import su.afk.yummy.tv.core.network.applyTimeouts
 import su.afk.yummy.tv.core.network.BuildConfig
-import su.afk.yummy.tv.core.network.dns.tmdbImageDns
+import su.afk.yummy.tv.core.network.NetworkTimeouts
+import su.afk.yummy.tv.core.network.applyTimeouts
 import su.afk.yummy.tv.core.network.dns.imageHostTimeouts
+import su.afk.yummy.tv.core.network.dns.imageHostsDns
+import su.afk.yummy.tv.core.network.okHttpKtorClient
 import su.afk.yummy.tv.core.network.progress.ResolveProgressPlugin
 import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
+import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Singleton
 
@@ -44,7 +44,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder().dns(tmdbImageDns()).addInterceptor(imageHostTimeouts(BuildConfig.STATIC_HOST)).build()
+        OkHttpClient.Builder().dns(imageHostsDns()).addInterceptor(imageHostTimeouts(BuildConfig.STATIC_HOST)).build()
 
     @Provides
     @Singleton

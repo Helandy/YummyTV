@@ -8,7 +8,7 @@ API — [yani-api.md](yani-api.md). Вход через
 ## Клиенты
 
 Все клиенты создаются в `core/network/` и строятся от одного базового `OkHttpClient` (`NetworkModule.provideOkHttpClient`).
-Он источник пула соединений, диспетчера и DNS (DoH для картинок TMDB при блокировке, короткие таймауты для хостов
+Он источник пула соединений, диспетчера и DNS (DoH для картинок TMDB и yani (`static.yani.tv`) при блокировке или сбое DNS, короткие таймауты для хостов
 картинок). Остальные берут его через `newBuilder()` или `engine { preconfigured = okHttpClient }`. Все таймауты лежат в
 одном объекте `NetworkTimeouts` (`core/network/NetworkTimeouts.kt`), Ktor-клиенты собирает `okHttpKtorClient`
 (`HttpClientFactory.kt`): общий каркас (движок, `HttpTimeout`, `ContentEncoding`), профиль добавляет своё.
@@ -50,7 +50,7 @@ Ktor:
 | Что                                                  | Где                                        | Почему                                                              |
 |------------------------------------------------------|--------------------------------------------|---------------------------------------------------------------------|
 | `@LocalAuthHttpClient` на Ktor CIO, профиль `Lan` 5 с / 10 с | `AccountDataModule` (feature/account) | OkHttp не пускает cleartext на `192.168.x.x`, CIO работает на сырых сокетах |
-| OkHttp для DoH                                       | `TmdbImageDns` (`core/network`)            | иначе рекурсия DNS: резолвер сам не может резолвиться через себя     |
+| OkHttp для DoH                                       | `ImageHostsDns` (`core/network`)          | иначе рекурсия DNS: резолвер сам не может резолвиться через себя     |
 | `Socket().connect` — TCP-проба                       | `AndroidNetworkConnectivityMonitor` (`core/network`) | проверка доступности без HTTP                                  |
 | WebView (`TrailerWebPlayer`, hCaptcha)               | `core/designsystem`, `feature/account`     | свой сетевой стек браузера, мы его не контролируем                   |
 | AppMetrica, Varioqub                                 | SDK                                        | собственная сеть, не наша                                            |

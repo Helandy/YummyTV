@@ -77,14 +77,16 @@ class HostTimeoutInterceptorTest {
 
         assertTrue(shortensTimeouts(interceptor, "https://static.example/img/still/a.avif"))
         assertTrue(shortensTimeouts(interceptor, "https://image.tmdb.org/t/p/w300/a.jpg"))
+        assertTrue(shortensTimeouts(interceptor, "https://static.yani.tv/posters/mega/1.avif"))
         assertFalse(shortensTimeouts(interceptor, "https://kodikplayer.com/season/1"))
     }
 
     @Test
-    fun `blank static host leaves only the tmdb cdn shortened`() {
+    fun `blank static host leaves only foreign image cdns shortened`() {
         val interceptor = imageHostTimeouts(staticHost = "")
 
         assertTrue(shortensTimeouts(interceptor, "https://image.tmdb.org/t/p/w300/a.jpg"))
+        assertTrue(shortensTimeouts(interceptor, "https://static.yani.tv/posters/mega/1.avif"))
         assertFalse(shortensTimeouts(interceptor, "https://static.example/img/still/a.avif"))
     }
 }
