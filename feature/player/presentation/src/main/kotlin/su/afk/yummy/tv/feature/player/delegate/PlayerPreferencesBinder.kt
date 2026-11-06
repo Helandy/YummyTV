@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
@@ -18,10 +19,12 @@ import javax.inject.Inject
 internal class PlayerPreferencesBinder @Inject constructor(
     private val settings: PlayerSettingsHandler,
     private val sourceStars: SourceStarsSettingsStore,
+    private val logRecording: AppLogRecordingSettings,
 ) {
     fun bind(host: PlayerStateHost) {
         host.bind(sourceStars.starredDubbings) { copy(starredDubbings = it) }
         host.bind(sourceStars.starredBalancers) { copy(starredBalancers = it) }
+        host.bind(logRecording.enabled) { copy(showResolveLog = it) }
         with(settings) {
             host.bind(autoSkipOpeningsEndings) { copy(autoSkipOpeningsEndings = it) }
             host.bind(autoSkipDelaySeconds) { copy(autoSkipDelaySeconds = it) }

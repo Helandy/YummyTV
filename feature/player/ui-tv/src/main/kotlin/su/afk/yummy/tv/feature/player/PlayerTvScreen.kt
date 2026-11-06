@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
+import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.feature.player.mapper.loadingTextRes
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
@@ -253,7 +254,7 @@ fun PlayerTvScreen(
 
             else -> TvStreamLoadingView(
                 messageRes = state.resolveStatus.loadingTextRes(),
-                resolveLog = state.resolveLog,
+                resolveLog = if (state.showResolveLog) state.resolveLog else persistentListOf(),
                 onChangePlayer = if (state.showChangePlayerHint && uiState.canChangePlayer) {
                     { showErrorBalancerPanel = true }
                 } else {

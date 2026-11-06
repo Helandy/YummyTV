@@ -294,7 +294,9 @@ fun PlayerMobileScreen(
                         YummyLoadingIndicator(color = Color.White, strokeWidth = 2.dp)
                         Text(stringResource(state.resolveStatus.loadingTextRes()), color = Color.White)
                     }
-                    PlayerResolveLogView(state.resolveLog, modifier = Modifier.padding(horizontal = 24.dp))
+                    if (state.showResolveLog) {
+                        PlayerResolveLogView(state.resolveLog, modifier = Modifier.padding(horizontal = 24.dp))
+                    }
                     if (state.showChangePlayerHint && (uiState.canChangePlayer || uiState.canChangeDubbing)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             if (uiState.canChangePlayer) {
