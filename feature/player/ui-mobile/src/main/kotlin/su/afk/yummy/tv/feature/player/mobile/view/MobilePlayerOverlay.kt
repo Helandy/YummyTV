@@ -2,25 +2,15 @@ package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.background
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -28,11 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,11 +50,12 @@ internal fun MobilePlayerOverlay(
     onNextEpisode: () -> Unit,
     onTrackSettings: () -> Unit,
     onPlayerSettings: () -> Unit,
+    onMoreActions: () -> Unit,
     modifier: Modifier = Modifier,
-    /** Ручка и раскрывающаяся лента серий под кнопками управления (ландшафт). */
+    /** Кнопка серий в ряду управления и раскрывающаяся горизонтальная лента под ним. */
     episodesAvailable: Boolean = false,
     episodesExpanded: Boolean = false,
-    /** Лента серий поверх видео (ландшафт); в портрете раскрытие показывает список под плеером. */
+    /** Горизонтальная лента серий поверх видео (и в портрете, и в ландшафте). */
     episodesStripVisible: Boolean = false,
     onEpisodesExpandedChange: (Boolean) -> Unit = {},
     episodesStrip: @Composable () -> Unit = {},
@@ -99,7 +92,8 @@ internal fun MobilePlayerOverlay(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MobilePlayerActionButton(
@@ -113,8 +107,12 @@ internal fun MobilePlayerOverlay(
                     contentDescription = stringResource(R.string.player_mobile_track_settings_title),
                     onClick = onTrackSettings,
                 )
+                MobilePlayerActionButton(
+                    icon = Icons.Filled.MoreVert,
+                    contentDescription = stringResource(R.string.player_mobile_actions),
+                    onClick = onMoreActions,
+                )
             }
-            Spacer(Modifier.weight(1f))
             MobilePlayerActionButton(
                 icon = if (wantsPlay) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 contentDescription = stringResource(
@@ -123,11 +121,18 @@ internal fun MobilePlayerOverlay(
                 primary = true,
                 onClick = onPlayPause,
             )
-            Spacer(Modifier.weight(1f))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (episodesAvailable) {
+                    MobilePlayerActionButton(
+                        icon = Icons.Filled.VideoLibrary,
+                        contentDescription = stringResource(R.string.player_episodes_list_title),
+                        onClick = { onEpisodesExpandedChange(!episodesExpanded) },
+                    )
+                }
                 MobilePlayerActionButton(
                     icon = Icons.Filled.Tune,
                     contentDescription = stringResource(R.string.player_mobile_playback_settings_title),
@@ -141,64 +146,15 @@ internal fun MobilePlayerOverlay(
             }
         }
         if (episodesAvailable) {
-            EpisodesHandle(
-                expanded = episodesExpanded,
-                onExpandedChange = onEpisodesExpandedChange,
-            )
             AnimatedVisibility(
                 visible = episodesStripVisible,
-                enter = expandVertically(),
-                exit = shrinkVertically(),
+                enter = expandVertically(animationSpec = tween(EPISODES_STRIP_ANIMATION_MS)),
+                exit = shrinkVertically(animationSpec = tween(EPISODES_STRIP_ANIMATION_MS)),
                 modifier = Modifier.pointerInput(Unit) { collapseOnSwipeDown(onEpisodesExpandedChange) },
             ) {
                 episodesStrip()
             }
         }
-    }
-}
-
-/** Ручка под кнопками: тап или свайп вверх раскрывает ленту серий, свайп вниз — сворачивает. */
-@Composable
-private fun EpisodesHandle(
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .pointerInput(expanded) {
-                var total = 0f
-                detectVerticalDragGestures(
-                    onDragStart = { total = 0f },
-                    onVerticalDrag = { change, delta ->
-                        change.consume()
-                        total += delta
-                    },
-                    onDragEnd = {
-                        if (total < -SWIPE_THRESHOLD_PX) onExpandedChange(true)
-                        if (total > SWIPE_THRESHOLD_PX) onExpandedChange(false)
-                    },
-                )
-            }
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-            ) { onExpandedChange(!expanded) },
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = if (expanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(18.dp),
-        )
-        Text(
-            text = stringResource(R.string.player_episodes_list_title),
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-        )
     }
 }
 
@@ -212,3 +168,6 @@ private suspend fun PointerInputScope.collapseOnSwipeDown(onExpandedChange: (Boo
 }
 
 private const val SWIPE_THRESHOLD_PX = 40f
+
+/** Линейная анимация вместо дефолтной пружины: у пружины длинный хвост, и лента «доезжает» с лагом. */
+private const val EPISODES_STRIP_ANIMATION_MS = 220

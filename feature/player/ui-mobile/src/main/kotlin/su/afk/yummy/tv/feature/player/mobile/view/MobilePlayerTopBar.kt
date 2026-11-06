@@ -17,16 +17,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,8 +32,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.overline
 import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
-import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
-import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 
@@ -49,20 +42,10 @@ internal fun MobilePlayerTopBar(
     dubbing: String,
     playerName: String,
     onBack: () -> Unit,
-    onDetails: () -> Unit,
-    onPictureInPicture: () -> Unit,
     onLockClick: () -> Unit,
-    orientationMode: PlayerOrientationMode,
-    onOrientationSelected: (PlayerOrientationMode) -> Unit,
-    showDetails: Boolean,
-    showPictureInPicture: Boolean,
-    showCast: Boolean,
     visible: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    var showActionsSheet by remember { mutableStateOf(false) }
-    var showOrientationSheet by remember { mutableStateOf(false) }
-
     if (visible) {
         Column(
             modifier = modifier
@@ -152,48 +135,9 @@ internal fun MobilePlayerTopBar(
                                 modifier = Modifier.size(24.dp),
                             )
                         }
-                        IconButton(
-                            onClick = { showActionsSheet = true },
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.36f))
-                                .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
-                        ) {
-                            Icon(
-                                Icons.Filled.MoreVert,
-                                contentDescription = stringResource(R.string.player_mobile_actions),
-                                tint = Color.White,
-                                modifier = Modifier.size(26.dp),
-                            )
-                        }
                     }
                 }
             }
         }
-    }
-
-    if (showActionsSheet) {
-        PlayerMobileActionsSheet(
-            showDetails = showDetails,
-            showPictureInPicture = showPictureInPicture,
-            showCast = showCast,
-            orientationLabel = stringResource(orientationMode.labelRes),
-            onDetails = onDetails,
-            onOrientation = { showOrientationSheet = true },
-            onPictureInPicture = onPictureInPicture,
-            onDismiss = { showActionsSheet = false },
-        )
-    }
-
-    if (showOrientationSheet) {
-        MobilePlayerOrientationSheet(
-            selected = orientationMode,
-            onSelected = { mode ->
-                showOrientationSheet = false
-                onOrientationSelected(mode)
-            },
-            onDismiss = { showOrientationSheet = false },
-        )
     }
 }

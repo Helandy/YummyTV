@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
-import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -41,6 +40,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -108,14 +109,9 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
-import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
-/** Высота ленты серий в ландшафте: карточка 16:9 шириной 150dp, подпись и отступ. */
+/** Высота горизонтальной ленты серий: карточка 16:9 шириной 150dp, подпись и отступ. */
 private val EPISODES_STRIP_HEIGHT = 128.dp
-
-/** Высота ручки раскрытия ленты под кнопками управления. */
-private val EPISODES_HANDLE_HEIGHT = 52.dp
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -137,16 +133,10 @@ internal fun MobileNativePlayer(
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
     val tutorialBlocksPlayback = state.mobileTutorialBlocksPlayback
-    // Ручка «Серии» есть в обоих режимах. В ландшафте раскрытие показывает ленту поверх видео,
-    // в портрете — список под плеером (его собирает PlayerMobileScreen по episodesExpanded).
+    // Кнопка «Серии» в ряду управления раскрывает горизонтальную ленту поверх видео в обоих режимах.
     val episodesHandleVisible = ui.episodes.isNotEmpty()
-    val isLandscape = LocalConfiguration.current.orientation != Configuration.ORIENTATION_PORTRAIT
-    val episodesStripVisible = episodesHandleVisible && episodesExpanded && isLandscape
-    val overlayExtraBottom = when {
-        !episodesHandleVisible -> 0.dp
-        episodesStripVisible -> EPISODES_HANDLE_HEIGHT + EPISODES_STRIP_HEIGHT
-        else -> EPISODES_HANDLE_HEIGHT
-    }
+    val episodesStripVisible = episodesHandleVisible && episodesExpanded
+    val overlayExtraBottom = if (episodesStripVisible) EPISODES_STRIP_HEIGHT else 0.dp
     val tutorialVisible =
         state.mobileGestureTutorialReady &&
             state.showMobileGestureTutorial &&
@@ -167,6 +157,7 @@ internal fun MobileNativePlayer(
     // откатит на первый.
     var settingsTrackTab by rememberSaveable { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
     var sidePanelOpen by remember { mutableStateOf(false) }
+    var showActionsSheet by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
     // Замок управления: гасит жесты и панели, чтобы свайп к статус-бару не перематывал видео.
     var locked by rememberSaveable { mutableStateOf(false) }
@@ -220,6 +211,7 @@ internal fun MobileNativePlayer(
             wantsPlay &&
                 !trackSheetOpen &&
                 !sidePanelOpen &&
+                !showActionsSheet &&
                 !episodesExpanded &&
                 !progress.isSeeking &&
                 !recoveryHintVisible &&
@@ -615,22 +607,30 @@ internal fun MobileNativePlayer(
                     onEvent(PlayerState.Event.Back)
                 }
             },
-            onDetails = { onEvent(PlayerState.Event.OpenDetails) },
-            onPictureInPicture = { activity?.let(pipSession::enter) },
             onLockClick = {
                 locked = true
                 overlay.cancelHide()
                 overlay.visible = false
             },
+            visible = overlay.visible && !locked && !isInPictureInPictureMode && !tutorialBlocksPlayback,
+        )
+
+        MobilePlayerActionsSheets(
+            showActions = showActionsSheet,
+            onActionsDismiss = {
+                showActionsSheet = false
+                overlay.show()
+            },
             orientationMode = state.playerOrientationMode,
             onOrientationSelected = { onEvent(PlayerState.Event.OrientationModeSelected(it)) },
+            onDetails = { onEvent(PlayerState.Event.OpenDetails) },
+            onPictureInPicture = { activity?.let(pipSession::enter) },
             showDetails = state.animeId > 0,
             showPictureInPicture = state.pictureInPictureEnabled &&
                 supportsPictureInPicture &&
                 !isInPictureInPictureMode &&
                 !castConnection.isCasting,
             showCast = castSupported && !isInPictureInPictureMode,
-            visible = overlay.visible && !locked && !isInPictureInPictureMode && !tutorialBlocksPlayback,
         )
 
         MobilePlayerOverlay(
@@ -671,6 +671,10 @@ internal fun MobileNativePlayer(
                 overlay.visible = true
                 overlay.cancelHide()
             },
+            onMoreActions = {
+                showActionsSheet = true
+                overlay.cancelHide()
+            },
             onPlayerSettings = {
                 endFlow.hideAll()
                 sidePanelOpen = true
@@ -701,6 +705,7 @@ internal fun MobileNativePlayer(
 
         val skipButtonBottomPadding by animateDpAsState(
             targetValue = if (overlay.visible && !isInPictureInPictureMode) 132.dp + overlayExtraBottom else 36.dp,
+            animationSpec = tween(durationMillis = 220),
             label = "skipButtonBottomPadding",
         )
 
