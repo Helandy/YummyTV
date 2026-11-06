@@ -1,11 +1,11 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -86,7 +86,7 @@ internal fun MobilePlayerUnlockButton(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.55f))
                     .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape)
@@ -124,13 +124,13 @@ internal fun MobilePlayerUnlockButton(
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = Color.Transparent,
                     strokeWidth = 3.dp,
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(72.dp),
                 )
                 Icon(
                     imageVector = Icons.Filled.Lock,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(26.dp),
+                    modifier = Modifier.size(34.dp),
                 )
             }
             AnimatedVisibility(visible = hintVisible, enter = fadeIn(), exit = fadeOut()) {
