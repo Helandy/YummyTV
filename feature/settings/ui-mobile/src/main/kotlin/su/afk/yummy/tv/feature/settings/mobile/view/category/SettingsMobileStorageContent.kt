@@ -50,6 +50,12 @@ internal fun SettingsMobileStorageContent(
                     onCacheStorageRequested()
                 },
             )
+            SettingsMobileOptionRow(
+                label = stringResource(R.string.settings_clear_cache_title),
+                value = "",
+                hint = stringResource(R.string.settings_clear_cache_hint),
+                onClick = { onEvent(SettingsState.Event.ClearCacheRequested) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_section_downloads)) {
             SettingsMobileOptionRow(

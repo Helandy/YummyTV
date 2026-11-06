@@ -57,6 +57,12 @@ internal fun SettingsTvStorageContent(
             showCacheStorageDialog = true
         },
     )
+    SettingsDivider()
+    AboutRow(
+        label = stringResource(R.string.settings_clear_cache_title),
+        hint = stringResource(R.string.settings_clear_cache_hint),
+        onClick = { onEvent(SettingsState.Event.ClearCacheRequested) },
+    )
     if (showCacheStorageDialog) {
         CacheStorageTvDialog(
             entries = state.cacheStorageEntries,

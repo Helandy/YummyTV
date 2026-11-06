@@ -67,6 +67,12 @@ internal fun SettingsMobileEffects(
                 SettingsState.Effect.LogsFailed ->
                     Toast.makeText(context, R.string.settings_logs_failed, Toast.LENGTH_LONG).show()
 
+                SettingsState.Effect.CacheCleared ->
+                    Toast.makeText(context, R.string.settings_clear_cache_done, Toast.LENGTH_SHORT).show()
+
+                SettingsState.Effect.CacheClearFailed ->
+                    Toast.makeText(context, R.string.settings_clear_cache_failed, Toast.LENGTH_LONG).show()
+
                 SettingsState.Effect.VideoExportDirectorySelectionFailed ->
                     Toast.makeText(
                         context,

@@ -41,7 +41,9 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.logging.AppLogExporter
+import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
+import su.afk.yummy.tv.core.utils.system.ImageCacheCleaner
 import su.afk.yummy.tv.core.utils.system.CacheStorageReport
 import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
 import su.afk.yummy.tv.domain.update.repository.UpdateRepository
@@ -75,6 +77,8 @@ class SettingsViewModelTest : BaseUnitTest() {
     private val analytics: SettingsAnalytics = mockk(relaxed = true)
     private val exportRepository: VideoDownloadExportRepository = mockk(relaxed = true)
     private val cacheStorageInspector: CacheStorageInspector = mockk()
+    private val storageCleanup: StorageCleanup = mockk(relaxed = true)
+    private val imageCacheCleaner: ImageCacheCleaner = mockk(relaxed = true)
     private val appLogExporter: AppLogExporter = mockk()
     private val updateRepository: UpdateRepository = mockk()
     private val analyticsDeviceIdProvider: AnalyticsDeviceIdProvider = mockk()
@@ -122,6 +126,8 @@ class SettingsViewModelTest : BaseUnitTest() {
         selectVideoExportDestination = SelectVideoExportDestinationUseCase(exportRepository),
         setVideoDownloadWifiOnly = SetVideoDownloadWifiOnlyUseCase(downloadRepository),
         cacheStorageInspector = cacheStorageInspector,
+        storageCleanup = storageCleanup,
+        imageCacheCleaner = imageCacheCleaner,
         appLogExporter = appLogExporter,
         getAppReleaseHistory = GetAppReleaseHistoryUseCase(updateRepository),
         analyticsDeviceIdProvider = analyticsDeviceIdProvider,
@@ -221,6 +227,28 @@ class SettingsViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.CacheStorageRefreshRequested)
 
         coVerify(exactly = 2) { cacheStorageInspector.inspect() }
+    }
+
+    @Test
+    fun `clear cache purges database and image caches and reports success`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.ClearCacheRequested)
+
+        coVerify(exactly = 1) { storageCleanup.purgeAllCaches() }
+        coVerify(exactly = 1) { imageCacheCleaner.clear() }
+        assertFalse(vm.currentState.isCacheClearing)
+    }
+
+    @Test
+    fun `clear cache still clears images when the database purge fails`() {
+        coEvery { storageCleanup.purgeAllCaches() } throws IllegalStateException("boom")
+        val vm = createViewModel()
+
+        vm.setEvent(Event.ClearCacheRequested)
+
+        coVerify(exactly = 1) { imageCacheCleaner.clear() }
+        assertFalse(vm.currentState.isCacheClearing)
     }
 
     @Test

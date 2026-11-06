@@ -35,6 +35,10 @@
     <string name="settings_cache_storage_refresh">Оновити</string>
     <string name="settings_cache_storage_empty">Кеш порожній</string>
     <string name="settings_cache_storage_loading">Обчислення…</string>
+    <string name="settings_clear_cache_title">Очистити кеш</string>
+    <string name="settings_clear_cache_hint">Видалить зображення та збережені відповіді сервера. Бібліотека, прогрес перегляду й завантаження залишаться</string>
+    <string name="settings_clear_cache_done">Кеш очищено</string>
+    <string name="settings_clear_cache_failed">Не вдалося очистити кеш</string>
     <string name="settings_cache_storage_folder_images">Зображення постерів</string>
     <string name="settings_cache_storage_folder_player">Буфер трансляції</string>
     <string name="settings_cache_storage_folder_downloads">Завантажені серії</string>

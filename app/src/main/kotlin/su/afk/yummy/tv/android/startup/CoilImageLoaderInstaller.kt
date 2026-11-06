@@ -85,6 +85,7 @@ class CoilImageLoaderInstaller @Inject constructor(
                         .build()
                 }
                 .components {
+                    add(YaniStaticHostMapper())
                     add(EpisodeThumbnailKeyer())
                     add(EpisodeThumbnailFetcher.Factory(episodeThumbnailResolver, kodikThumbnailCacheIO))
                     add(

@@ -95,6 +95,7 @@ class SettingsState {
         val cacheStorageEntries: ImmutableList<CacheStorageEntry> = persistentListOf(),
         val cacheStorageTotalBytes: Long = 0L,
         val isCacheStorageLoading: Boolean = false,
+        val isCacheClearing: Boolean = false,
         val saveLastSearchEnabled: Boolean = false,
         val betaUpdatesEnabled: Boolean = false,
         /** Запись логов приложения в файл включена; пока выключена — «Поделиться логами» скрыто. */
@@ -282,6 +283,12 @@ class SettingsState {
         /** Пользователь запросил пересчёт размеров папок кэша. */
         data object CacheStorageRefreshRequested : Event
 
+        /**
+         * Пользователь попросил очистить кэш: картинки и локальные копии ответов сервера. Библиотека, прогресс
+         * просмотра, «продолжить», загрузки и настройки остаются.
+         */
+        data object ClearCacheRequested : Event
+
         /** Пользователь переключил сохранение последнего поиска. */
         data object SaveLastSearchToggled : Event
         data object BetaUpdatesToggled : Event
@@ -311,5 +318,11 @@ class SettingsState {
         /** Дамп логов сохранён в [path] (Share недоступен, например на ТВ-приставке). */
         data class LogsSaved(val path: String) : Effect
         data object LogsFailed : Effect
+
+        /** Кэш очищен. */
+        data object CacheCleared : Effect
+
+        /** Кэш очистить не удалось. */
+        data object CacheClearFailed : Effect
     }
 }

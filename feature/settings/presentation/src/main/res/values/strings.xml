@@ -35,6 +35,10 @@
     <string name="settings_cache_storage_refresh">Refresh</string>
     <string name="settings_cache_storage_empty">Cache is empty</string>
     <string name="settings_cache_storage_loading">Calculating…</string>
+    <string name="settings_clear_cache_title">Clear cache</string>
+    <string name="settings_clear_cache_hint">Remove images and saved server responses. Library, watch progress and downloads stay</string>
+    <string name="settings_clear_cache_done">Cache cleared</string>
+    <string name="settings_clear_cache_failed">Could not clear the cache</string>
     <string name="settings_cache_storage_folder_images">Poster images</string>
     <string name="settings_cache_storage_folder_player">Streaming buffer</string>
     <string name="settings_cache_storage_folder_downloads">Downloaded episodes</string>

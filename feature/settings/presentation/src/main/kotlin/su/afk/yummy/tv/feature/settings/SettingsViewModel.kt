@@ -22,7 +22,9 @@ import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.logging.AppLogExporter
+import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
+import su.afk.yummy.tv.core.utils.system.ImageCacheCleaner
 import su.afk.yummy.tv.domain.update.usecase.GetAppReleaseHistoryUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
@@ -54,6 +56,8 @@ class SettingsViewModel @Inject internal constructor(
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
     private val setVideoDownloadWifiOnly: SetVideoDownloadWifiOnlyUseCase,
     private val cacheStorageInspector: CacheStorageInspector,
+    private val storageCleanup: StorageCleanup,
+    private val imageCacheCleaner: ImageCacheCleaner,
     private val appLogExporter: AppLogExporter,
     private val getAppReleaseHistory: GetAppReleaseHistoryUseCase,
     private val analyticsDeviceIdProvider: AnalyticsDeviceIdProvider,
@@ -185,6 +189,22 @@ class SettingsViewModel @Inject internal constructor(
                     cacheStorageTotalBytes = report?.totalBytes ?: cacheStorageTotalBytes,
                 )
             }
+        }
+    }
+
+    private fun clearCache() {
+        if (currentState.isCacheClearing) return
+        setState { copy(isCacheClearing = true) }
+        viewModelScope.launch {
+            val results = listOf(
+                runSuspendCatching { storageCleanup.purgeAllCaches() },
+                runSuspendCatching { imageCacheCleaner.clear() },
+            )
+            setState { copy(isCacheClearing = false) }
+            setEffect(
+                if (results.all { it.isSuccess }) SettingsState.Effect.CacheCleared else SettingsState.Effect.CacheClearFailed,
+            )
+            loadCacheStorage()
         }
     }
 
@@ -473,6 +493,7 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             SettingsState.Event.CacheStorageRefreshRequested -> loadCacheStorage()
+            SettingsState.Event.ClearCacheRequested -> clearCache()
 
             SettingsState.Event.SaveLastSearchToggled -> viewModelScope.launch {
                 val enabled = !currentState.saveLastSearchEnabled
