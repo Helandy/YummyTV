@@ -45,7 +45,7 @@ internal class MoonApi @Inject constructor(
         /** Заголовки потока: CDN принимает только запрос «со страницы плеера» ([origin] — хост этой страницы). */
         fun streamHeaders(pageUrl: String, origin: String): Map<String, String> =
             CLIENT_HEADERS + mapOf(
-                "User-Agent" to USER_AGENT,
+                HttpHeaders.UserAgent to USER_AGENT,
                 "Referer" to pageUrl,
                 "Origin" to origin,
             )

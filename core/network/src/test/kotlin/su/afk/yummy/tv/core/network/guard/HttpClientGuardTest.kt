@@ -6,7 +6,7 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import java.io.File
 
 /**
- * Сторож: сетевые клиенты создаются только в `core/network`. Новый `OkHttpClient.Builder()`, Ktor `HttpClient(...)`
+ * Сторож сети: клиенты создаются только в `core/network`, а User-Agent задаётся только в известных местах. Новый `OkHttpClient.Builder()`, Ktor `HttpClient(...)`
  * или `HttpURLConnection` в другом модуле получил бы свой пул, DNS и таймауты в обход приложения. Клиент берут через DI
  * (базовый `OkHttpClient`, `@StreamingOkHttp`, `@DownloadOkHttp`, `@AllohaOkHttp`, Ktor-квалификаторы) и собирают
  * через `okHttpKtorClient`. Законные исключения перечислены в [ALLOWED] с причиной.
@@ -17,12 +17,28 @@ class HttpClientGuardTest : BaseUnitTest() {
     fun `network clients are created only in core network`() {
         val violations = sourceFiles()
             .filterNot { it.invariantPath().contains("/core/network/") }
-            .flatMap { file -> violationsIn(file) }
+            .flatMap { file -> violationsIn(file, RULES) }
             .filterNot { violation -> ALLOWED.any { violation.path.endsWith(it.pathSuffix) && violation.rule == it.rule } }
             .toList()
 
         assertTrue(
             "Клиенты создаются вне core/network (используйте DI и okHttpKtorClient):\n" +
+                violations.joinToString("\n") { "  ${it.path}: ${it.rule}" },
+            violations.isEmpty(),
+        )
+    }
+
+    @Test
+    fun `user agents are defined only in the known places`() {
+        val violations = sourceFiles()
+            .flatMap { file -> violationsIn(file, USER_AGENT_RULES) }
+            .filterNot { violation ->
+                USER_AGENT_ALLOWED.any { violation.path.endsWith(it.pathSuffix) && violation.rule == it.rule }
+            }
+            .toList()
+
+        assertTrue(
+            "User-Agent задан вне известных мест (профиль настроек, Alloha, Moon; заголовок берите из HttpHeaderNames):\n" +
                 violations.joinToString("\n") { "  ${it.path}: ${it.rule}" },
             violations.isEmpty(),
         )
@@ -58,9 +74,9 @@ class HttpClientGuardTest : BaseUnitTest() {
 
     private class Allowed(val pathSuffix: String, val rule: String, val reason: String)
 
-    private fun violationsIn(file: File): List<Violation> {
+    private fun violationsIn(file: File, rules: List<Pair<String, Regex>>): List<Violation> {
         val code = file.readText().withoutComments()
-        return RULES.filter { (_, regex) -> regex.containsMatchIn(code) }
+        return rules.filter { (_, regex) -> regex.containsMatchIn(code) }
             .map { (rule, _) -> Violation(file.invariantPath(), rule) }
     }
 
@@ -93,6 +109,34 @@ class HttpClientGuardTest : BaseUnitTest() {
             "openConnection()" to Regex("""\.openConnection\("""),
             "DefaultHttpDataSource" to Regex("""DefaultHttpDataSource"""),
             "URL.openStream()" to Regex("""\.openStream\(\)"""),
+        )
+
+        val USER_AGENT_RULES: List<Pair<String, Regex>> = listOf(
+            "браузерный UA (Mozilla/5.0)" to Regex("""Mozilla/5\.0"""),
+            "литерал заголовка \"User-Agent\"" to Regex(""""User-Agent""""),
+        )
+
+        val USER_AGENT_ALLOWED: List<Allowed> = listOf(
+            Allowed(
+                pathSuffix = "core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/BrowserUserAgentProfile.kt",
+                rule = "браузерный UA (Mozilla/5.0)",
+                reason = "Закрытый список проверенных профилей: okcdn принимает не любой UA",
+            ),
+            Allowed(
+                pathSuffix = "source/moon/data/src/main/kotlin/su/afk/yummy/tv/source/moon/data/network/MoonApi.kt",
+                rule = "браузерный UA (Mozilla/5.0)",
+                reason = "Moon: CDN принимает только набор UA + client hints страницы плеера Mikai",
+            ),
+            Allowed(
+                pathSuffix = "feature/player/data/src/main/kotlin/su/afk/yummy/tv/data/player/extractor/alloha/AllohaExtractor.kt",
+                rule = "браузерный UA (Mozilla/5.0)",
+                reason = "Alloha: запасной UA, только если не читается UA системного WebView",
+            ),
+            Allowed(
+                pathSuffix = "core/utils/src/main/kotlin/su/afk/yummy/tv/core/utils/network/HttpHeaderUtils.kt",
+                rule = "литерал заголовка \"User-Agent\"",
+                reason = "Единственное определение имени заголовка (HttpHeaderNames.USER_AGENT)",
+            ),
         )
 
         val ALLOWED: List<Allowed> = listOf(

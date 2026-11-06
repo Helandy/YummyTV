@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /**
  * Резолвит прямой URL превью серии из Kodik iframe.
@@ -76,7 +77,7 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     private suspend fun fetchHtml(url: String): String =
         httpClient.get(url) {
             header("Referer", "https://yani.tv/")
-            header("User-Agent", userAgents.userAgent)
+            header(HttpHeaderNames.USER_AGENT, userAgents.userAgent)
             header("Accept-Language", RU_ACCEPT_LANGUAGE)
             timeout {
                 connectTimeoutMillis = CONNECT_TIMEOUT_MS

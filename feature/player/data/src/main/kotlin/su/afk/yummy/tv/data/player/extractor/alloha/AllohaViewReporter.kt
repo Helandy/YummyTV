@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.common.player.AllohaEdgeHash
 import java.io.IOException
 import java.util.UUID
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /** What the player page carries for its HTTP reports: the page's own token, the embedding domain and the file id. */
 internal data class AllohaViewTicket(val token: String, val domain: String, val fileId: String)
@@ -229,7 +230,7 @@ internal class AllohaViewReporter(
     private fun post(path: String, body: FormBody) {
         if (restricted) return
         val request = Request.Builder().url(origin + path).post(body)
-            .header("User-Agent", userAgent)
+            .header(HttpHeaderNames.USER_AGENT, userAgent)
             .header("Origin", origin)
             .header("Referer", iframeUrl)
             .header("Accept-Language", ACCEPT_LANGUAGE)

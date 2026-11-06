@@ -16,10 +16,3 @@ import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 interface BrowserUserAgentProvider {
     val userAgent: String
 }
-
-/**
- * User-Agent по умолчанию. Только для мест, куда провайдер не дотянуть (подстановка UA в
- * заголовки загрузки, когда экстрактор его не передал); всё остальное берёт
- * [BrowserUserAgentProvider].
- */
-val BROWSER_USER_AGENT: String = BrowserUserAgentProfile.DEFAULT.userAgent

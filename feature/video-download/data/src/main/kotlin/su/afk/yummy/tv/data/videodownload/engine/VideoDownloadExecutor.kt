@@ -5,7 +5,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.dash.offline.DashDownloader
 import androidx.media3.exoplayer.hls.offline.HlsDownloader
 import androidx.media3.exoplayer.offline.Downloader
@@ -23,6 +22,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.network.di.DownloadOkHttp
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.cache.downloadCacheKeyFactoryFor
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategy
@@ -31,11 +31,9 @@ import su.afk.yummy.tv.data.videodownload.worker.logDownloadDebug
 import su.afk.yummy.tv.data.videodownload.worker.logDownloadInfo
 import su.afk.yummy.tv.data.videodownload.worker.safeDownloadUrlForLog
 import su.afk.yummy.tv.data.videodownload.worker.utils.StreamKind
-import su.afk.yummy.tv.data.videodownload.worker.utils.USER_AGENT_HEADER
 import su.afk.yummy.tv.data.videodownload.worker.utils.safeHeaderNames
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.throttleLabel
-import su.afk.yummy.tv.data.videodownload.worker.utils.userAgent
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
@@ -54,6 +52,7 @@ internal class VideoDownloadExecutor @Inject constructor(
     private val repository: VideoDownloadRepository,
     private val cacheProvider: VideoDownloadCacheProvider,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
     // Один клиент на все загрузки: общий пул соединений вместо нового клиента на каждую попытку
     @DownloadOkHttp private val okHttpClient: OkHttpClient,
 ) {
@@ -83,13 +82,8 @@ internal class VideoDownloadExecutor @Inject constructor(
         val progressUpdates = Channel<ProgressSnapshot>(Channel.CONFLATED)
         var progressWriter: Job? = null
         try {
-            val downloadHeaders = strategy.decorateHeaders(item.headers, item.iframeUrl)
-            val requestHeaders =
-                downloadHeaders.filterKeys { !it.equals(USER_AGENT_HEADER, ignoreCase = true) }
-            val httpUpstream = createHttpUpstream(
-                downloadHeaders = downloadHeaders,
-                requestHeaders = requestHeaders,
-            )
+            val downloadHeaders = strategy.decorateHeaders(item.headers, item.iframeUrl, userAgents.userAgent)
+            val httpUpstream = okHttpUpstreamFactory(okHttpClient, downloadHeaders)
             val throttledUpstream = strategy.downloadBytesPerSecond
                 ?.let { RateLimitedDataSource.Factory(httpUpstream, it) }
                 ?: httpUpstream
@@ -189,17 +183,6 @@ internal class VideoDownloadExecutor @Inject constructor(
             progressUpdates.close()
             withContext(NonCancellable) { progressWriter?.join() }
             cancellationWatcher?.cancel()
-        }
-    }
-
-    private fun createHttpUpstream(
-        downloadHeaders: Map<String, String>,
-        requestHeaders: Map<String, String>,
-    ): DataSource.Factory {
-        val userAgent = downloadHeaders.userAgent()?.takeIf { it.isNotBlank() }
-        return OkHttpDataSource.Factory(okHttpClient).apply {
-            userAgent?.let(::setUserAgent)
-            if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
         }
     }
 

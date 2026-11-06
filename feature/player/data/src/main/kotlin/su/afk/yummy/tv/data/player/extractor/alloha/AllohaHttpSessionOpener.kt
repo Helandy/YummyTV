@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import java.io.IOException
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /** What one HTTP round trip to the player produced: parsed sources plus the headers the CDN expects. */
 internal data class AllohaOpenedSession(
@@ -89,7 +90,7 @@ internal class AllohaHttpSessionOpener(
         val scriptUrl = if (path.startsWith("http")) path else origin + "/" + path.trimStart('.', '/')
         val key = apiKeyCache[scriptUrl] ?: run {
             val request = Request.Builder().url(scriptUrl)
-                .header("User-Agent", userAgent)
+                .header(HttpHeaderNames.USER_AGENT, userAgent)
                 .header("Referer", iframeUrl)
                 .header("Accept-Language", ACCEPT_LANGUAGE)
                 .build()
@@ -109,7 +110,7 @@ internal class AllohaHttpSessionOpener(
     private fun fetchPage(iframeUrl: String): String {
         val request = Request.Builder().url(iframeUrl)
             .header("Referer", PAGE_REFERER)
-            .header("User-Agent", userAgent)
+            .header(HttpHeaderNames.USER_AGENT, userAgent)
             .header("Accept-Language", ACCEPT_LANGUAGE)
             .build()
         return client.newCall(request).execute().use { response ->
@@ -134,7 +135,7 @@ internal class AllohaHttpSessionOpener(
             .build()
         val request = Request.Builder().url("$origin/bnsi/movies/$activeId")
             .post(body)
-            .header("User-Agent", userAgent)
+            .header(HttpHeaderNames.USER_AGENT, userAgent)
             .header("Borth", borth)
             .header("Referer", iframeUrl)
             .header("Origin", origin)

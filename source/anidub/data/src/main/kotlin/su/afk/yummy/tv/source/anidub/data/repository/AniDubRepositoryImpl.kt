@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 @Singleton
 internal class AniDubRepositoryImpl @Inject constructor(
@@ -67,7 +68,7 @@ internal class AniDubRepositoryImpl @Inject constructor(
      * узла, чем ничего.
      */
     private suspend fun masterStreams(player: AniDubPlayerRef, masterUrl: String, releaseHeight: Int?, ua: String): AniDubStreams? {
-        val headers = mapOf("User-Agent" to ua, "Accept" to "*/*", "Referer" to "${player.host}/", "Origin" to player.host)
+        val headers = mapOf(HttpHeaderNames.USER_AGENT to ua, "Accept" to "*/*", "Referer" to "${player.host}/", "Origin" to player.host)
         var last: AniDubStreams? = null
         var lastBad: AniDubStreams? = null
         repeat(MAX_ATTEMPTS) { attempt ->

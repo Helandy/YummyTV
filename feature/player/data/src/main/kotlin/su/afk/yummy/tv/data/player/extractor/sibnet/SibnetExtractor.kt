@@ -17,6 +17,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URL
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal class SibnetExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -47,7 +48,7 @@ internal class SibnetExtractor @Inject constructor(
                 headers = mapOf(
                     "Referer" to playerUrl,
                     "Origin" to SIBNET_ORIGIN,
-                    "User-Agent" to userAgents.userAgent,
+                    HttpHeaderNames.USER_AGENT to userAgents.userAgent,
                 ),
             )
         } catch (e: SibnetAccessForbiddenException) {
@@ -70,7 +71,7 @@ internal class SibnetExtractor @Inject constructor(
             url = playerUrl,
             headers = mapOf(
                 "Referer" to YANI_ORIGIN,
-                "User-Agent" to userAgents.userAgent,
+                HttpHeaderNames.USER_AGENT to userAgents.userAgent,
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             ),
         )

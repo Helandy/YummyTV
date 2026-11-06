@@ -16,6 +16,7 @@ import su.afk.yummy.tv.source.sameband.domain.model.SamebandTarget
 import su.afk.yummy.tv.source.sameband.domain.repository.SamebandRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 @Singleton
 internal class SamebandRepositoryImpl @Inject constructor(
@@ -32,7 +33,7 @@ internal class SamebandRepositoryImpl @Inject constructor(
     override suspend fun getStreams(target: SamebandTarget): SamebandStreams? {
         val ua = userAgents.userAgent
         val episode = loadEpisodes(target.slug, ua).firstOrNull { it.number == target.episode } ?: run { reportResolveStep(PlayerStreamResolveStatus.EpisodeNotFound); return null }
-        val headers = mapOf("User-Agent" to ua, "Accept" to "*/*", "Referer" to "$SAMEBAND_BASE_URL/")
+        val headers = mapOf(HttpHeaderNames.USER_AGENT to ua, "Accept" to "*/*", "Referer" to "$SAMEBAND_BASE_URL/")
         return SamebandStreams(episode.qualities, headers)
     }
 

@@ -26,6 +26,7 @@ import java.net.URLEncoder
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal sealed interface KodikResult {
     data class Stream(
@@ -294,7 +295,7 @@ internal class KodikExtractor @Inject constructor(
 
     private suspend fun isUrlAvailable(url: String): Boolean =
         runSuspendCatching {
-            httpClient.head(url = url, headers = mapOf("User-Agent" to userAgents.userAgent)).isSuccess
+            httpClient.head(url = url, headers = mapOf(HttpHeaderNames.USER_AGENT to userAgents.userAgent)).isSuccess
         }.getOrDefault(false)
 
     // Stream URLs from /ftor are encoded: ROT18 applied to letters, then base64 decoded
@@ -330,7 +331,7 @@ internal class KodikExtractor @Inject constructor(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
-                "User-Agent" to userAgents.userAgent,
+                HttpHeaderNames.USER_AGENT to userAgents.userAgent,
                 "Accept-Language" to RU_ACCEPT_LANGUAGE,
             ),
         )
@@ -352,7 +353,7 @@ internal class KodikExtractor @Inject constructor(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
-                "User-Agent" to userAgents.userAgent,
+                HttpHeaderNames.USER_AGENT to userAgents.userAgent,
                 "Accept-Language" to RU_ACCEPT_LANGUAGE,
             ),
         ).body
@@ -368,7 +369,7 @@ internal class KodikExtractor @Inject constructor(
             body = body,
             headers = buildMap {
                 put("Referer", referer)
-                put("User-Agent", userAgents.userAgent)
+                put(HttpHeaderNames.USER_AGENT, userAgents.userAgent)
                 put("Content-Type", "application/x-www-form-urlencoded")
                 put("X-Requested-With", "XMLHttpRequest")
                 if (cookies.isNotEmpty()) put("Cookie", cookies)

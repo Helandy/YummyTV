@@ -20,6 +20,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URI
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal class AksorExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -129,12 +130,12 @@ internal class AksorExtractor @Inject constructor(
 
     private fun streamHeaders(playerUrl: String): Map<String, String> = mapOf(
         "Referer" to playerUrl,
-        "User-Agent" to userAgents.userAgent,
+        HttpHeaderNames.USER_AGENT to userAgents.userAgent,
     )
 
     private fun apiHeaders(referer: String, accept: String): Map<String, String> = mapOf(
         "Referer" to referer,
-        "User-Agent" to userAgents.userAgent,
+        HttpHeaderNames.USER_AGENT to userAgents.userAgent,
         "Accept" to accept,
     )
 

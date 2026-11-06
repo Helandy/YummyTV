@@ -26,6 +26,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URL
 import java.net.URLDecoder
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /** Итог разбора VK: отдельно «видео нет на VK» (контент) и «не смогли разобрать» (сбой). */
 private sealed interface VkOutcome {
@@ -437,7 +438,7 @@ internal class VkExtractor @Inject constructor(
     private fun streamHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
         "Origin" to DEFAULT_REFERER.removeSuffix("/"),
-        "User-Agent" to userAgents.userAgent,
+        HttpHeaderNames.USER_AGENT to userAgents.userAgent,
     )
 
     private fun isHttpUrl(url: String): Boolean =
@@ -454,7 +455,7 @@ internal class VkExtractor @Inject constructor(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
-                "User-Agent" to userAgents.userAgent,
+                HttpHeaderNames.USER_AGENT to userAgents.userAgent,
                 "Accept" to "*/*",
             ),
         ).also { response ->

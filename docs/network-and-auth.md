@@ -31,6 +31,20 @@ Ktor:
 | `@KodikHttpClient`              | `NetworkModule`              | без значений по умолчанию, запросы задают сами     | Превью серий Kodik                                                   |
 | Coil                            | `CoilImageLoaderInstaller`   | без таймаутов и gzip Ktor                          | Картинки, [image-loading-and-memory.md](image-loading-and-memory.md)  |
 
+### User-Agent
+
+Где какой UA и почему. Имя заголовка одно: `HttpHeaderNames.USER_AGENT`, хелперы `userAgentOrNull()` и
+`withUserAgentIfAbsent()` лежат в `core/utils/network/HttpHeaderUtils.kt`. Браузерный UA-литерал (`Mozilla/5.0`) и
+строка `"User-Agent"` вне перечисленных ниже мест ломают `HttpClientGuardTest`.
+
+| Кому | UA | Где задаётся |
+|---|---|---|
+| Балансеры и их CDN (CVH, Kodik, VK, Rutube, Sibnet, Aksor, Zedfilm, превью Kodik, AniDub, Sameband) и загрузки (если экстрактор UA не передал) | профиль из настроек: Windows Chrome 149 (по умолчанию), Linux Chrome 149, Android Chrome 125 Mobile; закрытый список, okcdn отвечает 400 на любой другой (macOS, Safari, Firefox, okhttp, пустой) | `BrowserUserAgentProfile` (`core/model`), выбор в Настройки → Плеер, отдаёт `BrowserUserAgentProvider`, подробности в [cvh-player.md](cvh-player.md) §4 |
+| Alloha (страница, `bnsi`, WebSocket, `/events`, `/stat`, сегменты) | UA системного WebView (`WebSettings.getDefaultUserAgent`), запасной Firefox 159 Linux; client hints выводятся из него | `AllohaExtractor.sessionUserAgent`, привязан к fingerprint ([alloha-player.md](alloha-player.md)) |
+| Moon (страница и поток) | Linux Chrome 124 + набор client hints страницы плеера Mikai | `MoonApi.USER_AGENT`, меняется только целиком |
+| Yani API, `@UnauthenticatedJsonClient` (GitHub, MAL, JSON-источники), Coil | не задан: дефолт OkHttp (`okhttp/<версия>`) | нигде; на проводе не проверялось. Для CVH такой UA недопустим, остальным подходит |
+| WebView (трейлеры, hCaptcha), Chromecast, AppMetrica/Varioqub | свой UA сторонней библиотеки | вне нашего контроля |
+
 ### Исключения (вне `core/network`)
 
 | Что                                                  | Где                                        | Почему                                                              |

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /** What `bnsi` hands out to open the player's WebSocket: its address and the session key. */
 internal data class AllohaSocketTicket(val url: String, val key: String)
@@ -129,7 +130,7 @@ internal class AllohaPlaybackSocket(
         if (closed) return
         val url = "${ticket.url}?sid=${URLEncoder.encode(ticket.key, "UTF-8")}&v=2.1&t=${System.currentTimeMillis()}"
         val request = Request.Builder().url(url)
-            .header("User-Agent", userAgent)
+            .header(HttpHeaderNames.USER_AGENT, userAgent)
             .header("Origin", origin)
             .header("Accept-Language", ACCEPT_LANGUAGE)
             .build()

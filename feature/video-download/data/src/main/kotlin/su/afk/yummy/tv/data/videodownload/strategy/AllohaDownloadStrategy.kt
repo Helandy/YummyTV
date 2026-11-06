@@ -18,9 +18,10 @@ internal class AllohaDownloadStrategy @Inject constructor() : DownloadPlayerStra
 
     override fun decorateHeaders(
         headers: Map<String, String>,
-        iframeUrl: String
+        iframeUrl: String,
+        defaultUserAgent: String,
     ): Map<String, String> =
-        headers.withDownloadRequestHeaders(iframeUrl, originOverride = ALLOHA_ORIGIN)
+        headers.withDownloadRequestHeaders(iframeUrl, defaultUserAgent, originOverride = ALLOHA_ORIGIN)
 
     override fun manifestKeyToEvictOnRefresh(item: VideoDownloadItem): String? =
         item.cacheKey.takeIf { item.streamUrl.streamKind().isAdaptive }

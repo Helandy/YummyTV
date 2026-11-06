@@ -5,6 +5,8 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.common.player.AllohaEdgeHash
 import su.afk.yummy.tv.core.network.di.StreamingOkHttp
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
+import su.afk.yummy.tv.core.utils.network.userAgentOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,16 +46,9 @@ class PlayerDataSourceFactory @Inject constructor(
 
     private fun okHttpFactory(headers: Map<String, String>): DataSource.Factory =
         OkHttpDataSource.Factory(playerClient).apply {
-            headers.userAgent()?.takeIf { it.isNotBlank() }?.let(::setUserAgent)
+            headers.userAgentOrNull()?.let(::setUserAgent)
             val requestHeaders =
-                headers.filterKeys { !it.equals(USER_AGENT_HEADER, ignoreCase = true) }
+                headers.filterKeys { !it.equals(HttpHeaderNames.USER_AGENT, ignoreCase = true) }
             if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
         }
-
-    private fun Map<String, String>.userAgent(): String? =
-        entries.firstOrNull { (key, _) -> key.equals(USER_AGENT_HEADER, ignoreCase = true) }?.value
-
-    private companion object {
-        const val USER_AGENT_HEADER = "User-Agent"
-    }
 }

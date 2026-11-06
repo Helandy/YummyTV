@@ -9,6 +9,7 @@ import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import java.io.IOException
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /** Сайт sameband.studio: страница тайтла, страница плеера и JSON-плейлист серий. */
 internal class SamebandApi @Inject constructor(
@@ -18,7 +19,7 @@ internal class SamebandApi @Inject constructor(
     suspend fun getText(url: String, referer: String, userAgent: String): String? {
         val response = client.get(url) {
             header("Referer", referer)
-            header("User-Agent", userAgent)
+            header(HttpHeaderNames.USER_AGENT, userAgent)
         }
         if (response.status == HttpStatusCode.NotFound) return null
         if (!response.status.isSuccess()) throw IOException("Sameband: HTTP ${response.status.value}")

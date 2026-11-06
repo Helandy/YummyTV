@@ -9,6 +9,7 @@ import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import java.io.IOException
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 /** Сайт online.anidub.com и его плеер: страница тайтла, плейлист серий и HLS-мастер серии. */
 internal class AniDubApi @Inject constructor(
@@ -21,7 +22,7 @@ internal class AniDubApi @Inject constructor(
     suspend fun getText(url: String, referer: String? = null, userAgent: String? = null): String? {
         val response = client.get(url) {
             referer?.let { header("Referer", it) }
-            userAgent?.let { header("User-Agent", it) }
+            userAgent?.let { header(HttpHeaderNames.USER_AGENT, it) }
         }
         if (response.status == HttpStatusCode.NotFound) return null
         if (!response.status.isSuccess()) throw IOException("AniDub: HTTP ${response.status.value}")

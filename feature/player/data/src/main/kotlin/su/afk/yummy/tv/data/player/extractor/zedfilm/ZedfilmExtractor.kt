@@ -23,6 +23,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.nio.charset.Charset
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal class ZedfilmExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -207,7 +208,7 @@ internal class ZedfilmExtractor @Inject constructor(
     private fun streamHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
         "Origin" to HLAMER_ORIGIN,
-        "User-Agent" to userAgents.userAgent,
+        HttpHeaderNames.USER_AGENT to userAgents.userAgent,
     )
 
     // Zedfilm serves cyrillic error/meta text in windows-1251; the shared fetchText() helper
@@ -224,7 +225,7 @@ internal class ZedfilmExtractor @Inject constructor(
             headers = mapOf(
                 "Referer" to YANI_REFERER,
                 "Origin" to HLAMER_ORIGIN,
-                "User-Agent" to userAgents.userAgent,
+                HttpHeaderNames.USER_AGENT to userAgents.userAgent,
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language" to RU_ACCEPT_LANGUAGE,
                 "Accept-Encoding" to "gzip",

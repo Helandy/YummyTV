@@ -23,6 +23,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal class RutubeExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -201,7 +202,7 @@ internal class RutubeExtractor @Inject constructor(
     private fun streamHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
         "Origin" to RUTUBE_ORIGIN,
-        "User-Agent" to userAgents.userAgent,
+        HttpHeaderNames.USER_AGENT to userAgents.userAgent,
     )
 
     private fun fetchHeaders(referer: String): Map<String, String> =

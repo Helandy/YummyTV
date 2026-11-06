@@ -1,16 +1,13 @@
 package su.afk.yummy.tv.data.videodownload.worker.utils
 
-import su.afk.yummy.tv.core.utils.network.BROWSER_USER_AGENT
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 import su.afk.yummy.tv.core.utils.network.httpOriginOrNull
 import su.afk.yummy.tv.core.utils.network.normalizedHttpUrl
 import su.afk.yummy.tv.core.utils.network.safeHttpHeaderNames
-
-internal const val USER_AGENT_HEADER = "User-Agent"
-
-internal fun Map<String, String>.userAgent(): String? =
-    entries.firstOrNull { (key, _) -> key.equals(USER_AGENT_HEADER, ignoreCase = true) }?.value
+import su.afk.yummy.tv.core.utils.network.withUserAgentIfAbsent
 
 /**
+ * @param defaultUserAgent User-Agent выбранного в настройках профиля: ставится, только если экстрактор свой не передал
  * @param skipRefererOrigin CVH's CDN (okcdn.ru) rejects requests carrying a foreign Referer/Origin
  * with a 400; its own live playback already works with no Referer/Origin, only User-Agent.
  * @param originOverride used by players (e.g. Alloha) whose CDN expects a fixed Origin that isn't
@@ -18,12 +15,12 @@ internal fun Map<String, String>.userAgent(): String? =
  */
 internal fun Map<String, String>.withDownloadRequestHeaders(
     iframeUrl: String,
+    defaultUserAgent: String,
     skipRefererOrigin: Boolean = false,
     originOverride: String? = null,
 ): Map<String, String> {
     val hasReferer = keys.any { it.equals(REFERER_HEADER, ignoreCase = true) }
     val hasOrigin = keys.any { it.equals(ORIGIN_HEADER, ignoreCase = true) }
-    val hasUserAgent = keys.any { it.equals(USER_AGENT_HEADER, ignoreCase = true) }
     val referer = if (skipRefererOrigin) "" else iframeUrl.normalizedHttpUrl()
     val origin = when {
         skipRefererOrigin -> null
@@ -31,15 +28,12 @@ internal fun Map<String, String>.withDownloadRequestHeaders(
         else -> referer.httpOriginOrNull()
     }
     return buildMap {
-        putAll(this@withDownloadRequestHeaders)
+        putAll(this@withDownloadRequestHeaders.withUserAgentIfAbsent(defaultUserAgent))
         if (!hasReferer && referer.isNotBlank()) {
             put(REFERER_HEADER, referer)
         }
         if (!hasOrigin && origin != null) {
             put(ORIGIN_HEADER, origin)
-        }
-        if (!hasUserAgent) {
-            put(USER_AGENT_HEADER, BROWSER_USER_AGENT)
         }
     }
 }

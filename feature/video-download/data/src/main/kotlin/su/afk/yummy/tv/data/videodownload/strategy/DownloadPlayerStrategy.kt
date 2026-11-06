@@ -16,7 +16,15 @@ internal interface DownloadPlayerStrategy {
      */
     fun usesRotatingSegmentUrls(streamKind: StreamKind): Boolean
 
-    fun decorateHeaders(headers: Map<String, String>, iframeUrl: String): Map<String, String>
+    /**
+     * Заголовки запросов загрузки. [defaultUserAgent] это User-Agent выбранного в настройках профиля: он ставится,
+     * только если экстрактор свой не передал.
+     */
+    fun decorateHeaders(
+        headers: Map<String, String>,
+        iframeUrl: String,
+        defaultUserAgent: String,
+    ): Map<String, String>
 
     /** Cache resource key to evict on refresh so a fresh manifest is fetched while segments stay cached. */
     fun manifestKeyToEvictOnRefresh(item: VideoDownloadItem): String?

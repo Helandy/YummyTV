@@ -13,7 +13,8 @@ internal class CvhDownloadStrategy @Inject constructor() :
 
     override fun decorateHeaders(
         headers: Map<String, String>,
-        iframeUrl: String
+        iframeUrl: String,
+        defaultUserAgent: String,
     ): Map<String, String> =
-        headers.withDownloadRequestHeaders(iframeUrl, skipRefererOrigin = true)
+        headers.withDownloadRequestHeaders(iframeUrl, defaultUserAgent, skipRefererOrigin = true)
 }

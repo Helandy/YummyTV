@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URLDecoder
 import javax.inject.Inject
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 // CVH (CdnVideoHub) iframe URL format:
 //   //ru.yummyani.me/iframeCVH.html?dubbing_code=AnilibriaTV&anime_id=31240&episode=1
@@ -222,7 +223,7 @@ internal class CvhExtractor @Inject constructor(
 
     private fun jsonHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
-        "User-Agent" to userAgents.userAgent,
+        HttpHeaderNames.USER_AGENT to userAgents.userAgent,
         "Accept" to "application/json",
     )
 
