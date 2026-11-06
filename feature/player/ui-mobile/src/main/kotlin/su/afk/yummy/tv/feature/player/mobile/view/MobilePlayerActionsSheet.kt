@@ -73,6 +73,16 @@ internal fun PlayerMobileActionsSheet(
                 onOrientation()
             },
         )
+        if (showPictureInPicture) {
+            ActionRow(
+                icon = Icons.Filled.PictureInPictureAlt,
+                label = stringResource(R.string.player_mobile_pip),
+                onClick = {
+                    onDismiss()
+                    onPictureInPicture()
+                },
+            )
+        }
         if (showCast) {
             val shape = MaterialTheme.shapes.medium
             val interactionSource = remember { MutableInteractionSource() }
@@ -130,16 +140,6 @@ internal fun PlayerMobileActionsSheet(
                     )
                 }
             }
-        }
-        if (showPictureInPicture) {
-            ActionRow(
-                icon = Icons.Filled.PictureInPictureAlt,
-                label = stringResource(R.string.player_mobile_pip),
-                onClick = {
-                    onDismiss()
-                    onPictureInPicture()
-                },
-            )
         }
     }
 }
