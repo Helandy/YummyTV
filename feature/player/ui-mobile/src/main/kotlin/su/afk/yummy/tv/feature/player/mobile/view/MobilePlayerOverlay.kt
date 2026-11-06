@@ -6,6 +6,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import kotlinx.coroutines.delay
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +75,17 @@ internal fun MobilePlayerOverlay(
 ) {
     if (!visible) return
 
+    // Короткий тап по prev/next не переключает серию, а на секунду-другую показывает подсказку про удержание.
+    var holdHintTick by remember { mutableIntStateOf(0) }
+    var holdHintVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(holdHintTick) {
+        if (holdHintTick > 0) {
+            holdHintVisible = true
+            delay(HOLD_HINT_DURATION_MS)
+            holdHintVisible = false
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -77,6 +101,22 @@ internal fun MobilePlayerOverlay(
             .padding(horizontal = 18.dp, vertical = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        AnimatedVisibility(
+            visible = holdHintVisible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            Text(
+                text = stringResource(R.string.player_mobile_hold_to_switch_episode),
+                color = Color.White,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+            )
+        }
         MobilePlayerProgressRow(
             displayTime = progress.displayTimeMs,
             duration = progress.duration,
@@ -100,7 +140,9 @@ internal fun MobilePlayerOverlay(
                     icon = Icons.Filled.SkipPrevious,
                     contentDescription = stringResource(R.string.player_mobile_previous_episode),
                     enabled = hasPrevEpisode,
-                    onClick = onPrevEpisode,
+                    onClick = {},
+                    onHold = onPrevEpisode,
+                    onHoldHint = { holdHintTick++ },
                 )
                 MobilePlayerActionButton(
                     icon = Icons.AutoMirrored.Filled.VolumeUp,
@@ -141,7 +183,9 @@ internal fun MobilePlayerOverlay(
                 MobilePlayerActionButton(
                     icon = Icons.Filled.SkipNext,
                     contentDescription = stringResource(R.string.player_mobile_next_episode),
-                    onClick = onNextEpisode,
+                    onClick = {},
+                    onHold = onNextEpisode,
+                    onHoldHint = { holdHintTick++ },
                 )
             }
         }
@@ -168,6 +212,7 @@ private suspend fun PointerInputScope.collapseOnSwipeDown(onExpandedChange: (Boo
 }
 
 private const val SWIPE_THRESHOLD_PX = 40f
+private const val HOLD_HINT_DURATION_MS = 1_800L
 
 /** Линейная анимация вместо дефолтной пружины: у пружины длинный хвост, и лента «доезжает» с лагом. */
 private const val EPISODES_STRIP_ANIMATION_MS = 220

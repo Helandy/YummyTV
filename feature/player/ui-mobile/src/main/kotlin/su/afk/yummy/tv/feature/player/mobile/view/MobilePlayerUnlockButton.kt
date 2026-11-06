@@ -103,7 +103,7 @@ internal fun MobilePlayerUnlockButton(
                                     holdProgress.animateTo(
                                         targetValue = 1f,
                                         animationSpec = tween(
-                                            durationMillis = UNLOCK_HOLD_DURATION_MS,
+                                            durationMillis = HOLD_TO_CONFIRM_MS,
                                             easing = LinearEasing,
                                         ),
                                     )
@@ -149,5 +149,4 @@ internal fun MobilePlayerUnlockButton(
     }
 }
 
-private const val UNLOCK_HOLD_DURATION_MS = 600
 private const val UNLOCK_HINT_DURATION_MS = 1_800L
