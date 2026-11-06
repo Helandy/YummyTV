@@ -32,6 +32,11 @@ internal fun SettingsMobileGeneralContent(
                 onClick = { onPickerRequested(SettingsMobilePicker.INTERFACE_MODE) },
             )
             SettingsMobileOptionRow(
+                label = stringResource(R.string.settings_interface_language_title),
+                value = state.interfaceLanguage.label(),
+                onClick = { onPickerRequested(SettingsMobilePicker.INTERFACE_LANGUAGE) },
+            )
+            SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_content_language_title),
                 value = state.contentLanguage.label(),
                 onClick = { onPickerRequested(SettingsMobilePicker.CONTENT_LANGUAGE) },

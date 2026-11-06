@@ -31,6 +31,8 @@ internal fun SettingsTvGeneralContent(
             .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
+    pickerRow(SettingsTvPicker.INTERFACE_LANGUAGE, Modifier)
+    SettingsDivider()
     pickerRow(SettingsTvPicker.CONTENT_LANGUAGE, Modifier)
     SettingsDivider()
     ToggleRow(

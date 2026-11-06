@@ -16,6 +16,7 @@ import org.junit.Test
 import su.afk.yummy.tv.core.analytics.api.AnalyticsDeviceIdProvider
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
@@ -33,6 +34,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguagePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
@@ -71,6 +73,7 @@ class SettingsViewModelTest : BaseUnitTest() {
     private val episodePushEnabled = MutableStateFlow(true)
     private val yaniAuthPreferences: YaniAuthPreferences = mockk()
     private val interfaceModePreferences: AppInterfaceModePreferences = mockk(relaxed = true)
+    private val interfaceLanguagePreferences: AppInterfaceLanguagePreferences = mockk(relaxed = true)
     private val tvIntegration: ITvIntegration = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk(relaxed = true)
@@ -106,6 +109,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         every { tvIntegration.previewChannelBrowsable } returns MutableStateFlow(true)
         every { exportRepository.observeDestination() } returns exportDestination
         every { interfaceModePreferences.selectedMode } returns AppInterfaceMode.MOBILE
+        every { interfaceLanguagePreferences.selectedLanguage } returns AppInterfaceLanguage.SYSTEM
         coEvery { cacheStorageInspector.inspect() } returns CacheStorageReport(entries = emptyList(), totalBytes = 1_024L)
         coEvery { analyticsDeviceIdProvider.deviceId() } returns "abcdefgh"
     }
@@ -118,6 +122,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         appLifecycleSettingsStore = appLifecycleSettingsStore,
         yaniAuthPreferences = yaniAuthPreferences,
         interfaceModePreferences = interfaceModePreferences,
+        interfaceLanguagePreferences = interfaceLanguagePreferences,
         tvIntegration = tvIntegration,
         nav = nav,
         accountNavigator = accountNavigator,
@@ -274,6 +279,21 @@ class SettingsViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { interfaceModePreferences.select(other) }
         assertEquals(other, vm.currentState.interfaceMode)
         assertEquals(listOf<Effect>(Effect.RestartApplication), effects)
+    }
+
+    @Test
+    fun `changing the interface language saves it and asks for a cold restart`() = runTest {
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.InterfaceLanguageSelected(AppInterfaceLanguage.SYSTEM))
+        assertTrue(effects.isEmpty())
+
+        vm.setEvent(Event.InterfaceLanguageSelected(AppInterfaceLanguage.ENGLISH))
+
+        verify(exactly = 1) { interfaceLanguagePreferences.select(AppInterfaceLanguage.ENGLISH) }
+        assertEquals(AppInterfaceLanguage.ENGLISH, vm.currentState.interfaceLanguage)
+        assertEquals(listOf<Effect>(Effect.ColdRestartApplication), effects)
     }
 
     @Test

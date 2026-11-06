@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguagePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
@@ -48,6 +49,7 @@ class SettingsViewModel @Inject internal constructor(
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val interfaceModePreferences: AppInterfaceModePreferences,
+    private val interfaceLanguagePreferences: AppInterfaceLanguagePreferences,
     private val tvIntegration: ITvIntegration,
     private val nav: INavigationManager,
     private val accountNavigator: IAccountNavigator,
@@ -66,6 +68,7 @@ class SettingsViewModel @Inject internal constructor(
 
     override fun createInitialState() = SettingsState.State(
         interfaceMode = interfaceModePreferences.selectedMode ?: AppInterfaceMode.MOBILE,
+        interfaceLanguage = interfaceLanguagePreferences.selectedLanguage,
     )
 
     init {
@@ -434,6 +437,15 @@ class SettingsViewModel @Inject internal constructor(
                 viewModelScope.launch {
                     settingsStore.setYaniApplicationToken(event.token)
                 }
+            }
+
+            is SettingsState.Event.InterfaceLanguageSelected -> {
+                if (event.language == currentState.interfaceLanguage) return
+                interfaceLanguagePreferences.select(event.language)
+                analytics.eventInterfaceLanguageSelected(event.language)
+                setState { copy(interfaceLanguage = event.language) }
+                // Локаль применяется в attachBaseContext, поэтому нужен новый процесс.
+                setEffect(SettingsState.Effect.ColdRestartApplication)
             }
 
             is SettingsState.Event.ContentLanguageSelected -> viewModelScope.launch {

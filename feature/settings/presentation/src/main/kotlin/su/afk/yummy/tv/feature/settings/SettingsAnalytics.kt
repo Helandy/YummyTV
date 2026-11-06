@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
@@ -355,6 +356,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь изменил язык интерфейса приложения. */
+    fun eventInterfaceLanguageSelected(language: AppInterfaceLanguage) {
+        tracker.track(
+            EVENT_INTERFACE_LANGUAGE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to language.name.lowercase()),
+        )
+    }
+
     /**
      * Пользователь изменил язык контента Yani.
      *
@@ -447,6 +456,7 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_auto_skip_openings_endings_toggled"
         const val EVENT_AUTO_SKIP_DELAY_CHANGED = "settings_auto_skip_delay_changed"
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
+        const val EVENT_INTERFACE_LANGUAGE_SELECTED = "settings_interface_language_selected"
         const val EVENT_LIBRARY_TAB_ORDER_MOVED = "settings_library_tab_order_moved"
         const val EVENT_LIBRARY_TAB_ORDER_RESET = "settings_library_tab_order_reset"
         const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"

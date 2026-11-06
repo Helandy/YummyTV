@@ -15,7 +15,7 @@
     <string name="player_setup_quality_label">Якість відео</string>
     <string name="player_setup_quality_hint">Якщо якості немає, буде вибрано найближчу нижчу</string>
     <string name="player_setup_quality_best">Найкраща</string>
-    <string name="player_setup_language_label">Мова API</string>
+    <string name="player_setup_language_label">Мова контенту</string>
     <string name="player_setup_language_hint">Мова назв і описів із сервера</string>
     <string name="player_setup_language_russian">Русский</string>
     <string name="player_setup_language_english">English</string>

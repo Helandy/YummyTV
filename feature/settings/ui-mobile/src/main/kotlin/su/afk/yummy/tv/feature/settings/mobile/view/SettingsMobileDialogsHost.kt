@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -207,6 +208,19 @@ internal fun SettingsMobileDialogsHost(
                         state.subtitleStyle.copy(edge = it),
                     ),
                 )
+                dialogs.activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.INTERFACE_LANGUAGE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_interface_language_title),
+            selectedValue = state.interfaceLanguage,
+            options = AppInterfaceLanguage.entries.map {
+                SettingsMobilePickerOption(it, it.label())
+            },
+            onDismiss = { dialogs.activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.InterfaceLanguageSelected(it))
                 dialogs.activePicker = null
             },
         )

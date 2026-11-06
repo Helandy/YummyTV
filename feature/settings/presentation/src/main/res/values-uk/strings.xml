@@ -190,7 +190,9 @@
     <string name="settings_cache_size_max">Максимальний</string>
     <string name="settings_cache_size_mb">%1$d МБ</string>
     <string name="settings_cache_size_300">300 МБ</string>
-    <string name="settings_content_language_title">Мова</string>
+    <string name="settings_interface_language_title">Мова інтерфейсу</string>
+    <string name="settings_interface_language_system">Як у системі</string>
+    <string name="settings_content_language_title">Мова контенту</string>
     <string name="settings_content_language_russian">Російська</string>
     <string name="settings_content_language_english">Англійська</string>
     <string name="settings_content_language_ukrainian">Українська</string>

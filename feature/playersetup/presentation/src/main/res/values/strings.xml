@@ -15,7 +15,7 @@
     <string name="player_setup_quality_label">Video quality</string>
     <string name="player_setup_quality_hint">Falls back to the closest lower quality when unavailable</string>
     <string name="player_setup_quality_best">Best</string>
-    <string name="player_setup_language_label">API language</string>
+    <string name="player_setup_language_label">Content language</string>
     <string name="player_setup_language_hint">Language of titles and descriptions from the server</string>
     <string name="player_setup_language_russian">Русский</string>
     <string name="player_setup_language_english">English</string>

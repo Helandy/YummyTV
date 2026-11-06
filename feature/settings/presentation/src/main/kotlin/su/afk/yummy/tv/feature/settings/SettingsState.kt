@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
@@ -89,6 +90,7 @@ class SettingsState {
         val videoDownloadWifiOnly: Boolean = false,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
+        val interfaceLanguage: AppInterfaceLanguage = AppInterfaceLanguage.DEFAULT,
         val libraryTabOrder: ImmutableList<LibraryTabKind> =
             SettingsStore.defaultLibraryTabOrder.toImmutableList(),
         val videoExportDirectoryName: String? = null,
@@ -251,6 +253,9 @@ class SettingsState {
         /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event
 
+        /** Пользователь выбрал язык интерфейса приложения; для применения нужен перезапуск. */
+        data class InterfaceLanguageSelected(val language: AppInterfaceLanguage) : Event
+
         /** Пользователь выбрал язык контента Yani. */
         data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
 
@@ -318,7 +323,7 @@ class SettingsState {
         /** Сохранён новый тип интерфейса, приложение нужно запустить заново. */
         data object RestartApplication : Effect
 
-        /** Запись логов включена, нужен холодный старт: процесс будет убит и запущен заново. */
+        /** Нужен холодный старт: процесс будет убит и запущен заново (запись логов, язык интерфейса). */
         data object ColdRestartApplication : Effect
         data object OpenVideoExportDirectoryPicker : Effect
         data object VideoExportDirectorySelectionFailed : Effect

@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.presentation.R
@@ -209,6 +210,17 @@ val videoQualitySliderEntries: List<PreferredVideoQuality> = listOf(
     PreferredVideoQuality.P1440,
     PreferredVideoQuality.P2160,
     PreferredVideoQuality.BEST,
+)
+
+/** Названия языков даны на самих языках, чтобы при ошибочном выборе их можно было узнать. */
+@Composable
+fun AppInterfaceLanguage.label(): String = stringResource(
+    when (this) {
+        AppInterfaceLanguage.SYSTEM -> R.string.settings_interface_language_system
+        AppInterfaceLanguage.RUSSIAN -> R.string.settings_interface_language_russian
+        AppInterfaceLanguage.ENGLISH -> R.string.settings_interface_language_english
+        AppInterfaceLanguage.UKRAINIAN -> R.string.settings_interface_language_ukrainian
+    },
 )
 
 @Composable

@@ -7,6 +7,8 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.auth.SecureYaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguagePreferences
+import su.afk.yummy.tv.core.preferences.interface_language.SharedPreferencesAppInterfaceLanguagePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.SharedPreferencesAppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
@@ -89,6 +91,12 @@ internal interface PreferencesModule {
     fun bindAppInterfaceModePreferences(
         impl: SharedPreferencesAppInterfaceModePreferences,
     ): AppInterfaceModePreferences
+
+    @Binds
+    @Singleton
+    fun bindAppInterfaceLanguagePreferences(
+        impl: SharedPreferencesAppInterfaceLanguagePreferences,
+    ): AppInterfaceLanguagePreferences
 
     @Binds
     @Singleton

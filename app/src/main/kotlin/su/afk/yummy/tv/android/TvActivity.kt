@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.android
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,6 +17,7 @@ import su.afk.yummy.tv.android.episodepush.utils.cancelEpisodePushNotification
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguageContext
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.TvMainGraph
@@ -38,6 +40,10 @@ class TvActivity : ComponentActivity() {
 
     @Inject
     lateinit var tvIntegration: ITvIntegration
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppInterfaceLanguageContext.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

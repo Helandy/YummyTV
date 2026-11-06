@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.android
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
 import su.afk.yummy.tv.android.view.InterfaceModeDialog
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguageContext
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import javax.inject.Inject
@@ -22,6 +24,10 @@ class InterfaceRouterActivity : ComponentActivity() {
 
     @Inject
     lateinit var interfaceModePreferences: AppInterfaceModePreferences
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppInterfaceLanguageContext.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +72,8 @@ class InterfaceRouterActivity : ComponentActivity() {
             putExtras(sourceIntent)
             clipData = sourceIntent.clipData
             flags = (sourceIntent.flags and FORWARDED_URI_PERMISSION_FLAGS) or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         startActivity(targetIntent)
         finish()
@@ -76,8 +82,8 @@ class InterfaceRouterActivity : ComponentActivity() {
     private companion object {
         const val FORWARDED_URI_PERMISSION_FLAGS =
             Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
-                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
-                    Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+                Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
     }
 }

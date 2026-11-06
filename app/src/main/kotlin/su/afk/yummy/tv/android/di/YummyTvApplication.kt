@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.android.di
 
 import android.app.Application
+import android.content.Context
 import android.os.StrictMode
 import android.os.SystemClock
 import androidx.annotation.OptIn
@@ -33,6 +34,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.network.BuildConfig as NetworkBuildConfig
 import su.afk.yummy.tv.core.network.yani.YaniApiConfig
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguageContext
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.core.utils.coroutines.TrustedAppClock
@@ -113,6 +115,10 @@ class YummyTvApplication :
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .build()
+
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(AppInterfaceLanguageContext.wrap(base))
+    }
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {

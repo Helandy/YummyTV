@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.android
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -22,6 +23,7 @@ import su.afk.yummy.tv.android.widget.ContinueWatchingWidgetUpdater
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguageContext
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
@@ -50,6 +52,10 @@ class MobileActivity : ComponentActivity() {
 
     @Inject
     lateinit var continueWatchingWidgetUpdater: ContinueWatchingWidgetUpdater
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppInterfaceLanguageContext.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
