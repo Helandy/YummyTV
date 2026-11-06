@@ -37,6 +37,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountS
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.holdToConfirmEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
@@ -126,6 +127,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             playerControlsAutoHideSeconds =
                 (prefs[playerControlsAutoHideSecondsKey] ?: 4).coerceIn(1, 30000),
             pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
+            holdToConfirmEnabled = prefs[holdToConfirmEnabledKey] ?: true,
             playerOrientationMode = prefs.enum(
                 playerOrientationModeKey,
                 PlayerOrientationMode.SYSTEM,

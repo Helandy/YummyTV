@@ -9,7 +9,6 @@ import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.common.utils.detailsText
-import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker

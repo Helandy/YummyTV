@@ -23,6 +23,7 @@ data class SettingsSnapshot(
     val nextEpisodeSwitchDelaySeconds: Int,
     val playerControlsAutoHideSeconds: Int,
     val pictureInPictureEnabled: Boolean,
+    val holdToConfirmEnabled: Boolean = true,
     val playerOrientationMode: PlayerOrientationMode,
     val suggestNextEpisodeOnWatched: Boolean,
     val autoManageLibraryLists: Boolean = true,

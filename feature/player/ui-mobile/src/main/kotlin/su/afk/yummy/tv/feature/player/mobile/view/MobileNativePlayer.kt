@@ -641,6 +641,7 @@ internal fun MobileNativePlayer(
             openingStartMs = ui.activeSkips.opening?.startMs?.takeIf { state.showOpeningOnTimeline },
             openingEndMs = ui.activeSkips.opening?.endMs?.takeIf { state.showOpeningOnTimeline },
             hasPrevEpisode = ui.hasPrevEpisode,
+            holdToSwitchEpisode = state.holdToConfirmEnabled,
             onPlayPause = {
                 if (wantsPlay) player.pause() else player.play()
                 overlay.show()
@@ -984,6 +985,7 @@ internal fun MobileNativePlayer(
                 locked = false
                 overlay.show()
             },
+            holdRequired = state.holdToConfirmEnabled,
             onTouched = { unlockTouchToken++ },
             modifier = Modifier.align(Alignment.CenterStart),
         )

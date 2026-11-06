@@ -55,6 +55,8 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerUnlockButton(
     visible: Boolean,
     onUnlock: () -> Unit,
+    /** Требовать удержание (настройка «Удержание для блокировки»); иначе разблокировка обычным тапом. */
+    holdRequired: Boolean,
     /** Любое касание кнопки: родитель продлевает время её показа. */
     onTouched: () -> Unit,
     modifier: Modifier = Modifier,
@@ -94,10 +96,12 @@ internal fun MobilePlayerUnlockButton(
                         role = Role.Button
                         contentDescription = unlockLabel
                     }
-                    .pointerInput(Unit) {
+                    .pointerInput(holdRequired) {
                         detectTapGestures(
+                            onTap = { if (!holdRequired) onUnlock() },
                             onPress = {
                                 onTouched()
+                                if (!holdRequired) return@detectTapGestures
                                 val hold = scope.launch {
                                     holdProgress.snapTo(0f)
                                     holdProgress.animateTo(

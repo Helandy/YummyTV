@@ -129,7 +129,7 @@ private const val MEDIUM_SCREEN_DP = 392
 private const val WIDE_SCREEN_DP = 440
 
 /** Общая длительность удержания для подтверждения действия (разблокировка, смена серии). */
-internal const val HOLD_TO_CONFIRM_MS = 600
+internal const val HOLD_TO_CONFIRM_MS = 350
 
 private fun Modifier.holdToConfirm(
     enabled: Boolean,

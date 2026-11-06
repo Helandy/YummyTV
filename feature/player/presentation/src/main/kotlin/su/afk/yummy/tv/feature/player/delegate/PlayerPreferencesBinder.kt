@@ -33,6 +33,7 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(nextEpisodeSwitchDelaySeconds) { copy(nextEpisodeSwitchDelaySeconds = it) }
             host.bind(playerControlsAutoHideSeconds) { copy(controlsAutoHideSeconds = it) }
             host.bind(pictureInPictureEnabled) { copy(pictureInPictureEnabled = it) }
+            host.bind(holdToConfirmEnabled) { copy(holdToConfirmEnabled = it) }
             host.bind(playerOrientationMode) { copy(playerOrientationMode = it) }
             host.bind(mobilePlayerGestureTutorialDismissed) { dismissed ->
                 copy(mobileGestureTutorialReady = true, showMobileGestureTutorial = !dismissed)

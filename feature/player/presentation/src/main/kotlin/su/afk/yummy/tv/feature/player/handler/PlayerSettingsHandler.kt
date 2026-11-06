@@ -23,6 +23,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     val nextEpisodeSwitchDelaySeconds: Flow<Int> = settingsStore.nextEpisodeSwitchDelaySeconds
     val playerControlsAutoHideSeconds: Flow<Int> = settingsStore.playerControlsAutoHideSeconds
     val pictureInPictureEnabled: Flow<Boolean> = settingsStore.pictureInPictureEnabled
+    val holdToConfirmEnabled: Flow<Boolean> = settingsStore.holdToConfirmEnabled
     val playerOrientationMode: Flow<PlayerOrientationMode> = settingsStore.playerOrientationMode
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean> =
         settingsStore.mobilePlayerGestureTutorialDismissed

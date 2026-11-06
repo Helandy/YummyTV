@@ -56,6 +56,8 @@ internal fun MobilePlayerOverlay(
     openingStartMs: Long?,
     openingEndMs: Long?,
     hasPrevEpisode: Boolean,
+    /** Смена серии кнопками prev/next только удержанием; иначе обычным тапом. */
+    holdToSwitchEpisode: Boolean,
     onPlayPause: () -> Unit,
     onSeekChange: (Float) -> Unit,
     onSeekFinished: () -> Unit,
@@ -140,8 +142,8 @@ internal fun MobilePlayerOverlay(
                     icon = Icons.Filled.SkipPrevious,
                     contentDescription = stringResource(R.string.player_mobile_previous_episode),
                     enabled = hasPrevEpisode,
-                    onClick = {},
-                    onHold = onPrevEpisode,
+                    onClick = onPrevEpisode,
+                    onHold = onPrevEpisode.takeIf { holdToSwitchEpisode },
                     onHoldHint = { holdHintTick++ },
                 )
                 MobilePlayerActionButton(
@@ -183,8 +185,8 @@ internal fun MobilePlayerOverlay(
                 MobilePlayerActionButton(
                     icon = Icons.Filled.SkipNext,
                     contentDescription = stringResource(R.string.player_mobile_next_episode),
-                    onClick = {},
-                    onHold = onNextEpisode,
+                    onClick = onNextEpisode,
+                    onHold = onNextEpisode.takeIf { holdToSwitchEpisode },
                     onHoldHint = { holdHintTick++ },
                 )
             }

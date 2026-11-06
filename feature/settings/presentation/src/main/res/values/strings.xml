@@ -168,6 +168,8 @@
     <string name="settings_controls_auto_hide_label">Hide player controls after</string>
     <string name="settings_picture_in_picture_label">Picture-in-Picture (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Automatically open when leaving the app during playback</string>
+    <string name="settings_hold_to_confirm_label">Hold to lock and switch episode</string>
+    <string name="settings_hold_to_confirm_enabled">Controls lock and episode switching only trigger on press and hold</string>
     <string name="settings_advanced_volume_label">Advanced volume in the player</string>
     <string name="settings_advanced_volume_enabled" formatted="false">The player has its own volume (0–100%, 1% steps), independent of the system</string>
     <string name="settings_advanced_volume_disabled">Volume changes the system volume as usual</string>

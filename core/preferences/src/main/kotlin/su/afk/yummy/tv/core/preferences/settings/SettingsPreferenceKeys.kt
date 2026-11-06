@@ -39,6 +39,8 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("player_controls_auto_hide_seconds")
 
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
+    /** Нужно ли удерживать кнопки блокировки и смены серии (иначе срабатывают по тапу). */
+    val holdToConfirmEnabledKey = booleanPreferencesKey("hold_to_confirm_enabled")
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
     val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")

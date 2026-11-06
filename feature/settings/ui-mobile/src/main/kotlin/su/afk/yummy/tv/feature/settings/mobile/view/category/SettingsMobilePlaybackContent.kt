@@ -6,14 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.common.utils.toNextEpisodeSwitchDelayText
 import su.afk.yummy.tv.feature.settings.mobile.BuildConfig
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.common.utils.hint
-import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.toNextEpisodeSwitchDelayText
 
 @Composable
 internal fun SettingsMobilePlaybackContent(
@@ -83,6 +81,16 @@ internal fun SettingsMobilePlaybackContent(
                 onValueCommitted = {
                     onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it.fromControlsAutoHideSlider()))
                 },
+            )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_hold_to_confirm_label),
+                hint = if (state.holdToConfirmEnabled) {
+                    stringResource(R.string.settings_hold_to_confirm_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.holdToConfirmEnabled,
+                onClick = { onEvent(SettingsState.Event.HoldToConfirmToggled) },
             )
         }
     }

@@ -64,6 +64,7 @@ class SettingsState {
         val nextEpisodeSwitchDelaySeconds: Int = 10,
         val playerControlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
+        val holdToConfirmEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
@@ -208,6 +209,9 @@ class SettingsState {
 
         /** Пользователь включил или выключил плавающий режим мобильного плеера. */
         data object PictureInPictureToggled : Event
+
+        /** Пользователь включил или выключил удержание для блокировки и смены серии. */
+        data object HoldToConfirmToggled : Event
 
         /** Пользователь выбрал режим принудительной ориентации плеера. */
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event

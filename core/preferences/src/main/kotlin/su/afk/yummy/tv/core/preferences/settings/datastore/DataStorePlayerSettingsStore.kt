@@ -28,6 +28,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserU
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.holdToConfirmEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
@@ -94,6 +95,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val pictureInPictureEnabled: Flow<Boolean> =
         store.boolean(pictureInPictureEnabledKey, true)
+
+    override val holdToConfirmEnabled: Flow<Boolean> =
+        store.boolean(holdToConfirmEnabledKey, true)
 
     override val playerOrientationMode: Flow<PlayerOrientationMode> =
         store.enumFlow(playerOrientationModeKey, PlayerOrientationMode.SYSTEM)
@@ -232,6 +236,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setPictureInPictureEnabled(enabled: Boolean) =
         store.setBoolean(pictureInPictureEnabledKey, enabled)
+
+    override suspend fun setHoldToConfirmEnabled(enabled: Boolean) =
+        store.setBoolean(holdToConfirmEnabledKey, enabled)
 
     override suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode) =
         store.setEnum(playerOrientationModeKey, mode)

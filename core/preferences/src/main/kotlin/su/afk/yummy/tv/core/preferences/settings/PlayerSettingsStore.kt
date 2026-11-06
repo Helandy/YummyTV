@@ -36,6 +36,9 @@ interface PlayerSettingsStore {
 
     val pictureInPictureEnabled: Flow<Boolean>
 
+    /** Блокировка и смена серии в мобильном плеере срабатывают только по удержанию (по умолчанию да). */
+    val holdToConfirmEnabled: Flow<Boolean>
+
     /** Принудительная альбомная ориентация плеера, не зависящая от системной блокировки поворота. */
     val playerOrientationMode: Flow<PlayerOrientationMode>
     val suggestNextEpisodeOnWatched: Flow<Boolean>
@@ -100,6 +103,7 @@ interface PlayerSettingsStore {
     suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int)
     suspend fun setPlayerControlsAutoHideSeconds(seconds: Int)
     suspend fun setPictureInPictureEnabled(enabled: Boolean)
+    suspend fun setHoldToConfirmEnabled(enabled: Boolean)
     suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
     suspend fun setAutoManageLibraryLists(enabled: Boolean)

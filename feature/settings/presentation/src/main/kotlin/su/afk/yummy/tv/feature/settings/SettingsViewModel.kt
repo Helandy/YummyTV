@@ -102,6 +102,7 @@ class SettingsViewModel @Inject internal constructor(
                         nextEpisodeSwitchDelaySeconds = snapshot.nextEpisodeSwitchDelaySeconds,
                         playerControlsAutoHideSeconds = snapshot.playerControlsAutoHideSeconds,
                         pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
+                        holdToConfirmEnabled = snapshot.holdToConfirmEnabled,
                         playerOrientationMode = snapshot.playerOrientationMode,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
                         autoManageLibraryLists = snapshot.autoManageLibraryLists,
@@ -365,6 +366,10 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.pictureInPictureEnabled
                 analytics.eventPictureInPictureToggled(enabled)
                 settingsStore.setPictureInPictureEnabled(enabled)
+            }
+
+            SettingsState.Event.HoldToConfirmToggled -> viewModelScope.launch {
+                settingsStore.setHoldToConfirmEnabled(!currentState.holdToConfirmEnabled)
             }
 
             is SettingsState.Event.PlayerOrientationModeSelected -> viewModelScope.launch {
