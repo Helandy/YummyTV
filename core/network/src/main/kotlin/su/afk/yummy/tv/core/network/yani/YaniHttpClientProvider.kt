@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
@@ -21,6 +22,7 @@ class YaniHttpClientProvider @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val apiConfig: YaniApiConfig,
     private val logRecordingSettings: AppLogRecordingSettings,
+    private val imageFormatSupport: ImageFormatSupport,
     @IoApplicationScope private val scope: CoroutineScope,
 ) {
     private val mutex = Mutex()
@@ -33,7 +35,7 @@ class YaniHttpClientProvider @Inject constructor(
         return mutex.withLock {
             client?.let { return it }
             withContext(Dispatchers.IO) {
-                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient, scope, apiConfig, logRecordingSettings)
+                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient, scope, apiConfig, logRecordingSettings, imageFormatSupport)
             }.also { client = it }
         }
     }

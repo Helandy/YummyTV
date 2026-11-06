@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory
 import android.os.SystemClock
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.aomedia.avif.android.AvifDecoder
 import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
@@ -24,11 +26,28 @@ class ImageFormatProbe @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : ImageFormatSupport {
 
+    private val avifMutex = Mutex()
+    private val webpMutex = Mutex()
+
+    @Volatile
+    private var avifSupported: Boolean? = null
+
+    @Volatile
+    private var webpSupported: Boolean? = null
+
+    // Результат нужен при каждом запросе к yani и при каждом показе постеров, а проба декодирует
+    // картинку: считаем один раз за процесс.
     override suspend fun isAvifSupported(): Boolean =
-        withContext(Dispatchers.Default) { probe(AVIF_ASSET, ::decodeAvif) }
+        avifSupported ?: avifMutex.withLock {
+            avifSupported ?: withContext(Dispatchers.Default) { probe(AVIF_ASSET, ::decodeAvif) }
+                .also { avifSupported = it }
+        }
 
     override suspend fun isWebpSupported(): Boolean =
-        withContext(Dispatchers.Default) { probe(WEBP_ASSET, ::decodeWebp) }
+        webpSupported ?: webpMutex.withLock {
+            webpSupported ?: withContext(Dispatchers.Default) { probe(WEBP_ASSET, ::decodeWebp) }
+                .also { webpSupported = it }
+        }
 
     // Проба не должна ронять процесс: UnsatisfiedLinkError на чужой ABI, OOM, битый ассет.
     private fun probe(asset: String, decode: (ByteArray) -> Boolean): Boolean =

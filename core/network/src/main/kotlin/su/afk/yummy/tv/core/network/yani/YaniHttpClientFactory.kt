@@ -19,6 +19,7 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.network.NetworkTimeouts
 import su.afk.yummy.tv.core.network.okHttpKtorClient
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
@@ -34,8 +35,9 @@ fun buildYaniHttpClient(
     scope: CoroutineScope,
     apiConfig: YaniApiConfig,
     logRecordingSettings: AppLogRecordingSettings,
+    imageFormatSupport: ImageFormatSupport,
 ): HttpClient {
-    val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, scope)
+    val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, imageFormatSupport, scope)
 
     return okHttpKtorClient(okHttpClient, timeouts = NetworkTimeouts.Yani) {
         // Без этого 401/5xx с JSON-телом декодируются в «пустой успех» (DTO с дефолтами) и затирают
@@ -64,6 +66,9 @@ fun buildYaniHttpClient(
             createClientPlugin("YaniApplicationHeader") {
                 onRequest { request, _ ->
                     if (request.url.host == YANI_API_HOST) {
+                        // ContentNegotiation шлёт один `Accept: application/json`, и yani подменяет картинки на
+                        // JPEG (в `mega` приходит `posters/full`). Нужные форматы добавляем по документации yani.
+                        headerCache.imageAccept()?.let { request.headers.append(HttpHeaders.Accept, it) }
                         val headers = headerCache.current()
                         if (headers.applicationToken.isNotBlank()) {
                             request.headers.remove(YANI_APPLICATION_HEADER)

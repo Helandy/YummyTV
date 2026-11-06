@@ -8,15 +8,24 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 
 internal class YaniRequestHeaderCache(
     private val settingsStore: YaniAccountSettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
+    private val imageFormatSupport: ImageFormatSupport,
     private val scope: CoroutineScope,
 ) {
     private val initialLoadMutex = Mutex()
+    private val imageAcceptMutex = Mutex()
+
+    @Volatile
+    private var imageAcceptLoaded = false
+
+    @Volatile
+    private var imageAccept: String? = null
 
     @Volatile
     private var loaded = false
@@ -49,6 +58,21 @@ internal class YaniRequestHeaderCache(
             // и первый запрос после неё уходил со старым заголовком Lang.
             contentLanguageCode = settingsStore.yaniContentLanguage.first().apiCode,
         )
+    }
+
+    /** Проба декодирует эталонные картинки и дорога, поэтому считается один раз за жизнь процесса. */
+    suspend fun imageAccept(): String? {
+        if (imageAcceptLoaded) return imageAccept
+        return imageAcceptMutex.withLock {
+            if (!imageAcceptLoaded) {
+                imageAccept = yaniImageAccept(
+                    avifSupported = imageFormatSupport.isAvifSupported(),
+                    webpSupported = imageFormatSupport.isWebpSupported(),
+                )
+                imageAcceptLoaded = true
+            }
+            imageAccept
+        }
     }
 
     private suspend fun loadInitialValues() {
