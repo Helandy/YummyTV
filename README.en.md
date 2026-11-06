@@ -82,9 +82,9 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td align="center"><b>Top</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/tv/home.webp" width="320" alt="TV home screen" /></td>
-    <td><img src="docs/screenshots/tv/details.webp" width="320" alt="TV details screen" /></td>
-    <td><img src="docs/screenshots/tv/top.webp" width="320" alt="TV top screen" /></td>
+    <td><img src="site/screenshots/tv/home.webp" width="320" alt="TV home screen" /></td>
+    <td><img src="site/screenshots/tv/details.webp" width="320" alt="TV details screen" /></td>
+    <td><img src="site/screenshots/tv/top.webp" width="320" alt="TV top screen" /></td>
   </tr>
   <tr>
     <td align="center"><b>Episodes</b></td>
@@ -92,15 +92,15 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td align="center"><b>Viewing order</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/tv/episodes.webp" width="320" alt="TV episodes screen" /></td>
-    <td><img src="docs/screenshots/tv/balancers.webp" width="320" alt="TV balancers screen" /></td>
-    <td><img src="docs/screenshots/tv/viewing-order.webp" width="320" alt="TV viewing order screen" /></td>
+    <td><img src="site/screenshots/tv/episodes.webp" width="320" alt="TV episodes screen" /></td>
+    <td><img src="site/screenshots/tv/balancers.webp" width="320" alt="TV balancers screen" /></td>
+    <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="TV viewing order screen" /></td>
   </tr>
 </table>
 
 <p align="center">
   <b>Player</b><br/>
-  <img src="docs/screenshots/tv/player.webp" width="640" alt="TV player screen" />
+  <img src="site/screenshots/tv/player.webp" width="640" alt="TV player screen" />
 </p>
 
 ### Android Mobile
@@ -113,10 +113,10 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td align="center"><b>Library</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile home screen" /></td>
-    <td><img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile details screen" /></td>
-    <td><img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile top screen" /></td>
-    <td><img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
+    <td><img src="site/screenshots/mobile/home.webp" width="210" alt="Mobile home screen" /></td>
+    <td><img src="site/screenshots/mobile/details.webp" width="210" alt="Mobile details screen" /></td>
+    <td><img src="site/screenshots/mobile/top.webp" width="210" alt="Mobile top screen" /></td>
+    <td><img src="site/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
   </tr>
   <tr>
     <td align="center"><b>Episodes</b></td>
@@ -125,16 +125,16 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td align="center"><b>Balancers</b></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/mobile/episodes.webp" width="210" alt="Mobile episodes screen" /></td>
-    <td><img src="docs/screenshots/mobile/downloads.webp" width="210" alt="Mobile downloads screen" /></td>
-    <td><img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
-    <td><img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
+    <td><img src="site/screenshots/mobile/episodes.webp" width="210" alt="Mobile episodes screen" /></td>
+    <td><img src="site/screenshots/mobile/downloads.webp" width="210" alt="Mobile downloads screen" /></td>
+    <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
+    <td><img src="site/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
   </tr>
 </table>
 
 <p align="center">
   <b>Player</b><br/>
-  <img src="docs/screenshots/mobile/player.webp" width="640" alt="Mobile player screen" />
+  <img src="site/screenshots/mobile/player.webp" width="640" alt="Mobile player screen" />
 </p>
 
 ---
