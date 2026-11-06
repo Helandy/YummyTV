@@ -18,7 +18,7 @@ jobs:
     build:
         name: Build app
         runs-on: ubuntu-latest
-        timeout-minutes: 40
+        timeout-minutes: 60
 
         steps:
             -   name: Checkout
@@ -51,12 +51,10 @@ jobs:
 
             -   name: Lint
                 id: lint
-                continue-on-error: true
                 run: ./gradlew :app:lintDebug --stacktrace
 
             -   name: Run unit tests
                 id: tests
-                continue-on-error: true
                 run: ./gradlew testDebugUnitTest --stacktrace
 
             -   name: Build debug APK
@@ -107,7 +105,3 @@ jobs:
                         echo "**Debug APK size:** ${size} ($(basename "$apk"))"
                       fi
                     } >> "$GITHUB_STEP_SUMMARY"
-
-            -   name: Fail if checks failed
-                if: always() && (steps.lint.outcome == 'failure' || steps.tests.outcome == 'failure')
-                run: exit 1
