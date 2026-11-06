@@ -40,9 +40,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatNextEpisodeRelease
@@ -64,7 +63,7 @@ internal fun DetailsMobileHero(
 ) {
     val configuration = LocalConfiguration.current
     val posterWidth = (configuration.screenWidthDp.dp * 0.42f).coerceIn(142.dp, 190.dp)
-    val posterUrls = details.poster.urlsByQuality(LocalPosterQuality.current)
+    val posterUrls = details.poster.posterUrls()
 
     Box(
         modifier = Modifier

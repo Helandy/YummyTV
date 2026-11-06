@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.schedule.storage.mapper
 
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCache
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCacheEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleItemEntry
@@ -32,7 +32,7 @@ internal fun List<YaniScheduleAnimeDto>.toAnimeScheduleCache(
                 position = index,
                 animeId = animeId,
                 title = item.title,
-                posterUrl = poster.bestUrl(),
+                posterUrl = poster.defaultUrl(),
                 posterSmallUrl = poster?.small,
                 posterMediumUrl = poster?.medium,
                 posterBigUrl = poster?.big,

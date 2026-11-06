@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.data.collection.storage.mapper
 
-import su.afk.yummy.tv.core.model.anime.urlFor
-import su.afk.yummy.tv.core.model.settings.PosterQuality
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionCatalogItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageCache
@@ -53,7 +52,7 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
                 animeId = animeId,
                 title = item.title,
                 description = item.description,
-                posterUrl = poster.urlFor(PosterQuality.STANDARD),
+                posterUrl = poster.defaultUrl(),
                 posterSmallUrl = poster?.small,
                 posterMediumUrl = poster?.medium,
                 posterBigUrl = poster?.big,
@@ -150,7 +149,7 @@ private const val CATALOG_POSTER_COUNT = 3
 private const val POSTER_URLS_SEPARATOR = "\n"
 
 private fun YaniCollectionPosterDto.toUrl(): String? =
-    (big ?: medium ?: fullsize ?: small)?.toHttpsUrl()
+    mega?.toHttpsUrl()
 
 internal fun CollectionCatalogPageCache.toCollectionSummaryPage(): CollectionSummaryPage =
     items

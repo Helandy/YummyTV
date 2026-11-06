@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.data.catalog.storage.mapper
 
-import su.afk.yummy.tv.core.model.anime.urlFor
-import su.afk.yummy.tv.core.model.settings.PosterQuality
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsCache
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsEntry
@@ -49,7 +48,7 @@ internal fun List<YaniSearchItemDto>.toSearchPageCache(
                 animeId = animeId,
                 title = item.title,
                 description = item.description,
-                posterUrl = poster.urlFor(PosterQuality.LOW),
+                posterUrl = poster.defaultUrl(),
                 posterSmallUrl = poster?.small,
                 posterMediumUrl = poster?.medium,
                 posterBigUrl = poster?.big,

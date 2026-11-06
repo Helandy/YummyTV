@@ -18,14 +18,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
@@ -125,7 +124,7 @@ fun RelationMobileScreen(
                     item(key = lazyKey("relation", item.animeId)) {
                         MobilePosterCard(
                             title = item.title,
-                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+                            posterUrls = item.poster.posterUrls(),
                             animeId = item.animeId,
                             rating = item.rating,
                             posterOverlay = {

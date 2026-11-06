@@ -18,7 +18,6 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryUserRatings
 import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.seasonal.LocalSeasonalDecorationsEnabled
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
@@ -86,7 +85,6 @@ class MobileMainGraph @Inject internal constructor(
                     onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
                 )
                 CompositionLocalProvider(
-                    LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
                     LocalSeasonalDecorationsEnabled provides state.seasonalDecorationsEnabled,

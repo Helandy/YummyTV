@@ -4,6 +4,4 @@ package su.afk.yummy.tv.core.model.settings
 interface ImageFormatSupport {
 
     suspend fun isAvifSupported(): Boolean
-
-    suspend fun isWebpSupported(): Boolean
 }

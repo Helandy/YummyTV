@@ -2,7 +2,6 @@ package su.afk.yummy.tv.android.startup
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.SystemClock
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -16,10 +15,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Реализация [ImageFormatSupport]: проверяет, что устройство реально декодирует AVIF и WebP: прогоняет крошечные эталонные картинки
- * из assets через те же декодеры, что использует приложение (libavif для AVIF, [BitmapFactory] для
- * WebP). AVIF считается рабочим, только если декод успешен и уложился в [AVIF_MAX_DECODE_MS] —
- * медленный декодер на слабой приставке хуже, чем WebP.
+ * Реализация [ImageFormatSupport]: проверяет, что устройство реально декодирует AVIF: прогоняет крошечную эталонную
+ * картинку из assets через тот же декодер, что использует приложение (libavif). AVIF считается рабочим, только если
+ * декод успешен и уложился в [AVIF_MAX_DECODE_MS] — на слабой приставке медленный декодер хуже, чем полный JPEG.
  */
 @Singleton
 class ImageFormatProbe @Inject constructor(
@@ -27,13 +25,9 @@ class ImageFormatProbe @Inject constructor(
 ) : ImageFormatSupport {
 
     private val avifMutex = Mutex()
-    private val webpMutex = Mutex()
 
     @Volatile
     private var avifSupported: Boolean? = null
-
-    @Volatile
-    private var webpSupported: Boolean? = null
 
     // Результат нужен при каждом запросе к yani и при каждом показе постеров, а проба декодирует
     // картинку: считаем один раз за процесс.
@@ -41,12 +35,6 @@ class ImageFormatProbe @Inject constructor(
         avifSupported ?: avifMutex.withLock {
             avifSupported ?: withContext(Dispatchers.Default) { probe(AVIF_ASSET, ::decodeAvif) }
                 .also { avifSupported = it }
-        }
-
-    override suspend fun isWebpSupported(): Boolean =
-        webpSupported ?: webpMutex.withLock {
-            webpSupported ?: withContext(Dispatchers.Default) { probe(WEBP_ASSET, ::decodeWebp) }
-                .also { webpSupported = it }
         }
 
     // Проба не должна ронять процесс: UnsatisfiedLinkError на чужой ABI, OOM, битый ассет.
@@ -76,15 +64,8 @@ class ImageFormatProbe @Inject constructor(
         return decoded && elapsed <= AVIF_MAX_DECODE_MS
     }
 
-    private fun decodeWebp(bytes: ByteArray): Boolean {
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return false
-        bitmap.recycle()
-        return true
-    }
-
     private companion object {
         const val AVIF_ASSET = "image_probe/avif_probe.avif"
-        const val WEBP_ASSET = "image_probe/webp_probe.webp"
         const val AVIF_MAX_DECODE_MS = 300L
     }
 }

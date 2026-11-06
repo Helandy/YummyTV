@@ -11,10 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleRowCard
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 
 @Composable
@@ -28,7 +27,7 @@ internal fun CollectionAnimeCard(
     if (isRowLayout) {
         TvTitleRowCard(
             title = item.title,
-            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+            posterUrls = item.poster.posterUrls(),
             description = item.description,
             year = item.year,
             rating = item.rating,
@@ -41,7 +40,7 @@ internal fun CollectionAnimeCard(
     }
     TvTitleCard(
         title = item.title,
-        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+        posterUrls = item.poster.posterUrls(),
         animeId = item.id,
         onClick = onClick,
         onFocused = onFocused,

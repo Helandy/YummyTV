@@ -38,9 +38,8 @@ import su.afk.yummy.tv.core.designsystem.dimensions.currentTvHomeFeedCardDimensi
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvPosterBadgeScale
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
@@ -109,7 +108,7 @@ internal fun HomeFeedCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                val posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current)
+                val posterUrls = item.poster.posterUrls()
 
                 FallbackAsyncImage(
                     models = posterUrls,

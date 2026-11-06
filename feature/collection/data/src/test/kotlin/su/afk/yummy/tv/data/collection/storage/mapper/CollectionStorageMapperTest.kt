@@ -48,9 +48,9 @@ class CollectionStorageMapperTest : BaseUnitTest() {
     ) = YaniCollectionDetailDto(
         id = 1,
         title = "Collection",
-        posterPreviews = previews.map { YaniCollectionPosterDto(big = "//$it") },
+        posterPreviews = previews.map { YaniCollectionPosterDto(mega = "//$it") },
         animes = animePosters.mapIndexed { index, url ->
-            YaniCollectionAnimeDto(animeId = index, poster = YaniCollectionPosterDto(big = "//$url"))
+            YaniCollectionAnimeDto(animeId = index, poster = YaniCollectionPosterDto(mega = "//$url"))
         },
     )
 }

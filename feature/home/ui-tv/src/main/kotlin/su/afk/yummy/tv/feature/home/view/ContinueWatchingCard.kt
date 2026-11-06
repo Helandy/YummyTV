@@ -5,13 +5,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
 import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.feature.home.presentation.R
 
 private val CardWidth = 220.dp
@@ -40,7 +39,7 @@ internal fun ContinueWatchingCard(
 
     val imageModels = episodeThumbnailModels(
         thumbnail = episodeThumbnailOf(entry.animeId, entry.episode, entry.screenshotUrl, entry.episodeUrl),
-        posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
+        posterUrls = entry.poster.posterUrls(),
     )
     val episodeLabel = if (entry.episode.isNotBlank()) {
         stringResource(R.string.home_episode_number, entry.episode)

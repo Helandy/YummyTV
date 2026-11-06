@@ -8,7 +8,7 @@ import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingRemoteProgressSwitch
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingSource
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.domain.watching.model.ContinueWatchingLaunchResolution
 import su.afk.yummy.tv.domain.watching.model.ServerContinueProgress
 import kotlin.math.abs
@@ -27,7 +27,7 @@ internal fun resolveContinueWatchingLaunch(
     } else {
         null
     }
-    val posterUrl = entry.poster.bestUrl().orEmpty()
+    val posterUrl = entry.poster.defaultUrl().orEmpty()
 
     if (entry.source == ContinueWatchingSource.REMOTE) {
         return resolveRemoteEntryLaunch(entry, serverProgress, availableVideos, posterUrl)
@@ -118,7 +118,7 @@ internal fun resolveNextEpisodeLaunch(
     // Подбираем только среди видео этой серии: без рабочего плеера подбор ушёл бы в другую.
     val target = resolveContinueWatchingTarget(progressVideo, episodeVideos)
     return entry.toLaunch(
-        posterUrl = entry.poster.bestUrl().orEmpty(),
+        posterUrl = entry.poster.defaultUrl().orEmpty(),
         video = target,
         resumeFromMs = 0L,
     )

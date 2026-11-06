@@ -36,7 +36,6 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -44,7 +43,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGa
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.shareText
@@ -214,7 +213,7 @@ fun DetailsMobileScreen(
             item(key = "video") {
                 DetailsVideoSection(
                     trailers = state.trailers,
-                    bloggerVideosImageModels = details.poster.urlsByQuality(LocalPosterQuality.current),
+                    bloggerVideosImageModels = details.poster.posterUrls(),
                     isTrailersLoading = state.isExtrasLoading && details.trailersCount > 0,
                     hasBloggerVideos = details.bloggerVideosCount > 0,
                     onTrailersClick = { onEvent(DetailsState.Event.TrailersSelected) },

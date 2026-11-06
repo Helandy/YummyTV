@@ -7,18 +7,12 @@ import org.junit.Test
 class YaniImageAcceptTest {
 
     @Test
-    fun `avif and webp are listed through a comma`() {
-        assertEquals("image/avif,image/webp", yaniImageAccept(avifSupported = true, webpSupported = true))
+    fun `avif is requested when the device decodes it`() {
+        assertEquals("image/avif", yaniImageAccept(avifSupported = true))
     }
 
     @Test
-    fun `only supported formats are listed`() {
-        assertEquals("image/avif", yaniImageAccept(avifSupported = true, webpSupported = false))
-        assertEquals("image/webp", yaniImageAccept(avifSupported = false, webpSupported = true))
-    }
-
-    @Test
-    fun `no header when device supports neither`() {
-        assertNull(yaniImageAccept(avifSupported = false, webpSupported = false))
+    fun `no header without avif support, webp is never requested`() {
+        assertNull(yaniImageAccept(avifSupported = false))
     }
 }

@@ -34,11 +34,10 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.TimelineNodeBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterType
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.feature.details.mobile.details.view.drawSegment
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -122,7 +121,7 @@ internal fun ViewingOrderTimelineRow(
         ) {
             Box(modifier = Modifier.width(PosterWidth).aspectRatio(TITLE_POSTER_ASPECT_RATIO)) {
                 FallbackAsyncImage(
-                    models = item.poster.urlsByQuality(LocalPosterQuality.current),
+                    models = item.poster.posterUrls(),
                     contentDescription = null,
                     modifier = Modifier
                         .matchParentSize()

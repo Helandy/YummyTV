@@ -41,21 +41,19 @@
 `@KodikThumbnailDiskCache`). Код лежит в `core:utils` (пакет `kodik`), см.
 [other-extractors.md](other-extractors.md).
 
-### Качество постеров
+### Версия постера
 
-`PosterQuality`: `LOW`, `STANDARD`, `MEGA`, `HIGH`.
+Выбора качества нет, `PosterQuality` удалён. Везде берётся версия `mega`: yani отдаёт в ней AVIF (около 28 КБ,
+570x800) тем, у кого в `Accept` есть `image/avif`, остальным подставляет полный JPEG (`posters/full`, 784x1200).
+Поэтому `mega` годится для любого устройства. WebP сознательно не используется: его версии мелкие (до 250x350) и
+на ТВ заметно портят качество.
 
-- Настройки нет: качество определяется только устройством (`choosePosterQuality`): декодируется AVIF, то
-  `MEGA`; иначе WebP, то `STANDARD`; иначе `HIGH`. Проба форматов (`ImageFormatProbe`) выполняется один раз
-  за процесс. Тот же результат попадает в `Accept` запросов к API yani (`image/avif,image/webp`): без этих
-  форматов в `Accept` yani подменяет все размеры постера одним JPEG `posters/full`, и выбор размера теряет смысл.
-- Зеркало `static.afk.su` есть только у AVIF-версии `mega`, поэтому работает при `MEGA`.
-- В UI значение приходит через `LocalPosterQuality` (его задают `MobileMainGraph` / `TvMainGraph` из
-  состояния `MainState`, куда `MainViewModel` кладёт вычисленное качество).
-- URL постера выбирается функциями вида `posterUrl(quality)` с цепочкой запасных размеров
-  (`LibraryTvMappers.kt`): для `LOW` порядок `medium → big → fullsize → small`, для `STANDARD`
-  `big → medium → fullsize → small`, для `MEGA` `mega → big → medium → fullsize → small`, для `HIGH`
-  `fullsize → mega → big → medium → small`.
+- `Accept: image/avif` добавляется к запросам на `api.yani.tv` только если устройство декодирует AVIF (проба
+  `ImageFormatProbe` выполняется один раз за процесс, `YaniRequestHeaderCache`). Без него yani подменяет все размеры
+  постера одним JPEG, а зеркало `static.afk.su` (есть только у AVIF `mega`) не включается.
+- Для показа в UI: `AnimePoster.posterUrls()` (`mega` и, если это AVIF, копия на `static.afk.su`) и `FallbackAsyncImage`.
+  К копии переходим при 404/5xx и сетевом сбое yani.
+- Для ссылки, которая пишется строкой (Room, модели вне Compose): `AnimePoster.defaultUrl()`, то есть тоже `mega`.
 
 ## Память
 

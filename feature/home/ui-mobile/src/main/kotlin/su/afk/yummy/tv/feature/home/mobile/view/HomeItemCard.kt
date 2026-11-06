@@ -12,9 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
 @Composable
@@ -33,7 +32,7 @@ internal fun HomeItemCard(
     MobilePosterCard(
         modifier = Modifier.width(cardWidth),
         title = item.title,
-        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+        posterUrls = item.poster.posterUrls(),
         animeId = item.id,
         subtitle = subtitle ?: item.description.takeIf { showMetadata && it.isNotBlank() },
         badge = badge,

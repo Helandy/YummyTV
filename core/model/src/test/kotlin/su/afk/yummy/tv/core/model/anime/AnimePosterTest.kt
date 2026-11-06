@@ -3,7 +3,6 @@ package su.afk.yummy.tv.core.model.anime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 class AnimePosterTest : BaseUnitTest() {
@@ -17,35 +16,31 @@ class AnimePosterTest : BaseUnitTest() {
     )
 
     @Test
-    fun `only the version of the chosen quality is returned`() {
-        assertEquals(listOf("medium"), poster.urlsByQuality(PosterQuality.LOW))
-        assertEquals(listOf("big"), poster.urlsByQuality(PosterQuality.STANDARD))
-        assertEquals(listOf("mega"), poster.urlsByQuality(PosterQuality.MEGA))
-        assertEquals(listOf("fullsize"), poster.urlsByQuality(PosterQuality.HIGH))
+    fun `only the mega version is returned for display`() {
+        assertEquals(listOf("mega"), poster.posterUrls())
     }
 
     @Test
-    fun `missing or blank chosen version gives no urls`() {
-        val sparse = AnimePoster(small = "small", medium = " ", big = "big", fullsize = null, mega = null)
+    fun `missing or blank mega gives no urls`() {
+        val sparse = AnimePoster(small = "small", medium = "medium", big = "big", fullsize = "fullsize", mega = " ")
 
-        assertEquals(emptyList<String>(), sparse.urlsByQuality(PosterQuality.MEGA))
-        assertEquals(emptyList<String>(), sparse.urlsByQuality(PosterQuality.LOW))
-        assertEquals(emptyList<String>(), sparse.urlsByQuality(PosterQuality.HIGH))
-        assertEquals(listOf("big"), sparse.urlsByQuality(PosterQuality.STANDARD))
+        assertEquals(emptyList<String>(), sparse.posterUrls())
+        assertEquals(emptyList<String>(), sparse.copy(mega = null).posterUrls())
     }
 
     @Test
-    fun `url for quality is the first preferred version`() {
-        assertEquals("big", poster.urlFor(PosterQuality.STANDARD))
-        assertEquals("mega", poster.urlFor(PosterQuality.MEGA))
+    fun `default url is the mega version`() {
+        assertEquals("mega", poster.defaultUrl())
+        assertNull(poster.copy(mega = null).defaultUrl())
+        assertNull(poster.copy(mega = " ").defaultUrl())
     }
 
     @Test
     fun `null poster gives no urls`() {
         val none: AnimePoster? = null
 
-        assertEquals(emptyList<String>(), none.urlsByQuality(PosterQuality.MEGA))
-        assertNull(none.urlFor(PosterQuality.MEGA))
+        assertEquals(emptyList<String>(), none.posterUrls())
+        assertNull(none.defaultUrl())
     }
 
     @Test
@@ -57,16 +52,15 @@ class AnimePosterTest : BaseUnitTest() {
                 "https://static.yani.tv/posters/mega/1636989985.avif?v=431865090",
                 "https://static.self.made/posters/mega/1636989985.avif?v=431865090",
             ),
-            avif.urlsByQuality(PosterQuality.MEGA),
+            avif.posterUrls(),
         )
-        assertEquals("https://static.yani.tv/posters/mega/1636989985.avif?v=431865090", avif.urlFor(PosterQuality.MEGA))
+        assertEquals("https://static.yani.tv/posters/mega/1636989985.avif?v=431865090", avif.defaultUrl())
     }
 
     @Test
-    fun `other versions and extensions have no mirror`() {
-        val jpg = AnimePoster(null, null, null, "https://static.yani.tv/posters/full/1.jpg", "https://static.yani.tv/posters/mega/1.jpg")
+    fun `jpeg mega substituted by yani has no mirror`() {
+        val jpg = AnimePoster(null, null, null, null, "https://static.yani.tv/posters/full/1.jpg")
 
-        assertEquals(listOf("https://static.yani.tv/posters/full/1.jpg"), jpg.urlsByQuality(PosterQuality.HIGH))
-        assertEquals(listOf("https://static.yani.tv/posters/mega/1.jpg"), jpg.urlsByQuality(PosterQuality.MEGA))
+        assertEquals(listOf("https://static.yani.tv/posters/full/1.jpg"), jpg.posterUrls())
     }
 }

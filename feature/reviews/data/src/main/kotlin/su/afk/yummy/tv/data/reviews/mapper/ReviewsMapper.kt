@@ -43,8 +43,7 @@ internal fun YaniReviewDto.toSummaryOrNull(): AnimeReviewSummary? {
         checkComment = checkComment,
         commentable = commentable,
         animeTitle = anime?.title.orEmpty(),
-        animePosterUrl = anime?.poster?.run { mega ?: huge ?: big ?: medium ?: small ?: fullsize }
-            .toHttpsUrlOrNull(),
+        animePosterUrl = anime?.poster?.mega.toHttpsUrlOrNull(),
     )
 }
 
@@ -57,7 +56,7 @@ internal fun YaniReviewDto.toDetailsOrNull(): AnimeReviewDetails? {
         review = summary,
         animeTitle = anime?.title.orEmpty(),
         animePosterUrl = anime?.poster
-            ?.run { mega ?: huge ?: big ?: medium ?: small ?: fullsize }
+            ?.mega
             .toHttpsUrlOrNull(),
         commentsCount = commentsCount,
     )

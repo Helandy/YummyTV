@@ -41,7 +41,6 @@ import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
@@ -55,7 +54,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.skeleton.MobilePosterCardSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.MobileTitleRowSkeleton
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.feature.catalog.CatalogState
 import su.afk.yummy.tv.feature.catalog.mobile.view.CATALOG_SKELETON_ITEMS
@@ -265,7 +264,7 @@ fun CatalogMobileScreen(
                     if (isRowLayout) {
                         MobileTitleRowCard(
                             title = item.title,
-                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+                            posterUrls = item.poster.posterUrls(),
                             description = item.description,
                             year = item.year,
                             rating = item.rating,
@@ -274,7 +273,7 @@ fun CatalogMobileScreen(
                         )
                     } else MobilePosterCard(
                         title = item.title,
-                        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+                        posterUrls = item.poster.posterUrls(),
                         animeId = item.id,
                         rating = item.rating,
                         posterOverlay = {

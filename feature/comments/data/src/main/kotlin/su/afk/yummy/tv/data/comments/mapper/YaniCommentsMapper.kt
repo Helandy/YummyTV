@@ -149,7 +149,7 @@ private fun YaniCommentDto.toCommentItem(): CommentItem? {
     return CommentItem(
         animeId = objectId,
         title = data.title,
-        posterUrl = (data.posters.medium ?: data.posters.small ?: data.posters.big).toHttpsUrlOrNull(),
+        posterUrl = data.posters.medium.toHttpsUrlOrNull(),
     )
 }
 

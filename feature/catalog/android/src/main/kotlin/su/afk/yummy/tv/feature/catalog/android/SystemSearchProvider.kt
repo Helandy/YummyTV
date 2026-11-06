@@ -14,8 +14,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import su.afk.yummy.tv.core.model.anime.urlFor
-import su.afk.yummy.tv.core.model.settings.PosterQuality
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.usecase.SearchUseCase
@@ -91,7 +90,7 @@ class SystemSearchProvider : ContentProvider() {
                         item.title,
                         item.rating?.let { context.getString(R.string.search_suggest_rating, it) }
                             ?: context.getString(R.string.search_suggest_anime),
-                        item.poster.urlFor(PosterQuality.LOW),
+                        item.poster.defaultUrl(),
                         CONTENT_TYPE_VIDEO,
                         null,
                         null,

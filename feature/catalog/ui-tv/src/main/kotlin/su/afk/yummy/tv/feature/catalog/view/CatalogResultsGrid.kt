@@ -33,7 +33,6 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.paging.getOrNull
 import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
@@ -41,7 +40,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterYear
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleRowCard
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 
 private val GridTopContentPadding = 8.dp
@@ -153,7 +152,7 @@ internal fun CatalogResultsGrid(
                     if (isRowLayout) {
                         TvTitleRowCard(
                             title = item.title,
-                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+                            posterUrls = item.poster.posterUrls(),
                             description = item.description,
                             year = item.year,
                             rating = item.rating,
@@ -165,7 +164,7 @@ internal fun CatalogResultsGrid(
                     } else {
                         TvTitleCard(
                             title = item.title,
-                            posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+                            posterUrls = item.poster.posterUrls(),
                             animeId = item.id,
                             onClick = stableOnClick,
                             onFocused = stableOnFocused,

@@ -16,8 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 
 /**
  * Blurred, cropped poster behind the hero content, dimmed by a scrim so the
@@ -28,7 +27,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 internal fun HeroBackdrop(details: AnimeDetails) {
     val surface = MaterialTheme.colorScheme.surface
     // Те же ссылки, что у постера хиро: картинка одна, второй раз она берётся из кэша, а не из сети.
-    val backdropUrls = details.poster.urlsByQuality(LocalPosterQuality.current)
+    val backdropUrls = details.poster.posterUrls()
     if (backdropUrls.isNotEmpty()) HeroBackdropImage(backdropUrls, surface)
     HeroBottomFade()
 }

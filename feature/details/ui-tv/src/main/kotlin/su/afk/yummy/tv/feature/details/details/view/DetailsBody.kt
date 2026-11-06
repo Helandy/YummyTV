@@ -44,9 +44,8 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -300,7 +299,7 @@ internal fun DetailsBody(
                     item(key = "video") {
                         DetailsVideoSection(
                             trailers = state.trailers,
-                            bloggerVideosImageModels = details.poster.urlsByQuality(LocalPosterQuality.current),
+                            bloggerVideosImageModels = details.poster.posterUrls(),
                             hasBloggerVideos = hasBloggerVideos,
                             onTrailersClick = onTrailersSelected,
                             onBloggerVideosClick = onBloggerVideosSelected,

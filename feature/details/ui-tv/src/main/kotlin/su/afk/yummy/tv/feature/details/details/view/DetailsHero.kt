@@ -40,9 +40,8 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
@@ -269,7 +268,7 @@ internal fun DetailsHero(
                     ),
                 ) {
                     FallbackAsyncImage(
-                        models = details.poster.urlsByQuality(LocalPosterQuality.current),
+                        models = details.poster.posterUrls(),
                         contentDescription = details.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),

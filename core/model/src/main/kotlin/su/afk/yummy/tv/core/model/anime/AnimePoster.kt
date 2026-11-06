@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.core.model.anime
 
 import su.afk.yummy.tv.core.model.anime.utils.posterMirrorUrl
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 
 data class AnimePoster(
     val small: String?,
@@ -12,28 +11,14 @@ data class AnimePoster(
 )
 
 /**
- * Ссылка на постер ровно той версии, что выбрана в настройках [quality], без запасных версий.
- * Пусто, если у постера этой версии нет. У AVIF-версии `mega` следом идёт копия на нашем хосте
- * ([posterMirrorUrl]): к ней картинка переходит только при 404/5xx от yani.
+ * Ссылки на постер для показа в UI: версия `mega` (у устройств с AVIF это AVIF, у остальных yani подставляет в неё
+ * полный JPEG) и, если это AVIF, следом копия на нашем хосте ([posterMirrorUrl]): к ней картинка переходит при
+ * 404/5xx и сетевом сбое yani. Пусто, если `mega` нет.
  */
-fun AnimePoster?.urlsByQuality(quality: PosterQuality): List<String> {
-    if (this == null) return emptyList()
-    val selected = when (quality) {
-        PosterQuality.LOW -> medium
-        PosterQuality.STANDARD -> big
-        PosterQuality.MEGA -> mega
-        PosterQuality.HIGH -> fullsize
-    }
-    val url = selected?.takeIf { it.isNotBlank() } ?: return emptyList()
+fun AnimePoster?.posterUrls(): List<String> {
+    val url = this?.mega?.takeIf { it.isNotBlank() } ?: return emptyList()
     return listOfNotNull(url, posterMirrorUrl(url))
 }
 
-/** Желаемая для выбранного [quality] ссылка на постер (первая из [urlsByQuality]). */
-fun AnimePoster?.urlFor(quality: PosterQuality): String? = urlsByQuality(quality).firstOrNull()
-
-/**
- * Лучшая доступная ссылка на постер: от самой крупной версии к самой мелкой. Только для мест, где
- * ссылка сохраняется строкой в кэш/хранилище и настройки качества недоступны; в UI — [urlFor].
- */
-fun AnimePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
+/** Ссылка на постер для записи строкой: версия `mega` (см. [posterUrls]); `null`, если её нет. */
+fun AnimePoster?.defaultUrl(): String? = this?.mega?.takeIf { it.isNotBlank() }

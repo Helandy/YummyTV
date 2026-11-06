@@ -105,10 +105,6 @@ class MainViewModelTest : BaseUnitTest() {
             // Середина июня 2025: вне праздничных периодов.
             override fun nowMillis() = 1_750_000_000_000L
         },
-        imageFormatSupport = mockk {
-            coEvery { isAvifSupported() } returns true
-            coEvery { isWebpSupported() } returns true
-        },
     )
 
     private fun snapshot(nickname: String, unread: Int) = MainSettingsSnapshot(

@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
@@ -24,8 +25,17 @@ class AppStartupMaintenanceRunner @Inject constructor(
     private val settingsStore: SettingsStore,
     private val legacyStreamingCachePruner: LegacyStreamingCachePruner,
     private val storageCleanupStore: StorageCleanup,
+    private val imageFormatSupport: ImageFormatSupport,
+    private val imageFormatAnalytics: ImageFormatAnalytics,
     @DefaultApplicationScope private val scope: CoroutineScope,
 ) {
+
+    // Нужно знать, у кого есть AVIF: от этого зависят качество постеров и доля трафика с нашего хоста.
+    private suspend fun reportImageFormats() {
+        imageFormatAnalytics.eventImageFormats(
+            avifSupported = imageFormatSupport.isAvifSupported(),
+        )
+    }
 
     fun run() {
         scope.launch {
@@ -40,6 +50,7 @@ class AppStartupMaintenanceRunner @Inject constructor(
             // загрузка со старой схемой ключей, — зато подберёт их данные, как только не останется.
             runSuspendCatching { legacyStreamingCachePruner.pruneOrphanedEntries() }
             runSuspendCatching { storageCleanupStore.purgeStaleCaches() }
+            runSuspendCatching { reportImageFormats() }
         }
     }
 

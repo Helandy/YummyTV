@@ -11,8 +11,7 @@ internal fun YaniWatchHistoryDto.toDomainOrNull(): WatchHistoryEntry? {
         animeUrl = animeUrl,
         title = title.ifBlank { animeUrl },
         episode = episode.ifBlank { screenshot?.episode.orEmpty() },
-        posterUrl = poster?.run { mega ?: huge ?: big ?: medium ?: small ?: fullsize }
-            .toHttpsUrlOrNull(),
+        posterUrl = poster?.mega.toHttpsUrlOrNull(),
         screenshotUrl = screenshot?.sizes?.run { full ?: small }.toHttpsUrlOrNull(),
         watchedAtSeconds = date,
         positionSeconds = endTime.coerceAtLeast(0),

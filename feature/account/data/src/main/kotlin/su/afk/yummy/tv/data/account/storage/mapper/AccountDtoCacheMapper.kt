@@ -90,7 +90,7 @@ internal fun List<YaniUserAnimeDto>.toUserListCache(
                 position = index,
                 animeId = animeId,
                 title = item.title,
-                posterUrl = poster?.standardUrl(),
+                posterUrl = poster?.megaUrl(),
                 posterSmallUrl = poster?.small?.toHttpsUrl(),
                 posterMediumUrl = poster?.medium?.toHttpsUrl(),
                 posterBigUrl = poster?.big?.toHttpsUrl(),
@@ -152,7 +152,7 @@ internal fun List<YaniCollectionSummaryDto>.toCollectionsPageCache(
                 collectionId = id,
                 title = item.title,
                 description = item.description,
-                posterUrl = poster?.standardUrl(),
+                posterUrl = poster?.megaUrl(),
                 posterSmallUrl = poster?.small?.toHttpsUrl(),
                 posterMediumUrl = poster?.medium?.toHttpsUrl(),
                 posterBigUrl = poster?.big?.toHttpsUrl(),
@@ -168,7 +168,7 @@ internal fun List<YaniCollectionSummaryDto>.toCollectionsPageCache(
 /** Постеры из `poster_previews`, а если их меньше [COLLECTION_COLLAGE_POSTER_COUNT] — добираем постерами `animes`. */
 private fun YaniCollectionSummaryDto.collagePosterUrls(): List<String> =
     (posterPreviews.asSequence() + animes.asSequence().mapNotNull { it.poster })
-        .mapNotNull { it.standardUrl() }
+        .mapNotNull { it.megaUrl() }
         .distinct()
         .take(COLLECTION_COLLAGE_POSTER_COUNT)
         .toList()
@@ -197,7 +197,7 @@ internal fun List<YaniVideoSubscriptionDto>.toVideoSubscriptionsCache(
                 playerId = sub.playerId.toFlexibleInt(),
                 player = sub.player,
                 dubbing = sub.dubbing,
-                posterUrl = item.poster?.bestUrl(),
+                posterUrl = item.poster?.megaUrl(),
                 posterSmallUrl = item.poster?.small?.toHttpsUrl(),
                 posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
                 posterBigUrl = item.poster?.big?.toHttpsUrl(),
@@ -310,7 +310,7 @@ internal fun List<YaniUserReviewDto>.toUserReviewsPageCache(
                 animeId = item.anime?.animeId?.takeIf { it > 0 }
                     ?: item.animeId.takeIf { it > 0 } ?: 0,
                 animeTitle = item.anime?.title.orEmpty(),
-                animePosterUrl = item.anime?.poster?.bestUrl(),
+                animePosterUrl = item.anime?.poster?.megaUrl(),
                 textPreview = item.textPreview,
                 rating = item.rating?.average,
                 likes = item.likes?.likes ?: 0,
@@ -349,12 +349,7 @@ internal fun List<YaniUserPostDto>.toUserPostsPageCache(
         },
     )
 
-private fun YaniAccountPosterDto.standardUrl(): String? =
-    big?.toHttpsUrl() ?: medium?.toHttpsUrl() ?: fullsize?.toHttpsUrl() ?: small?.toHttpsUrl()
-
-private fun YaniAccountPosterDto.bestUrl(): String? =
-    mega?.toHttpsUrl() ?: huge?.toHttpsUrl() ?: big?.toHttpsUrl() ?: medium?.toHttpsUrl()
-    ?: fullsize?.toHttpsUrl() ?: small?.toHttpsUrl()
+private fun YaniAccountPosterDto.megaUrl(): String? = mega?.toHttpsUrl()
 
 /**
  * Сезон в ответах yani приходит либо числом 1..4, либо слагом `winter`/`spring`/`summer`/`fall`.

@@ -6,12 +6,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterType
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterYear
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 
 @Composable
 internal fun ViewingOrderMobileCard(
@@ -26,7 +25,7 @@ internal fun ViewingOrderMobileCard(
     val shape = MaterialTheme.shapes.medium
     MobilePosterCard(
         title = item.title,
-        posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+        posterUrls = item.poster.posterUrls(),
         modifier = modifier
             .fillMaxWidth()
             .then(if (selected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, shape) else Modifier),

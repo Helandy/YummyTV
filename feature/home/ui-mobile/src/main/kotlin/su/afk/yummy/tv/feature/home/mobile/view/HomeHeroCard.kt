@@ -29,9 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
 /** Фиксированная высота: длина названия и описания не должна менять высоту карусели. */
@@ -44,7 +43,7 @@ internal fun HomeHeroCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current)
+    val posterUrls = item.poster.posterUrls()
     Card(
         modifier = modifier
             .fillMaxWidth()

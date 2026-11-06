@@ -4,8 +4,6 @@ import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.seasonal.seasonalAnnouncementKey
 import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
-import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
-import su.afk.yummy.tv.core.model.settings.choosePosterQuality
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
@@ -51,7 +49,6 @@ class MainViewModel @Inject internal constructor(
     private val observeLibraryListStatuses: ObserveLibraryListStatusesUseCase,
     private val observeLibraryUserRatings: ObserveLibraryUserRatingsUseCase,
     private val appClock: AppClock,
-    private val imageFormatSupport: ImageFormatSupport,
 ) : BaseViewModel<MainState.State, MainState.Event, MainState.Effect>() {
 
     override fun createInitialState() = MainState.State()
@@ -123,8 +120,6 @@ class MainViewModel @Inject internal constructor(
                         snapshot.seasonalDecorationsEnabled &&
                         snapshot.seasonalAnnouncedKey != seasonalAnnouncementKey(nowMillis)
                 }
-                // Качество постеров зависит только от поддержки форматов устройством (проба считается один раз).
-                val posterQuality = imageFormatSupport.choosePosterQuality()
                 setState {
                     copy(
                         seasonalPrompt = seasonalPrompt,
@@ -132,7 +127,6 @@ class MainViewModel @Inject internal constructor(
                         backgroundStyle = snapshot.backgroundStyle,
                         navTransitionStyle = snapshot.navTransitionStyle,
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
-                        posterQuality = posterQuality,
                         posterCardSize = snapshot.posterCardSize,
                         yaniNickname = snapshot.yaniNickname,
                         yaniAvatarUrl = snapshot.yaniAvatarUrl,

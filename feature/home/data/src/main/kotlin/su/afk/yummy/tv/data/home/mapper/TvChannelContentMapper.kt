@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.home.mapper
 
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.core.tv.api.TvChannelContent
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -17,6 +18,6 @@ fun HomeFeedItem.toTvChannelContent(): TvChannelContent? {
     return TvChannelContent(
         animeId = animeId,
         title = title,
-        posterUrl = poster?.run { medium ?: big ?: fullsize ?: small },
+        posterUrl = poster.defaultUrl(),
     )
 }

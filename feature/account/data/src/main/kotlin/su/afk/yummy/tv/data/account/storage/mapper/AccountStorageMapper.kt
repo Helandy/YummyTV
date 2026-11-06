@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.account.storage.mapper
 
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
 import su.afk.yummy.tv.core.utils.formatting.toShortAnimeTypeName
@@ -329,7 +330,7 @@ private fun AccountUserListItemEntry.toUserListItem(): UserAnimeListItem {
     return UserAnimeListItem(
         animeId = animeId,
         title = title,
-        posterUrl = posterUrl ?: poster?.standardUrl,
+        posterUrl = posterUrl ?: poster.defaultUrl(),
         poster = poster,
         rating = rating,
         userRating = userRating,
@@ -353,7 +354,7 @@ private fun AccountCollectionItemEntry.toCollectionSummary(): AnimeCollectionSum
         id = collectionId,
         title = title,
         description = description,
-        posterUrl = posterUrl ?: poster?.standardUrl,
+        posterUrl = posterUrl ?: poster.defaultUrl(),
         poster = poster,
         views = views,
         likes = likes,
@@ -396,6 +397,3 @@ private fun AccountCollectionItemEntry.collectionPosterOrNull(): AnimePoster? {
         mega = posterMegaUrl,
     )
 }
-
-private val AnimePoster.standardUrl: String?
-    get() = big ?: medium ?: fullsize ?: small

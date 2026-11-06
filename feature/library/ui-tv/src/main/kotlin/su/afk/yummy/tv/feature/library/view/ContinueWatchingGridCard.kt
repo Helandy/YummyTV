@@ -15,12 +15,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 
 @Composable
@@ -45,7 +44,7 @@ internal fun ContinueWatchingGridCard(
     var hasFocus by remember { mutableStateOf(false) }
     val imageModels = episodeThumbnailModels(
         thumbnail = episodeThumbnailOf(entry.animeId, entry.episode, entry.screenshotUrl, entry.episodeUrl),
-        posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
+        posterUrls = entry.poster.posterUrls(),
     )
     val progress =
         if (entry.durationMs > 0L) {

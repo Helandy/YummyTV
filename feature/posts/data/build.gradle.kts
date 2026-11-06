@@ -7,6 +7,7 @@ plugins {
 android { namespace = "su.afk.yummy.tv.data.posts" }
 
 dependencies {
+    implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":core:storage"))
     implementation(project(":core:utils"))

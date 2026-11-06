@@ -42,8 +42,7 @@ import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
 /** Ширина арта справа и длина градиента, растворяющего его в фон. */
@@ -64,7 +63,6 @@ internal fun HeroBannerPage(
     onFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val posterQuality = LocalPosterQuality.current
     val surfaceColor = MaterialTheme.colorScheme.surface
     var isFocused by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -126,7 +124,7 @@ internal fun HeroBannerPage(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             FallbackAsyncImage(
-                models = item.poster.urlsByQuality(posterQuality),
+                models = item.poster.posterUrls(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.TopCenter,

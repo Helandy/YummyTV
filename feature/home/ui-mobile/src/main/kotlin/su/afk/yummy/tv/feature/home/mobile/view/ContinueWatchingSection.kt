@@ -12,10 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileProgressMediaCard
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -53,7 +52,7 @@ internal fun ContinueWatchingSection(
                 }
                 val imageModels = episodeThumbnailModels(
         thumbnail = episodeThumbnailOf(entry.animeId, entry.episode, entry.screenshotUrl, entry.episodeUrl),
-        posterUrls = entry.poster.urlsByQuality(LocalPosterQuality.current),
+        posterUrls = entry.poster.posterUrls(),
     )
                 MobileProgressMediaCard(
                     title = entry.animeTitle.ifBlank { episodeTitle },

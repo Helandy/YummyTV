@@ -65,10 +65,7 @@ internal class YaniRequestHeaderCache(
         if (imageAcceptLoaded) return imageAccept
         return imageAcceptMutex.withLock {
             if (!imageAcceptLoaded) {
-                imageAccept = yaniImageAccept(
-                    avifSupported = imageFormatSupport.isAvifSupported(),
-                    webpSupported = imageFormatSupport.isWebpSupported(),
-                )
+                imageAccept = yaniImageAccept(avifSupported = imageFormatSupport.isAvifSupported())
                 imageAcceptLoaded = true
             }
             imageAccept

@@ -47,7 +47,7 @@ internal fun YaniPostDetailsDto.domain() = PostDetails(
         RelatedPostAnime(
             it.animeId,
             it.title,
-            it.poster?.run { mega ?: huge ?: big ?: medium ?: small }?.toHttpsUrl(),
+            it.poster?.mega?.toHttpsUrl(),
             it.year,
             it.rating?.average?.takeIf { it > 0.0 },
         )

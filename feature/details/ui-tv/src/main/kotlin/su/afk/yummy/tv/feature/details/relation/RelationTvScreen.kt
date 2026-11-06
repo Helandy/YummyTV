@@ -50,12 +50,11 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
-import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
-import su.afk.yummy.tv.core.model.anime.urlsByQuality
+import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
@@ -246,7 +245,7 @@ fun RelationTvScreen(
                             itemsIndexed(relation.anime, key = { _, item -> lazyKey("relation", item.animeId) }) { index, item ->
                                 TvTitleCard(
                                     title = item.title,
-                                    posterUrls = item.poster.urlsByQuality(LocalPosterQuality.current),
+                                    posterUrls = item.poster.posterUrls(),
                                     animeId = item.animeId,
                                     onClick = {
                                         lastFocusTarget = RelationFocusTarget.Anime(item.animeId)

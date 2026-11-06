@@ -1,12 +1,9 @@
 package su.afk.yummy.tv.core.network.yani
 
 /**
- * Значение `Accept` для картинок в запросах к API yani: поддерживаемые устройством `image/avif` и `image/webp`
- * через запятую. Без них yani подменяет картинки на JPEG худшего качества (в `mega` приходит `posters/full`).
- * `null` — устройство не умеет ни того, ни другого, заголовок не нужен.
+ * Значение `Accept` для картинок в запросах к API yani: `image/avif`, если устройство его декодирует. Без него yani
+ * подменяет картинки на JPEG (в `mega` приходит `posters/full`). WebP не просим сознательно: его версии мелкие
+ * (до 250x350) и на ТВ заметно портят качество, поэтому у нас только AVIF `mega` или полный JPEG `fullsize`.
+ * `null` — AVIF не поддерживается, заголовок не нужен.
  */
-internal fun yaniImageAccept(avifSupported: Boolean, webpSupported: Boolean): String? =
-    listOfNotNull(
-        "image/avif".takeIf { avifSupported },
-        "image/webp".takeIf { webpSupported },
-    ).takeIf { it.isNotEmpty() }?.joinToString(",")
+internal fun yaniImageAccept(avifSupported: Boolean): String? = "image/avif".takeIf { avifSupported }

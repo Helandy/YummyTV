@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.domain.watching.usecase
 
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingLaunch
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
@@ -32,7 +32,7 @@ class ResolveRequestedPlaybackUseCase @Inject internal constructor(
         return ContinueWatchingLaunch(
             animeId = animeId,
             animeTitle = details?.title.orEmpty(),
-            posterUrl = details?.poster.bestUrl().orEmpty(),
+            posterUrl = details?.poster.defaultUrl().orEmpty(),
             video = ContinueWatchingPlaybackVideo(
                 id = video.id,
                 episode = video.episode,
