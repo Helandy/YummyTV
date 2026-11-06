@@ -41,6 +41,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusReques
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.utils.system.restartApplication
+import su.afk.yummy.tv.core.utils.system.restartApplicationCold
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.presentation.R
@@ -49,6 +50,7 @@ import su.afk.yummy.tv.feature.settings.view.SettingsTvPanelHost
 import su.afk.yummy.tv.feature.settings.view.SettingsTvPickerPanel
 import su.afk.yummy.tv.feature.settings.view.SettingsTvValueRow
 import su.afk.yummy.tv.feature.settings.view.TvInterfaceModeConfirmationDialog
+import su.afk.yummy.tv.feature.settings.view.TvLogRecordingConfirmationDialog
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPickerRow
 import su.afk.yummy.tv.feature.settings.view.valueText
 import su.afk.yummy.tv.feature.settings.common.utils.color
@@ -96,6 +98,14 @@ fun SettingsTvScreen(
                     Toast.makeText(
                         context,
                         R.string.settings_interface_restart_failed,
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+
+                SettingsState.Effect.ColdRestartApplication -> if (!context.restartApplicationCold()) {
+                    Toast.makeText(
+                        context,
+                        R.string.settings_log_recording_restart_failed,
                         Toast.LENGTH_LONG,
                     ).show()
                 }
@@ -233,6 +243,13 @@ fun SettingsTvScreen(
                 }
             }
         }
+    }
+
+    if (state.isLogRecordingRestartConfirmVisible) {
+        TvLogRecordingConfirmationDialog(
+            onConfirm = { onEvent(SettingsState.Event.AppLogRecordingEnableConfirmed) },
+            onDismiss = { onEvent(SettingsState.Event.AppLogRecordingEnableDismissed) },
+        )
     }
 
     pendingInterfaceMode?.let { targetMode ->

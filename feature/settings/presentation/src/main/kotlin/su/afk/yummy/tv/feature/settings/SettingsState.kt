@@ -100,6 +100,8 @@ class SettingsState {
         val betaUpdatesEnabled: Boolean = false,
         /** Запись логов приложения в файл включена; пока выключена — «Поделиться логами» скрыто. */
         val appLogRecordingEnabled: Boolean = false,
+        /** Показан диалог: запись логов включится только после холодного перезапуска приложения. */
+        val isLogRecordingRestartConfirmVisible: Boolean = false,
         /** Токен сессии хранится без AndroidKeyStore — прошивка не даёт им пользоваться. */
         val isFallbackSessionStorage: Boolean = false,
         /** ID устройства в аналитике, разбитый на группы по 3 цифры; null — ID недоступен. */
@@ -296,6 +298,12 @@ class SettingsState {
         /** Пользователь переключил запись логов приложения в файл. */
         data object AppLogRecordingToggled : Event
 
+        /** Пользователь подтвердил включение записи логов вместе с перезапуском приложения. */
+        data object AppLogRecordingEnableConfirmed : Event
+
+        /** Пользователь отказался от включения записи логов. */
+        data object AppLogRecordingEnableDismissed : Event
+
         /** Пользователь открыл «Что нового»: загрузить историю релизов, если её ещё нет. */
         data object ReleaseNotesRequested : Event
 
@@ -309,6 +317,9 @@ class SettingsState {
     sealed interface Effect : UiEffect {
         /** Сохранён новый тип интерфейса, приложение нужно запустить заново. */
         data object RestartApplication : Effect
+
+        /** Запись логов включена, нужен холодный старт: процесс будет убит и запущен заново. */
+        data object ColdRestartApplication : Effect
         data object OpenVideoExportDirectoryPicker : Effect
         data object VideoExportDirectorySelectionFailed : Effect
 

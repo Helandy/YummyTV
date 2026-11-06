@@ -240,6 +240,13 @@ internal fun SettingsMobileDialogsHost(
         )
     }
 
+    if (state.isLogRecordingRestartConfirmVisible) {
+        MobileLogRecordingConfirmationDialog(
+            onConfirm = { onEvent(SettingsState.Event.AppLogRecordingEnableConfirmed) },
+            onDismiss = { onEvent(SettingsState.Event.AppLogRecordingEnableDismissed) },
+        )
+    }
+
     dialogs.pendingInterfaceMode?.let { targetMode ->
         MobileInterfaceModeConfirmationDialog(
             targetModeLabel = targetMode.label(),

@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.utils.system.restartApplication
+import su.afk.yummy.tv.core.utils.system.restartApplicationCold
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.presentation.R
 
@@ -36,6 +37,16 @@ internal fun SettingsMobileEffects(
                         Toast.makeText(
                             context,
                             R.string.settings_interface_restart_failed,
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }
+
+                SettingsState.Effect.ColdRestartApplication -> {
+                    if (!context.restartApplicationCold()) {
+                        Toast.makeText(
+                            context,
+                            R.string.settings_log_recording_restart_failed,
                             Toast.LENGTH_LONG,
                         ).show()
                     }

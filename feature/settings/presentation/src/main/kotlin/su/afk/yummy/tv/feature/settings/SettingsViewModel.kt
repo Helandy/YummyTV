@@ -509,10 +509,27 @@ class SettingsViewModel @Inject internal constructor(
                 setState { copy(releaseNotes = ReleaseNotesStatus.Idle) }
             }
 
-            SettingsState.Event.AppLogRecordingToggled -> viewModelScope.launch {
-                val enabled = !currentState.appLogRecordingEnabled
-                analytics.eventAppLogRecordingToggled(enabled)
-                settingsStore.setAppLogRecordingEnabled(enabled)
+            SettingsState.Event.AppLogRecordingToggled -> {
+                if (currentState.appLogRecordingEnabled) {
+                    viewModelScope.launch {
+                        analytics.eventAppLogRecordingToggled(false)
+                        settingsStore.setAppLogRecordingEnabled(false)
+                    }
+                } else {
+                    // Включение требует холодного старта — сначала предупреждаем.
+                    setState { copy(isLogRecordingRestartConfirmVisible = true) }
+                }
+            }
+
+            SettingsState.Event.AppLogRecordingEnableDismissed ->
+                setState { copy(isLogRecordingRestartConfirmVisible = false) }
+
+            SettingsState.Event.AppLogRecordingEnableConfirmed -> viewModelScope.launch {
+                setState { copy(isLogRecordingRestartConfirmVisible = false) }
+                analytics.eventAppLogRecordingToggled(true)
+                // Перезапуск — только после того, как флаг записан в DataStore.
+                settingsStore.setAppLogRecordingEnabled(true)
+                setEffect(SettingsState.Effect.ColdRestartApplication)
             }
 
             SettingsState.Event.ReleaseNotesRequested -> loadReleaseNotes()

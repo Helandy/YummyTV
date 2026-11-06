@@ -117,6 +117,10 @@
     <string name="settings_app_logs_recording_label">Запись логов</string>
     <string name="settings_app_logs_recording_enabled">Включена. Логи пишутся в файл, их можно отправить через «Поделиться логами»</string>
     <string name="settings_app_logs_recording_disabled">Выключена. При выключении записанные логи удаляются</string>
+    <string name="settings_log_recording_confirm_title">Включить запись логов?</string>
+    <string name="settings_log_recording_confirm_message">Запись логов заработает после перезапуска. Приложение сейчас закроется и откроется заново.</string>
+    <string name="settings_log_recording_confirm">Перезапустить</string>
+    <string name="settings_log_recording_restart_failed">Закройте и откройте приложение вручную, чтобы началась запись логов</string>
     <string name="settings_theme_warm_amber">Тёплый янтарь</string>
     <string name="settings_theme_warm_amber_hint">Нейтральная тёмная основа и мягкий янтарный фокус</string>
     <string name="settings_theme_sakura">Сакура</string>

@@ -117,6 +117,10 @@
     <string name="settings_app_logs_recording_label">Log recording</string>
     <string name="settings_app_logs_recording_enabled">On. Logs are saved to a file and can be shared from the About section</string>
     <string name="settings_app_logs_recording_disabled">Off. Turning it off deletes the recorded logs</string>
+    <string name="settings_log_recording_confirm_title">Enable log recording?</string>
+    <string name="settings_log_recording_confirm_message">Log recording turns on after the app restarts. The app will close and open again now.</string>
+    <string name="settings_log_recording_confirm">Restart</string>
+    <string name="settings_log_recording_restart_failed">Close and reopen the app manually to start recording logs</string>
     <string name="settings_theme_warm_amber">Warm amber</string>
     <string name="settings_theme_warm_amber_hint">Neutral dark surfaces with a soft amber focus</string>
     <string name="settings_theme_sakura">Sakura</string>
