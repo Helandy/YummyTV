@@ -152,7 +152,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `resolved stream is merged into the state`() = runTest {
-        coEvery { streamHandler.resolve(any(), 20_000L, any(), any(), any(), any()) } returns PlayerStreamResult.Stream(
+        coEvery { streamHandler.resolve(any(), 20_000L, any(), any(), any(), any(), any(), any()) } returns PlayerStreamResult.Stream(
             url = STREAM,
             headers = mapOf("Referer" to "r"),
             qualities = linkedMapOf("720p" to "u"),
@@ -182,7 +182,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `first failure asks for fresh sources, the final one shows the error`() = runTest {
-        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any()) } returns
+        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any(), any(), any()) } returns
             PlayerStreamResult.PlayerError(message = "unavailable", reason = PlayerStreamResult.REASON_UNAVAILABLE)
         val handler = createHandler()
 
@@ -198,7 +198,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `kodik block is shown in its own error`() = runTest {
-        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any()) } returns PlayerStreamResult.KodikBlocked("blocked")
+        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any(), any(), any()) } returns PlayerStreamResult.KodikBlocked("blocked")
 
         val result = createHandler().resolveStream(
             state(), null, null, PlayerStreamResumeMode.PreserveCurrent, refreshSourcesOnFailure = false,
@@ -210,7 +210,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
 
     @Test
     fun `crash while resolving becomes a stream error`() = runTest {
-        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
+        coEvery { streamHandler.resolve(any(), any(), any(), any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
 
         val result = createHandler().resolveStream(
             state().copy(streamUrl = STREAM), null, null, PlayerStreamResumeMode.PreserveCurrent, refreshSourcesOnFailure = false,

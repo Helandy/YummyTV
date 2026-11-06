@@ -5,14 +5,14 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.runTest
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
@@ -26,7 +26,6 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
 import su.afk.yummy.tv.feature.player.delegate.PlayerNavigationDelegate
-import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
@@ -40,6 +39,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceSelectionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
+import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.mapper.PlayerDestinationStateMapper
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
@@ -87,7 +87,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         every { sourceStreamHandler.preparingStreamResolve(any(), any()) } answers { firstArg() }
         every { sourceStreamHandler.playbackErrorMessage(any(), any()) } returns "friendly error"
         coEvery {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns PlayerStreamLoadResult.State(state = streamState, consumedDestinationResume = false)
     }
 
@@ -152,7 +152,7 @@ class PlayerViewModelTest : BaseUnitTest() {
     @Test
     fun `failed stream shows the player error and no stream`() {
         coEvery {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns PlayerStreamLoadResult.State(
             state = PlayerState.State(playerError = "no stream"),
             consumedDestinationResume = false,
@@ -175,7 +175,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         val state = createViewModel(dest(downloadId = 7L)).currentState
 
         assertTrue(state.isOfflinePlayback)
-        coVerify(exactly = 0) { sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -316,6 +316,13 @@ class PlayerViewModelTest : BaseUnitTest() {
     @Test
     fun `change quality after error applies the quality and reloads the stream`() {
         val vm = createViewModel()
+        // Настоящий резолвер возвращает поток выбранного качества, а не дефолтного из setUp.
+        coEvery {
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns PlayerStreamLoadResult.State(
+            state = streamState.copy(selectedQuality = "480p", resumeFromMs = 7_000L),
+            consumedDestinationResume = false,
+        )
 
         vm.setEvent(PlayerState.Event.ChangeQualityAfterError("480p", 7_000L))
 
@@ -323,7 +330,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         assertEquals(7_000L, vm.currentState.resumeFromMs)
         assertEquals(1, vm.currentState.retryKey)
         coVerify(exactly = 2) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
     }
 
@@ -357,7 +364,7 @@ class PlayerViewModelTest : BaseUnitTest() {
 
         assertEquals(1, vm.currentState.retryKey)
         coVerify(exactly = 2) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
         verify(exactly = 1) { analytics.eventRetryStream(ANIME_ID) }
     }
@@ -543,7 +550,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         vm.setEvent(PlayerState.Event.NavigateToDestination(dest()))
 
         coVerify(exactly = 1) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
     }
 
@@ -555,7 +562,7 @@ class PlayerViewModelTest : BaseUnitTest() {
 
         assertEquals("Anime", vm.currentState.animeTitle)
         coVerify(exactly = 2) {
-            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
     }
 
