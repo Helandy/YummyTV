@@ -65,7 +65,7 @@ internal class PlayerLoadErrorHandlingPolicy(
         const val TRUNCATED_RESPONSE_RETRY_COUNT = 3
         const val MAX_CAUSE_DEPTH = 5
 
-        // Достаточно, чтобы окно фоновых ретраев заведомо перекрыло буфер (maxBufferMs = 60 c);
+        // Достаточно, чтобы окно фоновых ретраев заведомо перекрыло буфер (maxBufferMs до 180 c);
         // после исчерпания — фатал → перерезолв/оверлей, чтобы не зависнуть на спиннере навсегда.
         const val SILENT_RETRY_COUNT = 20
 
