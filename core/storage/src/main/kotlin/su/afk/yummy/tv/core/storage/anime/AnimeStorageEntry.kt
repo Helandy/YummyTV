@@ -246,3 +246,9 @@ data class AnimeTrailerEntry(
     val position: Int,
     val iframeUrl: String,
 )
+
+/** Лёгкая проекция видео: тайтл и номер серии без остальных полей. */
+data class AnimeEpisodeRef(
+    val animeId: Int,
+    val episode: String,
+)

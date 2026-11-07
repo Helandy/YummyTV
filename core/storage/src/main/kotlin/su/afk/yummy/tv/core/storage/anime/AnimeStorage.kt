@@ -24,6 +24,12 @@ interface AnimeStorage {
     /** Серверный прогресс по всем тайтлам из кэша видео (`/videos` → `watched`), с обновлениями. */
     fun observeServerWatchProgress(language: String): Flow<List<AnimeWatchProgress>>
 
+    /**
+     * Максимальный целый номер доступной серии по каждому тайтлу из кэша видео. Спецвыпуски вроде
+     * «7.5» не считаются. Тайтлов без кэша здесь нет.
+     */
+    fun observeAvailableEpisodeCounts(language: String): Flow<Map<Int, Int>>
+
     suspend fun getRecommendations(
         animeId: Int,
         language: String,

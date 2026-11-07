@@ -23,13 +23,14 @@ private const val ECHO_POSITION_TOLERANCE_MS = 15_000L
  * Досмотренная серверная серия не перебивает локальную цель «следующая серия». Если она свежее
  * локальной и не раньше её по номеру, то, как и плеер после watched-порога, предлагаем следующую
  * серию с начала при [suggestNextEpisode] (карточка [ContinueWatchingSource.REMOTE_NEXT_EPISODE]),
- * иначе скрываем тайтл.
+ * иначе скрываем тайтл. Следующей серии нет, если её номер больше последней из [availableEpisodes].
  */
 fun List<HomeContinueWatchingItem>.mergeWithRemote(
     remote: List<HomeContinueWatchingItem>,
     localHistory: List<HomeContinueWatchingItem>,
     suppressedAt: Map<Int, Long>,
     suggestNextEpisode: Boolean,
+    availableEpisodes: Map<Int, Int> = emptyMap(),
 ): List<HomeContinueWatchingItem> {
     val localByAnime = filter { it.animeId > 0 }
         .groupBy { it.animeId }
@@ -47,6 +48,7 @@ fun List<HomeContinueWatchingItem>.mergeWithRemote(
                 local = localByAnime[animeId],
                 remote = remoteByAnime[animeId],
                 suggestNextEpisode = suggestNextEpisode,
+                maxEpisode = availableEpisodes[animeId],
             )
         }
         .sortedByDescending { it.updatedAt }
@@ -62,6 +64,7 @@ fun List<HomeContinueWatchingItem>.reconcileWithEpisodeProgress(
     serverProgress: List<AnimeWatchProgress>,
     localHistory: List<HomeContinueWatchingItem>,
     suggestNextEpisode: Boolean,
+    availableEpisodes: Map<Int, Int> = emptyMap(),
 ): List<HomeContinueWatchingItem> {
     if (serverProgress.isEmpty()) return this
     val serverByAnime = serverProgress.groupBy { it.animeId }
@@ -78,7 +81,7 @@ fun List<HomeContinueWatchingItem>.reconcileWithEpisodeProgress(
         ).firstOrNull { it.episode.episodeGroupKey() == cardEpisode }
         when {
             resolved == null || !isWatchedProgress(resolved.positionMs, resolved.durationMs) -> card
-            suggestNextEpisode -> card.toNextEpisodeCard()
+            suggestNextEpisode -> card.toNextEpisodeCard(availableEpisodes[card.animeId])
             else -> null
         }
     }
@@ -111,13 +114,14 @@ private fun pickCard(
     local: HomeContinueWatchingItem?,
     remote: HomeContinueWatchingItem?,
     suggestNextEpisode: Boolean,
+    maxEpisode: Int?,
 ): HomeContinueWatchingItem? {
     if (remote == null || remote.updatedAt <= (local?.updatedAt ?: Long.MIN_VALUE)) return local
     if (local != null && remote.isMirrorOfExtraSource(local)) return local
     if (remote.isResumable()) return remote
     if (!remote.isWatched()) return local
     if (local != null && !remote.isNotBeforeEpisodeOf(local)) return local
-    return if (suggestNextEpisode) remote.toNextEpisodeCard() else null
+    return if (suggestNextEpisode) remote.toNextEpisodeCard(maxEpisode) else null
 }
 
 /**
@@ -133,11 +137,15 @@ private fun HomeContinueWatchingItem.isMirrorOfExtraSource(local: HomeContinueWa
             serverPositionMs = positionMs,
         )
 
-/** Карточка следующей серии с начала; номер не распознан — предлагать нечего, тайтл скрыт. */
-private fun HomeContinueWatchingItem.toNextEpisodeCard(): HomeContinueWatchingItem? {
+/**
+ * Карточка следующей серии с начала; номер не распознан или следующей серии ещё нет ([maxEpisode] —
+ * последняя доступная, `null` если неизвестна) — предлагать нечего, тайтл скрыт.
+ */
+private fun HomeContinueWatchingItem.toNextEpisodeCard(maxEpisode: Int?): HomeContinueWatchingItem? {
     val nextEpisode = episode.episodeNumberOrNull()
         ?.let { floor(it).toLong() + 1 }
         ?: return null
+    if (maxEpisode != null && nextEpisode > maxEpisode) return null
     return copy(
         episode = nextEpisode.toString(),
         positionMs = 0L,

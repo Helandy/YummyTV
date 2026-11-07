@@ -86,8 +86,8 @@ Watched — meaningful progress, где до конца серии остало�
 (`YaniRemoteContinueWatchingRepository`, карточки с `source = REMOTE`):
 
 - гость — серверного списка нет; при смене `yaniUserId` он сбрасывается сразу;
-- сначала отдаётся кэш (user-scoped document cache, любой давности), затем ответ сервера
-  (TTL 60 с); обновление просят `load()`, pull-to-refresh и возврат на экран; ошибка сети оставляет
+- сначала отдаётся кэш (user-scoped document cache, любой давности), затем ответ сервера (TTL 60 с);
+  обновление просят `load()`, pull-to-refresh и возврат на экран; ошибка сети оставляет
   прошлый список;
 - серверная карточка: позиция и прогресс-бар — из `end_time` (прогресс пользователя), длина — из
   `duration`, дата — `date × 1000`;
@@ -109,7 +109,8 @@ Watched — meaningful progress, где до конца серии остало�
   сервере ничего не удаляется.
 
 Запуск REMOTE-карточки всегда идёт с серверным прогрессом, независимо от настройки
-`refreshContinueWatchingProgressOnLaunch`: `/anime/{id}/videos` обновляется, и если там есть `watched`
+`refreshContinueWatchingProgressOnLaunch`: `/anime/{id}/videos` обновляется, и если там есть
+`watched`
 не старше карточки, берётся его видео (с озвучкой) и позиция. Иначе серия ищется по
 `episodeGroupKey()`, позиция — из `end_time`. Тоста о переключении и миграции placeholder-серии для
 REMOTE нет. После просмотра плеер пишет локальный прогресс, и карточка становится LOCAL.
@@ -124,11 +125,32 @@ REMOTE нет. После просмотра плеер пишет локаль�
   отдаёт кэш и для этого не годится), серия ищется по `episodeGroupKey()`, старт с 0:00; озвучка и
   плеер — как у последнего `watched` тайтла в `/videos`, если у этой серии такие есть;
 - серии нет — `ResolveContinueWatchingLaunchUseCase` возвращает `null`: главная показывает тост
-  «Серии N пока нет» и открывает детали тайтла. Если список пришёл с сервера и не пустой, тайтл ещё и
+  «Серии N пока нет» и открывает детали тайтла. Если список пришёл с сервера и не пустой, тайтл ещё
+  и
   скрывается (suppression, как ручное удаление) — досмотренный до конца сериал не висит карточкой
   несуществующей серии. Новая активность (просмотр здесь или запись на сервере свежее) вернёт его;
 - нет сети — решение по кэшу `/videos` (`GetCachedAnimeVideosUseCase`), ничего не скрывается:
   старый кэш мог не знать о новой серии.
+
+### Не предлагаем серию, которой нет в кэше `/videos`
+
+Оптимистичная карточка выше показывалась и для ongoing-тайтла, у которого досмотрена последняя
+вышедшая серия: «Продолжить» предлагал серию N+1, которой нигде нет, до самого клика.
+
+Теперь слияние получает `availableEpisodes` (id тайтла → максимальный целый номер серии из кэша
+`/videos`; `HomeFeedRepository.observeAvailableEpisodes()` →
+`AnimeStorage.observeAvailableEpisodeCounts`
+→ DAO `observeEpisodeRefs`). Спецвыпуски («7.5») не считаются, кэши с `cachedAt = 0` игнорируются.
+
+- `toNextEpisodeCard(maxEpisode)` возвращает `null` (тайтл скрыт, как при выключенной настройке),
+  если N+1 больше `maxEpisode`; это работает и в `mergeWithRemote` (`pickCard`), и в
+  `reconcileWithEpisodeProgress`;
+- по тайтлу нет кэша `/videos` (детали ни разу не открывали) — `maxEpisode = null`, карточка
+  остаётся, как раньше, и проверяется кликом. Тот же источник знает плеер, поэтому после просмотра
+  серии в плеере кэш есть;
+- проверка при клике остаётся: кэш мог устареть, а серия — выйти.
+
+Тесты: `ContinueWatchingMergeTest` (последняя доступная серия скрывает тайтл на обоих путях).
 
 ## Ручное удаление
 
@@ -174,9 +196,10 @@ playback-цель. Presentation превращает её в destination пле�
   `SystemSearchIntentHandler`) + «Загрузки» (`yummytv://downloads`). Все динамические: статический
   `shortcuts.xml` требует литерального `targetPackage`, а у debug/releasedebug свой суффикс
   applicationId.
-- **Виджет** (`ContinueWatchingWidget`, Glance, `SizeMode.Exact`): до трёх карточек по ширине
-  (не уже ~110dp). Перерисовывает его `ContinueWatchingWidgetUpdater`; периодического обновления
+- **Виджет** (`ContinueWatchingWidget`, Glance, `SizeMode.Exact`): до трёх карточек по ширине (не
+  уже ~110dp). Перерисовывает его `ContinueWatchingWidgetUpdater`; периодического обновления
   нет — список локальный и вне приложения не меняется.
 
-Постеры для обеих поверхностей — software-bitmap через синглтон Coil (`ContinueWatchingPosterUtils`):
+Постеры для обеих поверхностей — software-bitmap через синглтон Coil
+(`ContinueWatchingPosterUtils`):
 hardware-bitmap не сериализуется ни в иконку ярлыка, ни в RemoteViews.

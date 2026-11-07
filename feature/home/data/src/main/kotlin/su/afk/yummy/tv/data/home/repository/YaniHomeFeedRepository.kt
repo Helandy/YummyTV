@@ -132,6 +132,10 @@ class YaniHomeFeedRepository(
         flow { emitAll(animeStorage.observeServerWatchProgress(settingsStore.currentLanguageCode())) }
             .distinctUntilChanged()
 
+    override fun observeAvailableEpisodes(): Flow<Map<Int, Int>> =
+        flow { emitAll(animeStorage.observeAvailableEpisodeCounts(settingsStore.currentLanguageCode())) }
+            .distinctUntilChanged()
+
     override fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>> =
         watchProgressStore.observeContinueWatchingSuppressionTimestamps()
             .distinctUntilChanged()

@@ -23,6 +23,38 @@ class ContinueWatchingMergeTest : BaseUnitTest() {
     }
 
     @Test
+    fun `remote watched last available episode hides the title`() {
+        val remote = remote(episode = "5", positionMs = WATCHED_MS)
+
+        val result = emptyList<HomeContinueWatchingItem>().merge(remote, availableEpisodes = mapOf(ANIME_ID to 5))
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `remote watched episode still suggests next one when it is available`() {
+        val remote = remote(episode = "4", positionMs = WATCHED_MS)
+
+        val card = emptyList<HomeContinueWatchingItem>()
+            .merge(remote, availableEpisodes = mapOf(ANIME_ID to 5))
+            .single()
+
+        assertEquals("5", card.episode)
+    }
+
+    @Test
+    fun `reconcile hides watched last available episode`() {
+        val card = item(episode = "5", positionMs = 300_000L, durationMs = EPISODE_MS)
+
+        val result = listOf(card).reconcile(
+            server(episode = "5", positionMs = EPISODE_MS),
+            availableEpisodes = mapOf(ANIME_ID to 5),
+        )
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
     fun `remote watched episode hides the title when next episode suggestion is off`() {
         val remote = remote(episode = "2", positionMs = WATCHED_MS)
 
@@ -172,10 +204,12 @@ class ContinueWatchingMergeTest : BaseUnitTest() {
         vararg server: AnimeWatchProgress,
         history: List<HomeContinueWatchingItem> = this,
         suggestNextEpisode: Boolean = true,
+        availableEpisodes: Map<Int, Int> = emptyMap(),
     ) = reconcileWithEpisodeProgress(
         serverProgress = server.toList(),
         localHistory = history,
         suggestNextEpisode = suggestNextEpisode,
+        availableEpisodes = availableEpisodes,
     )
 
     private fun server(episode: String, positionMs: Long) = AnimeWatchProgress(
@@ -192,11 +226,13 @@ class ContinueWatchingMergeTest : BaseUnitTest() {
         remote: HomeContinueWatchingItem,
         suppressedAt: Map<Int, Long> = emptyMap(),
         suggestNextEpisode: Boolean = true,
+        availableEpisodes: Map<Int, Int> = emptyMap(),
     ) = mergeWithRemote(
         remote = listOf(remote),
         localHistory = this,
         suppressedAt = suppressedAt,
         suggestNextEpisode = suggestNextEpisode,
+        availableEpisodes = availableEpisodes,
     )
 
     private fun local(episode: String, positionMs: Long, durationMs: Long) =

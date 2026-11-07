@@ -23,15 +23,26 @@ class ObserveHomeContinueWatchingUseCase @Inject constructor(
     private val remoteRepository: RemoteContinueWatchingRepository,
 ) {
     operator fun invoke(): Flow<List<HomeContinueWatchingItem>> =
-        combine(mergedWithRemote(), homeFeedRepository.observeServerWatchProgress()) { merged, serverProgress ->
-            merged.cards.reconcileWithEpisodeProgress(
+        combine(
+            sources(),
+            homeFeedRepository.observeServerWatchProgress(),
+            homeFeedRepository.observeAvailableEpisodes(),
+        ) { sources, serverProgress, availableEpisodes ->
+            sources.local.mergeWithRemote(
+                remote = sources.remote,
+                localHistory = sources.history,
+                suppressedAt = sources.suppressedAt,
+                suggestNextEpisode = sources.suggestNextEpisode,
+                availableEpisodes = availableEpisodes,
+            ).reconcileWithEpisodeProgress(
                 serverProgress = serverProgress,
-                localHistory = merged.history,
-                suggestNextEpisode = merged.suggestNextEpisode,
+                localHistory = sources.history,
+                suggestNextEpisode = sources.suggestNextEpisode,
+                availableEpisodes = availableEpisodes,
             ).take(HOME_CONTINUE_WATCHING_LIMIT)
         }.distinctUntilChanged()
 
-    private fun mergedWithRemote(): Flow<MergedCards> =
+    private fun sources(): Flow<Sources> =
         combine(
             homeFeedRepository.observeContinueWatching(),
             remoteRepository.observeLastWatches(),
@@ -39,21 +50,14 @@ class ObserveHomeContinueWatchingUseCase @Inject constructor(
             homeFeedRepository.observeContinueWatchingSuppressions(),
             homeFeedRepository.observeSuggestNextEpisodeOnWatched(),
         ) { local, remote, history, suppressedAt, suggestNextEpisode ->
-            MergedCards(
-                cards = local.mergeWithRemote(
-                    remote = remote,
-                    localHistory = history,
-                    suppressedAt = suppressedAt,
-                    suggestNextEpisode = suggestNextEpisode,
-                ),
-                history = history,
-                suggestNextEpisode = suggestNextEpisode,
-            )
+            Sources(local, remote, history, suppressedAt, suggestNextEpisode)
         }
 
-    private class MergedCards(
-        val cards: List<HomeContinueWatchingItem>,
+    private class Sources(
+        val local: List<HomeContinueWatchingItem>,
+        val remote: List<HomeContinueWatchingItem>,
         val history: List<HomeContinueWatchingItem>,
+        val suppressedAt: Map<Int, Long>,
         val suggestNextEpisode: Boolean,
     )
 }

@@ -78,6 +78,16 @@ abstract class AnimeStorageDao {
     )
     abstract fun observeWatchedVideoEntries(language: String): Flow<List<AnimeVideoEntry>>
 
+    /** Номера всех серий из неустаревших кэшей видео: по ним считается, сколько серий доступно. */
+    @Query(
+        """
+        SELECT DISTINCT v.animeId AS animeId, v.episode AS episode FROM anime_videos v
+        JOIN anime_video_caches c ON c.animeId = v.animeId AND c.language = v.language
+        WHERE v.language = :language AND c.cachedAt > 0
+        """
+    )
+    abstract fun observeEpisodeRefs(language: String): Flow<List<AnimeEpisodeRef>>
+
     @Query(
         """
         SELECT * FROM anime_recommendation_caches

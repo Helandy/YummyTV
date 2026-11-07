@@ -2,6 +2,7 @@ package su.afk.yummy.tv.core.storage.anime
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.common.episode.normalizedEpisodeNumber
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.serverWatchProgressOf
@@ -37,6 +38,15 @@ internal class AnimeStorageStore(private val dao: AnimeStorageDao) : AnimeStorag
     override fun observeServerWatchProgress(language: String): Flow<List<AnimeWatchProgress>> =
         dao.observeWatchedVideoEntries(language).map { entries ->
             entries.mapNotNull { it.toServerWatchProgress() }
+        }
+
+    override fun observeAvailableEpisodeCounts(language: String): Flow<Map<Int, Int>> =
+        dao.observeEpisodeRefs(language).map { refs ->
+            refs.groupBy { it.animeId }.mapNotNull { (animeId, items) ->
+                items.mapNotNull { ref ->
+                    ref.episode.episodeNumberOrNull()?.takeIf { it % 1.0 == 0.0 }?.toInt()
+                }.maxOrNull()?.let { animeId to it }
+            }.toMap()
         }
 
     override suspend fun getRecommendations(
