@@ -80,6 +80,7 @@ class PlayerMediaSessionService : MediaSessionService() {
             .launchIn(serviceScope)
         val castPlayer = castPlayerFactory.createOrNull(this, exoPlayer)
         mediaSession = MediaSession.Builder(this, castPlayer ?: exoPlayer)
+            .setBitmapLoader(CopyingBitmapLoader(this))
             .setSessionActivity(createPlayerSessionActivityIntent())
             .setCallback(
                 PlayerSessionCallback(
