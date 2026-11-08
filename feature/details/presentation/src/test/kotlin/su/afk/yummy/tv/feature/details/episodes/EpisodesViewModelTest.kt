@@ -104,7 +104,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
         every { animeRepository.observeWatchProgress(any()) } returns flowOf(emptyList())
         every { videoDownloadNavigator.getVideoDownloadDest() } returns navKey
         every {
-            playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
+            playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any())
         } returns playerKey
         every { playerNavigationHandler.getDownloadedPlayerDestination(any()) } returns navKey
         coEvery { animeRepository.getAnimeDetails(ANIME_ID) } returns animeDetails(id = ANIME_ID, title = "Anime")

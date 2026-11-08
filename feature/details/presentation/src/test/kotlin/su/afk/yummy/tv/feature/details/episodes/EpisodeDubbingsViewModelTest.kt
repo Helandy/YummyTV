@@ -53,7 +53,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { settingsStore.anime4kDubbing(any()) } returns MutableStateFlow(null)
         every {
-            playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any(), any())
+            playerNavigationHandler.getPlayerDestination(any<AnimeVideo>(), any(), any(), any(), any())
         } returns playerKey
         coEvery { repository.getAnimeDetails(ANIME_ID) } returns animeDetails(id = ANIME_ID, title = "Anime")
         coEvery { repository.getAnimeVideos(ANIME_ID) } returns listOf(
@@ -129,7 +129,6 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
                 match<AnimeVideo> { it.id == 1 },
                 "Anime",
                 ANIME_ID,
-                any(),
                 any(),
                 any(),
             )

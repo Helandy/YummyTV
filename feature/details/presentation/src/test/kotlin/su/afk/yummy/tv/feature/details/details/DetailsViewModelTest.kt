@@ -432,7 +432,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         val source: su.afk.yummy.tv.feature.player.PlayerVideoSource = mockk(relaxed = true)
         every { videoHandler.resolveWatchTarget(any(), any(), any()) } returns DetailsWatchTarget.Continue(source)
         every {
-            playerNavigationHandler.getPlayerDestination(any<su.afk.yummy.tv.feature.player.PlayerVideoSource>(), any(), any(), any(), any(), any())
+            playerNavigationHandler.getPlayerDestination(any<su.afk.yummy.tv.feature.player.PlayerVideoSource>(), any(), any(), any(), any())
         } returns navKey
         val vm = createViewModel()
 

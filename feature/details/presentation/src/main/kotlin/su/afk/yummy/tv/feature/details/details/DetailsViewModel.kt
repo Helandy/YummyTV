@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.feature.details.details
 
-import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
-import su.afk.yummy.tv.feature.details.utils.withStars
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -46,6 +44,7 @@ import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandle
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideosResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsWatchTarget
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.model.DubbingOption
@@ -62,7 +61,7 @@ import su.afk.yummy.tv.feature.details.screenshots.utils.galleryUrls
 import su.afk.yummy.tv.feature.details.utils.animeSiteUrl
 import su.afk.yummy.tv.feature.details.utils.fullscreenUrl
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
-import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
+import su.afk.yummy.tv.feature.details.utils.withStars
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 
@@ -674,7 +673,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             VideosUiState.NotLoaded,
             VideosUiState.Empty,
             is VideosUiState.Error,
-                -> {
+            -> {
                 setState { copy(isWatchLaunchPending = true) }
                 viewModelScope.launch { loadVideos() }
             }
@@ -692,7 +691,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             VideosUiState.NotLoaded,
             VideosUiState.Empty,
             is VideosUiState.Error,
-                -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
+            -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
 
             VideosUiState.Loading -> setState { copy(isSubscriptionsLoading = true) }
         }
@@ -854,7 +853,6 @@ class DetailsViewModel @AssistedInject internal constructor(
                     animeTitle = details?.title ?: "",
                     animeId = animeId,
                     posterUrl = details.playerPosterUrl(),
-                    screenshotByEpisode = details.screenshotByEpisode(),
                     resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
                 ),
             )
@@ -869,7 +867,6 @@ class DetailsViewModel @AssistedInject internal constructor(
                 animeTitle = details?.title ?: "",
                 animeId = animeId,
                 posterUrl = details.playerPosterUrl(),
-                screenshotByEpisode = details.screenshotByEpisode(),
                 resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
             ),
         )

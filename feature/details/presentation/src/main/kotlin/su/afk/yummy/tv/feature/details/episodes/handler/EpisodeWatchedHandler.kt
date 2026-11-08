@@ -30,7 +30,7 @@ internal class EpisodeWatchedHandler @Inject constructor(
     data class EpisodeMeta(
         val animeTitle: String,
         val posterUrl: String,
-        val screenshotUrl: String,
+        val screenshotUrl: String = "",
     )
 
     /**

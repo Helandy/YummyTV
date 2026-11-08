@@ -129,9 +129,3 @@ internal fun AnimePoster.fullscreenUrl(): String? = defaultUrl()
 /** Постер для плеера: средний размер, если есть, иначе ближайший доступный. */
 internal fun AnimeDetails?.playerPosterUrl(): String =
     this?.poster.defaultUrl().orEmpty()
-
-/** Превью серий из скриншотов тайтла: номер серии → маленькая картинка. */
-internal fun AnimeDetails?.screenshotByEpisode(): Map<String, String> =
-    this?.screenshots.orEmpty().mapNotNull { screenshot ->
-        screenshot.episode?.let { episode -> episode to screenshot.url.orEmpty() }
-    }.toMap()

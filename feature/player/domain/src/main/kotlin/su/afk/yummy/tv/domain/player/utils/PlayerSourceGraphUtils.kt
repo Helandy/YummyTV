@@ -37,7 +37,6 @@ internal fun List<PlayerSourceVideo>.selectRequestedVideo(
 
 internal fun List<PlayerSourceVideo>.toPlayerSourceGraph(
     selectedVideo: PlayerSourceVideo,
-    screenshotByEpisode: Map<String, String>,
     fallbackScreenshotUrl: String,
 ): PlayerSourceGraph {
     // Запрошенной серии может не быть в загруженном списке (источник не ответил, серию сняли):
@@ -84,7 +83,6 @@ internal fun List<PlayerSourceVideo>.toPlayerSourceGraph(
                             number = source.episode,
                             iframeUrl = source.iframeUrl,
                             screenshotUrl = kodikIframeByEpisode[source.episode]
-                                ?: screenshotByEpisode[source.episode]
                                 ?: fallbackScreenshotUrl.takeIf { source.id == selectedVideo.id }
                                 ?: "",
                             skips = source.skips,

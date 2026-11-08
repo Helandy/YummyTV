@@ -22,7 +22,6 @@ fun IPlayerNavigator.getPlayerDest(
     animeTitle: String,
     animeId: Int,
     posterUrl: String = "",
-    screenshotByEpisode: Map<String, String> = emptyMap(),
     resumeFromMs: Long = 0L,
 ): NavKey {
     return getPlayerDest(
@@ -35,7 +34,7 @@ fun IPlayerNavigator.getPlayerDest(
         selectedPlayerId = video.playerId,
         selectedScreenshotUrl = video.iframeUrl
             .takeIf { it.isKodikPlayerUrl() }
-            ?: screenshotByEpisode[video.episode].orEmpty(),
+            .orEmpty(),
         animeId = animeId,
         posterUrl = posterUrl,
         resumeFromMs = resumeFromMs,

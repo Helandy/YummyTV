@@ -30,7 +30,6 @@ class GetPlayerSourceGraphUseCase @Inject constructor(
         val selectedVideo = videos.selectRequestedVideo(request) ?: fallbackVideo
         return videos.toPlayerSourceGraph(
             selectedVideo = selectedVideo,
-            screenshotByEpisode = sourceData.screenshotByEpisode,
             fallbackScreenshotUrl = request.selectedScreenshotUrl,
         )
     }

@@ -76,7 +76,6 @@ import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.mostWatchedDubbing
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
-import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
@@ -123,7 +122,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     private var animeTitle = ""
     private var posterUrl = ""
-    private var screenshotsByEpisode: Map<String, String> = emptyMap()
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var isSignedIn = false
     private var pendingEpisodeHandled = false
@@ -418,7 +416,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 meta = EpisodeWatchedHandler.EpisodeMeta(
                     animeTitle = animeTitle,
                     posterUrl = posterUrl,
-                    screenshotUrl = screenshotsByEpisode[action.episode].orEmpty(),
                 ),
                 isSignedIn = isSignedIn,
             )
@@ -440,7 +437,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
         runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->
             animeTitle = details.title
             posterUrl = details.playerPosterUrl()
-            screenshotsByEpisode = details.screenshotByEpisode()
         }
     }
 
@@ -776,7 +772,6 @@ class EpisodesViewModel @AssistedInject internal constructor(
                     animeTitle = animeTitle,
                     animeId = animeId,
                     posterUrl = posterUrl,
-                    screenshotByEpisode = screenshotsByEpisode,
                     resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
                 ),
             )

@@ -27,7 +27,6 @@ import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
 import su.afk.yummy.tv.feature.details.utils.withDubbingStars
 import su.afk.yummy.tv.feature.details.utils.withStars
-import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
 
 @HiltViewModel(assistedFactory = EpisodeDubbingsViewModel.Factory::class)
 class EpisodeDubbingsViewModel @AssistedInject internal constructor(
@@ -53,7 +52,6 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
 
     private var animeTitle = ""
     private var posterUrl = ""
-    private var screenshotsByEpisode: Map<String, String> = emptyMap()
     private var loadedVideos: List<AnimeVideo> = emptyList()
 
     private var starredDubbings: Set<String> = emptySet()
@@ -106,7 +104,6 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
         runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->
             animeTitle = details.title
             posterUrl = details.playerPosterUrl()
-            screenshotsByEpisode = details.screenshotByEpisode()
         }
     }
 
@@ -152,7 +149,6 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
                     animeTitle = animeTitle,
                     animeId = animeId,
                     posterUrl = posterUrl,
-                    screenshotByEpisode = screenshotsByEpisode,
                 )
             }
             nav.navigate(destination)
