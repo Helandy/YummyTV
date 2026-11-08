@@ -332,6 +332,15 @@ class PlayerViewModelTest : BaseUnitTest() {
         coVerify(exactly = 2) {
             sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         }
+        // Резолвер сам качество из состояния не читает: без override вернулось бы предпочитаемое (4K).
+        coVerify(exactly = 1) {
+            sourceStreamHandler.resolveStream(
+                any(), any(), any(), any(), any(),
+                selectedQualityOverride = "480p",
+                forceRefresh = true,
+                retryAttempts = any(), onStatus = any(), onDetail = any(), positionMs = any(), durationMs = any(),
+            )
+        }
     }
 
     @Test

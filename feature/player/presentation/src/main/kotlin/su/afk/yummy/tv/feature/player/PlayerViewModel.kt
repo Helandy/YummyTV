@@ -1,13 +1,11 @@
 // Part of YummyTV — https://github.com/Helandy/YummyTV (CC BY-NC 4.0, see NOTICE)
 package su.afk.yummy.tv.feature.player
 
-import kotlinx.collections.immutable.persistentListOf
-import su.afk.yummy.tv.feature.player.utils.withResolveDetail
-import su.afk.yummy.tv.feature.player.utils.withResolveStep
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -29,7 +27,6 @@ import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.PlayerSourceBehavior
 import su.afk.yummy.tv.feature.player.delegate.PlayerNavigationDelegate
-import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
@@ -45,6 +42,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerSourceStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamResumeMode
 import su.afk.yummy.tv.feature.player.host.PlayerChangePlayerHint
+import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 import su.afk.yummy.tv.feature.player.mapper.PlayerDestinationStateMapper
@@ -73,6 +71,8 @@ import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
 import su.afk.yummy.tv.feature.player.utils.preferredQualityForLabel
 import su.afk.yummy.tv.feature.player.utils.qualityHeight
 import su.afk.yummy.tv.feature.player.utils.streamQualities
+import su.afk.yummy.tv.feature.player.utils.withResolveDetail
+import su.afk.yummy.tv.feature.player.utils.withResolveStep
 
 /**
  * Оркестратор экрана плеера: источники, поток, прогресс.
@@ -177,12 +177,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     /**
-     * Обложка медиа-уведомления: при смене серии/постера сразу постер, затем превью серии
-     * (Kodik резолвится по сети); новый запрос отменяет предыдущий. Превью запрашивается только
-     * после того, как поток получен: для Kodik это второй запрос того же iframe, и на старте он
-     * конкурировал бы с извлечением ссылки, а обложка нужна лишь уведомлению уже идущего видео.
-     */
-    /**
      * Сеть пропала и вернулась, пока на экране висит ошибка воспроизведения: повторяем сами, как
      * это сделал бы пользователь кнопкой «Повторить». Если ошибка так и не появилась, тихие
      * ретраи уже справились, и вмешиваться не нужно.
@@ -201,6 +195,12 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
+    /**
+     * Обложка медиа-уведомления: при смене серии/постера сразу постер, затем превью серии
+     * (Kodik резолвится по сети); новый запрос отменяет предыдущий. Превью запрашивается только
+     * после того, как поток получен: для Kodik это второй запрос того же iframe, и на старте он
+     * конкурировал бы с извлечением ссылки, а обложка нужна лишь уведомлению уже идущего видео.
+     */
     private fun observeArtwork() {
         viewModelScope.launch {
             state.map { it.artworkSource() }
@@ -534,7 +534,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                         retryKey = retryKey + 1,
                     )
                 }
-                loadStream(refreshSourcesOnFailure = true, forceRefresh = true)
+                loadStream(
+                    refreshSourcesOnFailure = true,
+                    selectedQualityOverride = event.quality,
+                    forceRefresh = true,
+                )
             }
 
             is PlayerState.Event.AllohaAudioTrackSelected ->
