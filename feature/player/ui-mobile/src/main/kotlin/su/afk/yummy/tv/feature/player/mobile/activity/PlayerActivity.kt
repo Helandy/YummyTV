@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -114,6 +115,11 @@ class PlayerActivity : ComponentActivity(), PlayerActivityHost {
     override fun finishPlayer() {
         finish()
     }
+
+    // Android 12+: необработанный KEYCODE_CALL доходит до PhoneFallbackEventHandler, тот шлёт
+    // CLOSE_SYSTEM_DIALOGS от имени приложения и система бросает SecurityException. Гасим клавишу.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        event.keyCode == KeyEvent.KEYCODE_CALL || super.dispatchKeyEvent(event)
 
     companion object {
         private const val EXTRA_DESTINATION = "su.afk.yummy.tv.feature.player.DESTINATION"

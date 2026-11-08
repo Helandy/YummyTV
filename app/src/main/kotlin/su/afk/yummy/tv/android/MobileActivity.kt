@@ -95,6 +95,11 @@ class MobileActivity : ComponentActivity() {
         }
     }
 
+    // Android 12+: необработанный KEYCODE_CALL доходит до PhoneFallbackEventHandler, тот шлёт
+    // CLOSE_SYSTEM_DIALOGS от имени приложения и система бросает SecurityException. Гасим клавишу.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        event.keyCode == KeyEvent.KEYCODE_CALL || super.dispatchKeyEvent(event)
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
         keyboardShortcuts.handle(event, onBack = onBackPressedDispatcher::onBackPressed) ||
             super.onKeyDown(keyCode, event)

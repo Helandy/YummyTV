@@ -3,6 +3,7 @@ package su.afk.yummy.tv.android
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -69,6 +70,11 @@ class TvActivity : ComponentActivity() {
         setIntent(intent)
         handleIncomingIntent(intent)
     }
+
+    // Android 12+: необработанный KEYCODE_CALL доходит до PhoneFallbackEventHandler, тот шлёт
+    // CLOSE_SYSTEM_DIALOGS от имени приложения и система бросает SecurityException. Гасим клавишу.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        event.keyCode == KeyEvent.KEYCODE_CALL || super.dispatchKeyEvent(event)
 
     private fun handleIncomingIntent(intent: Intent) {
         intent.cancelEpisodePushNotification(this)
