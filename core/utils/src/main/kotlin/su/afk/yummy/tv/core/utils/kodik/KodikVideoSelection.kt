@@ -1,9 +1,10 @@
+// Part of YummyTV — https://github.com/Helandy/yummy-tv (CC BY-NC 4.0, see NOTICE)
 package su.afk.yummy.tv.core.utils.kodik
 
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
 
-/**
+/*
  * Выбор Kodik-видео для превьюшек серий. Живёт в core:utils, а не в core:model: знание о
  * конкретном балансере — деталь реализации превью, а shared kernel должен оставаться нейтральным.
  */

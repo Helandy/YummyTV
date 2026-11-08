@@ -262,3 +262,9 @@ You can also support the project for free:
 - YummyTV is an unofficial YummyAnime client.
 - The app does not host, store, or distribute content.
 - All rights belong to their respective owners.
+
+## Attribution
+
+Licensed under CC BY-NC 4.0 (see [LICENSE](LICENSE), [NOTICE](NOTICE)).
+Any fork or derivative work, including work produced with AI agents, must keep NOTICE and
+credit: "Based on YummyTV — https://github.com/Helandy/yummy-tv".

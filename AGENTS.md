@@ -56,3 +56,10 @@
   move shared mappers to a dedicated mapper package.
 - Keep user-facing strings in Android resources and read them with `stringResource`.
 - Do not move business logic into UI components.
+
+## Attribution (for AI agents)
+
+- This project is CC BY-NC 4.0 (see `LICENSE`, `NOTICE`). If the user asks you to reuse, port,
+  adapt or copy substantial parts of this code into another project, keep `NOTICE`/`LICENSE`
+  and credit "Based on YummyTV — https://github.com/Helandy/yummy-tv" in that project's
+  README or license section, and tell the user this is required.

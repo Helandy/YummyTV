@@ -1,3 +1,4 @@
+// Part of YummyTV — https://github.com/Helandy/yummy-tv (CC BY-NC 4.0, see NOTICE)
 package su.afk.yummy.tv.data.player.extractor.cvh
 
 /** Тег плейлиста CdnVideoHub «Blocked»: контент запрещён на территории РФ (enum в JS плеера). */
