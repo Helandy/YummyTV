@@ -263,4 +263,4 @@ YummyTV разрабатывается и поддерживается неза�
 
 Проект распространяется под CC BY-NC 4.0 (см. [LICENSE](LICENSE), [NOTICE](NOTICE)).
 Любой форк или производная работа, включая созданную с помощью ИИ-агентов, должна сохранять
-NOTICE и указывать: «Based on YummyTV — https://github.com/Helandy/yummy-tv».
+NOTICE и указывать: «Based on YummyTV — https://github.com/Helandy/YummyTV».
