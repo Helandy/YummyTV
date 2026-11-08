@@ -391,7 +391,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.EpisodeSelected -> {
-                val nextState = sourceSelectionHandler.selectEpisode(currentState, event.episodeIndex)
+                val nextState = sourceSelectionHandler.selectEpisode(currentState, event.number)
                 applySourceSelection(
                     nextState,
                     sourceScopeChanged = true,

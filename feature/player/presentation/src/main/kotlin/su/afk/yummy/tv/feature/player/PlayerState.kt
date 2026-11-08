@@ -141,8 +141,11 @@ class PlayerState {
         /** Пользователь выбрал предыдущий эпизод. */
         data object PrevEpisode : Event
 
-        /** Пользователь выбрал серию из списка серий активной озвучки. */
-        data class EpisodeSelected(val episodeIndex: Int) : Event
+        /**
+         * Пользователь выбрал серию из ленты серий по номеру. Если серии нет в активном балансере,
+         * плеер переключается на балансер, где она есть.
+         */
+        data class EpisodeSelected(val number: String) : Event
 
         /** Пользователь выбрал следующий эпизод из указанного источника. */
         data class NextEpisode(

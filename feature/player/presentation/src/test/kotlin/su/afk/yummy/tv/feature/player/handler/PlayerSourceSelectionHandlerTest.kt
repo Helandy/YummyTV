@@ -64,7 +64,7 @@ class PlayerSourceSelectionHandlerTest : BaseUnitTest() {
     fun `selecting an episode jumps inside the active dubbing and resets the position`() {
         val state = state(PlayerSourceSelection(0, 1, 0)).copy(playbackPositionMs = 5_000L)
 
-        val result = handler.selectEpisode(state, 3)
+        val result = handler.selectEpisode(state, "4")
 
         assertEquals(PlayerSourceSelection(0, 1, 3), result?.sourceSelection)
         assertEquals(0L, result?.playbackPositionMs)
@@ -74,9 +74,25 @@ class PlayerSourceSelectionHandlerTest : BaseUnitTest() {
     fun `selecting the current or an unknown episode changes nothing`() {
         val state = state(PlayerSourceSelection(0, 0, 1))
 
-        assertNull(handler.selectEpisode(state, 1))
-        assertNull(handler.selectEpisode(state, 3))
-        assertNull(handler.selectEpisode(state, -1))
+        assertNull(handler.selectEpisode(state, "2"))
+        assertNull(handler.selectEpisode(state, "02"))
+        assertNull(handler.selectEpisode(state, "9"))
+    }
+
+    @Test
+    fun `selecting an episode missing in the balancer switches to the balancer that has it`() {
+        val graph = PlayerSourceGraph(
+            balancers = listOf(
+                PlayerSourceBalancer("Kodik", listOf(dubbing("A", 0, "1", "2"))),
+                PlayerSourceBalancer("Alloha", listOf(dubbing("A", 0, "1", "2", "3"))),
+            ),
+        )
+        val state = PlayerState.State(sourceGraph = graph, sourceSelection = PlayerSourceSelection(0, 0, 0))
+
+        assertEquals(
+            PlayerSourceSelection(1, 0, 2),
+            handler.selectEpisode(state, "3")?.sourceSelection,
+        )
     }
 
     @Test

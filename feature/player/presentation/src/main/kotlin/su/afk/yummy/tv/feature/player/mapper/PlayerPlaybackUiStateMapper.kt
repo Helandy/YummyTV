@@ -36,6 +36,7 @@ import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
 import su.afk.yummy.tv.feature.player.utils.mergedWatchProgress
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
+import su.afk.yummy.tv.feature.player.utils.playerStripEpisodes
 import su.afk.yummy.tv.feature.player.utils.streamQualities
 import su.afk.yummy.tv.feature.player.utils.withExtraSourceName
 
@@ -49,6 +50,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     val activeDubbing = activeDubbing(this)
     val activeDubbingName = activeDubbingName(this)
     val activeEpisodes = activeDubbingEpisodes(this)
+    val stripEpisodes = playerStripEpisodes(this)
     val globalDubbingNames = globalDubbingNames(this)
     val displayedDubbingNames = globalDubbingNames.ifEmpty {
         activeBalancer(this)?.dubbings?.map { it.name }.orEmpty()
@@ -94,12 +96,13 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeSkips = activeEpisodeSource(this)?.skips ?: PlayerSkips.Empty,
         hasPrevEpisode = selection.episodeIndex > 0,
         hasNextEpisode = selection.episodeIndex < activeEpisodes.lastIndex,
-        episodes = if (activeEpisodes.size > 1 && !isOfflinePlayback) {
+        episodes = if (stripEpisodes.size > 1 && !isOfflinePlayback) {
             val mergedProgress = sourceGraph.mergedWatchProgress(animeId, watchProgress)
-            activeEpisodes.mapIndexed { index, episode ->
+            stripEpisodes.mapIndexed { index, (episode, available) ->
                 PlayerEpisodeItem(
                     index = index,
                     number = episode.number,
+                    available = available,
                     screenshotUrl = episode.screenshotUrl,
                     progress = mergedProgress.episodeProgress(episode.number),
                     durationLabel = episode.durationSeconds?.takeIf { it > 0 }?.times(1_000L)?.millisToClockTime(),
@@ -109,7 +112,8 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         } else {
             persistentListOf()
         },
-        currentEpisodeIndex = selection.episodeIndex,
+        currentEpisodeIndex = stripEpisodes.indexOfFirst { it.available && it.episode === activeEpisodeSource(this) }
+            .coerceAtLeast(0),
         nextEpisodeDubbing = if (selection.episodeIndex < activeEpisodes.lastIndex) {
             null
         } else {

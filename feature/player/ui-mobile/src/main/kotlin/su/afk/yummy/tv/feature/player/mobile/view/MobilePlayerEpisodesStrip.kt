@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -37,6 +38,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 
 private val STRIP_CARD_WIDTH = 150.dp
 private val STRIP_CARD_SHAPE = RoundedCornerShape(8.dp)
+private const val UNAVAILABLE_ALPHA = 0.6f
 
 /** Горизонтальная лента серий внизу полноэкранного плеера (ландшафт): листается вместе с панелью управления. */
 @Composable
@@ -45,7 +47,7 @@ fun MobilePlayerEpisodesStrip(
     currentEpisodeIndex: Int,
     animeId: Int,
     posterUrl: String,
-    onEpisodeSelected: (Int) -> Unit,
+    onEpisodeSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -64,7 +66,7 @@ fun MobilePlayerEpisodesStrip(
                 animeId = animeId,
                 posterUrl = posterUrl,
                 selected = item.index == currentEpisodeIndex,
-                onClick = { onEpisodeSelected(item.index) },
+                onClick = { onEpisodeSelected(item.number) },
             )
         }
     }
@@ -83,6 +85,7 @@ private fun StripCard(
         modifier = Modifier
             .width(STRIP_CARD_WIDTH)
             .clip(STRIP_CARD_SHAPE)
+            .alpha(if (item.available) 1f else UNAVAILABLE_ALPHA)
             .clickable(onClick = onClick),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -118,7 +121,8 @@ private fun StripCard(
             )
         }
         Text(
-            text = stringResource(R.string.player_episode_number, item.number),
+            text = stringResource(R.string.player_episode_number, item.number) +
+                if (item.available) "" else " · " + stringResource(R.string.player_episode_other_balancer),
             style = MaterialTheme.typography.labelLarge,
             color = if (selected) primary else Color.White,
             maxLines = 1,

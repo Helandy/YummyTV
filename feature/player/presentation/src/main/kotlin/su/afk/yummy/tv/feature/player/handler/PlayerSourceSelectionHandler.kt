@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.handler
 
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
@@ -11,6 +12,7 @@ import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
+import su.afk.yummy.tv.feature.player.utils.resolveEpisodeSource
 import su.afk.yummy.tv.feature.player.utils.toDubbingSource
 import su.afk.yummy.tv.feature.player.utils.withEpisodeSelection
 import javax.inject.Inject
@@ -25,12 +27,20 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
             }
     }
 
-    /** Переход на серию [episodeIndex] активной озвучки; null, если это текущая серия или индекс вне списка. */
-    fun selectEpisode(state: PlayerState.State, episodeIndex: Int): PlayerState.State? {
-        val selection = normalizedSourceSelection(state)
-        if (episodeIndex == selection.episodeIndex) return null
-        if (episodeIndex !in activeDubbingEpisodes(state).indices) return null
-        return state.withEpisodeSelection(selection.copy(episodeIndex = episodeIndex))
+    /**
+     * Переход на серию [number] активной озвучки. Если в активном балансере её нет, берём балансер,
+     * где она есть (как «Далее»). null — это текущая серия или серии нет нигде.
+     */
+    fun selectEpisode(state: PlayerState.State, number: String): PlayerState.State? {
+        if (number.episodeGroupKey() == activeEpisode(state).episodeGroupKey()) return null
+        val source = resolveEpisodeSource(state, activeDubbingName(state), number) ?: return null
+        return state.withEpisodeSelection(
+            PlayerSourceSelection(
+                balancerIndex = source.balancerIndex,
+                dubbingIndex = source.dubbingIndex,
+                episodeIndex = source.episodeIndex,
+            ),
+        )
     }
 
     fun nextEpisode(state: PlayerState.State): PlayerState.State? {

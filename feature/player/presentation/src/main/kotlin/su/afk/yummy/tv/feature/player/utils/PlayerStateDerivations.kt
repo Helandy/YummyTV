@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.utils
 
+import su.afk.yummy.tv.core.common.episode.episodeGroupKey
+import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.common.player.isStarredBalancer
 import su.afk.yummy.tv.core.common.player.isStarredDubbing
 import su.afk.yummy.tv.core.common.player.starredFirst
@@ -234,6 +236,54 @@ internal fun resolveDubbingSource(
 
     return candidates.firstOrNull { it.balancerIndex == currentSelection.balancerIndex }
         ?: candidates.firstOrNull()
+}
+
+/**
+ * Источник серии [episodeNumber] озвучки [dubbingName]: сначала в текущем балансере, иначе в первом,
+ * где она есть. Номера сравниваются по [episodeGroupKey] ("01" и "1" — одна серия).
+ */
+internal fun resolveEpisodeSource(
+    state: PlayerState.State,
+    dubbingName: String,
+    episodeNumber: String,
+): DubbingSource? {
+    val key = episodeNumber.episodeGroupKey()
+    val currentBalancer = normalizedSourceSelection(state).balancerIndex
+    val candidates = state.sourceGraph.balancers.flatMapIndexed { balancerIndex, balancer ->
+        balancer.dubbings.mapIndexedNotNull { dubbingIndex, dubbing ->
+            if (dubbing.name != dubbingName) return@mapIndexedNotNull null
+            val episodeIndex = dubbing.episodes
+                .indexOfFirst { it.number.episodeGroupKey() == key }
+                .takeIf { it >= 0 }
+                ?: return@mapIndexedNotNull null
+            DubbingSource(balancerIndex, dubbingIndex, episodeIndex)
+        }
+    }
+    return candidates.firstOrNull { it.balancerIndex == currentBalancer } ?: candidates.firstOrNull()
+}
+
+/** Серия ленты: [available] — есть в активном балансере. */
+internal data class PlayerStripEpisode(
+    val episode: PlayerSourceEpisode,
+    val available: Boolean,
+)
+
+/**
+ * Серии активной озвучки для ленты: серии активного балансера плюс те, что есть только в других
+ * балансерах этой же озвучки (они [PlayerStripEpisode.available] = false). Порядок — по номеру.
+ */
+internal fun playerStripEpisodes(state: PlayerState.State): List<PlayerStripEpisode> {
+    val active = activeDubbingEpisodes(state)
+    val dubbingName = activeDubbingName(state)
+    val activeKeys = active.map { it.number.episodeGroupKey() }.toSet()
+    val missing = state.sourceGraph.balancers
+        .flatMap { balancer -> balancer.dubbings.filter { it.name == dubbingName }.flatMap { it.episodes } }
+        .filter { it.number.episodeGroupKey() !in activeKeys }
+        .distinctBy { it.number.episodeGroupKey() }
+    val all = active.map { PlayerStripEpisode(it, available = true) } +
+        missing.map { PlayerStripEpisode(it, available = false) }
+    if (missing.isEmpty()) return all
+    return all.sortedBy { it.episode.number.episodeNumberOrNull() ?: Double.MAX_VALUE }
 }
 
 /**

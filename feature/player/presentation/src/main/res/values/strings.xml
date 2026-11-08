@@ -53,6 +53,7 @@
     <string name="player_balancer_meta">Balancer</string>
     <string name="player_balancer_external_meta">External</string>
     <string name="player_episode_unavailable">This episode is unavailable</string>
+    <string name="player_episode_other_balancer">Other player</string>
     <string name="player_resize_fit">Original size</string>
     <string name="player_resize_zoom">Zoom</string>
     <string name="player_resize_stretch">Stretch</string>

@@ -53,6 +53,7 @@
     <string name="player_balancer_meta">Балансер</string>
     <string name="player_balancer_external_meta">Внешний</string>
     <string name="player_episode_unavailable">Нет этой серии</string>
+    <string name="player_episode_other_balancer">Другой плеер</string>
     <string name="player_resize_fit">Оригинальный</string>
     <string name="player_resize_zoom">Зум</string>
     <string name="player_resize_stretch">Растянуть</string>

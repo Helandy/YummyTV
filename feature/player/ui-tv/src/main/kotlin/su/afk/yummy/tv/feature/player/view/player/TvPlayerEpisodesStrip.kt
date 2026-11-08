@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
@@ -62,6 +63,7 @@ private val STRIP_HEIGHT = 212.dp
 
 private val CARD_WIDTH = 200.dp
 private val CARD_SHAPE = RoundedCornerShape(10.dp)
+private const val UNAVAILABLE_ALPHA = 0.6f
 
 /** Горизонтальная лента серий под видео: превью, номер, прогресс; текущая серия получает фокус при открытии. */
 @Composable
@@ -72,7 +74,7 @@ internal fun TvPlayerEpisodesStrip(
     selectedFocusRequester: FocusRequester,
     animeId: Int,
     posterUrl: String,
-    onEpisodeSelected: (Int) -> Unit,
+    onEpisodeSelected: (String) -> Unit,
     onExitUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -122,7 +124,7 @@ internal fun TvPlayerEpisodesStrip(
                         selected = selected,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
                         onExitUp = onExitUp,
-                        onClick = { onEpisodeSelected(item.index) },
+                        onClick = { onEpisodeSelected(item.number) },
                     )
                 }
             }
@@ -147,6 +149,7 @@ private fun EpisodeCard(
     Column(
         modifier = modifier
             .width(CARD_WIDTH)
+            .alpha(if (item.available) 1f else UNAVAILABLE_ALPHA)
             .tvPlayerFocusScale(focused)
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionUp) {
@@ -206,7 +209,8 @@ private fun EpisodeCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.player_episode_number, item.number),
+                text = stringResource(R.string.player_episode_number, item.number) +
+                    if (item.available) "" else " · " + stringResource(R.string.player_episode_other_balancer),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (focused) primary else Color.White,
                 maxLines = 1,
