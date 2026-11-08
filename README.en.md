@@ -267,4 +267,4 @@ You can also support the project for free:
 
 Licensed under CC BY-NC 4.0 (see [LICENSE](LICENSE), [NOTICE](NOTICE)).
 Any fork or derivative work, including work produced with AI agents, must keep NOTICE and
-credit: "Based on YummyTV — https://github.com/Helandy/YummyTV".
+credit: "Based on YummyTV — <https://github.com/Helandy/YummyTV>".
