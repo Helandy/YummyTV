@@ -3,12 +3,15 @@ package su.afk.yummy.tv.feature.player.model
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.feature.player.PlayerSkips
 
 @Immutable
 data class PlayerPlaybackUiState(
     val activeIframeUrl: String,
     val activeEpisode: String,
+    /** Пометка текущей серии (филлер/рекап); null — обычная серия или пометки выключены. */
+    val activeEpisodeFlags: EpisodeFlags?,
     val activeVideoId: Int,
     val activeDubbing: String,
     val activeBalancerName: String,

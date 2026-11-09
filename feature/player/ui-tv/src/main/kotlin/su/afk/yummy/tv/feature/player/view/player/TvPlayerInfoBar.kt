@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.overline
 import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
@@ -75,28 +77,57 @@ internal fun TvPlayerInfoBar(
     }
 }
 
+private val TvFlagFillerColor = Color(0xFFFFC107)
+private val TvFlagRecapColor = Color(0xFF90CAF9)
+
+/** Правый верхний угол: имя плеера и под ним пометка текущей серии («Филлер»/«Рекап»). */
 @Composable
 internal fun TvPlayerNameBadge(
     visible: Boolean,
     playerName: String,
+    episodeFlags: EpisodeFlags?,
     modifier: Modifier = Modifier,
 ) {
+    val flagLabel = when {
+        episodeFlags == null -> null
+        episodeFlags.filler -> stringResource(R.string.player_episode_flag_filler) to TvFlagFillerColor
+        episodeFlags.recap -> stringResource(R.string.player_episode_flag_recap) to TvFlagRecapColor
+        else -> null
+    }
     AnimatedVisibility(
-        visible = visible && playerName.isNotBlank(),
+        visible = visible && (playerName.isNotBlank() || flagLabel != null),
         modifier = modifier
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(top = 16.dp, end = 16.dp),
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        Text(
-            text = playerName.uppercase(),
-            style = MaterialTheme.typography.labelSmall.overline(),
-            color = Color.Black,
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color.White.copy(alpha = 0.90f))
-                .padding(horizontal = 8.dp, vertical = 3.dp),
-        )
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            if (playerName.isNotBlank()) {
+                Text(
+                    text = playerName.uppercase(),
+                    style = MaterialTheme.typography.labelSmall.overline(),
+                    color = Color.Black,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.White.copy(alpha = 0.90f))
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                )
+            }
+            if (flagLabel != null) {
+                Text(
+                    text = flagLabel.first,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = flagLabel.second,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.Black.copy(alpha = 0.72f))
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                )
+            }
+        }
     }
 }

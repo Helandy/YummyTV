@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.overline
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
@@ -41,6 +42,7 @@ internal fun MobilePlayerTopBar(
     episode: String,
     dubbing: String,
     playerName: String,
+    episodeFlags: EpisodeFlags?,
     onBack: () -> Unit,
     onLockClick: () -> Unit,
     visible: Boolean,
@@ -54,7 +56,7 @@ internal fun MobilePlayerTopBar(
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                 .padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.Top) {
                 IconButton(onClick = onBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
@@ -114,6 +116,10 @@ internal fun MobilePlayerTopBar(
                                 .padding(horizontal = 12.dp, vertical = 5.dp),
                         )
                     }
+                    MobilePlayerEpisodeFlagLabel(
+                        flags = episodeFlags,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
                     // Круглая подложка с обводкой, как у кнопок управления внизу: голые точки
                     // терялись на светлом кадре.
                     Row(
@@ -140,4 +146,29 @@ internal fun MobilePlayerTopBar(
             }
         }
     }
+}
+
+private val FlagFillerColor = Color(0xFFFFC107)
+private val FlagRecapColor = Color(0xFF90CAF9)
+
+/** Плашка «Филлер»/«Рекап» текущей серии под именем плеера. */
+@Composable
+private fun MobilePlayerEpisodeFlagLabel(flags: EpisodeFlags?, modifier: Modifier = Modifier) {
+    val (text, color) = when {
+        flags == null -> return
+        flags.filler -> stringResource(R.string.player_episode_flag_filler) to FlagFillerColor
+        flags.recap -> stringResource(R.string.player_episode_flag_recap) to FlagRecapColor
+        else -> return
+    }
+    Text(
+        text = text,
+        color = color,
+        maxLines = 1,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.72f))
+            .padding(horizontal = 12.dp, vertical = 5.dp),
+    )
 }
