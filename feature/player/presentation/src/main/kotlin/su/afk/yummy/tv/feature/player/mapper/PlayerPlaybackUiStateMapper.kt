@@ -96,7 +96,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeSkips = activeEpisodeSource(this)?.skips ?: PlayerSkips.Empty,
         hasPrevEpisode = selection.episodeIndex > 0,
         hasNextEpisode = selection.episodeIndex < activeEpisodes.lastIndex,
-        episodes = if (stripEpisodes.size > 1 && !isOfflinePlayback) {
+        episodes = if (stripEpisodes.size > 1) {
             val mergedProgress = sourceGraph.mergedWatchProgress(animeId, watchProgress)
             stripEpisodes.mapIndexed { index, (episode, available) ->
                 PlayerEpisodeItem(
