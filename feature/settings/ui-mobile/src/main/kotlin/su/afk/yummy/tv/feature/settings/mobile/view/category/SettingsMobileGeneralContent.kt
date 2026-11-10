@@ -9,6 +9,7 @@ import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
+import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileActionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
@@ -70,6 +71,18 @@ internal fun SettingsMobileGeneralContent(
                 },
                 enabled = state.appLogRecordingEnabled,
                 onClick = { onEvent(SettingsState.Event.AppLogRecordingToggled) },
+            )
+            SettingsMobileActionRow(
+                label = stringResource(R.string.settings_onboarding_reset),
+                hint = stringResource(
+                    if (state.onboardingResetAvailable) {
+                        R.string.settings_onboarding_reset_hint
+                    } else {
+                        R.string.settings_onboarding_reset_done
+                    },
+                ),
+                enabled = state.onboardingResetAvailable,
+                onClick = { onEvent(SettingsState.Event.OnboardingReset) },
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_devices)) {

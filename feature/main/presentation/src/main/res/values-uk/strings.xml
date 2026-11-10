@@ -11,4 +11,13 @@
     <string name="main_tab_collections">Колекції</string>
     <string name="main_settings_content_description">Налаштування</string>
     <string name="main_account_content_description">Акаунт</string>
+
+    <string name="main_onboarding_catalog_title">Каталог</string>
+    <string name="main_onboarding_catalog_text">Шукайте аніме за назвою та фільтруйте за жанрами, сезонами, роками й статусом.</string>
+    <string name="main_onboarding_home_title">Головна</string>
+    <string name="main_onboarding_home_text">Продовження перегляду, нові серії та рекомендації — усе на одному екрані.</string>
+    <string name="main_onboarding_library_title">Бібліотека</string>
+    <string name="main_onboarding_library_text">Ваші списки: дивлюся, у планах, переглянуто й обране.</string>
+    <string name="main_onboarding_account_title">Акаунт</string>
+    <string name="main_onboarding_account_text">Увійдіть, щоб синхронізувати списки та прогрес. Тут же налаштування й сповіщення.</string>
 </resources>

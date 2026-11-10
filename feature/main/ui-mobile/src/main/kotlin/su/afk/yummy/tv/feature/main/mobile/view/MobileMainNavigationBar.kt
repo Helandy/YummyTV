@@ -19,6 +19,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+import su.afk.yummy.tv.core.designsystem.onboarding.onboardingTarget
+import su.afk.yummy.tv.feature.main.mobile.utils.mobileMainTabTargetId
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalBarDecoration
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
@@ -47,6 +49,7 @@ internal fun <T> MobileMainNavigationBar(
                 NavigationBarItem(
                     modifier = Modifier
                         .testTag("main_tab")
+                        .onboardingTarget(mobileMainTabTargetId(item.destination))
                         .clickablePointer()
                         .focusProperties {
                             upFocusRequester?.takeIf { selected }?.let { up = it }

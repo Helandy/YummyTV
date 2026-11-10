@@ -65,6 +65,8 @@ class MainViewModelTest : BaseUnitTest() {
     private val tokenState = MutableStateFlow(YaniApplicationTokenState.DEFAULT)
     private val session = MutableStateFlow(AccountSession(isAuthorized = true, userId = 1))
     private val isOnline = MutableStateFlow(true)
+    private val welcomeSeen = MutableStateFlow(false)
+    private val toursSeen = MutableStateFlow(emptySet<String>())
     private val mutationErrors = MutableSharedFlow<AccountMutationErrorEvent>()
     private val toggleUpdates = MutableSharedFlow<Long>()
 
@@ -72,6 +74,10 @@ class MainViewModelTest : BaseUnitTest() {
     fun setUp() {
         every { settingsStore.mainSettingsSnapshot } returns snapshot
         every { settingsStore.yaniApplicationTokenState } returns tokenState
+        every { settingsStore.onboardingWelcomeSeen } returns welcomeSeen
+        every { settingsStore.onboardingToursSeen } returns toursSeen
+        coEvery { settingsStore.markOnboardingWelcomeSeen() } returns Unit
+        coEvery { settingsStore.markOnboardingTourSeen(any()) } returns Unit
         every { accountRepository.observeSession() } returns session
         every { networkConnectivityMonitor.isOnline } returns isOnline
         every { libraryRepository.observeAll() } returns flowOf(emptyList())
@@ -136,6 +142,29 @@ class MainViewModelTest : BaseUnitTest() {
         assertTrue(state.isYaniAuthResolved)
         verify(exactly = 1) { analytics.eventScreenOpened() }
         verify(exactly = 1) { analytics.eventAppSession(true, YaniApplicationTokenState.DEFAULT) }
+    }
+
+    @Test
+    fun `welcome slides are pending until they are marked as seen`() {
+        val viewModel = createViewModel()
+        assertTrue(viewModel.currentState.onboardingWelcomePending)
+
+        welcomeSeen.value = true
+        toursSeen.value = setOf("main_mobile")
+
+        assertEquals(false, viewModel.currentState.onboardingWelcomePending)
+        assertEquals(setOf("main_mobile"), viewModel.currentState.onboardingToursSeen)
+    }
+
+    @Test
+    fun `finished onboarding events are persisted`() {
+        val viewModel = createViewModel()
+
+        viewModel.setEvent(Event.OnboardingWelcomeFinished)
+        viewModel.setEvent(Event.OnboardingTourFinished("details_tv"))
+
+        coVerify(exactly = 1) { settingsStore.markOnboardingWelcomeSeen() }
+        coVerify(exactly = 1) { settingsStore.markOnboardingTourSeen("details_tv") }
     }
 
     @Test

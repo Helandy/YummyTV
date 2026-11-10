@@ -344,4 +344,8 @@
     <string name="settings_home_block_collections">Колекції</string>
     <string name="settings_home_block_blogger_videos">Від блогерів</string>
     <string name="settings_home_block_quick_actions">Ще</string>
+
+    <string name="settings_onboarding_reset">Показати підказки знову</string>
+    <string name="settings_onboarding_reset_hint">Вітальні слайди, підказки з екранів і навчання плеєра покажуться знову</string>
+    <string name="settings_onboarding_reset_done">Підказки покажуться під час наступного заходу на екрани</string>
 </resources>

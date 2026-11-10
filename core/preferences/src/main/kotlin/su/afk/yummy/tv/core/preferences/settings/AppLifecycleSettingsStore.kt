@@ -39,6 +39,12 @@ interface AppLifecycleSettingsStore {
     /** Закрыл ли пользователь подсказку «листайте вниз — там доп. секции» на ТВ-деталях. */
     val detailsSectionsHintDismissed: Flow<Boolean>
 
+    /** Показаны ли приветственные слайды онбординга (у обновившихся с прошлой версии — сразу `true`). */
+    val onboardingWelcomeSeen: Flow<Boolean>
+
+    /** Идентификаторы уже пройденных спотлайт-туров онбординга. */
+    val onboardingToursSeen: Flow<Set<String>>
+
     suspend fun setWatchNextEnabled(enabled: Boolean)
     suspend fun setBetaUpdatesEnabled(enabled: Boolean)
     suspend fun setAppLogRecordingEnabled(enabled: Boolean)
@@ -66,6 +72,15 @@ interface AppLifecycleSettingsStore {
 
     /** Помечает подсказку про секции на ТВ-деталях как закрытую навсегда. */
     suspend fun dismissDetailsSectionsHint()
+
+    /** Помечает приветственные слайды как показанные. */
+    suspend fun markOnboardingWelcomeSeen()
+
+    /** Помечает тур [tourId] как пройденный. */
+    suspend fun markOnboardingTourSeen(tourId: String)
+
+    /** Сбрасывает онбординг (слайды, туры и подсказку деталей), чтобы показать его заново. */
+    suspend fun resetOnboarding()
 
     /** Returns `true` when [versionCode] differs from the previously started one. */
     suspend fun markStartedVersion(versionCode: Int): Boolean

@@ -71,6 +71,8 @@ class SettingsState {
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val tvPlayerControlsTutorialDismissed: Boolean = false,
+        /** Онбординг уже пройден хотя бы частично, поэтому его можно показать заново. */
+        val onboardingResetAvailable: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val autoManageLibraryLists: Boolean = true,
         /** Пуши о новых сериях не выключены пользователем (системное разрешение — отдельно). */
@@ -238,6 +240,9 @@ class SettingsState {
 
         /** Пользователь запросил повторный показ обучения управлению ТВ-плеером. */
         data object TvPlayerControlsTutorialReset : Event
+
+        /** Пользователь запросил повторный показ онбординга (слайдов, подсказок и обучения плеера). */
+        data object OnboardingReset : Event
 
         /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event

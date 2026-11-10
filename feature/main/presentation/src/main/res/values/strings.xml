@@ -11,4 +11,13 @@
     <string name="main_tab_collections">Collections</string>
     <string name="main_settings_content_description">Settings</string>
     <string name="main_account_content_description">Account</string>
+
+    <string name="main_onboarding_catalog_title">Catalog</string>
+    <string name="main_onboarding_catalog_text">Search anime by name and filter by genres, seasons, years and status.</string>
+    <string name="main_onboarding_home_title">Home</string>
+    <string name="main_onboarding_home_text">Continue watching, new episodes and recommendations — all on one screen.</string>
+    <string name="main_onboarding_library_title">Library</string>
+    <string name="main_onboarding_library_text">Your lists: watching, planned, completed and favorites.</string>
+    <string name="main_onboarding_account_title">Account</string>
+    <string name="main_onboarding_account_text">Sign in to sync lists and progress, and find settings and notifications here.</string>
 </resources>

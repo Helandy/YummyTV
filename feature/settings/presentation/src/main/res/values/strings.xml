@@ -347,4 +347,8 @@
     <string name="settings_home_block_collections">Collections</string>
     <string name="settings_home_block_blogger_videos">From bloggers</string>
     <string name="settings_home_block_quick_actions">More</string>
+
+    <string name="settings_onboarding_reset">Show hints again</string>
+    <string name="settings_onboarding_reset_hint">Welcome slides, screen tips and player tutorials will be shown again</string>
+    <string name="settings_onboarding_reset_done">Hints will be shown the next time they are needed</string>
 </resources>

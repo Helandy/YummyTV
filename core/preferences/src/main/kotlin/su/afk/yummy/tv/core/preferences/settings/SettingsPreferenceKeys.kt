@@ -107,6 +107,8 @@ internal object SettingsPreferenceKeys {
         booleanPreferencesKey("preview_channel_prompt_answered")
     val detailsSectionsHintDismissedKey =
         booleanPreferencesKey("details_sections_hint_dismissed")
+    val onboardingWelcomeSeenKey = booleanPreferencesKey("onboarding_welcome_seen")
+    val onboardingToursSeenKey = stringSetPreferencesKey("onboarding_tours_seen")
     val videoExportDirectoryUriKey = stringPreferencesKey("video_export_directory_uri")
     val videoExportDirectoryNameKey = stringPreferencesKey("video_export_directory_name")
     val videoExportAutoEnabledKey = booleanPreferencesKey("video_export_auto_enabled")

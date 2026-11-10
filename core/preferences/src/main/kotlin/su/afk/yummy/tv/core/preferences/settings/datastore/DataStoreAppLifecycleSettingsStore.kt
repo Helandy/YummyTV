@@ -18,6 +18,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastStar
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsSectionsHintDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.episodePushPromptShownKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.notificationPermissionRequestedKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.onboardingToursSeenKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.onboardingWelcomeSeenKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewChannelPromptAnsweredKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.supportPromptDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.supportPromptFirstInstallTimeMsKey
@@ -72,6 +74,11 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override val detailsSectionsHintDismissed: Flow<Boolean> =
         store.boolean(detailsSectionsHintDismissedKey, false)
+
+    override val onboardingWelcomeSeen: Flow<Boolean> =
+        store.boolean(onboardingWelcomeSeenKey, false)
+
+    override val onboardingToursSeen: Flow<Set<String>> = store.stringSet(onboardingToursSeenKey)
 
     override suspend fun setWatchNextEnabled(enabled: Boolean) =
         store.setBoolean(watchNextEnabledKey, enabled)
@@ -128,10 +135,31 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
     override suspend fun dismissDetailsSectionsHint() =
         store.setBoolean(detailsSectionsHintDismissedKey, true)
 
+    override suspend fun markOnboardingWelcomeSeen() =
+        store.setBoolean(onboardingWelcomeSeenKey, true)
+
+    override suspend fun markOnboardingTourSeen(tourId: String) {
+        store.edit { prefs ->
+            prefs[onboardingToursSeenKey] = (prefs[onboardingToursSeenKey] ?: emptySet()) + tourId
+        }
+    }
+
+    override suspend fun resetOnboarding() {
+        store.edit { prefs ->
+            prefs[onboardingWelcomeSeenKey] = false
+            prefs.remove(onboardingToursSeenKey)
+            prefs.remove(detailsSectionsHintDismissedKey)
+        }
+    }
+
     override suspend fun markStartedVersion(versionCode: Int): Boolean {
         var isFreshVersion = true
         store.edit { prefs ->
             val lastStartedVersionCode = prefs[lastStartedVersionCodeKey]
+            // Обновление с прошлой версии: приветственные слайды таким пользователям не нужны.
+            if (lastStartedVersionCode != null && prefs[onboardingWelcomeSeenKey] == null) {
+                prefs[onboardingWelcomeSeenKey] = true
+            }
             isFreshVersion = lastStartedVersionCode != versionCode
             if (isFreshVersion && prefs[supportPromptDismissedKey] != true) {
                 prefs[supportPromptFirstInstallTimeMsKey] = System.currentTimeMillis()

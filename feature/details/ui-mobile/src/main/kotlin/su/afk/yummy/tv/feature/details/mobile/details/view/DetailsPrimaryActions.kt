@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import su.afk.yummy.tv.core.designsystem.onboarding.onboardingTarget
+import su.afk.yummy.tv.feature.details.mobile.details.utils.MOBILE_DETAILS_WATCH_TARGET
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -60,7 +62,8 @@ internal fun DetailsPrimaryActions(
                 .fillMaxWidth()
                 .height(50.dp)
                 .seasonalButtonDecor()
-                .testTag("watch_button"),
+                .testTag("watch_button")
+                .onboardingTarget(MOBILE_DETAILS_WATCH_TARGET),
         ) {
             Icon(Icons.Filled.PlayArrow, contentDescription = null)
             Spacer(Modifier.width(8.dp))

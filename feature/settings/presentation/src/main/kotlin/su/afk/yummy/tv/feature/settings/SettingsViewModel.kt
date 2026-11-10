@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.settings
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -151,6 +152,11 @@ class SettingsViewModel @Inject internal constructor(
             .onEach { dismissed ->
                 setState { copy(tvPlayerControlsTutorialDismissed = dismissed) }
             }
+            .launchIn(viewModelScope)
+        combine(settingsStore.onboardingWelcomeSeen, settingsStore.onboardingToursSeen) { welcomeSeen, tours ->
+            welcomeSeen || tours.isNotEmpty()
+        }
+            .onEach { available -> setState { copy(onboardingResetAvailable = available) } }
             .launchIn(viewModelScope)
         // Запасной режим хранения сессии показываем в "О приложении": пользователю со сломанным
         // Keystore на кастомной прошивке иначе нечего сообщить в поддержку.
@@ -414,6 +420,12 @@ class SettingsViewModel @Inject internal constructor(
             SettingsState.Event.MobilePlayerGestureTutorialReset -> viewModelScope.launch {
                 analytics.eventMobilePlayerGestureTutorialReset()
                 settingsStore.resetMobilePlayerGestureTutorial()
+            }
+
+            SettingsState.Event.OnboardingReset -> viewModelScope.launch {
+                settingsStore.resetOnboarding()
+                settingsStore.resetMobilePlayerGestureTutorial()
+                settingsStore.resetTvPlayerControlsTutorial()
             }
 
             SettingsState.Event.TvPlayerControlsTutorialReset -> viewModelScope.launch {

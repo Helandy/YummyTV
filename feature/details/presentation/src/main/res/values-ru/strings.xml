@@ -248,4 +248,11 @@
     <string name="details_mobile_recommended_title">Похожие тайтлы</string>
     <string name="details_episode_flag_filler">Филлер</string>
     <string name="details_episode_flag_recap">Рекап</string>
+
+    <string name="details_onboarding_watch_title">Начать просмотр</string>
+    <string name="details_onboarding_watch_text">Нажмите, чтобы начать или продолжить. Озвучку и источник видео можно выбрать перед просмотром.</string>
+    <string name="details_onboarding_episodes_title">Серии</string>
+    <string name="details_onboarding_episodes_text">Все серии с отметками просмотра. Здесь же можно выбрать озвучку для конкретной серии.</string>
+    <string name="details_onboarding_subscriptions_title">Уведомления о сериях</string>
+    <string name="details_onboarding_subscriptions_text">Подпишитесь на озвучку, чтобы узнавать о выходе новой серии.</string>
 </resources>

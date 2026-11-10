@@ -64,4 +64,18 @@
     <string name="seasonal_prompt_keep">Keep</string>
     <string name="source_star_add">Add to favorites</string>
     <string name="source_star_remove">Remove from favorites</string>
+
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_done">Got it</string>
+    <string name="onboarding_start">Let\'s go</string>
+    <string name="onboarding_step_counter">%1$d / %2$d</string>
+    <string name="onboarding_welcome_catalog_title">Welcome to YummyTV</string>
+    <string name="onboarding_welcome_catalog_text">A huge anime catalog with search by genres, seasons and years, and a release schedule.</string>
+    <string name="onboarding_welcome_lists_title">Your lists and progress</string>
+    <string name="onboarding_welcome_lists_text">Add titles to lists, rate them and pick up where you left off — progress is saved and synced with your account.</string>
+    <string name="onboarding_welcome_dubbing_title">Dubbing and sources</string>
+    <string name="onboarding_welcome_dubbing_text">Choose a voice-over and a video source on the title page. Mark your favorites to see them first.</string>
+    <string name="onboarding_welcome_player_title">A player made for comfort</string>
+    <string name="onboarding_welcome_player_text">Swipe the screen to adjust brightness and volume. A short hint will appear when you first open the player.</string>
 </resources>
