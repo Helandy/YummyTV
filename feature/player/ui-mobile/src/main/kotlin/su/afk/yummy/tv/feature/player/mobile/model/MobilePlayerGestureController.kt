@@ -5,8 +5,8 @@ import android.content.Context
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -25,7 +25,7 @@ import su.afk.yummy.tv.feature.player.mobile.utils.readSystemBrightnessFraction
 import kotlin.math.roundToInt
 
 /** Шаг изменения яркости/громкости при вертикальном свайпе. */
-private const val VERTICAL_GESTURE_STEP = 0.05f
+private const val VERTICAL_GESTURE_STEP = 0.02f
 
 /**
  * Жесты мобильного плеера: яркость/громкость (вертикальный свайп),
