@@ -289,6 +289,10 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun clearMobilePlayerBrightness() {
+        store.edit { prefs -> prefs.remove(mobilePlayerBrightnessPercentKey) }
+    }
+
     override suspend fun setPlayerPlaybackSpeed(speed: Float) {
         store.edit { prefs ->
             prefs[playerPlaybackSpeedKey] = speed.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)

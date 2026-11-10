@@ -44,6 +44,9 @@
     <string name="player_dubbing_title">Озвучка</string>
         <string name="player_speed_title">Скорость</string>
     <string name="player_resize_title">Масштаб</string>
+    <string name="player_brightness_title">Яркость</string>
+    <string name="player_brightness_auto_title">Автояркость</string>
+    <string name="player_brightness_auto_hint">Следовать системной яркости. Свайп по левому краю задаёт её вручную.</string>
     <string name="player_volume_title">Громкость</string>
     <string name="player_audio_track_title">Alloha</string>
     <string name="player_subtitles_off">Выключено</string>

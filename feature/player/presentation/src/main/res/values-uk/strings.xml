@@ -44,6 +44,9 @@
     <string name="player_dubbing_title">Озвучення</string>
         <string name="player_speed_title">Швидкість</string>
     <string name="player_resize_title">Масштаб</string>
+    <string name="player_brightness_title">Яскравість</string>
+    <string name="player_brightness_auto_title">Автояскравість</string>
+    <string name="player_brightness_auto_hint">Слідувати системній яскравості. Свайп по лівому краю задає її вручну.</string>
     <string name="player_volume_title">Гучність</string>
     <string name="player_audio_track_title">Alloha</string>
     <string name="player_subtitles_off">Вимкнено</string>

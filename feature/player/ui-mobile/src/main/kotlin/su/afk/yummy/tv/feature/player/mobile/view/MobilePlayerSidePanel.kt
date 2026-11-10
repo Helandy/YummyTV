@@ -71,6 +71,8 @@ internal fun BoxScope.MobilePlayerSidePanel(
     onSubtitleTrackSelected: (Int) -> Unit,
     subtitleStyle: PlayerSubtitleStyleSettings,
     onSubtitleStyleChange: (PlayerSubtitleStyleSettings) -> Unit,
+    autoBrightness: Boolean,
+    onAutoBrightnessChange: (Boolean) -> Unit,
     showVolume: Boolean,
     volumePercent: Int,
     onVolumeChange: (Int) -> Unit,
@@ -197,6 +199,12 @@ internal fun BoxScope.MobilePlayerSidePanel(
                     MobilePlayerSubtitleStyleSection(
                         style = subtitleStyle,
                         onStyleChange = onSubtitleStyleChange,
+                    )
+                }
+                item(key = "brightness") {
+                    MobilePlayerBrightnessSection(
+                        autoBrightness = autoBrightness,
+                        onAutoBrightnessChange = onAutoBrightnessChange,
                     )
                 }
                 if (showVolume || showStabilization) {

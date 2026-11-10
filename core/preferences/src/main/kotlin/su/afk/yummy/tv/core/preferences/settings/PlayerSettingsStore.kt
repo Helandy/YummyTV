@@ -116,6 +116,9 @@ interface PlayerSettingsStore {
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
+
+    /** Сбрасывает ручную яркость плеера: дальше действует системная (авто). */
+    suspend fun clearMobilePlayerBrightness()
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
     suspend fun setAudioFocusDisabled(disabled: Boolean)
