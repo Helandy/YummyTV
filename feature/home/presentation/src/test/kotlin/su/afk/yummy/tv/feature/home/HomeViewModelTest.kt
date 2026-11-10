@@ -25,6 +25,8 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
+import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
@@ -112,7 +114,7 @@ class HomeViewModelTest : BaseUnitTest() {
     fun setUp() {
         every { appClock.nowMillis() } returns 1_700_000_000_000L
         every { observeContinueWatching() } returns continueWatching
-        every { settingsStore.newEpisodesSectionEnabled } returns flowOf(true)
+        every { settingsStore.homeBlocks } returns flowOf(HomeBlockConfig.default)
         every { settingsStore.newEpisodesSources } returns flowOf(NewEpisodesSource.DEFAULT)
         every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(emptySet())
         every { observeWatchedEpisodes() } returns flowOf(emptyMap())
@@ -595,10 +597,30 @@ class HomeViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `blocks in state follow the settings order and skip disabled ones`() {
+        every { settingsStore.homeBlocks } returns flowOf(
+            listOf(
+                HomeBlockConfig(HomeBlockKind.COLLECTIONS),
+                HomeBlockConfig(HomeBlockKind.HERO, enabled = false),
+                HomeBlockConfig(HomeBlockKind.RECOMMENDATIONS),
+            ),
+        )
+
+        assertEquals(
+            listOf(HomeBlockKind.COLLECTIONS, HomeBlockKind.RECOMMENDATIONS),
+            createViewModel().currentState.blocks,
+        )
+    }
+
+    @Test
     fun `new episodes section is absent when the setting is off`() {
         coEvery { getRecentlyAiredSchedule(any()) } returns listOf(item(1))
         every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(setOf(1))
-        every { settingsStore.newEpisodesSectionEnabled } returns flowOf(false)
+        every { settingsStore.homeBlocks } returns flowOf(
+            HomeBlockConfig.default.map {
+                if (it.kind == HomeBlockKind.MY_NEW_EPISODES) it.copy(enabled = false) else it
+            },
+        )
 
         val types = createViewModel().currentState.feed?.sections?.map { it.type }
 

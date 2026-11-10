@@ -1,7 +1,11 @@
 package su.afk.yummy.tv.feature.home.utils
 
 import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
+import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
@@ -11,6 +15,25 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.utils.isEpisodeWatched
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
+
+/** Включённые блоки главной в порядке настроек. */
+internal fun List<HomeBlockConfig>.enabledKinds(): ImmutableList<HomeBlockKind> =
+    filter { it.enabled }.map { it.kind }.toImmutableList()
+
+/** Тип секции ленты, которую рисует блок; `null` для блоков, не являющихся секциями ленты. */
+fun HomeBlockKind.toSectionType(): HomeFeedSectionType? = when (this) {
+    HomeBlockKind.MY_NEW_EPISODES -> HomeFeedSectionType.MY_NEW_EPISODES
+    HomeBlockKind.NEW_RELEASES -> HomeFeedSectionType.NEW_RELEASES
+    HomeBlockKind.NEW_TITLES -> HomeFeedSectionType.NEW_TITLES
+    HomeBlockKind.RECOMMENDATIONS -> HomeFeedSectionType.RECOMMENDATIONS
+    HomeBlockKind.ANNOUNCEMENTS -> HomeFeedSectionType.ANNOUNCEMENTS
+    HomeBlockKind.COLLECTIONS -> HomeFeedSectionType.COLLECTIONS
+    HomeBlockKind.HERO,
+    HomeBlockKind.CONTINUE_WATCHING,
+    HomeBlockKind.BLOGGER_VIDEOS,
+    HomeBlockKind.QUICK_ACTIONS,
+    -> null
+}
 
 /** Убирает из блока рекомендаций тайтлы, скрытые пользователем. */
 internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFeed {

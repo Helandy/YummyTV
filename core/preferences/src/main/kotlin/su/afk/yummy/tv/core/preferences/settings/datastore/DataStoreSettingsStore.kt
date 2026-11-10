@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgrou
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBlocksKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
@@ -150,6 +151,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: store.resolveSystemContentLanguage(),
             libraryTabOrder = prefs[libraryTabOrderKey].toLibraryTabOrder(),
+            homeBlocks = prefs[homeBlocksKey].toHomeBlocks(prefs[newEpisodesSectionEnabledKey] ?: true),
             seasonalDecorationsEnabled = prefs[seasonalDecorationsEnabledKey] ?: true,
             accountShortcutsExpanded = prefs[accountShortcutsExpandedKey] ?: false,
         )

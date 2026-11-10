@@ -129,6 +129,11 @@ internal fun SettingsMobileAppearanceContent(
                 hint = stringResource(R.string.settings_library_tabs_order_hint),
                 onClick = { onEvent(SettingsState.Event.LibraryTabOrderSelected) },
             )
+            SettingsMobileNavigationRow(
+                label = stringResource(R.string.settings_home_blocks_title),
+                hint = stringResource(R.string.settings_home_blocks_hint),
+                onClick = { onEvent(SettingsState.Event.HomeBlocksSelected) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_section_new_episodes)) {
             SettingsMobileToggleRow(

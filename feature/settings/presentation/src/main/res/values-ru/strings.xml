@@ -328,4 +328,20 @@
         <string name="settings_new_episodes_source_on">Учитывается</string>
     <string name="settings_new_episodes_source_off">Не учитывается</string>
     <string name="settings_library_tabs_reset_hint">Вернуть стандартный порядок вкладок библиотеки</string>
+    <string name="settings_home_blocks_title">Разделы главной</string>
+    <string name="settings_home_blocks_hint">Показать, скрыть и переставить разделы на главной</string>
+    <string name="settings_home_blocks_reset">Сбросить разделы</string>
+    <string name="settings_home_blocks_reset_hint">Вернуть стандартные разделы и их порядок</string>
+    <string name="settings_home_block_shown">Показывается</string>
+    <string name="settings_home_block_hidden">Скрыт</string>
+    <string name="settings_home_block_hero">Аниме сезона</string>
+    <string name="settings_home_block_continue_watching">Продолжить просмотр</string>
+    <string name="settings_home_block_my_new_episodes">Новые серии из ваших списков</string>
+    <string name="settings_home_block_new_releases">Новые серии</string>
+    <string name="settings_home_block_new_titles">Новинки</string>
+    <string name="settings_home_block_recommendations">Рекомендации</string>
+    <string name="settings_home_block_announcements">Скоро выйдет</string>
+    <string name="settings_home_block_collections">Коллекции</string>
+    <string name="settings_home_block_blogger_videos">От блогеров</string>
+    <string name="settings_home_block_quick_actions">Ещё</string>
 </resources>

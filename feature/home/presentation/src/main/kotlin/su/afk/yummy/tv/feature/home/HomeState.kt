@@ -5,6 +5,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
+import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -22,6 +25,8 @@ class HomeState {
         /** Идёт обновление по жесту pull-to-refresh поверх уже показанной ленты. */
         val isRefreshing: Boolean = false,
         val feed: HomeFeed? = null,
+        /** Включённые блоки главной в порядке, выбранном в настройках. */
+        val blocks: ImmutableList<HomeBlockKind> = HomeBlockConfig.default.map { it.kind }.toImmutableList(),
         /** Есть ли секция расписания в исходной ленте (до фильтрации из [feed]). */
         val error: UiText? = null,
         val continueWatching: ImmutableList<HomeContinueWatchingItem> = persistentListOf(),

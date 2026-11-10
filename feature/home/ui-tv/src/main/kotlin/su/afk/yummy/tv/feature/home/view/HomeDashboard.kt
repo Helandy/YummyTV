@@ -44,18 +44,21 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.feature.home.utils.toSectionType
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun HomeDashboard(
     feed: HomeFeed,
+    blocks: List<HomeBlockKind>,
     continueWatching: List<HomeContinueWatchingItem>,
     launchingContinueWatchingAnimeId: Int?,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
@@ -72,33 +75,40 @@ internal fun HomeDashboard(
     val hasContinueWatching = continueWatching.isNotEmpty()
     val hasHero = feed.heroItems.isNotEmpty()
 
-    // Блок новых серий закреплён над «Аниме сезона», остальные секции идут после него. Нумеруем
-    // секции по исходному списку, чтобы ключи рядов (а с ними и возврат фокуса) не поехали.
-    val pinnedSectionIndex =
-        feed.sections.indexOfFirst { it.type == HomeFeedSectionType.MY_NEW_EPISODES }
-    val hasPinnedSection = pinnedSectionIndex >= 0
-    val restSections = remember(feed.sections, pinnedSectionIndex) {
-        feed.sections.withIndex().filter { it.index != pinnedSectionIndex }
+    // Ряды в порядке настроек. Секции нумеруем по исходному списку, чтобы ключи рядов (а с ними
+    // и возврат фокуса) не зависели от порядка блоков.
+    val rows = remember(blocks, feed.sections, hasContinueWatching, hasHero) {
+        blocks.mapNotNull { kind ->
+            when (kind) {
+                HomeBlockKind.CONTINUE_WATCHING ->
+                    HomeDashboardRow.ContinueWatching.takeIf { hasContinueWatching }
+
+                HomeBlockKind.HERO -> HomeDashboardRow.Hero.takeIf { hasHero }
+                else -> kind.toSectionType()
+                    ?.let { type -> feed.sections.indexOfFirst { it.type == type } }
+                    ?.takeIf { it >= 0 }
+                    ?.let { HomeDashboardRow.Section(it) }
+            }
+        }
     }
 
     // LazyColumn item indices used for row-level focus restoration.
-    val pinnedLazyIdx = if (hasContinueWatching) 1 else 0
-    val heroLazyIdx = pinnedLazyIdx + if (hasPinnedSection) 1 else 0
-    val sectionsBaseLazyIdx = heroLazyIdx + if (hasHero) 1 else 0
-    val totalLazyItems = sectionsBaseLazyIdx + restSections.size
+    val totalLazyItems = rows.size
     fun sectionKey(index: Int): String =
         feed.sections.getOrNull(index)?.let { "section_${it.type.name}" } ?: "section_$index"
 
+    fun rowKey(row: HomeDashboardRow): String = when (row) {
+        HomeDashboardRow.ContinueWatching -> ROW_CONTINUE_WATCHING
+        HomeDashboardRow.Hero -> ROW_HERO
+        is HomeDashboardRow.Section -> sectionKey(row.index)
+    }
+
     /** Позиция секции (её индекс в [HomeFeed.sections]) среди элементов LazyColumn. */
     fun lazyIndexForSection(sectionIndex: Int): Int =
-        if (sectionIndex == pinnedSectionIndex) {
-            pinnedLazyIdx
-        } else {
-            restSections.indexOfFirst { it.index == sectionIndex }
-                .takeIf { it >= 0 }
-                ?.let { sectionsBaseLazyIdx + it }
-                ?: -1
-        }
+        rows.indexOfFirst { it is HomeDashboardRow.Section && it.index == sectionIndex }
+
+    val continueWatchingLazyIdx = rows.indexOf(HomeDashboardRow.ContinueWatching)
+    val heroLazyIdx = rows.indexOf(HomeDashboardRow.Hero)
 
     var columnHasFocus by remember { mutableStateOf(false) }
 
@@ -130,53 +140,18 @@ internal fun HomeDashboard(
 
     val rowFocusJob = remember { mutableStateOf<Job?>(null) }
 
-    fun focusRequesterForLazyIndex(index: Int): FocusRequester = when {
-        hasContinueWatching && index == 0 -> continueWatchingFocusRequester
-        hasPinnedSection && index == pinnedLazyIdx ->
-            sectionFocusRequesters[pinnedSectionIndex]
-
-        hasHero && index == heroLazyIdx -> heroFocusRequester
-        index >= sectionsBaseLazyIdx -> {
-            val sectionIndex = restSections.getOrNull(index - sectionsBaseLazyIdx)?.index
-            sectionIndex?.let { sectionFocusRequesters.getOrNull(it) }
-                ?: firstAvailableFocusRequester(
-                    hasHero = hasHero,
-                    hasContinueWatching = hasContinueWatching,
-                    continueWatchingFocusRequester = continueWatchingFocusRequester,
-                    heroFocusRequester = heroFocusRequester,
-                    sectionFocusRequesters = sectionFocusRequesters,
-                )
+    fun focusRequesterForLazyIndex(index: Int): FocusRequester =
+        when (val row = rows.getOrNull(index) ?: rows.firstOrNull()) {
+            HomeDashboardRow.ContinueWatching -> continueWatchingFocusRequester
+            HomeDashboardRow.Hero -> heroFocusRequester
+            is HomeDashboardRow.Section -> sectionFocusRequesters[row.index]
+            null -> heroFocusRequester
         }
 
-        else -> firstAvailableFocusRequester(
-            hasHero = hasHero,
-            hasContinueWatching = hasContinueWatching,
-            continueWatchingFocusRequester = continueWatchingFocusRequester,
-            heroFocusRequester = heroFocusRequester,
-            sectionFocusRequesters = sectionFocusRequesters,
-        )
-    }
+    fun lazyIndexForRowKey(key: String?): Int =
+        if (key == null) -1 else rows.indexOfFirst { rowKey(it) == key }
 
-    fun lazyIndexForRowKey(key: String?): Int = when (key) {
-        null -> -1
-        ROW_CONTINUE_WATCHING -> if (hasContinueWatching) 0 else -1
-        ROW_HERO -> if (hasHero) heroLazyIdx else -1
-        else ->
-            feed.sections.indices
-                .firstOrNull { sectionKey(it) == key }
-                ?.let { lazyIndexForSection(it) }
-                ?: -1
-    }
-
-    fun rowKeyForLazyIndex(index: Int): String? = when {
-        hasContinueWatching && index == 0 -> ROW_CONTINUE_WATCHING
-        hasPinnedSection && index == pinnedLazyIdx -> sectionKey(pinnedSectionIndex)
-        hasHero && index == heroLazyIdx -> ROW_HERO
-        index in sectionsBaseLazyIdx until totalLazyItems ->
-            restSections.getOrNull(index - sectionsBaseLazyIdx)?.let { sectionKey(it.index) }
-
-        else -> null
-    }
+    fun rowKeyForLazyIndex(index: Int): String? = rows.getOrNull(index)?.let(::rowKey)
 
     fun focusedLazyIndex(): Int {
         val index = lazyIndexForRowKey(lastFocusedRowKey)
@@ -311,140 +286,125 @@ internal fun HomeDashboard(
             contentPadding = PaddingValues(bottom = 520.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            if (hasContinueWatching) {
-                item(key = ROW_CONTINUE_WATCHING) {
-                    CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
-                        var rowHadFocus by remember { mutableStateOf(false) }
-                        Box(
-                            modifier = Modifier.onFocusChanged { state ->
-                                val hadFocus = rowHadFocus
-                                rowHadFocus = state.hasFocus
-                                if (state.hasFocus) {
-                                    lastFocusedRowKey = ROW_CONTINUE_WATCHING
-                                    if (!hadFocus) {
-                                        scope.launch { lazyColumnState.scrollToItem(0) }
+            rows.forEach { row ->
+                when (row) {
+                    HomeDashboardRow.ContinueWatching ->
+                    item(key = ROW_CONTINUE_WATCHING) {
+                        CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                            var rowHadFocus by remember { mutableStateOf(false) }
+                            Box(
+                                modifier = Modifier.onFocusChanged { state ->
+                                    val hadFocus = rowHadFocus
+                                    rowHadFocus = state.hasFocus
+                                    if (state.hasFocus) {
+                                        lastFocusedRowKey = ROW_CONTINUE_WATCHING
+                                        if (!hadFocus) {
+                                            scope.launch { lazyColumnState.scrollToItem(continueWatchingLazyIdx) }
+                                        }
                                     }
+                                },
+                            ) {
+                                Column {
+                                    ContinueWatchingSection(
+                                        items = continueWatching,
+                                        launchingAnimeId = launchingContinueWatchingAnimeId,
+                                        onItemSelected = onContinueWatchingSelected,
+                                        rowFocusRequester = continueWatchingFocusRequester,
+                                        registerFocusHandler = { handler ->
+                                            registerRowFocusHandler(ROW_CONTINUE_WATCHING, handler)
+                                        },
+                                        downFocusRequester = nextRowFocusRequester(continueWatchingLazyIdx),
+                                        onMoveDown = if (continueWatchingLazyIdx < totalLazyItems - 1) {
+                                            { requestRowFocus(continueWatchingLazyIdx + 1) }
+                                        } else {
+                                            null
+                                        },
+                                    )
                                 }
-                            },
-                        ) {
-                            Column {
-                                ContinueWatchingSection(
-                                    items = continueWatching,
-                                    launchingAnimeId = launchingContinueWatchingAnimeId,
-                                    onItemSelected = onContinueWatchingSelected,
-                                    rowFocusRequester = continueWatchingFocusRequester,
-                                    registerFocusHandler = { handler ->
-                                        registerRowFocusHandler(ROW_CONTINUE_WATCHING, handler)
-                                    },
-                                    downFocusRequester = nextRowFocusRequester(0),
-                                    onMoveDown = if (totalLazyItems > 1) {
-                                        { requestRowFocus(1) }
-                                    } else {
-                                        null
-                                    },
-                                )
                             }
                         }
                     }
-                }
-            }
 
-            if (hasPinnedSection) {
-                homeSectionItem(pinnedSectionIndex, feed.sections[pinnedSectionIndex])
-            }
+                    HomeDashboardRow.Hero ->
+                    item(key = ROW_HERO) {
+                        CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                            var heroRowHasFocus by remember { mutableStateOf(false) }
+                            var heroEnterScrollJob by remember { mutableStateOf<Job?>(null) }
 
-            if (hasHero) {
-                item(key = ROW_HERO) {
-                    CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
-                        var heroRowHasFocus by remember { mutableStateOf(false) }
-                        var heroEnterScrollJob by remember { mutableStateOf<Job?>(null) }
-
-                        fun scrollHeroToTopWhileFocused() {
-                            heroEnterScrollJob?.cancel()
-                            heroEnterScrollJob = scope.launch {
-                                // Пока фокус в hero, держим его у верхней кромки: реагируем на
-                                // каждое смещение колонки, пока не встанет ровно.
-                                withTimeoutOrNull(ROW_FOCUS_TIMEOUT) {
-                                    snapshotFlow {
-                                        heroRowHasFocus &&
-                                            (lazyColumnState.firstVisibleItemIndex != heroLazyIdx ||
-                                                lazyColumnState.firstVisibleItemScrollOffset != 0)
-                                    }.first { needsScroll ->
-                                        if (needsScroll) lazyColumnState.scrollToItem(heroLazyIdx)
-                                        !needsScroll
+                            fun scrollHeroToTopWhileFocused() {
+                                heroEnterScrollJob?.cancel()
+                                heroEnterScrollJob = scope.launch {
+                                    // Пока фокус в hero, держим его у верхней кромки: реагируем на
+                                    // каждое смещение колонки, пока не встанет ровно.
+                                    withTimeoutOrNull(ROW_FOCUS_TIMEOUT) {
+                                        snapshotFlow {
+                                            heroRowHasFocus &&
+                                                (lazyColumnState.firstVisibleItemIndex != heroLazyIdx ||
+                                                    lazyColumnState.firstVisibleItemScrollOffset != 0)
+                                        }.first { needsScroll ->
+                                            if (needsScroll) lazyColumnState.scrollToItem(heroLazyIdx)
+                                            !needsScroll
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        Box(
-                            modifier = Modifier.onFocusChanged { state ->
-                                val hadFocus = heroRowHasFocus
-                                heroRowHasFocus = state.hasFocus
-                                if (state.hasFocus) {
-                                    lastFocusedRowKey = ROW_HERO
-                                    if (!hadFocus) {
-                                        scrollHeroToTopWhileFocused()
-                                    }
-                                } else {
-                                    heroEnterScrollJob?.cancel()
-                                }
-                            },
-                        ) {
-                            Column {
-                                HomeSectionHeader(
-                                    title = stringResource(R.string.home_season_title),
-                                    active = columnHasFocus && lastFocusedRowKey == ROW_HERO,
-                                )
-                                Spacer(Modifier.height(10.dp))
-                                HomeCarousel(
-                                    items = feed.heroItems,
-                                    onItemSelected = onItemSelected,
-                                    sectionKey = SECTION_HERO,
-                                    rowFocusRequester = heroFocusRequester,
-                                    rowIsFocused = columnHasFocus && lastFocusedRowKey == ROW_HERO,
-                                    upFocusRequester = previousRowFocusRequester(heroLazyIdx),
-                                    downFocusRequester = nextRowFocusRequester(heroLazyIdx),
-                                    onCarouselFocused = {
+                            Box(
+                                modifier = Modifier.onFocusChanged { state ->
+                                    val hadFocus = heroRowHasFocus
+                                    heroRowHasFocus = state.hasFocus
+                                    if (state.hasFocus) {
                                         lastFocusedRowKey = ROW_HERO
-                                    },
-                                    onCarouselFocusSettled = {
-                                        scrollHeroToTopWhileFocused()
-                                    },
-                                    onMoveUp = if (heroLazyIdx > 0) {
-                                        { requestRowFocus(heroLazyIdx - 1) }
+                                        if (!hadFocus) {
+                                            scrollHeroToTopWhileFocused()
+                                        }
                                     } else {
-                                        null
-                                    },
-                                    onMoveDown = if (heroLazyIdx < totalLazyItems - 1) {
-                                        { requestRowFocus(heroLazyIdx + 1) }
-                                    } else {
-                                        null
-                                    },
-                                )
+                                        heroEnterScrollJob?.cancel()
+                                    }
+                                },
+                            ) {
+                                Column {
+                                    HomeSectionHeader(
+                                        title = stringResource(R.string.home_season_title),
+                                        active = columnHasFocus && lastFocusedRowKey == ROW_HERO,
+                                    )
+                                    Spacer(Modifier.height(10.dp))
+                                    HomeCarousel(
+                                        items = feed.heroItems,
+                                        onItemSelected = onItemSelected,
+                                        sectionKey = SECTION_HERO,
+                                        rowFocusRequester = heroFocusRequester,
+                                        rowIsFocused = columnHasFocus && lastFocusedRowKey == ROW_HERO,
+                                        upFocusRequester = previousRowFocusRequester(heroLazyIdx),
+                                        downFocusRequester = nextRowFocusRequester(heroLazyIdx),
+                                        onCarouselFocused = {
+                                            lastFocusedRowKey = ROW_HERO
+                                        },
+                                        onCarouselFocusSettled = {
+                                            scrollHeroToTopWhileFocused()
+                                        },
+                                        onMoveUp = if (heroLazyIdx > 0) {
+                                            { requestRowFocus(heroLazyIdx - 1) }
+                                        } else {
+                                            null
+                                        },
+                                        onMoveDown = if (heroLazyIdx < totalLazyItems - 1) {
+                                            { requestRowFocus(heroLazyIdx + 1) }
+                                        } else {
+                                            null
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
-                }
-            }
 
-            restSections.forEach { (sectionIndex, section) ->
-                homeSectionItem(sectionIndex, section)
+                    is HomeDashboardRow.Section ->
+                        homeSectionItem(row.index, feed.sections[row.index])
+                }
             }
         }
     }
-}
-
-private fun firstAvailableFocusRequester(
-    hasHero: Boolean,
-    hasContinueWatching: Boolean,
-    continueWatchingFocusRequester: FocusRequester,
-    heroFocusRequester: FocusRequester,
-    sectionFocusRequesters: List<FocusRequester>,
-): FocusRequester = when {
-    hasContinueWatching -> continueWatchingFocusRequester
-    hasHero -> heroFocusRequester
-    else -> sectionFocusRequesters.firstOrNull() ?: heroFocusRequester
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -460,3 +420,12 @@ private const val SECTION_HERO = "__hero"
 private const val ROW_CONTINUE_WATCHING = "continue_watching"
 private const val ROW_HERO = "hero_carousel"
 private val ROW_FOCUS_TIMEOUT = 500.milliseconds
+
+/** Ряд главной на ТВ: блоки без своего ряда (видео блогеров, быстрые действия) сюда не попадают. */
+private sealed interface HomeDashboardRow {
+    data object ContinueWatching : HomeDashboardRow
+
+    data object Hero : HomeDashboardRow
+
+    data class Section(val index: Int) : HomeDashboardRow
+}

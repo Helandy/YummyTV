@@ -38,6 +38,8 @@ internal fun DetailsOrderRow(
     /** Иконка пункта в цветной плашке; без неё — только подпись. */
     icon: ImageVector? = null,
     iconColor: Color = MaterialTheme.colorScheme.primary,
+    /** Доп. элемент перед кнопками перемещения (например, переключатель). */
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -70,6 +72,7 @@ internal fun DetailsOrderRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        trailing?.invoke()
         IconButton(onClick = onMoveUp, enabled = canMoveUp) {
             Icon(
                 imageVector = Icons.Filled.KeyboardArrowUp,

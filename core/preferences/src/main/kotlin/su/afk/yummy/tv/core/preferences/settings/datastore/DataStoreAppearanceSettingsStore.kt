@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -20,6 +21,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTrans
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBlocksKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
@@ -130,6 +132,14 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setNavTransitionStyle(style: NavTransitionStyle) =
         store.setEnum(navTransitionStyleKey, style)
+
+    override val homeBlocks: Flow<List<HomeBlockConfig>> = store.data.map { prefs ->
+        prefs[homeBlocksKey].toHomeBlocks(prefs[newEpisodesSectionEnabledKey] ?: true)
+    }
+
+    override suspend fun setHomeBlocks(blocks: List<HomeBlockConfig>) {
+        store.edit { prefs -> prefs[homeBlocksKey] = blocks.toHomeBlocksPreference() }
+    }
 
     override suspend fun setLibraryTabOrder(order: List<LibraryTabKind>) {
         store.edit { prefs ->

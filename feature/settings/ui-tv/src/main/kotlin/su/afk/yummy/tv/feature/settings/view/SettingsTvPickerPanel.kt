@@ -53,6 +53,9 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
 
+    SettingsTvPicker.HOME_BLOCKS ->
+        state.homeBlocks.filter { it.enabled }.map { it.kind.label() }.joinToString(" · ")
+
     SettingsTvPicker.SUBTITLE_COLOR -> state.subtitleStyle.textColor.label()
     SettingsTvPicker.SUBTITLE_BACKGROUND -> state.subtitleStyle.background.label()
     SettingsTvPicker.SUBTITLE_EDGE -> state.subtitleStyle.edge.label()
@@ -174,6 +177,20 @@ internal fun SettingsTvPickerPanel(
                     onEvent(SettingsState.Event.LibraryTabMoved(it, DetailsButtonMoveDirection.DOWN))
                 },
                 onReset = { onEvent(SettingsState.Event.LibraryTabOrderReset) },
+            )
+
+            SettingsTvPicker.HOME_BLOCKS -> HomeBlocksPanel(
+                blocks = state.homeBlocks,
+                upFocusRequester = openerFocusRequester,
+                contentFocusRequester = entryFocusRequester,
+                onToggle = { onEvent(SettingsState.Event.HomeBlockToggled(it)) },
+                onMoveUp = {
+                    onEvent(SettingsState.Event.HomeBlockMoved(it, DetailsButtonMoveDirection.UP))
+                },
+                onMoveDown = {
+                    onEvent(SettingsState.Event.HomeBlockMoved(it, DetailsButtonMoveDirection.DOWN))
+                },
+                onReset = { onEvent(SettingsState.Event.HomeBlocksReset) },
             )
 
             SettingsTvPicker.SUBTITLE_COLOR -> PickerOptions(

@@ -11,6 +11,8 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -94,6 +96,7 @@ class SettingsState {
         val interfaceLanguage: AppInterfaceLanguage = AppInterfaceLanguage.DEFAULT,
         val libraryTabOrder: ImmutableList<LibraryTabKind> =
             SettingsStore.defaultLibraryTabOrder.toImmutableList(),
+        val homeBlocks: ImmutableList<HomeBlockConfig> = HomeBlockConfig.default.toImmutableList(),
         val videoExportDirectoryName: String? = null,
         val cacheStorageEntries: ImmutableList<CacheStorageEntry> = persistentListOf(),
         val cacheStorageTotalBytes: Long = 0L,
@@ -277,6 +280,24 @@ class SettingsState {
 
         /** Пользователь сбросил порядок вкладок библиотеки к стандартному. */
         data object LibraryTabOrderReset : Event
+
+        /** Пользователь включил или выключил блок главной. */
+        data class HomeBlockToggled(val block: HomeBlockKind) : Event
+
+        /** Пользователь переместил блок главной в указанном направлении. */
+        data class HomeBlockMoved(
+            val block: HomeBlockKind,
+            val direction: DetailsButtonMoveDirection,
+        ) : Event
+
+        /** Пользователь открыл экран настройки блоков главной. */
+        data object HomeBlocksScreenOpened : Event
+
+        /** Пользователь перешёл к настройке блоков главной. */
+        data object HomeBlocksSelected : Event
+
+        /** Пользователь сбросил блоки главной к стандартным. */
+        data object HomeBlocksReset : Event
 
         /** Пользователь открыл категорию настроек (мобильный интерфейс). */
         data class CategorySelected(val category: SettingsCategory) : Event

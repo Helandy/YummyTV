@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -354,6 +355,22 @@ fun Set<NewEpisodesSource>.newEpisodesSourcesValue(): String =
         }
         labels.joinToString(", ")
     }
+
+@Composable
+fun HomeBlockKind.label(): String = stringResource(
+    when (this) {
+        HomeBlockKind.HERO -> R.string.settings_home_block_hero
+        HomeBlockKind.CONTINUE_WATCHING -> R.string.settings_home_block_continue_watching
+        HomeBlockKind.MY_NEW_EPISODES -> R.string.settings_home_block_my_new_episodes
+        HomeBlockKind.NEW_RELEASES -> R.string.settings_home_block_new_releases
+        HomeBlockKind.NEW_TITLES -> R.string.settings_home_block_new_titles
+        HomeBlockKind.RECOMMENDATIONS -> R.string.settings_home_block_recommendations
+        HomeBlockKind.ANNOUNCEMENTS -> R.string.settings_home_block_announcements
+        HomeBlockKind.COLLECTIONS -> R.string.settings_home_block_collections
+        HomeBlockKind.BLOGGER_VIDEOS -> R.string.settings_home_block_blogger_videos
+        HomeBlockKind.QUICK_ACTIONS -> R.string.settings_home_block_quick_actions
+    },
+)
 
 @Composable
 fun LibraryTabKind.label(): String = stringResource(

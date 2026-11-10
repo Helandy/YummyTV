@@ -328,4 +328,20 @@
         <string name="settings_new_episodes_source_on">Враховується</string>
     <string name="settings_new_episodes_source_off">Не враховується</string>
     <string name="settings_library_tabs_reset_hint">Повернути стандартний порядок вкладок бібліотеки</string>
+    <string name="settings_home_blocks_title">Розділи головної</string>
+    <string name="settings_home_blocks_hint">Показати, приховати та переставити розділи на головній</string>
+    <string name="settings_home_blocks_reset">Скинути розділи</string>
+    <string name="settings_home_blocks_reset_hint">Повернути стандартні розділи та їх порядок</string>
+    <string name="settings_home_block_shown">Показується</string>
+    <string name="settings_home_block_hidden">Приховано</string>
+    <string name="settings_home_block_hero">Аніме сезону</string>
+    <string name="settings_home_block_continue_watching">Продовжити перегляд</string>
+    <string name="settings_home_block_my_new_episodes">Нові серії з ваших списків</string>
+    <string name="settings_home_block_new_releases">Нові серії</string>
+    <string name="settings_home_block_new_titles">Новинки</string>
+    <string name="settings_home_block_recommendations">Рекомендації</string>
+    <string name="settings_home_block_announcements">Незабаром</string>
+    <string name="settings_home_block_collections">Колекції</string>
+    <string name="settings_home_block_blogger_videos">Від блогерів</string>
+    <string name="settings_home_block_quick_actions">Ще</string>
 </resources>

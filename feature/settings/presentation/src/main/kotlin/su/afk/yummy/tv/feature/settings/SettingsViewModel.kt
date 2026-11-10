@@ -20,6 +20,8 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
+import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.logging.AppLogExporter
@@ -34,9 +36,12 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsHomeBlocksDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
+import su.afk.yummy.tv.feature.settings.utils.movedHomeBlock
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
+import su.afk.yummy.tv.feature.settings.utils.toggledHomeBlock
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -84,7 +89,10 @@ class SettingsViewModel @Inject internal constructor(
                         titleCardLayout = snapshot.titleCardLayout,
                         showCatalogTitleYear = snapshot.showCatalogTitleYear,
                         showEpisodeFlags = snapshot.showEpisodeFlags,
-                        newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
+                        newEpisodesSectionEnabled = snapshot.homeBlocks.any {
+                            it.kind == HomeBlockKind.MY_NEW_EPISODES && it.enabled
+                        },
+                        homeBlocks = snapshot.homeBlocks.toImmutableList(),
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         accountShortcutsExpanded = snapshot.accountShortcutsExpanded,
                         seasonalTheme = seasonalThemeAt(System.currentTimeMillis()),
@@ -257,7 +265,9 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             SettingsState.Event.NewEpisodesSectionToggled -> viewModelScope.launch {
-                settingsStore.setNewEpisodesSectionEnabled(!currentState.newEpisodesSectionEnabled)
+                settingsStore.setHomeBlocks(
+                    currentState.homeBlocks.toggledHomeBlock(HomeBlockKind.MY_NEW_EPISODES),
+                )
             }
 
             is SettingsState.Event.NewEpisodesSourceToggled -> viewModelScope.launch {
@@ -467,6 +477,31 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.LibraryTabOrderScreenOpened -> {
                 analytics.eventLibraryTabOrderScreenOpened()
+            }
+
+            is SettingsState.Event.HomeBlockToggled -> viewModelScope.launch {
+                analytics.eventHomeBlockToggled(event.block)
+                settingsStore.setHomeBlocks(currentState.homeBlocks.toggledHomeBlock(event.block))
+            }
+
+            is SettingsState.Event.HomeBlockMoved -> viewModelScope.launch {
+                analytics.eventHomeBlockMoved(event.block, event.direction)
+                settingsStore.setHomeBlocks(
+                    currentState.homeBlocks.movedHomeBlock(event.block, event.direction),
+                )
+            }
+
+            SettingsState.Event.HomeBlocksScreenOpened -> {
+                analytics.eventHomeBlocksScreenOpened()
+            }
+
+            SettingsState.Event.HomeBlocksSelected -> {
+                nav.navigate(SettingsHomeBlocksDestination)
+            }
+
+            SettingsState.Event.HomeBlocksReset -> viewModelScope.launch {
+                analytics.eventHomeBlocksReset()
+                settingsStore.setHomeBlocks(HomeBlockConfig.default)
             }
 
             SettingsState.Event.LibraryTabOrderSelected -> {

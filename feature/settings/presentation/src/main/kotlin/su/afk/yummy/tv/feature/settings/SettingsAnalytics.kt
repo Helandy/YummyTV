@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -401,6 +402,32 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь открыл экран настройки блоков главной. */
+    fun eventHomeBlocksScreenOpened() {
+        tracker.track(EVENT_HOME_BLOCKS_SCREEN_OPENED)
+    }
+
+    /** Пользователь включил или выключил блок главной. Параметры: block. */
+    fun eventHomeBlockToggled(block: HomeBlockKind) {
+        tracker.track(EVENT_HOME_BLOCK_TOGGLED, analyticsParamsOf(PARAM_BLOCK to block.name.lowercase()))
+    }
+
+    /** Пользователь изменил порядок блоков главной. Параметры: block, direction. */
+    fun eventHomeBlockMoved(block: HomeBlockKind, direction: DetailsButtonMoveDirection) {
+        tracker.track(
+            EVENT_HOME_BLOCK_MOVED,
+            analyticsParamsOf(
+                PARAM_BLOCK to block.name.lowercase(),
+                PARAM_DIRECTION to direction.name.lowercase(),
+            ),
+        )
+    }
+
+    /** Пользователь сбросил блоки главной. */
+    fun eventHomeBlocksReset() {
+        tracker.track(EVENT_HOME_BLOCKS_RESET)
+    }
+
     /**
      * Пользователь сбросил порядок вкладок библиотеки.
      */
@@ -442,6 +469,7 @@ internal class SettingsAnalytics @Inject constructor(
     internal companion object {
         private const val PARAM_ACTION = "action"
         private const val PARAM_DIRECTION = "direction"
+        private const val PARAM_BLOCK = "block"
         private const val PARAM_TAB = "tab"
         private const val PARAM_TARGET_STATE = "target_state"
         private const val PARAM_VALUE = "value"
@@ -458,6 +486,10 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
         const val EVENT_INTERFACE_LANGUAGE_SELECTED = "settings_interface_language_selected"
         const val EVENT_LIBRARY_TAB_ORDER_MOVED = "settings_library_tab_order_moved"
+        const val EVENT_HOME_BLOCKS_SCREEN_OPENED = "settings_home_blocks_screen"
+        const val EVENT_HOME_BLOCK_TOGGLED = "settings_home_block_toggled"
+        const val EVENT_HOME_BLOCK_MOVED = "settings_home_block_moved"
+        const val EVENT_HOME_BLOCKS_RESET = "settings_home_blocks_reset"
         const val EVENT_LIBRARY_TAB_ORDER_RESET = "settings_library_tab_order_reset"
         const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"
         const val EVENT_INTERFACE_MODE_SELECTED = "settings_interface_mode_selected"

@@ -331,4 +331,20 @@
         <string name="settings_new_episodes_source_on">Counted</string>
     <string name="settings_new_episodes_source_off">Not counted</string>
     <string name="settings_library_tabs_reset_hint">Restore the default library tab order</string>
+    <string name="settings_home_blocks_title">Home sections</string>
+    <string name="settings_home_blocks_hint">Show, hide and reorder sections on the home screen</string>
+    <string name="settings_home_blocks_reset">Reset sections</string>
+    <string name="settings_home_blocks_reset_hint">Restore the default sections and their order</string>
+    <string name="settings_home_block_shown">Shown</string>
+    <string name="settings_home_block_hidden">Hidden</string>
+    <string name="settings_home_block_hero">Season anime</string>
+    <string name="settings_home_block_continue_watching">Continue watching</string>
+    <string name="settings_home_block_my_new_episodes">New episodes from your lists</string>
+    <string name="settings_home_block_new_releases">New episodes</string>
+    <string name="settings_home_block_new_titles">New titles</string>
+    <string name="settings_home_block_recommendations">Recommendations</string>
+    <string name="settings_home_block_announcements">Coming soon</string>
+    <string name="settings_home_block_collections">Collections</string>
+    <string name="settings_home_block_blogger_videos">From bloggers</string>
+    <string name="settings_home_block_quick_actions">More</string>
 </resources>
