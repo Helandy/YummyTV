@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ internal fun DetailsMobileHero(
     details: AnimeDetails,
     onBack: () -> Unit,
     onShare: () -> Unit,
+    onNewSearch: () -> Unit,
     onPosterClick: () -> Unit,
     onInfoClick: () -> Unit,
     onWatchSelected: () -> Unit,
@@ -107,7 +109,17 @@ internal fun DetailsMobileHero(
                 UserRatingChip(
                     rating = userRating,
                     textStyle = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(end = if (canShare) 0.dp else 12.dp),
+                    modifier = Modifier.padding(end = 4.dp),
+                )
+            }
+            IconButton(
+                onClick = onNewSearch,
+                modifier = Modifier.size(52.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(DetailsR.string.details_new_search),
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.92f),
                 )
             }
             if (canShare) {

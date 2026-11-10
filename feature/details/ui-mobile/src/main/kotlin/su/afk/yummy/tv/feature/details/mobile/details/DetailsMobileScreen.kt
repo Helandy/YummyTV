@@ -173,6 +173,7 @@ fun DetailsMobileScreen(
                         details = details,
                         onBack = { onEvent(DetailsState.Event.BackSelected) },
                         onShare = { onEvent(DetailsState.Event.ShareSelected) },
+                        onNewSearch = { onEvent(DetailsState.Event.NewSearchSelected) },
                         onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
                         onInfoClick = { onEvent(DetailsState.Event.InfoSelected) },
                         onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },

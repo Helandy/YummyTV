@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":feature:commonScreen:api"))
     implementation(project(":feature:bloggers:api"))
     implementation(project(":feature:bloggers:domain"))
+    implementation(project(":feature:catalog:api"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:library:domain"))

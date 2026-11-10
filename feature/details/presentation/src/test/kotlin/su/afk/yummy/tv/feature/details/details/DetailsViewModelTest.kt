@@ -38,6 +38,7 @@ import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
@@ -84,6 +85,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val reviewsNavigator: IReviewsNavigator = mockk()
     private val collectionNavigator: ICollectionNavigator = mockk()
     private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
+    private val catalogSearchOpener: ICatalogSearchOpener = mockk(relaxed = true)
     private val imageViewNavigator: IImageViewNavigator = mockk()
     private val stringProvider: StringProvider = mockk()
     private val screenDataHandler: DetailsScreenDataHandler = mockk()
@@ -156,6 +158,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         reviewsNavigator = reviewsNavigator,
         collectionNavigator = collectionNavigator,
         bloggerVideosNavigator = bloggerVideosNavigator,
+        catalogSearchOpener = catalogSearchOpener,
         imageViewNavigator = imageViewNavigator,
         stringProvider = stringProvider,
         screenDataHandler = screenDataHandler,
@@ -554,6 +557,15 @@ class DetailsViewModelTest : BaseUnitTest() {
 
         verify(exactly = 1) { detailsNavigator.getRelationDest(DetailsRelationKind.STUDIO, 7, "url") }
         verify(exactly = 1) { detailsNavigator.getRelationDest(DetailsRelationKind.DIRECTOR, 8, null) }
+    }
+
+    @Test
+    fun `new search event opens catalog search`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NewSearchSelected)
+
+        verify(exactly = 1) { catalogSearchOpener.openSearch() }
     }
 
     @Test

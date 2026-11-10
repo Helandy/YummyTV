@@ -42,6 +42,13 @@ interface INavigationManager {
     fun backTwo()
     fun popBackTo(dest: NavKey, inclusive: Boolean = false)
     fun popToRoot()
+
+    /**
+     * Сбрасывает стек указанной вкладки до её корня, не переключая вкладку, и закрывает
+     * оверлейный стек. Нужен, когда цепочку экранов надо снести сразу на нескольких вкладках
+     * (например, «новый поиск»), а [popToRoot] сбрасывает только текущую.
+     */
+    fun resetRoot(root: RootTab)
     fun switchRoot(root: RootTab, reselectPopToRoot: Boolean = true)
     fun restoreRoot(root: RootTab)
     fun replaceRoot(root: RootTab, dest: NavKey)

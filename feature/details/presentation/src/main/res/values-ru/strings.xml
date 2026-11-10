@@ -64,6 +64,8 @@
     <string name="details_mobile_show_comments">Показать комментарии</string>
     <string name="details_mobile_universe_show_all">Показать все</string>
     <string name="details_screenshots_title">Скриншоты</string>
+    <string name="details_new_search">Поиск</string>
+    <string name="details_back_to_search">Вернуться к поиску</string>
     <string name="details_kinopoisk_rating">КП %1$s</string>
     <string name="details_shikimori_rating">Shikimori %1$s</string>
     <string name="details_mal_rating">MAL %1$s</string>
@@ -251,6 +253,8 @@
 
     <string name="details_onboarding_watch_title">Начать просмотр</string>
     <string name="details_onboarding_watch_text">Нажмите, чтобы начать или продолжить. Озвучку и источник видео можно выбрать перед просмотром.</string>
+    <string name="details_onboarding_library_title">Добавить в список</string>
+    <string name="details_onboarding_library_text">Поместите тайтл в «Смотрю», «В планах» или другой список — он появится в библиотеке.</string>
     <string name="details_onboarding_episodes_title">Серии</string>
     <string name="details_onboarding_episodes_text">Все серии с отметками просмотра. Здесь же можно выбрать озвучку для конкретной серии.</string>
     <string name="details_onboarding_subscriptions_title">Уведомления о сериях</string>

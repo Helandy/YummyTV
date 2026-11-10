@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
@@ -76,6 +77,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val reviewsNavigator: IReviewsNavigator,
     private val collectionNavigator: ICollectionNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
+    private val catalogSearchOpener: ICatalogSearchOpener,
     private val imageViewNavigator: IImageViewNavigator,
     private val stringProvider: StringProvider,
     private val screenDataHandler: DetailsScreenDataHandler,
@@ -204,6 +206,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         when (event) {
             DetailsState.Event.BackSelected -> nav.back()
             DetailsState.Event.ShareSelected -> shareAnime()
+            DetailsState.Event.NewSearchSelected -> catalogSearchOpener.openSearch()
             DetailsState.Event.RetrySelected -> {
                 analytics.eventDetailsRetry(animeId)
                 load()

@@ -44,6 +44,7 @@ internal fun CatalogTvHeaderRow(
     mainMenuFocusRequester: FocusRequester?,
     /** Куда уходит фокус по «вниз» из строки поиска и кнопок; [FocusRequester.Default], пока результатов нет. */
     downFocusRequester: FocusRequester,
+    onSearchFieldFocusChanged: (Boolean) -> Unit,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
     onOpenFilters: () -> Unit,
@@ -86,7 +87,10 @@ internal fun CatalogTvHeaderRow(
                     right = searchRightTarget
                     down = downFocusRequester
                 }
-                .onFocusChanged { if (!it.isFocused) searchEditing = false }
+                .onFocusChanged {
+                    onSearchFieldFocusChanged(it.isFocused)
+                    if (!it.isFocused) searchEditing = false
+                }
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {

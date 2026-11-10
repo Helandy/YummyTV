@@ -87,6 +87,9 @@ class DetailsState {
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
 
+        /** Новый поиск: сбросить цепочки тайтлов на главной и в каталоге и открыть поле поиска. */
+        data object NewSearchSelected : Event
+
         /** «Поделиться»: ссылка на страницу тайтла на сайте. */
         data object ShareSelected : Event
 

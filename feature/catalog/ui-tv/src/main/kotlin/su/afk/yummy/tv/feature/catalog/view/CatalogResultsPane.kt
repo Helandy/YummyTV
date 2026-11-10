@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -59,6 +60,9 @@ internal fun CatalogResultsPane(
     isFilterPanelOpen: Boolean,
     isLoadingFilterOptions: Boolean,
     isRandomAnimeLoading: Boolean,
+    /** Из другой фичи попросили открыть поиск: поле запроса должно получить фокус. */
+    isSearchFocusRequested: Boolean,
+    onSearchFocusHandled: () -> Unit,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
     onRandomAnimeSelected: () -> Unit,
@@ -104,6 +108,7 @@ internal fun CatalogResultsPane(
         itemIds.zip(focusRequesters).toMap()
     }
     var gridHasFocus by remember { mutableStateOf(false) }
+    var searchFieldFocused by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var restoreFilterButtonFocusToken by rememberSaveable { mutableIntStateOf(0) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
@@ -147,6 +152,7 @@ internal fun CatalogResultsPane(
 
     val preferredContentFocusRequester = when {
         isFilterPanelOpen -> filterPanelInitialFocusRequester
+        isSearchFocusRequested -> searchFieldFocusRequester
         restoreFilterButtonFocusToken > 0 -> filterButtonFocusRequester
         refreshState is LoadState.Error && itemCount == 0 && !isLoading -> retryFocusRequester
         itemCount > 0 -> gridFocusRequester
@@ -167,6 +173,23 @@ internal fun CatalogResultsPane(
         onDispose { restoreFocusJob?.cancel() }
     }
 
+    LaunchedEffect(isSearchFocusRequested) {
+        if (!isSearchFocusRequested) return@LaunchedEffect
+        // Запрос важнее восстановления фокуса на карточке, оставшейся от прошлого поиска.
+        restoreFocusJob?.cancel()
+        isRestoringFocus = false
+        gridState.scrollToItem(0)
+        // Скаффолд при входе фокуса в контент возвращает его на прошлую карточку уже после первой
+        // попытки, поэтому повторяем, пока поле не удержит фокус.
+        var attempts = 0
+        while (!searchFieldFocused && attempts < SearchFocusMaxAttempts) {
+            requestFocusUntilTimeout(searchFieldFocusRequester)
+            delay(SearchFocusSettleMillis)
+            attempts++
+        }
+        onSearchFocusHandled()
+    }
+
     LaunchedEffect(restoreFilterButtonFocusToken, isFilterPanelOpen) {
         if (restoreFilterButtonFocusToken <= 0 || isFilterPanelOpen) return@LaunchedEffect
         if (requestFocusUntilTimeout(filterButtonFocusRequester)) {
@@ -183,6 +206,7 @@ internal fun CatalogResultsPane(
             randomButtonFocusRequester = randomButtonFocusRequester,
             mainMenuFocusRequester = mainMenuFocusRequester,
             downFocusRequester = if (itemCount > 0 && !isFilterPanelOpen) gridFocusRequester else FocusRequester.Default,
+            onSearchFieldFocusChanged = { searchFieldFocused = it },
             onQueryChanged = onQueryChanged,
             onSearchSubmitted = onSearchSubmitted,
             onOpenFilters = onOpenFilters,
@@ -284,3 +308,6 @@ private fun SearchErrorMessage(
         modifier = modifier,
     )
 }
+
+private const val SearchFocusMaxAttempts = 10
+private const val SearchFocusSettleMillis = 150L

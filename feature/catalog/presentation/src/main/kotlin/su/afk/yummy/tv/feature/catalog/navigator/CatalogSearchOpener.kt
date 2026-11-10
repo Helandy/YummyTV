@@ -19,7 +19,10 @@ internal class CatalogSearchOpener @Inject constructor(
 
     override fun openSearch() {
         pending.value = true
-        // Если каталог уже открыт, возвращаемся к корню вкладки: поле поиска живёт там.
+        // Новый поиск начинается с чистого листа: цепочки тайтлов, в которые можно уйти из поиска
+        // и с главной, сносим на обеих вкладках, откуда бы ни вызвали. Остальные вкладки не трогаем.
+        nav.resetRoot(RootTab.HOME)
+        nav.resetRoot(RootTab.CATALOG)
         nav.switchRoot(RootTab.CATALOG, reselectPopToRoot = true)
     }
 

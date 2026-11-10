@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.catalog.navigator
 
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -14,12 +15,17 @@ class CatalogSearchOpenerTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
 
     @Test
-    fun `open search switches to the catalog tab and keeps the request until consumed`() {
+    fun `open search switches to the catalog tab and resets home and catalog stacks and keeps the request until consumed`() {
         val opener = CatalogSearchOpener(nav)
 
         opener.openSearch()
 
-        verify(exactly = 1) { nav.switchRoot(RootTab.CATALOG, true) }
+        verifyOrder {
+            nav.resetRoot(RootTab.HOME)
+            nav.resetRoot(RootTab.CATALOG)
+            nav.switchRoot(RootTab.CATALOG, true)
+        }
+        verify(exactly = 0) { nav.resetRoot(RootTab.POSTS) }
         assertTrue(opener.isSearchFocusPending.value)
 
         opener.consumeSearchFocus()

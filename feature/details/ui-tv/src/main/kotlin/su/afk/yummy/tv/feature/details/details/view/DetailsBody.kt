@@ -362,11 +362,10 @@ internal fun DetailsBody(
                     }
                 }
                 item(key = "comments") {
-                    DetailsLinkRow(
-                        label = stringResource(R.string.details_comments),
-                        icon = Icons.AutoMirrored.Filled.Comment,
-                        badge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
-                        onClick = onCommentsSelected,
+                    DetailsCommentsRow(
+                        commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
+                        onCommentsClick = onCommentsSelected,
+                        onSearchClick = { onEvent(DetailsState.Event.NewSearchSelected) },
                         modifier = Modifier.sectionFocus("comments").tvWholeItemBringIntoView(),
                     )
                 }
