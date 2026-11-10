@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.components.BlurredBackdropPoster
 import su.afk.yummy.tv.core.designsystem.components.CachedAsyncImage
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -62,15 +63,14 @@ internal fun PostDetailsBody(
         }
         details.previewImageUrl?.takeIf(String::isNotBlank)?.let { url ->
             item {
-                CachedAsyncImage(
-                    url,
-                    details.title,
-                    Modifier
+                BlurredBackdropPoster(
+                    url = url,
+                    contentDescription = details.title,
+                    modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(16f / 9f)
                         .clip(RoundedCornerShape(16.dp))
                         .clickable { onImageClick(url) },
-                    contentScale = ContentScale.Crop,
                 )
             }
         }
