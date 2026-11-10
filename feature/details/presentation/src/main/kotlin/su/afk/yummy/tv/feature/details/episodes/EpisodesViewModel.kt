@@ -265,6 +265,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 viewModelScope.launch { toggleEpisodeWatched(action.copy(isWatched = true)) }
             }
 
+            is EpisodesState.Event.EpisodesWatchedUpToChanged -> {
+                val action = currentState.pendingEpisodeAction ?: return
+                setState { copy(pendingEpisodeAction = null) }
+                viewModelScope.launch { setEpisodesWatchedUpTo(action, event.watched) }
+            }
+
             EpisodesState.Event.EpisodeWatchLaterToggled -> {
                 val action = currentState.pendingEpisodeAction ?: return
                 setState { copy(pendingEpisodeAction = null) }
@@ -399,20 +405,59 @@ class EpisodesViewModel @AssistedInject internal constructor(
      * Локальное состояние подхватит подписка [observeAnimeWatchProgress] — вручную его не трогаем.
      */
     private suspend fun toggleEpisodeWatched(action: EpisodesState.EpisodeAction) {
-        val succeeded = if (action.isWatched) {
+        val succeeded = applyEpisodeWatched(
+            episode = action.episode,
+            videos = action.videos,
+            watched = !action.isWatched,
+        )
+        finishWatchedChange(succeeded)
+    }
+
+    /**
+     * Массовая отметка: выбранная серия и все предыдущие по порядку списка серий. Уже находящиеся
+     * в нужном состоянии серии пропускаются; список серий с сервера перечитывается один раз.
+     */
+    private suspend fun setEpisodesWatchedUpTo(action: EpisodesState.EpisodeAction, watched: Boolean) {
+        val groups = currentState.episodeGroups
+        val index = groups.indexOfFirst { it.episode == action.episode.episodeGroupKey() }
+        val targets = if (index < 0) {
+            listOf(EpisodesState.EpisodeGroup(action.episode, action.videos))
+        } else {
+            groups.take(index + 1)
+        }
+        var succeeded = true
+        targets.forEach { group ->
+            val progress = currentState.watchProgress
+            val isWatched = progress.bestFor(group.videos)?.isWatchedProgress() == true
+            val hasProgress = group.videos.watchStatus(progress) != EpisodeWatchStatus.None
+            val needsChange = if (watched) !isWatched else (isWatched || hasProgress)
+            if (needsChange) {
+                val episode = group.videos.firstOrNull()?.episode ?: return@forEach
+                succeeded = applyEpisodeWatched(episode, group.videos, watched) && succeeded
+            }
+        }
+        finishWatchedChange(succeeded)
+    }
+
+    private suspend fun applyEpisodeWatched(
+        episode: String,
+        videos: List<AnimeVideo>,
+        watched: Boolean,
+    ): Boolean =
+        if (!watched) {
             watchedHandler.unmarkWatched(
                 animeId = animeId,
-                episode = action.episode,
-                videos = action.videos,
+                episode = episode,
+                videos = videos,
                 isSignedIn = isSignedIn,
             )
         } else {
             watchedHandler.markWatched(
                 animeId = animeId,
-                episode = action.episode,
-                videos = action.videos,
+                episode = episode,
+                videos = videos,
                 bestDubbing = currentState.bestDubbing,
-                existing = currentState.watchProgress.bestFor(action.videos),
+                existing = currentState.watchProgress.bestFor(videos),
                 meta = EpisodeWatchedHandler.EpisodeMeta(
                     animeTitle = animeTitle,
                     posterUrl = posterUrl,
@@ -421,6 +466,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             )
         }
 
+    private suspend fun finishWatchedChange(succeeded: Boolean) {
         if (!succeeded) {
             setEffect(
                 EpisodesState.Effect.ShowToast(

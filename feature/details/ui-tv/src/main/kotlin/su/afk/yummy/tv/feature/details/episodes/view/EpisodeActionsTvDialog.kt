@@ -37,6 +37,7 @@ internal fun EpisodeActionsTvDialog(
     action: EpisodesState.EpisodeAction,
     onToggleWatched: () -> Unit,
     onClearWatched: () -> Unit,
+    onToggleWatchedUpTo: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val dismissFocusRequester = remember { FocusRequester() }
@@ -100,6 +101,14 @@ internal fun EpisodeActionsTvDialog(
                         )
                     }
                 }
+                TvRetryButton(
+                    text = if (action.isWatched) {
+                        stringResource(R.string.details_unmark_episodes_up_to_watched)
+                    } else {
+                        stringResource(R.string.details_mark_episodes_up_to_watched)
+                    },
+                    onClick = onToggleWatchedUpTo,
+                )
             }
         }
     }

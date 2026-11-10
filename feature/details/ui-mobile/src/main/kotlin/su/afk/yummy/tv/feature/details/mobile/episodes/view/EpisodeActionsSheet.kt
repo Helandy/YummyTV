@@ -4,10 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkRemove
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.RemoveDone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
@@ -21,6 +25,7 @@ internal fun EpisodeActionsSheet(
     action: EpisodesState.EpisodeAction,
     onToggleWatched: () -> Unit,
     onClearWatched: () -> Unit,
+    onToggleWatchedUpTo: () -> Unit,
     onToggleWatchLater: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -38,14 +43,26 @@ internal fun EpisodeActionsSheet(
             },
             icon = if (action.isWatched) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
             onClick = onToggleWatched,
+            iconColor = MaterialTheme.colorScheme.primary,
         )
         if (!action.isWatched && action.hasProgress) {
             EpisodeSheetActionButton(
                 text = stringResource(R.string.details_mobile_unmark_episode_watched),
                 icon = Icons.Filled.Visibility,
                 onClick = onClearWatched,
+                iconColor = MaterialTheme.colorScheme.error,
             )
         }
+        EpisodeSheetActionButton(
+            text = if (action.isWatched) {
+                stringResource(R.string.details_unmark_episodes_up_to_watched)
+            } else {
+                stringResource(R.string.details_mark_episodes_up_to_watched)
+            },
+            icon = if (action.isWatched) Icons.Filled.RemoveDone else Icons.Filled.DoneAll,
+            onClick = onToggleWatchedUpTo,
+            iconColor = UpToActionColor,
+        )
         EpisodeSheetActionButton(
             text = if (action.isInWatchLater) {
                 stringResource(R.string.details_mobile_remove_watch_later)
@@ -58,6 +75,10 @@ internal fun EpisodeActionsSheet(
                 Icons.Filled.BookmarkAdd
             },
             onClick = onToggleWatchLater,
+            iconColor = MaterialTheme.colorScheme.secondary,
         )
     }
 }
+
+/** Яркий бирюзовый: читается и на тёмной, и на светлой теме, в отличие от tertiary. */
+private val UpToActionColor = Color(0xFF26C6DA)

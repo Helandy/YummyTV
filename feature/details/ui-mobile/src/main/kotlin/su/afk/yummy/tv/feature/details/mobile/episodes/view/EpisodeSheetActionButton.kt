@@ -29,6 +29,7 @@ internal fun EpisodeSheetActionButton(
     icon: ImageVector,
     onClick: () -> Unit,
     color: Color = MaterialTheme.colorScheme.onSurface,
+    iconColor: Color = color,
 ) {
     Row(
         modifier = Modifier
@@ -44,13 +45,13 @@ internal fun EpisodeSheetActionButton(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.14f)),
+                .background(iconColor.copy(alpha = 0.16f)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = color,
+                tint = iconColor,
                 modifier = Modifier.size(20.dp),
             )
         }

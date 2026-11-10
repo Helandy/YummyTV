@@ -223,6 +223,8 @@
     <string name="details_viewing_order_description">Related titles in the recommended sequence</string>
     <string name="details_views_thousands">%1$dK</string>
     <string name="details_tv_unmark_episode_watched">Remove watched mark</string>
+    <string name="details_mark_episodes_up_to_watched">Mark this and all previous as watched</string>
+    <string name="details_unmark_episodes_up_to_watched">Remove mark from this and all previous</string>
     <string name="details_trailer_player_error">Couldn\'t play the trailer</string>
     <string name="details_trailer_open_external">Open in browser</string>
     <string name="details_mobile_titles_japanese">Japanese</string>

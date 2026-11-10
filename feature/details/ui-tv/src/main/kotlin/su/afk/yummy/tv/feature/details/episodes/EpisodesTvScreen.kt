@@ -135,6 +135,14 @@ fun EpisodesTvScreen(
                     onEvent(EpisodesState.Event.EpisodeWatchedCleared)
                     restoreEpisodesFocusRequest += 1
                 },
+                onToggleWatchedUpTo = {
+                    onEvent(
+                        EpisodesState.Event.EpisodesWatchedUpToChanged(
+                            watched = !episodeAction.isWatched,
+                        ),
+                    )
+                    restoreEpisodesFocusRequest += 1
+                },
                 onDismiss = ::dismissEpisodeActions,
             )
         }

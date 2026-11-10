@@ -235,6 +235,8 @@
     <string name="details_viewing_order_description">Связанные тайтлы в рекомендуемой последовательности</string>
     <string name="details_views_thousands">%1$d к</string>
     <string name="details_tv_unmark_episode_watched">Убрать отметку</string>
+    <string name="details_mark_episodes_up_to_watched">Отметить эту и все предыдущие просмотренными</string>
+    <string name="details_unmark_episodes_up_to_watched">Убрать отметку у этой и всех предыдущих</string>
     <string name="details_trailer_player_error">Не удалось воспроизвести трейлер</string>
     <string name="details_trailer_open_external">Открыть во внешнем плеере</string>
     <string name="details_mobile_titles_japanese">Японское</string>

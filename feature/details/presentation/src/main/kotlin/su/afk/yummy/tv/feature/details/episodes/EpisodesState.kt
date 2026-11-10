@@ -252,6 +252,12 @@ class EpisodesState {
         /** Пользователь сбросил отметку/прогресс у серии, даже не досмотренной до конца. */
         data object EpisodeWatchedCleared : Event
 
+        /**
+         * Пользователь отметил просмотренными ([watched] = true) или снял отметку ([watched] = false)
+         * у выбранной серии и всех предыдущих.
+         */
+        data class EpisodesWatchedUpToChanged(val watched: Boolean) : Event
+
         /** Пользователь отложил серию или снял пометку. */
         data object EpisodeWatchLaterToggled : Event
 
