@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
+import su.afk.yummy.tv.core.common.player.OkCdnHostFailover
 import su.afk.yummy.tv.core.common.player.cdnHostOrNull
 import su.afk.yummy.tv.core.common.player.isCvhPlayerUrl
 import su.afk.yummy.tv.core.common.player.isIpv4Host
@@ -169,6 +170,10 @@ internal class CvhExtractor @Inject constructor(
                 "Resolved vkId=$vkId episode=$episodeNum dubbing=$dubbingCode " +
                     "qualities=${qualities.keys} failoverHost=$failoverHost " +
                     "useFailoverHost=$useFailoverHost hosts=${qualities.values.map(::hostOf).distinct()}"
+            }
+            failoverHost?.let { failover ->
+                qualities.values.mapNotNull(::hostOf).distinct()
+                    .forEach { primary -> OkCdnHostFailover.register(primary, failover) }
             }
             PlayerStreamResolveResult.Stream(
                 url = qualities.values.last(),

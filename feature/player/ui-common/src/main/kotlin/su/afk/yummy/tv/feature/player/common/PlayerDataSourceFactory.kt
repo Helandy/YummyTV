@@ -22,6 +22,7 @@ class PlayerDataSourceFactory @Inject constructor(
 ) {
     private val playerClient: OkHttpClient by lazy {
         okHttpClient.newBuilder()
+            .addInterceptor(OkCdnFailoverInterceptor())
             .addInterceptor { chain ->
                 // Alloha's edge hash rotates during playback; only requests that carry it are touched.
                 val fresh = AllohaEdgeHash.current
