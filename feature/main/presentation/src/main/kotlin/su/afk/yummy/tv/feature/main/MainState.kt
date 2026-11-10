@@ -22,8 +22,8 @@ class MainState {
         val seasonalPrompt: SeasonalTheme? = null,
         /** Нужно показать приветственные слайды (первый запуск). */
         val onboardingWelcomePending: Boolean = false,
-        /** Пройденные спотлайт-туры; `null`, пока настройки не загрузились. */
-        val onboardingToursSeen: Set<String>? = null,
+        /** Тур по главным вкладкам ещё не пройден и приветственные слайды уже закрыты. */
+        val showMainOnboardingTour: Boolean = false,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val yaniNickname: String = "",
         val yaniAvatarUrl: String = "",
@@ -51,8 +51,8 @@ class MainState {
         /** Приветственные слайды закрыты (пройдены или пропущены). */
         data object OnboardingWelcomeFinished : Event()
 
-        /** Спотлайт-тур [tourId] завершён или пропущен. */
-        data class OnboardingTourFinished(val tourId: String) : Event()
+        /** Тур по главным вкладкам завершён или пропущен. */
+        data object OnboardingMainTourFinished : Event()
     }
 
     sealed class Effect : UiEffect {

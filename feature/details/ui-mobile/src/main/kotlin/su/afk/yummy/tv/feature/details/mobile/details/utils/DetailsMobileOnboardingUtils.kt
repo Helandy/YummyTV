@@ -4,9 +4,6 @@ import su.afk.yummy.tv.core.designsystem.onboarding.OnboardingStep
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.feature.details.presentation.R
 
-/** Идентификатор тура по мобильной деталке тайтла. */
-internal const val MOBILE_DETAILS_TOUR_ID = "details_mobile"
-
 /** Цель онбординга: основная кнопка «Смотреть». */
 internal const val MOBILE_DETAILS_WATCH_TARGET = "details_watch"
 

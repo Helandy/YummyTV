@@ -4,9 +4,6 @@ import su.afk.yummy.tv.core.designsystem.onboarding.OnboardingStep
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.presentation.R
 
-/** Идентификатор тура по главным вкладкам мобильного шелла. */
-internal const val MOBILE_MAIN_TOUR_ID = "main_mobile"
-
 /** Идентификатор цели онбординга для вкладки [destination] (бар и рейка используют один). */
 internal fun mobileMainTabTargetId(destination: Any?): String = "main_tab_$destination"
 

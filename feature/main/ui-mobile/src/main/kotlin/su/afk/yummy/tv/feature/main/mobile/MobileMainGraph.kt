@@ -39,8 +39,8 @@ import su.afk.yummy.tv.feature.main.mobile.navigation.MobileNavigationHolder
 import su.afk.yummy.tv.feature.main.mobile.navigation.mobileNavPopTransitionSpec
 import su.afk.yummy.tv.feature.main.mobile.navigation.mobileNavTransitionSpec
 import su.afk.yummy.tv.feature.main.mobile.navigation.rememberMobileListDetailSceneStrategy
-import su.afk.yummy.tv.feature.main.mobile.utils.MOBILE_MAIN_TOUR_ID
 import su.afk.yummy.tv.feature.main.mobile.utils.mobileMainTourSteps
+import su.afk.yummy.tv.feature.main.utils.MAIN_ONBOARDING_TOUR_ID
 import su.afk.yummy.tv.feature.main.mobile.view.MobileMainScaffold
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
 import javax.inject.Inject
@@ -85,11 +85,7 @@ class MobileMainGraph @Inject internal constructor(
                 isTelevision = false,
             ) {
                 ConfirmDialogHost(isTelevision = false)
-                val onboarding = rememberOnboardingController(
-                    seenTours = state.onboardingToursSeen,
-                    blocked = state.onboardingWelcomePending,
-                    onTourFinished = { tourId -> onEvent(MainState.Event.OnboardingTourFinished(tourId)) },
-                )
+                val onboarding = rememberOnboardingController()
                 val tabRootReady = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination
                 if (state.onboardingWelcomePending && tabRootReady) {
                     OnboardingWelcome(onFinished = { onEvent(MainState.Event.OnboardingWelcomeFinished) })
@@ -112,7 +108,12 @@ class MobileMainGraph @Inject internal constructor(
                     },
                     LocalOnboardingController provides onboarding,
                 ) {
-                    OnboardingTourEffect(MOBILE_MAIN_TOUR_ID, mobileMainTourSteps, ready = tabRootReady)
+                    OnboardingTourEffect(
+                        tourId = MAIN_ONBOARDING_TOUR_ID,
+                        steps = mobileMainTourSteps,
+                        show = state.showMainOnboardingTour && tabRootReady,
+                        onFinished = { onEvent(MainState.Event.OnboardingMainTourFinished) },
+                    )
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
                         menuItems = mobileMenuItems(

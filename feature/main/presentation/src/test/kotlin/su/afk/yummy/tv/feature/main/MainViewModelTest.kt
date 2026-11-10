@@ -44,6 +44,7 @@ import su.afk.yummy.tv.feature.main.MainState.Effect
 import su.afk.yummy.tv.feature.main.MainState.Event
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
+import su.afk.yummy.tv.feature.main.utils.MAIN_ONBOARDING_TOUR_ID
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
 
 class MainViewModelTest : BaseUnitTest() {
@@ -145,15 +146,17 @@ class MainViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `welcome slides are pending until they are marked as seen`() {
+    fun `welcome slides go first and the main tour follows until it is passed`() {
         val viewModel = createViewModel()
         assertTrue(viewModel.currentState.onboardingWelcomePending)
+        assertFalse(viewModel.currentState.showMainOnboardingTour)
 
         welcomeSeen.value = true
-        toursSeen.value = setOf("main_mobile")
+        assertFalse(viewModel.currentState.onboardingWelcomePending)
+        assertTrue(viewModel.currentState.showMainOnboardingTour)
 
-        assertEquals(false, viewModel.currentState.onboardingWelcomePending)
-        assertEquals(setOf("main_mobile"), viewModel.currentState.onboardingToursSeen)
+        toursSeen.value = setOf(MAIN_ONBOARDING_TOUR_ID)
+        assertFalse(viewModel.currentState.showMainOnboardingTour)
     }
 
     @Test
@@ -161,10 +164,10 @@ class MainViewModelTest : BaseUnitTest() {
         val viewModel = createViewModel()
 
         viewModel.setEvent(Event.OnboardingWelcomeFinished)
-        viewModel.setEvent(Event.OnboardingTourFinished("details_tv"))
+        viewModel.setEvent(Event.OnboardingMainTourFinished)
 
         coVerify(exactly = 1) { settingsStore.markOnboardingWelcomeSeen() }
-        coVerify(exactly = 1) { settingsStore.markOnboardingTourSeen("details_tv") }
+        coVerify(exactly = 1) { settingsStore.markOnboardingTourSeen(MAIN_ONBOARDING_TOUR_ID) }
     }
 
     @Test

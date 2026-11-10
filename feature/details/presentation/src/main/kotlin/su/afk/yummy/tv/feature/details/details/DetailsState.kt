@@ -67,10 +67,16 @@ class DetailsState {
         val episodePushPromptAvailable: Boolean = false,
         /** Показывать ТВ-подсказку «нажмите вниз — там доп. секции», пока её не закрыли. */
         val showSectionsHint: Boolean = false,
+        /** Тур по деталке ещё не пройден и приветственные слайды уже закрыты. */
+        val onboardingTourPending: Boolean = false,
     ) : UiState {
         /** Скриншоты для ряда и галереи: TMDB и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
         val screenshots: List<AnimeScreenshot>
             get() = details?.let { mergeScreenshotSources(it.id, episodeFrames, it.screenshots) }.orEmpty()
+
+        /** Показывать тур по деталке: он не пройден, а экран уже загрузился и показывает кнопки действий. */
+        val showOnboardingTour: Boolean
+            get() = onboardingTourPending && !isLoading && details != null && error == null
 
         /**
          * Видео ещё грузятся: Yani /videos, прогресс сервера и внешние источники
@@ -92,6 +98,9 @@ class DetailsState {
 
         /** «Поделиться»: ссылка на страницу тайтла на сайте. */
         data object ShareSelected : Event
+
+        /** Тур по деталке завершён или пропущен. */
+        data object OnboardingTourFinished : Event
 
         /** Пользователь запросил повторную загрузку деталей. */
         data object RetrySelected : Event

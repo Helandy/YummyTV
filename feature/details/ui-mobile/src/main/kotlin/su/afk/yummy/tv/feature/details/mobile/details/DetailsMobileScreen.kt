@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.details
 
 import su.afk.yummy.tv.core.designsystem.onboarding.OnboardingTourEffect
-import su.afk.yummy.tv.feature.details.mobile.details.utils.MOBILE_DETAILS_TOUR_ID
+import su.afk.yummy.tv.feature.details.utils.DETAILS_ONBOARDING_TOUR_ID
 import su.afk.yummy.tv.feature.details.mobile.details.utils.mobileDetailsTourSteps
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -108,9 +108,10 @@ fun DetailsMobileScreen(
 ) {
     val details = state.details
     OnboardingTourEffect(
-        tourId = MOBILE_DETAILS_TOUR_ID,
+        tourId = DETAILS_ONBOARDING_TOUR_ID,
         steps = mobileDetailsTourSteps,
-        ready = !state.isLoading && details != null,
+        show = state.showOnboardingTour,
+        onFinished = { onEvent(DetailsState.Event.OnboardingTourFinished) },
     )
     val emptyText = stringResource(R.string.details_mobile_empty)
     val error = state.error?.asString().takeIf { details == null }

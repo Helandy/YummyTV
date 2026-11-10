@@ -28,6 +28,7 @@ import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryUserRatingsUseCase
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
 import su.afk.yummy.tv.feature.main.presentation.R
+import su.afk.yummy.tv.feature.main.utils.MAIN_ONBOARDING_TOUR_ID
 import su.afk.yummy.tv.feature.playersetup.navigator.PlayerSetupDestination
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
 import javax.inject.Inject
@@ -69,8 +70,8 @@ class MainViewModel @Inject internal constructor(
                 settingsStore.markOnboardingWelcomeSeen()
             }
 
-            is MainState.Event.OnboardingTourFinished -> viewModelScope.launch {
-                settingsStore.markOnboardingTourSeen(event.tourId)
+            MainState.Event.OnboardingMainTourFinished -> viewModelScope.launch {
+                settingsStore.markOnboardingTourSeen(MAIN_ONBOARDING_TOUR_ID)
             }
         }
     }
@@ -80,7 +81,12 @@ class MainViewModel @Inject internal constructor(
             welcomeSeen to tours
         }
             .onEach { (welcomeSeen, tours) ->
-                setState { copy(onboardingWelcomePending = !welcomeSeen, onboardingToursSeen = tours) }
+                setState {
+                    copy(
+                        onboardingWelcomePending = !welcomeSeen,
+                        showMainOnboardingTour = welcomeSeen && MAIN_ONBOARDING_TOUR_ID !in tours,
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
