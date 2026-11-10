@@ -42,6 +42,7 @@ internal fun MobilePlayerTopBar(
     episode: String,
     dubbing: String,
     playerName: String,
+    isDownloaded: Boolean,
     episodeFlags: EpisodeFlags?,
     onBack: () -> Unit,
     onLockClick: () -> Unit,
@@ -102,9 +103,13 @@ internal fun MobilePlayerTopBar(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.padding(start = 8.dp),
                 ) {
-                    if (playerName.isNotBlank()) {
+                    val badgeText = listOfNotNull(
+                        playerName.takeIf(String::isNotBlank),
+                        stringResource(R.string.player_badge_downloaded).takeIf { isDownloaded },
+                    ).joinToString(" • ")
+                    if (badgeText.isNotBlank()) {
                         Text(
-                            text = playerName.uppercase(),
+                            text = badgeText.uppercase(),
                             color = Color.Black,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

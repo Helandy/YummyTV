@@ -230,4 +230,5 @@
     <string name="player_problem_player_not_found">The source page has no player for this episode</string>
     <string name="player_problem_link_not_found">The player was found, but it has no video link</string>
     <string name="player_problem_ticket">Could not get access to the 4K dubbing</string>
+    <string name="player_badge_downloaded">Downloaded</string>
 </resources>

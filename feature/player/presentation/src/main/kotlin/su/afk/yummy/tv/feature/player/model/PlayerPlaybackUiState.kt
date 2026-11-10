@@ -17,6 +17,8 @@ data class PlayerPlaybackUiState(
     val activeBalancerName: String,
     /** Имя активного балансера для показа, без префикса «Плеер» — как в [balancerNames]. */
     val activeBalancerLabel: String,
+    /** Серия играет из скачанного файла: к имени плеера добавляется приписка «Скачано». */
+    val isDownloaded: Boolean,
     val activeScreenshotUrl: String,
     val activeSkips: PlayerSkips,
     val hasPrevEpisode: Boolean,

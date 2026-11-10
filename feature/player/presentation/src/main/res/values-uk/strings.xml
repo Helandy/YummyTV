@@ -230,4 +230,5 @@
     <string name="player_problem_player_not_found">На сторінці джерела немає плеєра для цієї серії</string>
     <string name="player_problem_link_not_found">Плеєр знайдено, але посилання на відео в ньому немає</string>
     <string name="player_problem_ticket">Не вдалося отримати доступ до 4K-озвучення</string>
+    <string name="player_badge_downloaded">Завантажено</string>
 </resources>
