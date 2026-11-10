@@ -9,7 +9,7 @@ import su.afk.yummy.tv.data.details.dto.EpisodeFlagsBackupEpisodeDto
 class EpisodeFlagsBackupMapperTest {
 
     @Test
-    fun `backup flags give the same result as the Tenrai document`() {
+    fun `backup flags are filtered to flagged episodes`() {
         val dto = EpisodeFlagsBackupDto(
             malId = 52991,
             episodes = listOf(
@@ -23,12 +23,12 @@ class EpisodeFlagsBackupMapperTest {
                 "2" to EpisodeFlags(filler = true, recap = false),
                 "3" to EpisodeFlags(filler = false, recap = true),
             ),
-            dto.toMalEpisodesDto().toEpisodeFlagsByNumber(),
+            dto.toEpisodeFlagsByNumber(),
         )
     }
 
     @Test
     fun `empty backup gives no flags`() {
-        assertEquals(emptyMap<String, EpisodeFlags>(), EpisodeFlagsBackupDto().toMalEpisodesDto().toEpisodeFlagsByNumber())
+        assertEquals(emptyMap<String, EpisodeFlags>(), EpisodeFlagsBackupDto().toEpisodeFlagsByNumber())
     }
 }

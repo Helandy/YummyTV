@@ -19,7 +19,6 @@ import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
-import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
@@ -46,7 +45,6 @@ class YaniAnimeRepositoryEpisodeLanguageTest : BaseUnitTest() {
         return YaniAnimeRepository(
             api = mockk<YaniAnimeApi>(relaxed = true),
             episodesApi = episodesApi,
-            episodeFlagsApi = mockk<MalEpisodeFlagsApi>(relaxed = true),
             episodeFlagsBackupApi = mockk<YummyEpisodeFlagsApi>(relaxed = true),
             animeStorage = animeStorage,
             accountStorage = mockk<AccountStorage>(relaxed = true),

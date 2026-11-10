@@ -43,7 +43,7 @@ import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.storage.document.getOrFetchJson
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
-import su.afk.yummy.tv.data.details.dto.MalEpisodesDto
+import su.afk.yummy.tv.data.details.dto.EpisodeFlagsBackupDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationsDto
@@ -55,8 +55,8 @@ import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
 import su.afk.yummy.tv.data.details.mapper.toAnimeTmdbImages
 import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
 import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
-import su.afk.yummy.tv.data.details.mapper.toMalEpisodesDto
-import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
+import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
+import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsDocument
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
@@ -73,6 +73,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeRelationKind
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationReference
 import su.afk.yummy.tv.domain.anime.model.StudioUrlUnavailableException
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
+import su.afk.yummy.tv.domain.anime.repository.EpisodeFlagsSource
 import su.afk.yummy.tv.domain.anime.repository.ExtraVideoRepository
 import su.afk.yummy.tv.domain.anime.utils.dropDuplicateExtras
 import su.afk.yummy.tv.domain.anime.utils.mergeExtraDubbings
@@ -100,8 +101,8 @@ private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations
 private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v5"
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
-// v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
-private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v3"
+// v4: документ — только пометки (EpisodeFlagsBackupDto), независимо от источника.
+private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v4"
 private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
@@ -112,7 +113,6 @@ private const val ANIME_EPISODE_FLAGS_BACKUP_TTL_MS = 24 * 60 * 60 * 1000L
 class YaniAnimeRepository(
     private val api: YaniAnimeApi,
     private val episodesApi: YummyEpisodesApi,
-    private val episodeFlagsApi: MalEpisodeFlagsApi,
     private val episodeFlagsBackupApi: YummyEpisodeFlagsApi,
     private val animeStorage: AnimeStorage,
     private val accountStorage: AccountStorage,
@@ -120,6 +120,7 @@ class YaniAnimeRepository(
     private val watchProgressStore: WatchProgressStorage,
     private val documentCache: DocumentCacheStorage,
     private val extraVideoRepositories: Set<@JvmSuppressWildcards ExtraVideoRepository> = emptySet(),
+    private val episodeFlagsSources: Set<@JvmSuppressWildcards EpisodeFlagsSource> = emptySet(),
 ) : AnimeRepository {
 
     private val malEpisodesLocks = ConcurrentHashMap<Int, Mutex>()
@@ -418,20 +419,20 @@ class YaniAnimeRepository(
 
     override fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>> = channelFlow {
         // Пометки — необязательная надстройка: экран должен работать и без них.
-        val episodes = loadMalEpisodes(animeId) { firstPage -> send(firstPage.toEpisodeFlagsByNumber()) }
-        send(episodes?.toEpisodeFlagsByNumber().orEmpty())
+        val flags = loadEpisodeFlags(animeId) { firstPage -> send(firstPage) }
+        send(flags.orEmpty())
     }
 
     /**
-     * Серии тайтла из MyAnimeList. Пометки одного тайтла просит один и тот же
+     * Пометки серий тайтла по MyAnimeList id. Пометки одного тайтла просит один и тот же
      * экран одновременно, поэтому загрузки одного тайтла идут по очереди — второй вызов уже читает кэш; разные тайтлы
-     * друг друга не ждут (скорость запросов ограничивает сам API-клиент). [onFirstPage] вызывается, только если этот вызов
-     * сам качает длинный список с сети.
+     * друг друга не ждут (скорость запросов ограничивает сам источник). [onFirstPage] вызывается, только если этот вызов
+     * сам качает длинный список с сети. Нет внешнего источника (модуль не подключён) или он не ответил — резерв на нашем API.
      */
-    private suspend fun loadMalEpisodes(
+    private suspend fun loadEpisodeFlags(
         animeId: Int,
-        onFirstPage: suspend (MalEpisodesDto) -> Unit = {},
-    ): MalEpisodesDto? =
+        onFirstPage: suspend (Map<String, EpisodeFlags>) -> Unit = {},
+    ): Map<String, EpisodeFlags>? =
         withContext(Dispatchers.IO) {
             runSuspendCatching {
                 val details = getAnimeDetails(animeId)
@@ -439,29 +440,30 @@ class YaniAnimeRepository(
                 // Статус в ключе: когда тайтл дошёл до последней серии, неполный кэш идущего не залёживается на полгода.
                 val finished = details.episodes.isFullyAired()
                 malEpisodesLocks.getOrPut(malId) { Mutex() }.withLock {
+                    val source = episodeFlagsSources.firstOrNull() ?: return@withLock loadBackupFlags(malId)
                     try {
-                        documentCache.getOrFetchJson<MalEpisodesDto>(
+                        documentCache.getOrFetchJson<EpisodeFlagsBackupDto>(
                             cacheKey = "$MAL_EPISODES_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
                             ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
-                            fetch = { episodeFlagsApi.getEpisodes(malId, onFirstPage) },
-                        )
+                            fetch = { source.getEpisodeFlags(malId, onFirstPage).toEpisodeFlagsDocument(malId) },
+                        ).toEpisodeFlagsByNumber()
                     } catch (e: CancellationException) {
                         throw e
                     } catch (_: Exception) {
-                        // Tenrai не ответил (и свежего кэша нет): пометки берём из резерва на нашем API.
-                        loadBackupMalEpisodes(malId)
+                        // Источник не ответил (и свежего кэша нет): пометки берём из резерва на нашем API.
+                        loadBackupFlags(malId)
                     }
                 }
             }.getOrNull()
         }
 
-    /** Пометки из копии Tenrai на YummyTV API (без картинок серий). */
-    private suspend fun loadBackupMalEpisodes(malId: Int): MalEpisodesDto =
-        documentCache.getOrFetchJson<MalEpisodesDto>(
+    /** Пометки из копии на YummyTV API (без картинок серий). */
+    private suspend fun loadBackupFlags(malId: Int): Map<String, EpisodeFlags> =
+        documentCache.getOrFetchJson<EpisodeFlagsBackupDto>(
             cacheKey = "$MAL_EPISODES_BACKUP_CACHE_NAMESPACE:$malId",
             ttlMs = ANIME_EPISODE_FLAGS_BACKUP_TTL_MS,
-            fetch = { episodeFlagsBackupApi.getFlags(malId).toMalEpisodesDto() },
-        )
+            fetch = { episodeFlagsBackupApi.getFlags(malId) },
+        ).toEpisodeFlagsByNumber()
 
     override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> =
         withContext(Dispatchers.IO) {

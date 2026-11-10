@@ -201,94 +201,110 @@ include(":feature:update:data")
 include(":feature:update:presentation")
 include(":feature:update:ui")
 
+// Переключатели в gradle.properties: yummytv.source.enabled (все source/*) и yummytv.source.<имя> (один модуль).
+// Выключенный модуль не подключается к сборке; зависящие от него модули выключаются следом.
+fun sourceEnabled(name: String): Boolean =
+    providers.gradleProperty("yummytv.source.enabled").orNull != "false" &&
+        providers.gradleProperty("yummytv.source.$name").orNull != "false" &&
+        file("source/$name").isDirectory
+
 // Необязательные модули-источники. Каталог удаляется целиком, остальное приложение собирается как раньше.
-if (file("source/anime4k").isDirectory) {
+if (sourceEnabled("anime4k")) {
     include(":source:anime4k:domain")
     include(":source:anime4k:data")
 }
 
-if (file("source/availability").isDirectory) {
+if (sourceEnabled("availability")) {
     include(":source:availability:domain")
     include(":source:availability:data")
 }
 
-if (file("source/ailiberty").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("ailiberty") && sourceEnabled("availability")) {
     include(":source:ailiberty:domain")
     include(":source:ailiberty:data")
 }
 
-if (file("source/anidub").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("anidub") && sourceEnabled("availability")) {
     include(":source:anidub:domain")
     include(":source:anidub:data")
 }
 
-if (file("source/sameband").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("sameband") && sourceEnabled("availability")) {
     include(":source:sameband:domain")
     include(":source:sameband:data")
 }
 
-if (file("source/studiomir").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("studiomir") && sourceEnabled("availability")) {
     include(":source:studiomir:domain")
     include(":source:studiomir:data")
 }
 
-if (file("source/ashdi").isDirectory) {
+if (sourceEnabled("ashdi")) {
     include(":source:ashdi:domain")
     include(":source:ashdi:data")
 }
 
-if (file("source/fenix").isDirectory) {
+if (sourceEnabled("fenix")) {
     include(":source:fenix:domain")
     include(":source:fenix:data")
 }
 
-if (file("source/moon").isDirectory) {
+if (sourceEnabled("moon")) {
     include(":source:moon:domain")
     include(":source:moon:data")
 }
 
-if (file("source/animeon").isDirectory && file("source/availability").isDirectory && file("source/moon").isDirectory) {
+if (sourceEnabled("animeon") && sourceEnabled("availability") && sourceEnabled("moon")) {
     include(":source:animeon:domain")
     include(":source:animeon:data")
 }
 
-if (file("source/animevost").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("animevost") && sourceEnabled("availability")) {
     include(":source:animevost:domain")
     include(":source:animevost:data")
 }
 
-if (file("source/mikai").isDirectory && file("source/availability").isDirectory && file("source/ashdi").isDirectory &&
-    file("source/fenix").isDirectory && file("source/moon").isDirectory
+if (sourceEnabled("mikai") && sourceEnabled("availability") && sourceEnabled("ashdi") &&
+    sourceEnabled("fenix") && sourceEnabled("moon")
 ) {
     include(":source:mikai:data")
 }
 
-if (file("source/animebesst").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("animebesst") && sourceEnabled("availability")) {
     include(":source:animebesst:domain")
     include(":source:animebesst:data")
 }
 
-if (file("source/dreamerscast").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("dreamerscast") && sourceEnabled("availability")) {
     include(":source:dreamerscast:domain")
     include(":source:dreamerscast:data")
 }
 
-if (file("source/aniboom").isDirectory) {
+if (sourceEnabled("aniboom")) {
     include(":source:aniboom:domain")
     include(":source:aniboom:data")
 }
 
-if (file("source/anistar").isDirectory) {
+if (sourceEnabled("anistar")) {
     include(":source:anistar:domain")
     include(":source:anistar:data")
 }
 
-if (file("source/amedia").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("amedia") && sourceEnabled("availability")) {
     include(":source:amedia:domain")
     include(":source:amedia:data")
 }
 
-if (file("source/anilibria").isDirectory && file("source/availability").isDirectory) {
+if (sourceEnabled("anilibria") && sourceEnabled("availability")) {
     include(":source:anilibria:domain")
     include(":source:anilibria:data")
+}
+
+// Внешние сервисы не-видео (external/*): yummytv.external.<имя> в gradle.properties. Нет каталога или false — модуль не подключается.
+fun externalEnabled(name: String): Boolean =
+    providers.gradleProperty("yummytv.external.$name").orNull != "false" &&
+        file("external/$name").isDirectory
+
+if (externalEnabled("tenrai")) {
+    include(":external:tenrai")
 }
