@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.mapper
 
+import su.afk.yummy.tv.core.common.player.withoutPlayerPrefix
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
@@ -77,7 +78,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     val activeQuality = activeQuality(this)
     // Имена для показа: без общего префикса «Плеер», как во всех списках и кнопках UI.
     val balancerNames = availableBalancerIndices.map { index ->
-        sourceGraph.balancers.getOrNull(index)?.name.orEmpty().removePrefix(playerNamePrefix)
+        sourceGraph.balancers.getOrNull(index)?.name.orEmpty().removePrefix(playerNamePrefix).withoutPlayerPrefix()
     }
     val balancerExternal = availableBalancerIndices.map { index ->
         sourceGraph.balancers.getOrNull(index)?.isExtraSourceBalancer() == true
@@ -92,7 +93,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeVideoId = activeVideoId(this),
         activeDubbing = activeDubbingName,
         activeBalancerName = activeBalancerName(this),
-        activeBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix),
+        activeBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix).withoutPlayerPrefix(),
         isDownloaded = isOfflinePlayback && !isLocalFile,
         activeScreenshotUrl = activeScreenshotUrl(this),
         activeSkips = activeEpisodeSource(this)?.skips ?: PlayerSkips.Empty,
@@ -149,7 +150,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         adaptiveLimitLabel = adaptiveLimitLabel(qualities.keys, adaptiveCeilingHeight),
         adaptiveLimitBest = adaptiveCeilingHeight >= QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
-        errorBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix)
+        errorBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix).withoutPlayerPrefix()
             .withExtraSourceName(activeIframeUrl(this))
             .takeIf { it.isNotBlank() && !isOfflinePlayback && !isConnectionError },
         canChangePlayer = canChangePlayer && !isConnectionError,

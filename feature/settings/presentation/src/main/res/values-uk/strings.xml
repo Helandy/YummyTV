@@ -168,8 +168,8 @@
     <string name="settings_controls_auto_hide_label">Приховувати керування плеєром через</string>
     <string name="settings_picture_in_picture_label">Плаваючий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматично вмикати під час виходу із застосунку під час відтворення</string>
-    <string name="settings_hold_to_confirm_label">Утримування для блокування та зміни серії</string>
-    <string name="settings_hold_to_confirm_enabled">Блокування та перемикання серії спрацьовують лише за утримування кнопки</string>
+    <string name="settings_hold_to_confirm_label">Утримування для розблокування</string>
+    <string name="settings_hold_to_confirm_enabled">Екран розблоковується лише за утримування кнопки</string>
     <string name="settings_advanced_volume_label">Розширена гучність у плеєрі</string>
     <string name="settings_advanced_volume_enabled" formatted="false">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
     <string name="settings_advanced_volume_disabled">Гучність змінює системний звук як зазвичай</string>

@@ -39,8 +39,10 @@ internal fun MobilePlayerVolumeSection(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     MobilePlayerSettingsSection(
+        modifier = modifier,
         title = stringResource(R.string.player_volume_title),
         icon = Icons.AutoMirrored.Filled.VolumeUp,
     ) {

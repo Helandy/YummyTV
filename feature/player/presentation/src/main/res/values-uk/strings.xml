@@ -44,7 +44,6 @@
     <string name="player_dubbing_title">Озвучення</string>
         <string name="player_speed_title">Швидкість</string>
     <string name="player_resize_title">Масштаб</string>
-    <string name="player_brightness_title">Яскравість</string>
     <string name="player_brightness_auto_title">Автояскравість</string>
     <string name="player_brightness_auto_hint">Слідувати системній яскравості. Свайп по лівому краю задає її вручну.</string>
     <string name="player_volume_title">Гучність</string>
@@ -103,16 +102,13 @@
     <string name="player_tv_controls_tutorial_illustration">Підказка щодо пульта</string>
     <string name="player_mobile_settings_title">Налаштування плеєра</string>
     <string name="player_mobile_track_settings_title">Озвучення і плеєр</string>
-    <string name="player_mobile_playback_settings_title">Якість і швидкість</string>
             <string name="player_mobile_episode_number">%1$s Серія</string>
     <string name="player_mobile_previous_episode">Попередня</string>
     <string name="player_mobile_next_episode">Наступна</string>
     <string name="player_mobile_details">Деталі</string>
-    <string name="player_mobile_actions">Ще</string>
     <string name="player_mobile_lock">Заблокувати керування</string>
     <string name="player_mobile_unlock">Розблокувати керування</string>
     <string name="player_mobile_unlock_hint">Утримуйте, щоб розблокувати</string>
-    <string name="player_mobile_hold_to_switch_episode">Утримуйте для перемикання</string>
     <string name="player_mobile_cast">Трансляція</string>
     <string name="player_mobile_pip">Картинка в картинці</string>
     <string name="player_mobile_forward">Далі</string>
@@ -153,7 +149,6 @@
     <string name="player_toast_balancer_changed">Плеєр: %1$s</string>
     <string name="player_side_panel_title">Налаштування плеєра</string>
     <string name="player_side_panel_open">Налаштування плеєра</string>
-    <string name="player_side_panel_close">Згорнути панель</string>
     <string name="player_subtitle_track_title">Доріжка субтитрів</string>
     <string name="player_subtitle_style_title">Оформлення субтитрів</string>
     <string name="player_subtitle_size_title">Розмір тексту</string>
@@ -231,4 +226,17 @@
     <string name="player_problem_link_not_found">Плеєр знайдено, але посилання на відео в ньому немає</string>
     <string name="player_problem_ticket">Не вдалося отримати доступ до 4K-озвучення</string>
     <string name="player_badge_downloaded">Завантажено</string>
+    <string name="player_menu_subtitles">Субтитри</string>
+    <string name="player_menu_audio_track">Аудіодоріжка</string>
+    <string name="player_menu_display">Яскравість і гучність</string>
+    <string name="player_menu_quality_auto">Авто (%1$s)</string>
+    <string name="player_menu_back">Назад</string>
+    <string name="player_sleep_title">Автовимкнення</string>
+    <string name="player_sleep_off">Вимкнено</string>
+    <string name="player_sleep_minutes">%1$d хв</string>
+    <string name="player_sleep_hour">1 година</string>
+    <string name="player_speed_normal">Нормальна</string>
+    <string name="player_speed_slower">Повільніше</string>
+    <string name="player_speed_faster">Швидше</string>
+    <string name="player_menu_cast_pip">PiP і Cast</string>
 </resources>

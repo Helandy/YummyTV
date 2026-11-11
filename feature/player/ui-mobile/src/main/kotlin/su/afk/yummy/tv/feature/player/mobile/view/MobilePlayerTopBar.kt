@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,12 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +41,6 @@ internal fun MobilePlayerTopBar(
     isDownloaded: Boolean,
     episodeFlags: EpisodeFlags?,
     onBack: () -> Unit,
-    onLockClick: () -> Unit,
     visible: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -125,28 +120,6 @@ internal fun MobilePlayerTopBar(
                         flags = episodeFlags,
                         modifier = Modifier.padding(top = 6.dp),
                     )
-                    // Круглая подложка с обводкой, как у кнопок управления внизу: голые точки
-                    // терялись на светлом кадре.
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 6.dp),
-                    ) {
-                        IconButton(
-                            onClick = onLockClick,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.36f))
-                                .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
-                        ) {
-                            Icon(
-                                Icons.Filled.LockOpen,
-                                contentDescription = stringResource(R.string.player_mobile_lock),
-                                tint = Color.White,
-                                modifier = Modifier.size(24.dp),
-                            )
-                        }
-                    }
                 }
             }
         }

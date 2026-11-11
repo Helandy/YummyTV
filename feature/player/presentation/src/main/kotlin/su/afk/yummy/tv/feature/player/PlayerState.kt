@@ -83,7 +83,7 @@ class PlayerState {
         /** Через сколько секунд бездействия скрываются контролы. */
         val controlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
-        /** Блокировка и смена серии в мобильном плеере требуют удержания кнопки. */
+        /** Разблокировка экрана в мобильном плеере требует удержания кнопки. */
         val holdToConfirmEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val mobileGestureTutorialReady: Boolean = false,

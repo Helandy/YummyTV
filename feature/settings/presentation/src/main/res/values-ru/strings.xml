@@ -168,8 +168,8 @@
     <string name="settings_controls_auto_hide_label">Скрывать управление плеером через</string>
     <string name="settings_picture_in_picture_label">Плавающий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматически включать при выходе из приложения во время воспроизведения</string>
-    <string name="settings_hold_to_confirm_label">Удержание для блокировки и смены серии</string>
-    <string name="settings_hold_to_confirm_enabled">Блокировка и переключение серии срабатывают только при удержании кнопки</string>
+    <string name="settings_hold_to_confirm_label">Удержание для разблокировки</string>
+    <string name="settings_hold_to_confirm_enabled">Экран разблокируется только при удержании кнопки</string>
     <string name="settings_advanced_volume_label">Продвинутая громкость в плеере</string>
     <string name="settings_advanced_volume_enabled" formatted="false">У плеера своя громкость (0–100%, шаг 1%), независимо от системы</string>
     <string name="settings_advanced_volume_disabled">Громкость меняет системный звук как обычно</string>

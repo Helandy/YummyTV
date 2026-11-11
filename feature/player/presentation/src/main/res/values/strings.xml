@@ -44,7 +44,6 @@
     <string name="player_dubbing_title">Dubbing</string>
         <string name="player_speed_title">Speed</string>
     <string name="player_resize_title">Scale</string>
-    <string name="player_brightness_title">Brightness</string>
     <string name="player_brightness_auto_title">Auto brightness</string>
     <string name="player_brightness_auto_hint">Follow the system brightness. A swipe on the left edge sets it manually.</string>
     <string name="player_volume_title">Volume</string>
@@ -103,16 +102,13 @@
     <string name="player_tv_controls_tutorial_illustration">Remote control hint</string>
     <string name="player_mobile_settings_title">Player settings</string>
     <string name="player_mobile_track_settings_title">Dubbing and player</string>
-    <string name="player_mobile_playback_settings_title">Quality and speed</string>
             <string name="player_mobile_episode_number">Episode %1$s</string>
     <string name="player_mobile_previous_episode">Previous</string>
     <string name="player_mobile_next_episode">Next</string>
     <string name="player_mobile_details">Details</string>
-    <string name="player_mobile_actions">More</string>
     <string name="player_mobile_lock">Lock controls</string>
     <string name="player_mobile_unlock">Unlock controls</string>
     <string name="player_mobile_unlock_hint">Hold to unlock</string>
-    <string name="player_mobile_hold_to_switch_episode">Hold to switch episode</string>
     <string name="player_mobile_cast">Cast</string>
     <string name="player_mobile_pip">Picture-in-Picture</string>
     <string name="player_mobile_forward">Forward</string>
@@ -153,7 +149,6 @@
     <string name="player_toast_balancer_changed">Player: %1$s</string>
     <string name="player_side_panel_title">Player settings</string>
     <string name="player_side_panel_open">Player settings</string>
-    <string name="player_side_panel_close">Collapse panel</string>
     <string name="player_subtitle_track_title">Subtitle track</string>
     <string name="player_subtitle_style_title">Subtitle look</string>
     <string name="player_subtitle_size_title">Text size</string>
@@ -231,4 +226,17 @@
     <string name="player_problem_link_not_found">The player was found, but it has no video link</string>
     <string name="player_problem_ticket">Could not get access to the 4K dubbing</string>
     <string name="player_badge_downloaded">Downloaded</string>
+    <string name="player_menu_subtitles">Subtitles</string>
+    <string name="player_menu_audio_track">Audio track</string>
+    <string name="player_menu_display">Brightness and volume</string>
+    <string name="player_menu_quality_auto">Auto (%1$s)</string>
+    <string name="player_menu_back">Back</string>
+    <string name="player_sleep_title">Sleep timer</string>
+    <string name="player_sleep_off">Off</string>
+    <string name="player_sleep_minutes">%1$d min</string>
+    <string name="player_sleep_hour">1 hour</string>
+    <string name="player_speed_normal">Normal</string>
+    <string name="player_speed_slower">Slower</string>
+    <string name="player_speed_faster">Faster</string>
+    <string name="player_menu_cast_pip">PiP and Cast</string>
 </resources>
