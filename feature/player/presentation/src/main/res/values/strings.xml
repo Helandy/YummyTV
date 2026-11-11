@@ -17,7 +17,7 @@
     <string name="player_change_player">Change player</string>
     <string name="player_change_dubbing">Change dubbing</string>
     <string name="player_stream_error">Could not load the player stream, try switching the player or voice-over</string>
-    <string name="player_decoder_error">This device could not decode the video, try a lower quality</string>
+    <string name="player_decoder_error">This device could not decode the video, try another quality or source</string>
     <string name="player_change_quality">Change quality</string>
     <string name="player_no_connection">No internet connection. Playback will resume when the network is back</string>
     <string name="player_recovery_hint_title">Playback is taking long to restore</string>
@@ -191,6 +191,8 @@
     <string name="player_resolve_failed_opening_session">Failed at: opening the player</string>
     <string name="player_resolve_response_error">Source responded with an error…</string>
     <string name="player_resolve_waiting_for_ad">Preparing access…</string>
+    <string name="player_resolve_waiting_for_torrent">Waiting for you to choose a torrent…</string>
+    <string name="player_resolve_waiting_for_torrent_file">Waiting for you to choose a torrent file…</string>
     <string name="player_resolve_failed_response_error">Failed at: the source responded with an error — it may be down or blocking requests</string>
     <string name="player_resolve_loading_player_script">Loading the player script…</string>
     <string name="player_resolve_selecting_dubbing">Choosing dubbing and episode…</string>

@@ -92,6 +92,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeEpisodeFlags = episodeFlags[activeEpisode.episodeGroupKey()]?.takeIf { it.filler || it.recap },
         activeVideoId = activeVideoId(this),
         activeDubbing = activeDubbingName,
+        activeDubbingLabel = streamSourceLabel?.takeIf { it.isNotBlank() } ?: activeDubbingName,
         activeBalancerName = activeBalancerName(this),
         activeBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix).withoutPlayerPrefix(),
         isDownloaded = isOfflinePlayback && !isLocalFile,

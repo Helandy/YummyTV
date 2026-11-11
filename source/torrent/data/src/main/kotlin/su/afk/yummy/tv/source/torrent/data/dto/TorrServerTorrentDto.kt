@@ -9,6 +9,9 @@ internal data class TorrServerTorrentDto(
     val title: String? = null,
     val hash: String? = null,
     @SerialName("file_stats") val fileStats: List<TorrServerFileDto>? = null,
+    @SerialName("active_peers") val activePeers: Int? = null,
+    @SerialName("total_peers") val totalPeers: Int? = null,
+    @SerialName("connected_seeders") val connectedSeeders: Int? = null,
 )
 
 @Serializable

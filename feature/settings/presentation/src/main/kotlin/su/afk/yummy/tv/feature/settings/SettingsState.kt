@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.core.utils.system.PlatformInfo
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
+import su.afk.yummy.tv.feature.settings.model.TorrServerCheckStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
 
 class SettingsState {
@@ -109,6 +110,9 @@ class SettingsState {
         val betaUpdatesEnabled: Boolean = false,
         /** Настройки торрент-источника (TorrServer + индексатор). */
         val torrent: TorrentSettings = TorrentSettings(),
+        /** Подключён модуль торрентов, способный проверить связь с TorrServer (иначе кнопки проверки нет). */
+        val torrServerCheckAvailable: Boolean = false,
+        val torrServerCheck: TorrServerCheckStatus = TorrServerCheckStatus.Idle,
         /** Запись логов приложения в файл включена; пока выключена — «Поделиться логами» скрыто. */
         val appLogRecordingEnabled: Boolean = false,
         /** Показан диалог: запись логов включится только после холодного перезапуска приложения. */
@@ -267,6 +271,9 @@ class SettingsState {
 
         /** Пользователь изменил настройки торрент-источника (тумблер, адреса, ключ, индексатор). */
         data class TorrentSettingsChanged(val settings: TorrentSettings) : Event
+
+        /** Пользователь нажал «Проверить TorrServer». */
+        data object TorrServerCheckRequested : Event
 
         /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event

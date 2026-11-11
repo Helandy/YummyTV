@@ -119,12 +119,20 @@ object NetworkModule {
     fun provideKodikHttpClient(okHttpClient: OkHttpClient): HttpClient =
         okHttpKtorClient(okHttpClient, allowRequestTimeouts = true)
 
-    /** Клиент торрент-источника: см. [TorrentHttpClient]. Своё тело в логи не пишет (ключи в URL). */
+    /**
+     * Клиент торрент-источника: см. [TorrentHttpClient]. Тело в логи не пишет (ключи в URL), только строки
+     * «запрос/ответ + статус» и только в debug: по времени записей видно, где долго отвечает TorrServer.
+     */
     @Provides
     @Singleton
     @TorrentHttpClient
     fun provideTorrentHttpClient(okHttpClient: OkHttpClient, json: Json): HttpClient =
         okHttpKtorClient(okHttpClient, timeouts = NetworkTimeouts.Api) {
             install(ContentNegotiation) { json(json) }
+            install(Logging) {
+                logger = SensitiveDataMaskingLogger(Logger.ANDROID)
+                level = LogLevel.INFO
+                filter { BuildConfig.DEBUG }
+            }
         }
 }

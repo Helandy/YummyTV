@@ -22,3 +22,14 @@ fun TorrentFile.episodeMatchScore(episode: String): Int {
 }
 
 private val NON_EPISODE_NUMBERS = setOf(240, 360, 480, 576, 720, 1080, 1440, 2160, 4320)
+
+/**
+ * Файл, который можно играть без вопроса пользователю: единственный видеофайл раздачи или единственный из
+ * нескольких, чьё имя содержит номер серии [episode]. Если подходящих несколько или ни одного — `null`
+ * (пользователь выберет сам): ошибиться в серии хуже, чем спросить.
+ */
+fun List<TorrentFile>.autoSelectFor(episode: String): TorrentFile? {
+    val videos = filter { it.isVideo }
+    if (videos.size == 1) return videos.single()
+    return videos.filter { it.episodeMatchScore(episode) > 0 }.singleOrNull()
+}

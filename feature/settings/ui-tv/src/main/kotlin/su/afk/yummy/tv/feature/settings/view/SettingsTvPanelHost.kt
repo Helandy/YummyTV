@@ -26,6 +26,7 @@ import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvAboutContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvApiContent
+import su.afk.yummy.tv.feature.settings.view.category.SettingsTvTorrentContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvAppearanceContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvGeneralContent
 import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPickerRow
@@ -129,6 +130,14 @@ internal fun SettingsTvPanelHost(
                         tabFocusRequester,
                         tabContentFocusRequester,
                         onEvent,
+                    )
+
+                    SettingsTab.TORRENT -> SettingsTvTorrentContent(
+                        state,
+                        tabFocusRequester,
+                        tabContentFocusRequester,
+                        onEvent,
+                        pickerRow,
                     )
 
                     SettingsTab.API -> SettingsTvApiContent(

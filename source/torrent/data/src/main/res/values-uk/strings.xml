@@ -4,11 +4,26 @@
     <string name="torrent_pick_title">Виберіть торент</string>
     <string name="torrent_pick_file_title">Виберіть файл</string>
     <string name="torrent_cancel">Скасувати</string>
-    <string name="torrent_not_configured">Вкажіть адресу TorrServer у Налаштування → API → Торенти</string>
+    <string name="torrent_badge_in_torrserver">У TorrServer</string>
+    <string name="torrent_warning_hevc_unsupported">Немає декодера HEVC на пристрої</string>
+    <string name="torrent_step_searching">Запит джерел…</string>
+    <string name="torrent_step_fetching_files">TorrServer отримує список файлів…</string>
+    <string name="torrent_step_fetching_files_peers">TorrServer отримує список файлів…\nПідключено: %1$d з %2$d відомих пірів\nЗа трекером: %3$d сідів</string>
+    <string name="torrent_not_configured">Вкажіть адресу TorrServer у Налаштування → Торенти</string>
     <string name="torrent_nothing_found">Нічого не знайдено</string>
     <string name="torrent_search_failed">Пошук не вдався. Перевірте адресу індексатора та мережу</string>
     <string name="torrent_server_failed">TorrServer не відповідає. Перевірте адресу та що сервер запущено</string>
     <string name="torrent_no_video_files">У цій роздачі немає відеофайлів</string>
     <string name="torrent_cancelled">Торент не вибрано</string>
-    <string name="torrent_seeders">%1$d сідів</string>
+    <string name="torrent_local_network_denied">Також дозвольте застосунку доступ до локальної мережі в системних налаштуваннях</string>
+    <string name="torrent_retry">Повторити</string>
+    <string name="torrent_badge_subtitles">Саб</string>
+    <plurals name="torrent_seeders">
+        <item quantity="one">%d сід</item>
+        <item quantity="few">%d сіди</item>
+        <item quantity="many">%d сідів</item>
+        <item quantity="other">%d сіда</item>
+    </plurals>
+    <string name="torrent_no_peers">TorrServer не знайшов нікого, хто роздає цей торент, тому список файлів не надійшов. Повторіть або виберіть інший торент (трекер може показувати сідів, до яких не достукатися).</string>
+    <string name="torrent_stream_not_starting">Роздача не почала завантажуватися: немає доступних пірів. Виберіть інший торент або повторіть пізніше.</string>
 </resources>

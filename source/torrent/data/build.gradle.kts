@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(project(":source:torrent:domain"))
+    implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))

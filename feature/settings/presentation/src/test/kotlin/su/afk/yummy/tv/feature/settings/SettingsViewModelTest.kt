@@ -136,6 +136,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         appLogExporter = appLogExporter,
         getAppReleaseHistory = GetAppReleaseHistoryUseCase(updateRepository),
         analyticsDeviceIdProvider = analyticsDeviceIdProvider,
+        torrServerChecker = java.util.Optional.empty(),
         versionName = "1.0.0",
     )
 

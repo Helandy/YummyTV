@@ -12,8 +12,8 @@ import androidx.compose.runtime.getValue
 @Composable
 fun ChoiceDialogHost(isTelevision: Boolean) {
     DisposableEffect(Unit) {
-        ChoiceDialogCenter.hostAttached = true
-        onDispose { ChoiceDialogCenter.hostAttached = false }
+        ChoiceDialogCenter.attachHost()
+        onDispose { ChoiceDialogCenter.detachHost() }
     }
     val request by ChoiceDialogCenter.pending.collectAsState()
     val current = request ?: return

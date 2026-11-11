@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
+import su.afk.yummy.tv.core.model.settings.TorrentSort
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
@@ -120,6 +121,24 @@ fun NavTransitionStyle.hint(): String = stringResource(
         NavTransitionStyle.SLIDE -> R.string.settings_nav_transition_slide_hint
         NavTransitionStyle.FADE_SCALE -> R.string.settings_nav_transition_fade_scale_hint
         NavTransitionStyle.NONE -> R.string.settings_nav_transition_none_hint
+    },
+)
+
+@Composable
+fun TorrentSort.label(): String = stringResource(
+    when (this) {
+        TorrentSort.SEEDERS -> R.string.settings_torrent_sort_seeders
+        TorrentSort.SIZE -> R.string.settings_torrent_sort_size
+        TorrentSort.TITLE -> R.string.settings_torrent_sort_title_name
+    },
+)
+
+@Composable
+fun TorrentSort.hint(): String = stringResource(
+    when (this) {
+        TorrentSort.SEEDERS -> R.string.settings_torrent_sort_seeders_hint
+        TorrentSort.SIZE -> R.string.settings_torrent_sort_size_hint
+        TorrentSort.TITLE -> R.string.settings_torrent_sort_title_hint
     },
 )
 

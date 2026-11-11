@@ -27,6 +27,8 @@ fun PlayerStreamResolveStatus?.loadingTextRes(): Int = when (this) {
     PlayerStreamResolveStatus.PlayerNotFound -> R.string.player_problem_player_not_found
     PlayerStreamResolveStatus.LinkNotFound -> R.string.player_problem_link_not_found
     PlayerStreamResolveStatus.WaitingForAd -> R.string.player_resolve_waiting_for_ad
+    PlayerStreamResolveStatus.WaitingForTorrent -> R.string.player_resolve_waiting_for_torrent
+    PlayerStreamResolveStatus.WaitingForTorrentFile -> R.string.player_resolve_waiting_for_torrent_file
 }
 
 /** Строка ошибки: на каком шаге оборвалось получение потока. */
@@ -39,6 +41,8 @@ fun PlayerStreamResolveStatus.failedStepTextRes(): Int = when (this) {
     PlayerStreamResolveStatus.RequestingStream,
     PlayerStreamResolveStatus.Retrying,
     PlayerStreamResolveStatus.WaitingForAd,
+    PlayerStreamResolveStatus.WaitingForTorrent,
+    PlayerStreamResolveStatus.WaitingForTorrentFile,
     -> R.string.player_resolve_failed_requesting_stream
     PlayerStreamResolveStatus.ResponseError -> R.string.player_resolve_failed_response_error
     PlayerStreamResolveStatus.CheckingQualities -> R.string.player_resolve_failed_checking_qualities

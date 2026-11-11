@@ -17,7 +17,7 @@
     <string name="player_change_player">Сменить плеер</string>
     <string name="player_change_dubbing">Сменить озвучку</string>
     <string name="player_stream_error">Не удалось получить поток плеера, попробуйте сменить плеер или озвучку</string>
-    <string name="player_decoder_error">Устройство не смогло декодировать видео, попробуйте более низкое качество</string>
+    <string name="player_decoder_error">Устройство не смогло декодировать видео, попробуйте другое качество или источник</string>
     <string name="player_change_quality">Сменить качество</string>
     <string name="player_no_connection">Нет подключения к интернету. Воспроизведение продолжится, когда сеть появится</string>
     <string name="player_recovery_hint_title">Не удаётся восстановить воспроизведение</string>
@@ -191,6 +191,8 @@
     <string name="player_resolve_failed_opening_session">Сбой на шаге: открытие плеера</string>
     <string name="player_resolve_response_error">Источник ответил ошибкой…</string>
     <string name="player_resolve_waiting_for_ad">Готовим доступ…</string>
+    <string name="player_resolve_waiting_for_torrent">Ожидание выбора торрента…</string>
+    <string name="player_resolve_waiting_for_torrent_file">Ожидание выбора торрент файла…</string>
     <string name="player_resolve_failed_response_error">Сбой на шаге: источник ответил ошибкой — возможно, он недоступен или блокирует запросы</string>
     <string name="player_resolve_loading_player_script">Загружаем скрипт плеера…</string>
     <string name="player_resolve_selecting_dubbing">Выбираем озвучку и серию…</string>

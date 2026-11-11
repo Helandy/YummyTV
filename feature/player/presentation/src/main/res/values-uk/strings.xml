@@ -17,7 +17,7 @@
     <string name="player_change_player">Змінити плеєр</string>
     <string name="player_change_dubbing">Змінити озвучення</string>
     <string name="player_stream_error">Не вдалося отримати потік плеєра, спробуйте змінити плеєр або озвучення</string>
-    <string name="player_decoder_error">Пристрій не зміг декодувати відео, спробуйте нижчу якість</string>
+    <string name="player_decoder_error">Пристрій не зміг декодувати відео, спробуйте іншу якість або джерело</string>
     <string name="player_change_quality">Змінити якість</string>
     <string name="player_no_connection">Немає підключення до інтернету. Відтворення продовжиться, коли мережа з’явиться</string>
     <string name="player_recovery_hint_title">Не вдається відновити відтворення</string>
@@ -191,6 +191,8 @@
     <string name="player_resolve_failed_opening_session">Збій на кроці: відкриття плеєра</string>
     <string name="player_resolve_response_error">Джерело відповіло помилкою…</string>
     <string name="player_resolve_waiting_for_ad">Готуємо доступ…</string>
+    <string name="player_resolve_waiting_for_torrent">Очікування вибору торента…</string>
+    <string name="player_resolve_waiting_for_torrent_file">Очікування вибору торент файлу…</string>
     <string name="player_resolve_failed_response_error">Збій на кроці: джерело відповіло помилкою — можливо, воно недоступне або блокує запити</string>
     <string name="player_resolve_loading_player_script">Завантажуємо скрипт плеєра…</string>
     <string name="player_resolve_selecting_dubbing">Обираємо озвучення та серію…</string>

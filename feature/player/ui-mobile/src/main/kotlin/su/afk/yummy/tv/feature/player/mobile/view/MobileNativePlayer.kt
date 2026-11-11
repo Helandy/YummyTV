@@ -54,6 +54,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
+import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSleepTimer
@@ -379,6 +380,7 @@ internal fun MobileNativePlayer(
     )
 
     PlayerStallWatchdogEffect(player = player, onEvent = onEvent)
+    PlayerDecoderCapabilityEffect(player = player, onEvent = onEvent)
 
     PlayerQualityAdaptationEffect(
         player = player,
@@ -602,7 +604,7 @@ internal fun MobileNativePlayer(
         MobilePlayerTopBar(
             title = state.animeTitle,
             episode = ui.activeEpisode,
-            dubbing = ui.activeDubbing,
+            dubbing = ui.activeDubbingLabel,
             playerName = ui.activeBalancerLabel,
             isDownloaded = ui.isDownloaded,
             episodeFlags = ui.activeEpisodeFlags,

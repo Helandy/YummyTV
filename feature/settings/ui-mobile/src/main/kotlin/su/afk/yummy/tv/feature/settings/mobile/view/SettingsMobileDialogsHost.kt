@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
+import su.afk.yummy.tv.core.model.settings.TorrentSort
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
@@ -133,6 +134,23 @@ internal fun SettingsMobileDialogsHost(
             onDismiss = { dialogs.activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.NavTransitionStyleSelected(it))
+                dialogs.activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.TORRENT_SORT -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_torrent_sort_title),
+            selectedValue = state.torrent.sort,
+            options = TorrentSort.entries.map {
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                    it.hint(),
+                )
+            },
+            onDismiss = { dialogs.activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.TorrentSettingsChanged(state.torrent.copy(sort = it)))
                 dialogs.activePicker = null
             },
         )

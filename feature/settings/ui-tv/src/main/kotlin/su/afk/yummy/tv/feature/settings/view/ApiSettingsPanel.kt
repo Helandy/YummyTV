@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -20,7 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.utils.addUrlLinks
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTextFieldEditing
+import su.afk.yummy.tv.core.designsystem.focus.tvTextFieldEditing
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
+import su.afk.yummy.tv.core.designsystem.utils.addUrlHighlights
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.common.utils.color
@@ -47,15 +51,20 @@ internal fun ApiSettingsPanel(
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        val editing = rememberTvTextFieldEditing()
         OutlinedTextField(
             value = token,
             onValueChange = onTokenChanged,
+            readOnly = !editing.isEditing,
             placeholder = { Text(stringResource(R.string.settings_yani_application_token_placeholder)) },
             singleLine = true,
             shape = RoundedCornerShape(10.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { editing.stop() }),
             modifier = Modifier
                 .fillMaxWidth()
+                .tvWholeItemBringIntoView()
+                .tvTextFieldEditing(editing)
                 .then(
                     if (contentFocusRequester != null) {
                         Modifier.focusRequester(contentFocusRequester)
@@ -79,7 +88,7 @@ internal fun ApiSettingsPanel(
         Text(
             text = buildAnnotatedString {
                 append(hint)
-                addUrlLinks(hint, linkStyle)
+                addUrlHighlights(hint, linkStyle)
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

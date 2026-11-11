@@ -1,19 +1,25 @@
 package su.afk.yummy.tv.source.torrent.domain.usecase
 
+import su.afk.yummy.tv.core.model.settings.TorrentSort
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentResult
+import su.afk.yummy.tv.source.torrent.domain.model.sortedFor
 import su.afk.yummy.tv.source.torrent.domain.repository.TorrentIndexerRepository
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 /**
  * Ищет раздачи по нескольким названиям тайтла (русское и латинское): запросы идут по очереди, результаты
- * объединяются без повторов по ссылке и сортируются по числу раздающих. Если упали все запросы, исключение
+ * объединяются без повторов по ссылке и сортируются по настройке пользователя ([TorrentSort], порядок можно перевернуть). Если упали все запросы, исключение
  * последнего пробрасывается; если часть отработала, ошибки остальных игнорируются.
  */
 class SearchTorrentsUseCase @Inject constructor(
     private val indexer: TorrentIndexerRepository,
 ) {
-    suspend operator fun invoke(queries: List<String>): List<TorrentResult> {
+    suspend operator fun invoke(
+        queries: List<String>,
+        sort: TorrentSort = TorrentSort.SEEDERS,
+        reversed: Boolean = false,
+    ): List<TorrentResult> {
         val distinctQueries = queries.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
         var lastError: Throwable? = null
         var anySucceeded = false
@@ -29,6 +35,6 @@ class SearchTorrentsUseCase @Inject constructor(
             }
         }
         if (!anySucceeded) lastError?.let { throw it }
-        return merged.values.sortedByDescending { it.seeders }
+        return merged.values.toList().sortedFor(sort, reversed)
     }
 }

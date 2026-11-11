@@ -4,11 +4,24 @@
     <string name="torrent_pick_title">Choose a torrent</string>
     <string name="torrent_pick_file_title">Choose a file</string>
     <string name="torrent_cancel">Cancel</string>
-    <string name="torrent_not_configured">Set the TorrServer address in Settings → API → Torrents</string>
+    <string name="torrent_badge_in_torrserver">In TorrServer</string>
+    <string name="torrent_warning_hevc_unsupported">No HEVC decoder on this device</string>
+    <string name="torrent_step_searching">Querying sources…</string>
+    <string name="torrent_step_fetching_files">TorrServer is fetching the file list…</string>
+    <string name="torrent_step_fetching_files_peers">TorrServer is fetching the file list…\nConnected: %1$d of %2$d known peers\nPer tracker: %3$d seeders</string>
+    <string name="torrent_not_configured">Set the TorrServer address in Settings → Torrents</string>
     <string name="torrent_nothing_found">Nothing found</string>
     <string name="torrent_search_failed">Search failed. Check the indexer address and your connection</string>
     <string name="torrent_server_failed">TorrServer did not respond. Check its address and that it is running</string>
     <string name="torrent_no_video_files">No video files in this torrent</string>
     <string name="torrent_cancelled">Torrent not chosen</string>
-    <string name="torrent_seeders">%1$d seeds</string>
+    <string name="torrent_local_network_denied">Also allow the app access to the local network in the system app settings</string>
+    <string name="torrent_retry">Retry</string>
+    <string name="torrent_badge_subtitles">Sub</string>
+    <plurals name="torrent_seeders">
+        <item quantity="one">%d seed</item>
+        <item quantity="other">%d seeds</item>
+    </plurals>
+    <string name="torrent_no_peers">TorrServer could not find anyone sharing this torrent, so the file list did not arrive. Retry or pick another torrent (the tracker may show seeders that are unreachable).</string>
+    <string name="torrent_stream_not_starting">The torrent did not start loading: no reachable peers. Try another torrent or retry later.</string>
 </resources>

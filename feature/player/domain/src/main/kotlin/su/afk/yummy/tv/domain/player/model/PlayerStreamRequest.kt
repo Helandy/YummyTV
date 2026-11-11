@@ -5,6 +5,8 @@ import su.afk.yummy.tv.core.common.player.ResolveDetail
 
 data class PlayerStreamRequest(
     val iframeUrl: String,
+    /** Ссылка видео, которое плеер разрешал перед этим запросом; `null`, если это первое видео экрана. */
+    val previousIframeUrl: String? = null,
     val autoQualityLabel: String,
     /** Пропускает и перезаписывает закэшированный resolve — предыдущий результат известно плохой. */
     val forceRefresh: Boolean = false,

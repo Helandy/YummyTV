@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
+import su.afk.yummy.tv.core.model.settings.TorrentSort
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
@@ -49,6 +50,7 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.THEME -> state.appTheme.label()
     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
     SettingsTvPicker.NAV_TRANSITION -> state.navTransitionStyle.label()
+    SettingsTvPicker.TORRENT_SORT -> state.torrent.sort.label()
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
@@ -156,6 +158,17 @@ internal fun SettingsTvPickerPanel(
                 hintOf = { it.hint() },
                 focusRequester = entryFocusRequester,
                 onSelected = { select(SettingsState.Event.NavTransitionStyleSelected(it)) },
+            )
+
+            SettingsTvPicker.TORRENT_SORT -> PickerOptions(
+                values = TorrentSort.entries,
+                selected = state.torrent.sort,
+                labelOf = { it.label() },
+                hintOf = { it.hint() },
+                focusRequester = entryFocusRequester,
+                onSelected = {
+                    select(SettingsState.Event.TorrentSettingsChanged(state.torrent.copy(sort = it)))
+                },
             )
 
             // Порядок кнопок правится по шагам, поэтому колонка остаётся открытой.

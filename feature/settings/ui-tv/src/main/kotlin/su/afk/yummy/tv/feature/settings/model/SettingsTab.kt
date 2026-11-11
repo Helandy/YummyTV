@@ -12,6 +12,7 @@ internal enum class SettingsTab(@param:StringRes val labelRes: Int) {
     WATCH_PROGRESS(R.string.settings_category_watch_progress),
     SUBTITLES(R.string.settings_category_subtitles),
     STORAGE(R.string.settings_category_storage),
+    TORRENT(R.string.settings_category_torrent),
     API(R.string.settings_category_api),
     ABOUT(R.string.settings_section_about),
 }

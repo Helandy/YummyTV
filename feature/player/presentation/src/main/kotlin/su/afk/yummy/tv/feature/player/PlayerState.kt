@@ -50,6 +50,8 @@ class PlayerState {
          * узла хост подменяется на месте, без перерезолва источника.
          */
         val streamFailoverHost: String? = null,
+        /** Название играющего источника (раздача торрента) для чипа в плеере; null — чип показывает озвучку. */
+        val streamSourceLabel: String? = null,
         val allohaAudioTracks: List<AllohaAudioTrack> = emptyList(),
         val selectedAllohaAudioId: String? = null,
         val allohaSubtitles: List<AllohaSubtitleTrack> = emptyList(),

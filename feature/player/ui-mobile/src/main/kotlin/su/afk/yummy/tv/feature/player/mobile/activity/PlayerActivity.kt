@@ -18,6 +18,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
+import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogHost
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.feature.player.PlayerViewModel
 import su.afk.yummy.tv.feature.player.host.PlayerActivityHost
@@ -57,6 +58,8 @@ class PlayerActivity : ComponentActivity(), PlayerActivityHost {
         setContent {
             val dest = destination ?: return@setContent
             YummyTvTheme(isTelevision = false) {
+                // Плеер — отдельная Activity: диалоги выбора (смена озвучки на торрент, «Продолжить») рисуем здесь.
+                ChoiceDialogHost(isTelevision = false)
                 val viewModel = hiltViewModel<PlayerViewModel, PlayerViewModel.Factory>(
                     key = PLAYER_CONTENT_KEY,
                     creationCallback = { factory -> factory.create(dest) },

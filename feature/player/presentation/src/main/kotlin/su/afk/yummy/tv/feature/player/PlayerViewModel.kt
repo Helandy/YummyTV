@@ -153,6 +153,19 @@ class PlayerViewModel @AssistedInject internal constructor(
             sourceStreamHandler.playbackErrorMessage(strings.get(R.string.player_stream_error))
     }
 
+    /**
+     * Повторный выбор текущей озвучки: источник с выбором пользователя («Поиск торрента») показывает его заново,
+     * остальные источники продолжают воспроизведение без разрыва.
+     */
+    private fun reselectCurrentDubbing(index: Int, currentPosMs: Long) {
+        if (globalDubbingNames(currentState).getOrNull(index) != activeDubbingName(currentState)) return
+        if (!sourceStreamHandler.forgetSourceSelection(activeIframeUrl(currentState))) return
+        val position = currentPosMs.coerceAtLeast(0L)
+        defaultSource.reset()
+        setState { copy(resumeFromMs = position, playbackPositionMs = position, retryKey = retryKey + 1) }
+        loadStream(refreshSourcesOnFailure = true, forceRefresh = true)
+    }
+
     override fun createInitialState() = destinationStateMapper.toState(dest)
 
     init {
@@ -457,7 +470,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                     state = currentState,
                     index = event.index,
                     currentPosMs = event.currentPosMs,
-                ) ?: return
+                ) ?: run {
+                    reselectCurrentDubbing(event.index, event.currentPosMs)
+                    return
+                }
                 analytics.eventDubbingSelected(
                     state = currentState,
                     index = event.index,
@@ -994,6 +1010,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 streamQualityMap = result.state.streamQualityMap,
                 selectedQuality = result.state.selectedQuality,
                 streamFailoverHost = result.state.streamFailoverHost,
+                streamSourceLabel = result.state.streamSourceLabel,
                 allohaAudioTracks = result.state.allohaAudioTracks,
                 selectedAllohaAudioId = result.state.selectedAllohaAudioId,
                 allohaSubtitles = result.state.allohaSubtitles,

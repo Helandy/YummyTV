@@ -138,6 +138,12 @@ internal object SettingsPreferenceKeys {
     val torrServerUserKey = stringPreferencesKey("torrserver_user")
     val torrServerPasswordKey = stringPreferencesKey("torrserver_password")
     val torrentIndexerKey = stringPreferencesKey("torrent_indexer")
+    /** Адрес JacRed (раньше — общий адрес индексатора). */
     val torrentIndexerUrlKey = stringPreferencesKey("torrent_indexer_url")
+    val jacRedEnabledKey = booleanPreferencesKey("torrent_jacred_enabled")
+    val jackettEnabledKey = booleanPreferencesKey("torrent_jackett_enabled")
+    val jackettUrlKey = stringPreferencesKey("torrent_jackett_url")
     val jackettApiKeyKey = stringPreferencesKey("jackett_api_key")
+    val torrentSortKey = stringPreferencesKey("torrent_sort")
+    val torrentSortReversedKey = booleanPreferencesKey("torrent_sort_reversed")
 }

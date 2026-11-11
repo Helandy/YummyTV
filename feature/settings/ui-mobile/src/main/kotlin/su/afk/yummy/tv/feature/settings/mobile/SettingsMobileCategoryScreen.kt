@@ -24,6 +24,7 @@ import su.afk.yummy.tv.feature.settings.mobile.model.titleRes
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileDialogsHost
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileEffects
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileApiContent
+import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileTorrentContent
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileAppearanceContent
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileGeneralContent
 import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobilePlaybackContent
@@ -103,6 +104,9 @@ fun SettingsMobileCategoryScreen(
                         onEvent = onEvent,
                         onCacheStorageRequested = { dialogs.showCacheStorage = true },
                     )
+
+                    SettingsCategory.TORRENT ->
+                        SettingsMobileTorrentContent(state, onEvent, onPickerRequested)
 
                     SettingsCategory.API -> SettingsMobileApiContent(state, onEvent)
                 }

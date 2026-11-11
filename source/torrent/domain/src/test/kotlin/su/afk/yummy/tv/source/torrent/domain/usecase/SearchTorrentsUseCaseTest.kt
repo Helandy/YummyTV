@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import su.afk.yummy.tv.core.model.settings.TorrentSort
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentResult
 import su.afk.yummy.tv.source.torrent.domain.repository.TorrentIndexerRepository
@@ -29,6 +30,22 @@ class SearchTorrentsUseCaseTest : BaseUnitTest() {
 
         // дубль "a" берётся из первого запроса, где у него 1 сид
         assertEquals(listOf("b", "c", "a"), links)
+    }
+
+    @Test
+    fun `sort field and reversal are applied`() = runTest {
+        coEvery { indexer.search("q") } returns listOf(
+            TorrentResult("b", sizeBytes = 100, seeders = 1, peers = 0, tracker = "t", link = "1"),
+            TorrentResult("A", sizeBytes = 300, seeders = 5, peers = 0, tracker = "t", link = "2"),
+            TorrentResult("c", sizeBytes = 200, seeders = 9, peers = 0, tracker = "t", link = "3"),
+        )
+        val useCase = createUseCase()
+
+        assertEquals(listOf("3", "2", "1"), useCase(listOf("q"), TorrentSort.SEEDERS, false).map { it.link })
+        assertEquals(listOf("1", "2", "3"), useCase(listOf("q"), TorrentSort.SEEDERS, true).map { it.link })
+        assertEquals(listOf("2", "3", "1"), useCase(listOf("q"), TorrentSort.SIZE, false).map { it.link })
+        assertEquals(listOf("2", "1", "3"), useCase(listOf("q"), TorrentSort.TITLE, false).map { it.link })
+        assertEquals(listOf("3", "1", "2"), useCase(listOf("q"), TorrentSort.TITLE, true).map { it.link })
     }
 
     @Test

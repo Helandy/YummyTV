@@ -18,6 +18,7 @@ import su.afk.yummy.tv.feature.player.mapper.failedStepTextRes
 import su.afk.yummy.tv.feature.player.mapper.resolveProblemText
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
+import su.afk.yummy.tv.domain.player.usecase.ForgetExtraSourceSelectionUseCase
 import su.afk.yummy.tv.domain.player.usecase.InvalidatePlayerStreamCacheUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -36,11 +37,19 @@ internal class PlayerStreamHandler @Inject constructor(
     private val settingsStore: PlayerSettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val invalidatePlayerStreamCache: InvalidatePlayerStreamCacheUseCase,
+    private val forgetExtraSourceSelection: ForgetExtraSourceSelectionUseCase,
     private val strings: StringProvider,
     private val connectivity: NetworkConnectivityMonitor,
 ) {
+    /** Ссылка последнего разрешённого видео: источникам важно знать, откуда пришёл переход. */
+    @Volatile
+    private var lastResolvedIframeUrl: String? = null
+
     /** Забывает закэшированный поток источника: его ссылки ведут на отказавший узел CDN. */
     fun invalidateCache(iframeUrl: String) = invalidatePlayerStreamCache(iframeUrl)
+
+    /** Источник модуля забывает выбор пользователя для видео; `true` — поток нужно перезагрузить. */
+    fun forgetSourceSelection(iframeUrl: String): Boolean = forgetExtraSourceSelection(iframeUrl)
 
     suspend fun resolve(
         state: PlayerState.State,
@@ -52,8 +61,10 @@ internal class PlayerStreamHandler @Inject constructor(
         positionMs: () -> Long = { 0L },
         durationMs: () -> Long = { 0L },
     ): PlayerStreamResult = coroutineScope {
+        val iframeUrl = activeIframeUrl(state)
         val request = PlayerStreamRequest(
-            iframeUrl = activeIframeUrl(state),
+            iframeUrl = iframeUrl,
+            previousIframeUrl = lastResolvedIframeUrl.takeIf { it != iframeUrl },
             autoQualityLabel = strings.get(R.string.player_quality_auto),
             forceRefresh = forceRefresh,
             onStatus = onStatus,
@@ -61,6 +72,7 @@ internal class PlayerStreamHandler @Inject constructor(
             positionMs = positionMs,
             durationMs = durationMs,
         )
+        lastResolvedIframeUrl = iframeUrl
         // Started before the extraction is awaited: neither depends on it, so a DataStore read and
         // a Room read overlap the network instead of queueing behind it.
         // Адаптивный режим стартует с лучшего не выше выбранного качества (оно же потолок политики);
@@ -94,6 +106,7 @@ internal class PlayerStreamHandler @Inject constructor(
                     selectedAllohaAudioId = result.selectedAllohaAudioId,
                     allohaSubtitles = result.allohaSubtitles,
                     failoverHost = result.failoverHost,
+                    sourceLabel = result.sourceLabel,
                 )
             }
 
@@ -231,6 +244,8 @@ internal sealed interface PlayerStreamResult {
         val allohaSubtitles: List<AllohaSubtitleTrack> = emptyList(),
         /** Резервный узел CDN для этих же ссылок; null — переезжать некуда. */
         val failoverHost: String? = null,
+        /** Подпись источника для чипа озвучки (название раздачи); null — показывается имя озвучки. */
+        val sourceLabel: String? = null,
     ) : PlayerStreamResult
 
     data class KodikBlocked(val message: String) : PlayerStreamResult

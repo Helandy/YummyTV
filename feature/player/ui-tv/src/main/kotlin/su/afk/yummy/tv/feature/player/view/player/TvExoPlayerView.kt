@@ -42,6 +42,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
+import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
@@ -297,6 +298,7 @@ internal fun TvExoPlayerView(
     }
 
     PlayerStallWatchdogEffect(player = player, onEvent = onPlayerEvent)
+    PlayerDecoderCapabilityEffect(player = player, onEvent = onPlayerEvent)
 
     PlayerQualityAdaptationEffect(
         player = player,
@@ -498,7 +500,7 @@ internal fun TvExoPlayerView(
             visible = controllerVisible,
             animeTitle = state.animeTitle,
             episode = playback.activeEpisode,
-            dubbing = playback.activeDubbing,
+            dubbing = playback.activeDubbingLabel,
             modifier = Modifier.align(Alignment.TopStart),
         )
 

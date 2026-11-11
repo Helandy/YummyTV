@@ -18,7 +18,7 @@ class GetTorrentContentUseCaseTest : BaseUnitTest() {
 
     @Test
     fun `non video files are dropped and episode file goes first`() = runTest {
-        coEvery { torrServer.addTorrent("magnet") } returns TorrentContent(
+        coEvery { torrServer.addTorrent("magnet", any(), any()) } returns TorrentContent(
             hash = "h",
             title = "Show",
             files = listOf(

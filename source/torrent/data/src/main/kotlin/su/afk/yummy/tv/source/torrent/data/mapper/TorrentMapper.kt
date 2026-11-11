@@ -5,6 +5,7 @@ import su.afk.yummy.tv.source.torrent.data.dto.JacRedTorrentDto
 import su.afk.yummy.tv.source.torrent.data.dto.TorrServerTorrentDto
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentContent
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentFile
+import su.afk.yummy.tv.source.torrent.domain.model.TorrentProgress
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentResult
 
 /** Раздачи без ссылки (ни magnet, ни `.torrent`) отбрасываются: TorrServer ничего не сможет с ними сделать. */
@@ -32,6 +33,12 @@ internal fun JackettResponseDto.toDomain(): List<TorrentResult> = results.mapNot
         link = link,
     )
 }
+
+internal fun TorrServerTorrentDto.toProgress(): TorrentProgress = TorrentProgress(
+    activePeers = activePeers ?: 0,
+    totalPeers = totalPeers ?: 0,
+    seeders = connectedSeeders ?: 0,
+)
 
 /** `null`, если сервер не вернул хеш. Пустой `files` означает «метаданные ещё не получены». */
 internal fun TorrServerTorrentDto.toDomain(): TorrentContent? {

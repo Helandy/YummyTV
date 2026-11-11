@@ -23,6 +23,7 @@ enum class SettingsCategory {
     NOTIFICATIONS,
     SUBTITLES,
     STORAGE,
+    TORRENT,
     API,
 }
 

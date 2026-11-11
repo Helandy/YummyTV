@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpis
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.holdToConfirmEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
+import su.afk.yummy.tv.core.preferences.BuildConfig
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
@@ -129,7 +130,8 @@ internal class DataStoreSettingsStore @Inject constructor(
             nextEpisodeSwitchDelaySeconds =
                 (prefs[nextEpisodeSwitchDelaySecondsKey] ?: 10).coerceIn(0, 30),
             playerControlsAutoHideSeconds =
-                (prefs[playerControlsAutoHideSecondsKey] ?: 4).coerceIn(1, 30000),
+                (prefs[playerControlsAutoHideSecondsKey] ?: (if (BuildConfig.DEBUG) 30000 else 4))
+                    .coerceIn(1, 30000),
             pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
             holdToConfirmEnabled = prefs[holdToConfirmEnabledKey] ?: true,
             playerOrientationMode = prefs.enum(

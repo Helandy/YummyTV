@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Значок «торрент»: магнит на зелёной плашке. Тот же контур, что у TorrentIcon (ImageVector). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#2E7D32"
+        android:pathData="M0,0h24v24h-24z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M5,9.5h5v2C10,12.88 10.9,14 12,14s2,-1.12 2,-2.5v-2h5v2C19,15.09 15.87,18 12,18s-7,-2.91 -7,-6.5z" />
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M5,5.5C5,4.67 5.67,4 6.5,4h2C9.33,4 10,4.67 10,5.5V8H5z" />
+    <path
+        android:fillColor="#82B1FF"
+        android:pathData="M14,5.5C14,4.67 14.67,4 15.5,4h2C18.33,4 19,4.67 19,5.5V8h-5z" />
+</vector>

@@ -160,6 +160,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
             resumeFromMs = 20_000L,
             consumedPendingResume = true,
             failoverHost = "cdn2",
+            sourceLabel = "Frieren [WEBRip 1080p]",
         )
         val state = state().copy(dubbingResumeMs = 20_000L)
 
@@ -174,6 +175,7 @@ class PlayerSourceStreamHandlerTest : BaseUnitTest() {
         assertEquals(STREAM, result.state.streamUrl)
         assertEquals("720p", result.state.selectedQuality)
         assertEquals("cdn2", result.state.streamFailoverHost)
+        assertEquals("Frieren [WEBRip 1080p]", result.state.streamSourceLabel)
         assertEquals(20_000L, result.state.resumeFromMs)
         assertEquals(-1L, result.state.dubbingResumeMs)
         assertTrue(result.consumedDestinationResume)

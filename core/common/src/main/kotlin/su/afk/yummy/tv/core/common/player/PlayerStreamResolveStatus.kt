@@ -40,6 +40,12 @@ enum class PlayerStreamResolveStatus {
     /** Anime4k: получение тикета на просмотр. */
     RequestingTicket,
 
+    /** Торренты: на экране выбора раздачи, ждём выбор пользователя. */
+    WaitingForTorrent,
+
+    /** Торренты: на экране выбора файла раздачи, ждём выбор пользователя. */
+    WaitingForTorrentFile,
+
     /** Итог: нужной серии нет на сайте источника. */
     EpisodeNotFound,
 

@@ -2,6 +2,7 @@ package su.afk.yummy.tv.source.torrent.domain.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -40,5 +41,33 @@ class TorrentFileExtensionsTest : BaseUnitTest() {
     @Test
     fun `non numeric episode never matches`() {
         assertEquals(0, file("Show - 01.mkv").episodeMatchScore("special"))
+    }
+
+    @Test
+    fun `single video file is selected automatically`() {
+        val files = listOf(file("Show/ep.mkv"), file("Show/subs.ass"))
+
+        assertEquals("Show/ep.mkv", files.autoSelectFor("7")?.path)
+    }
+
+    @Test
+    fun `episode is selected when exactly one file matches its number`() {
+        val files = listOf(
+            file("[G] Show - 01 [1080p].mkv"),
+            file("[G] Show - 02 [1080p].mkv"),
+            file("[G] Show - 03 [1080p].mkv"),
+        )
+
+        assertEquals("[G] Show - 02 [1080p].mkv", files.autoSelectFor("2")?.path)
+    }
+
+    @Test
+    fun `no auto selection when several files match or none`() {
+        val sameNumber = listOf(file("Show 2nd Season - 01.mkv"), file("Show 2nd Season - 02.mkv"))
+        val noMatch = listOf(file("Show - 01.mkv"), file("Show - 02.mkv"))
+
+        assertNull(sameNumber.autoSelectFor("2"))
+        assertNull(noMatch.autoSelectFor("9"))
+        assertNull(emptyList<TorrentFile>().autoSelectFor("1"))
     }
 }

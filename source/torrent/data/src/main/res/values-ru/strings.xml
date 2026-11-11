@@ -4,11 +4,26 @@
     <string name="torrent_pick_title">Выберите торрент</string>
     <string name="torrent_pick_file_title">Выберите файл</string>
     <string name="torrent_cancel">Отмена</string>
-    <string name="torrent_not_configured">Укажите адрес TorrServer в Настройки → API → Торренты</string>
+    <string name="torrent_badge_in_torrserver">В TorrServer</string>
+    <string name="torrent_warning_hevc_unsupported">Нет декодера HEVC на устройстве</string>
+    <string name="torrent_step_searching">Запрос источников…</string>
+    <string name="torrent_step_fetching_files">TorrServer получает список файлов…</string>
+    <string name="torrent_step_fetching_files_peers">TorrServer получает список файлов…\nПодключено: %1$d из %2$d известных пиров\nПо трекеру: %3$d сидов</string>
+    <string name="torrent_not_configured">Укажите адрес TorrServer в Настройки → Торренты</string>
     <string name="torrent_nothing_found">Ничего не найдено</string>
     <string name="torrent_search_failed">Поиск не удался. Проверьте адрес индексатора и сеть</string>
     <string name="torrent_server_failed">TorrServer не отвечает. Проверьте адрес и что сервер запущен</string>
     <string name="torrent_no_video_files">В этой раздаче нет видеофайлов</string>
     <string name="torrent_cancelled">Торрент не выбран</string>
-    <string name="torrent_seeders">%1$d сидов</string>
+    <string name="torrent_local_network_denied">Также разрешите приложению доступ к локальной сети в системных настройках</string>
+    <string name="torrent_retry">Повторить</string>
+    <string name="torrent_badge_subtitles">Саб</string>
+    <plurals name="torrent_seeders">
+        <item quantity="one">%d сид</item>
+        <item quantity="few">%d сида</item>
+        <item quantity="many">%d сидов</item>
+        <item quantity="other">%d сида</item>
+    </plurals>
+    <string name="torrent_no_peers">TorrServer не нашёл никого, кто раздаёт этот торрент, поэтому список файлов не пришёл. Повторите или выберите другой торрент (трекер может показывать сидов, до которых не достучаться).</string>
+    <string name="torrent_stream_not_starting">Раздача не начала загружаться: нет доступных пиров. Выберите другой торрент или повторите позже.</string>
 </resources>
