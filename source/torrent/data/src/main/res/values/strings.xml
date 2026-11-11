@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="torrent_source_name">Search torrent</string>
+    <string name="torrent_pick_title">Choose a torrent</string>
+    <string name="torrent_pick_file_title">Choose a file</string>
+    <string name="torrent_cancel">Cancel</string>
+    <string name="torrent_not_configured">Set the TorrServer address in Settings → API → Torrents</string>
+    <string name="torrent_nothing_found">Nothing found</string>
+    <string name="torrent_search_failed">Search failed. Check the indexer address and your connection</string>
+    <string name="torrent_server_failed">TorrServer did not respond. Check its address and that it is running</string>
+    <string name="torrent_no_video_files">No video files in this torrent</string>
+    <string name="torrent_cancelled">Torrent not chosen</string>
+    <string name="torrent_seeders">%1$d seeds</string>
+</resources>

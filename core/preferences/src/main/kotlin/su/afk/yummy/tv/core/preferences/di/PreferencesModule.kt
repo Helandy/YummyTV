@@ -12,6 +12,8 @@ import su.afk.yummy.tv.core.preferences.interface_language.SharedPreferencesAppI
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.SharedPreferencesAppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.TorrentSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreTorrentSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
@@ -85,6 +87,10 @@ internal interface PreferencesModule {
     fun bindAppLifecycleSettingsStore(
         impl: DataStoreAppLifecycleSettingsStore,
     ): AppLifecycleSettingsStore
+
+    @Binds
+    @Singleton
+    fun bindTorrentSettingsStore(impl: DataStoreTorrentSettingsStore): TorrentSettingsStore
 
     @Binds
     @Singleton

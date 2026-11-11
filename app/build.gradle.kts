@@ -91,6 +91,8 @@ androidComponents {
 dependencies {
     // Необязательный источник «4K»: нет каталога source/anime4k, нет и зависимости.
     findProject(":source:anime4k:data")?.let { implementation(it) }
+    // Необязательный источник «Торренты» (TorrServer + JacRed/Jackett): нет каталога source/torrent, нет и зависимости.
+    findProject(":source:torrent:data")?.let { implementation(it) }
     // Необязательный источник «AiLiberty» (нужен source/availability): нет каталога, нет и зависимости.
     findProject(":source:availability:data")?.let { implementation(it) }
     findProject(":source:ailiberty:data")?.let { implementation(it) }

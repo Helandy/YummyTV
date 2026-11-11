@@ -118,4 +118,13 @@ object NetworkModule {
     @KodikHttpClient
     fun provideKodikHttpClient(okHttpClient: OkHttpClient): HttpClient =
         okHttpKtorClient(okHttpClient, allowRequestTimeouts = true)
+
+    /** Клиент торрент-источника: см. [TorrentHttpClient]. Своё тело в логи не пишет (ключи в URL). */
+    @Provides
+    @Singleton
+    @TorrentHttpClient
+    fun provideTorrentHttpClient(okHttpClient: OkHttpClient, json: Json): HttpClient =
+        okHttpKtorClient(okHttpClient, timeouts = NetworkTimeouts.Api) {
+            install(ContentNegotiation) { json(json) }
+        }
 }

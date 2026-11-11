@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.utils.addUrlLinks
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
+import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileTorrentSection
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.label
 
@@ -70,5 +71,9 @@ internal fun SettingsMobileApiContent(
                 }
             }
         }
+        SettingsMobileTorrentSection(
+            settings = state.torrent,
+            onChange = { onEvent(SettingsState.Event.TorrentSettingsChanged(it)) },
+        )
     }
 }

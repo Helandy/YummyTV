@@ -287,7 +287,8 @@ class YaniAnimeRepository(
         details: AnimeDetails,
         forceRefresh: Boolean,
     ): List<AnimeVideo> = documentCache.getOrFetchJson<ExtraVideosCachePayload>(
-        cacheKey = extraVideosCacheKey(animeId, repository, settingsStore.currentLanguageCode()),
+        cacheKey = extraVideosCacheKey(animeId, repository, settingsStore.currentLanguageCode()) +
+            repository.cacheKeySuffix(),
         ttlMs = EXTRA_VIDEOS_TTL_MS,
         forceRefresh = forceRefresh,
     ) {

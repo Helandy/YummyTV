@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="torrent_source_name">Поиск торрента</string>
+    <string name="torrent_pick_title">Выберите торрент</string>
+    <string name="torrent_pick_file_title">Выберите файл</string>
+    <string name="torrent_cancel">Отмена</string>
+    <string name="torrent_not_configured">Укажите адрес TorrServer в Настройки → API → Торренты</string>
+    <string name="torrent_nothing_found">Ничего не найдено</string>
+    <string name="torrent_search_failed">Поиск не удался. Проверьте адрес индексатора и сеть</string>
+    <string name="torrent_server_failed">TorrServer не отвечает. Проверьте адрес и что сервер запущен</string>
+    <string name="torrent_no_video_files">В этой раздаче нет видеофайлов</string>
+    <string name="torrent_cancelled">Торрент не выбран</string>
+    <string name="torrent_seeders">%1$d сидов</string>
+</resources>

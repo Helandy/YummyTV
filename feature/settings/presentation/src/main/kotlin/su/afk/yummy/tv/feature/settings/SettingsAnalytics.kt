@@ -458,6 +458,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил торрент-источник. */
+    fun eventTorrentToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_TORRENT_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /** Пользователь включил или выключил запись логов приложения в файл. */
     fun eventAppLogRecordingToggled(enabled: Boolean) {
         tracker.track(
@@ -541,6 +549,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
         const val EVENT_SAVE_LAST_SEARCH_TOGGLED = "settings_save_last_search_toggled"
         const val EVENT_BETA_UPDATES_TOGGLED = "settings_beta_updates_toggled"
+        const val EVENT_TORRENT_TOGGLED = "settings_torrent_toggled"
         const val EVENT_APP_LOG_RECORDING_TOGGLED = "settings_app_log_recording_toggled"
     }
 }

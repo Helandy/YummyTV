@@ -45,6 +45,9 @@ Ktor:
 | Yani API, `@UnauthenticatedJsonClient` (GitHub, MAL, JSON-источники), Coil | не задан: дефолт OkHttp (`okhttp/<версия>`) | нигде; на проводе не проверялось. Для CVH такой UA недопустим, остальным подходит |
 | WebView (трейлеры, hCaptcha), Chromecast, AppMetrica/Varioqub | свой UA сторонней библиотеки | вне нашего контроля |
 
+Торренты: `@TorrentHttpClient` (Ktor на общем OkHttp, JSON, профиль `Api`) ходит в индексатор (JacRed/Jackett) и
+в TorrServer; сам поток с TorrServer играет обычный Media3 через `@StreamingOkHttp`.
+
 ### Исключения (вне `core/network`)
 
 | Что                                                  | Где                                        | Почему                                                              |
@@ -108,12 +111,13 @@ Ktor:
 
 `app/src/main/res/xml/network_security_config.xml`:
 
-- cleartext разрешён только для `127.0.0.1` и `localhost` (loopback-прокси Alloha);
-- `base-config` запрещает cleartext;
+- cleartext разрешён глобально (`base-config`): TorrServer и Jackett пользователь указывает сам, обычно это
+  `http://192.168.x.x` в LAN, а список доменов в конфиге статичный. Остальные клиенты ходят по https по своим
+  URL; `127.0.0.1` и `localhost` (loopback-прокси Alloha) оставлены отдельной записью как документация;
 - `trust-anchors`: системные сертификаты и `@raw/isrg_root_x1` (ресурс в `app/src/main/res/raw`).
 
-Следствие для LAN: OkHttp сверяется с этим файлом, и запрос на `192.168.x.x` по HTTP не доходит до
-сокета. Поэтому передача сессии по локальной сети использует CIO-клиент, см.
+Следствие для LAN: раньше OkHttp сверялся с этим файлом, и запрос на `192.168.x.x` по HTTP не доходил до
+сокета, поэтому передача сессии по локальной сети использует CIO-клиент, см.
 [local-auth-session-transfer.md](local-auth-session-transfer.md).
 
 ## Токен

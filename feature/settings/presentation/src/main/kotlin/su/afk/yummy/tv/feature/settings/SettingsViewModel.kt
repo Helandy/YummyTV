@@ -171,6 +171,9 @@ class SettingsViewModel @Inject internal constructor(
         settingsStore.betaUpdatesEnabled
             .onEach { enabled -> setState { copy(betaUpdatesEnabled = enabled) } }
             .launchIn(viewModelScope)
+        settingsStore.torrentSettings
+            .onEach { torrent -> setState { copy(torrent = torrent) } }
+            .launchIn(viewModelScope)
         settingsStore.appLogRecordingEnabled
             .onEach { enabled -> setState { copy(appLogRecordingEnabled = enabled) } }
             .launchIn(viewModelScope)
@@ -457,6 +460,17 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.NotificationPermissionRequested -> viewModelScope.launch {
                 appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
+
+            is SettingsState.Event.TorrentSettingsChanged -> {
+                val previous = currentState.torrent
+                if (previous.enabled != event.settings.enabled) {
+                    analytics.eventTorrentToggled(event.settings.enabled)
+                }
+                setState { copy(torrent = event.settings) }
+                viewModelScope.launch {
+                    settingsStore.setTorrentSettings(event.settings)
+                }
             }
 
             is SettingsState.Event.YaniApplicationTokenChanged -> {

@@ -348,4 +348,17 @@
     <string name="settings_onboarding_reset">Показати підказки знову</string>
     <string name="settings_onboarding_reset_hint">Вітальні слайди, підказки з екранів і навчання плеєра покажуться знову</string>
     <string name="settings_onboarding_reset_done">Підказки покажуться під час наступного заходу на екрани</string>
+    <string name="settings_torrent_title">Торенти</string>
+    <string name="settings_torrent_enabled_label">Пошук торентів</string>
+    <string name="settings_torrent_enabled_on">У виборі озвучки з’явиться пункт «Пошук торента»</string>
+    <string name="settings_torrent_enabled_off">Вимкнено</string>
+    <string name="settings_torrent_server_label">Адреса TorrServer</string>
+    <string name="settings_torrent_server_placeholder">http://192.168.1.10:8090</string>
+    <string name="settings_torrent_user_label">Логін TorrServer (необов’язково)</string>
+    <string name="settings_torrent_password_label">Пароль TorrServer (необов’язково)</string>
+    <string name="settings_torrent_jackett_label">Використовувати Jackett замість JacRed</string>
+    <string name="settings_torrent_jackett_on">Пошук через ваш Jackett</string>
+    <string name="settings_torrent_jackett_off">Пошук через JacRed (ключ не потрібен)</string>
+    <string name="settings_torrent_indexer_url_label">Адреса індексатора</string>
+    <string name="settings_torrent_jackett_key_label">API-ключ Jackett</string>
 </resources>

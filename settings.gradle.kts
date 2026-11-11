@@ -214,6 +214,11 @@ if (sourceEnabled("anime4k")) {
     include(":source:anime4k:data")
 }
 
+if (sourceEnabled("torrent")) {
+    include(":source:torrent:domain")
+    include(":source:torrent:data")
+}
+
 if (sourceEnabled("availability")) {
     include(":source:availability:domain")
     include(":source:availability:data")

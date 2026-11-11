@@ -133,4 +133,11 @@ internal object SettingsPreferenceKeys {
     val episodePushRecentPushesKey = stringSetPreferencesKey("episode_push_recent_pushes")
     val episodePushKnownNotificationIdsKey =
         stringSetPreferencesKey("episode_push_known_notification_ids")
+    val torrentEnabledKey = booleanPreferencesKey("torrent_enabled")
+    val torrServerUrlKey = stringPreferencesKey("torrserver_url")
+    val torrServerUserKey = stringPreferencesKey("torrserver_user")
+    val torrServerPasswordKey = stringPreferencesKey("torrserver_password")
+    val torrentIndexerKey = stringPreferencesKey("torrent_indexer")
+    val torrentIndexerUrlKey = stringPreferencesKey("torrent_indexer_url")
+    val jackettApiKeyKey = stringPreferencesKey("jackett_api_key")
 }

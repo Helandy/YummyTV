@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.TorrentSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -86,6 +87,7 @@ internal class DataStoreSettingsStore @Inject constructor(
     videoDownload: VideoDownloadSettingsStore,
     appLifecycle: AppLifecycleSettingsStore,
     search: SearchSettingsStore,
+    torrent: TorrentSettingsStore,
 ) : SettingsStore,
     AppearanceSettingsStore by appearance,
     PlayerSettingsStore by player,
@@ -94,7 +96,8 @@ internal class DataStoreSettingsStore @Inject constructor(
     VideoExportSettingsStore by videoExport,
     VideoDownloadSettingsStore by videoDownload,
     AppLifecycleSettingsStore by appLifecycle,
-    SearchSettingsStore by search {
+    SearchSettingsStore by search,
+    TorrentSettingsStore by torrent {
 
     override val settingsSnapshot: Flow<SettingsSnapshot> = store.data.map { prefs ->
         SettingsSnapshot(

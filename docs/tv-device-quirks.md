@@ -67,8 +67,8 @@ AndroidKeyStore бывает нерабочим, и тогда приложен�
 
 ## Сеть
 
-- `network_security_config` разрешает cleartext только для `127.0.0.1` и `localhost`; запрос на
-  LAN-адрес через OkHttp не проходит, поэтому передача сессии использует CIO-клиент
+- `network_security_config` теперь разрешает cleartext (нужно для TorrServer в LAN); передача сессии
+  по-прежнему использует CIO-клиент
   ([local-auth-session-transfer.md](local-auth-session-transfer.md)).
 
 ## Block Store

@@ -12,6 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
+import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogHost
 import su.afk.yummy.tv.core.designsystem.dialog.ConfirmDialogHost
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
@@ -85,6 +86,7 @@ class MobileMainGraph @Inject internal constructor(
                 isTelevision = false,
             ) {
                 ConfirmDialogHost(isTelevision = false)
+                ChoiceDialogHost(isTelevision = false)
                 val onboarding = rememberOnboardingController()
                 val tabRootReady = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination
                 if (state.onboardingWelcomePending && tabRootReady) {

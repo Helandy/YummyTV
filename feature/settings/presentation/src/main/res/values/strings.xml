@@ -351,4 +351,17 @@
     <string name="settings_onboarding_reset">Show hints again</string>
     <string name="settings_onboarding_reset_hint">Welcome slides, screen tips and player tutorials will be shown again</string>
     <string name="settings_onboarding_reset_done">Hints will be shown the next time they are needed</string>
+    <string name="settings_torrent_title">Torrents</string>
+    <string name="settings_torrent_enabled_label">Torrent search</string>
+    <string name="settings_torrent_enabled_on">A “Search torrent” item appears in the voice picker</string>
+    <string name="settings_torrent_enabled_off">Off</string>
+    <string name="settings_torrent_server_label">TorrServer address</string>
+    <string name="settings_torrent_server_placeholder">http://192.168.1.10:8090</string>
+    <string name="settings_torrent_user_label">TorrServer login (optional)</string>
+    <string name="settings_torrent_password_label">TorrServer password (optional)</string>
+    <string name="settings_torrent_jackett_label">Use Jackett instead of JacRed</string>
+    <string name="settings_torrent_jackett_on">Search via your Jackett</string>
+    <string name="settings_torrent_jackett_off">Search via JacRed (no key needed)</string>
+    <string name="settings_torrent_indexer_url_label">Indexer address</string>
+    <string name="settings_torrent_jackett_key_label">Jackett API key</string>
 </resources>
