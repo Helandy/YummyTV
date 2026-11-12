@@ -180,7 +180,6 @@ internal fun TorrentSettingsPanel(
             TorrentTvField(
                 value = settings.jackettApiKey,
                 label = stringResource(R.string.settings_torrent_jackett_key_label),
-                isSecret = true,
                 modifier = leftToTab,
                 onValueChange = { onChange(settings.copy(jackettApiKey = it.trim())) },
             )

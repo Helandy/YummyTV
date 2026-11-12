@@ -146,7 +146,6 @@ internal fun SettingsMobileTorrentContent(
             TorrentField(
                 value = settings.jackettApiKey,
                 label = stringResource(R.string.settings_torrent_jackett_key_label),
-                isSecret = true,
                 onValueChange = { onChange(settings.copy(jackettApiKey = it.trim())) },
             )
         }
