@@ -6,14 +6,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
@@ -35,6 +34,7 @@ import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
+import su.afk.yummy.tv.domain.home.utils.wholeEpisodeNumberOrNull
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeed as toStoredHomeFeed
 
 private const val FEED_TTL_MS = 60 * 1000L
@@ -107,13 +107,7 @@ class YaniHomeFeedRepository(
                 entries
                     .groupBy { it.animeId }
                     .mapValues { (_, items) ->
-                        items.mapNotNullTo(mutableSetOf()) { entry ->
-                            // Спецвыпуски вроде «7.5» — не серия 7, иначе она ложно считалась бы
-                            // просмотренной.
-                            entry.episode.episodeNumberOrNull()
-                                ?.takeIf { it % 1.0 == 0.0 }
-                                ?.toInt()
-                        }
+                        items.mapNotNullTo(mutableSetOf()) { it.episode.wholeEpisodeNumberOrNull() }
                     }
             }
             .distinctUntilChanged()
