@@ -12,6 +12,12 @@ internal class PlayerAllohaRecoveryHandler @Inject constructor() {
     var selectedQuality: String? = null
     var positionMs: Long = 0L
 
+    /**
+     * Last failure seen in this cycle (playback error or failed resolve), for the "recovery exhausted"
+     * report: without it the report says only that the attempts ran out, not why playback kept failing.
+     */
+    var lastFailure: String? = null
+
     /** Time source; replaced in tests. */
     internal var clock: () -> Long = System::currentTimeMillis
 
@@ -60,6 +66,7 @@ internal class PlayerAllohaRecoveryHandler @Inject constructor() {
         retryCount = 0
         selectedQuality = null
         positionMs = 0L
+        lastFailure = null
         lastRecovery = null
     }
 

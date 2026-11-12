@@ -28,10 +28,10 @@ import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
+import su.afk.yummy.tv.domain.catalog.model.SearchPage
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
 import su.afk.yummy.tv.domain.catalog.usecase.AddSearchHistoryQueryUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.ClearSearchHistoryUseCase
-import su.afk.yummy.tv.domain.catalog.model.SearchPage
 import su.afk.yummy.tv.domain.catalog.usecase.GetCachedSearchPageUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.catalog.usecase.GetSearchFilterOptionsUseCase
@@ -124,7 +124,8 @@ class CatalogViewModel @Inject internal constructor(
                 return@launch
             }
             val query = snapshot.query
-            val filters = snapshot.toSearchFilters()
+            // Снимок мог сохранить год, который сервер отвергает: без чистки каталог падал бы при каждом открытии.
+            val filters = snapshot.toSearchFilters().normalizedYears()
             setState { copy(query = query, filters = filters, draftFilters = filters) }
             setSearchResults(query, filters)
         }

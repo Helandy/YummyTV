@@ -45,6 +45,20 @@ class PlayerAllohaRecoveryHandlerTest : BaseUnitTest() {
         assertTrue(handler.canRetry())
     }
 
+    @Test
+    fun `last failure survives the cycle and is cleared by reset`() {
+        val handler = PlayerAllohaRecoveryHandler()
+        handler.start(positionMs = 1_000L, selectedQuality = null)
+        handler.lastFailure = "ERROR_CODE_IO_BAD_HTTP_STATUS http=403"
+        handler.nextAttempt()
+
+        assertEquals("ERROR_CODE_IO_BAD_HTTP_STATUS http=403", handler.lastFailure)
+
+        handler.reset()
+
+        assertNull(handler.lastFailure)
+    }
+
     private fun handlerAt(time: LongArray) = PlayerAllohaRecoveryHandler().apply { clock = { time[0] } }
 
     @Test

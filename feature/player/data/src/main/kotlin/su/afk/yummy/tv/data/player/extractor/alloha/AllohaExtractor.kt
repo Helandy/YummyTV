@@ -85,7 +85,8 @@ internal class AllohaExtractor @Inject constructor(
             return PlayerStreamResolveResult.Unavailable(message = null)
         } catch (error: IOException) {
             analyticsTracker.logExtractorFailure("Alloha", iframeUrl, error.message ?: "invalid response")
-            return PlayerStreamResolveResult.Failed("Alloha: session was not opened")
+            // Причина в тексте нужна для отчётов: без неё не отличить таймаут от HTTP 403 у bnsi.
+            return PlayerStreamResolveResult.Failed("Alloha: session was not opened (${error.sessionFailureReason()})")
         }
         request.onStatus(PlayerStreamResolveStatus.RequestingStream)
         // A WebView adds the app package as X-Requested-With to its requests, media ones included.
@@ -178,5 +179,21 @@ internal class AllohaExtractor @Inject constructor(
         const val FALLBACK_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:159.0) Gecko/20100101 Firefox/159.0"
         const val MAX_ATTEMPTS = 2
         const val RETRY_DELAY_MS = 500L
+        const val MAX_REASON_LENGTH = 80
+
+        /**
+         * Наши ошибки открытия уже несут текст вида «Alloha: bnsi HTTP 403» — префикс снимаем;
+         * у сетевых (OkHttp) добавляем имя класса: оно из java.io/java.net и R8 его не переименует.
+         */
+        fun IOException.sessionFailureReason(): String {
+            val text = message.orEmpty().removePrefix("Alloha: ").trim()
+            val ownError = message.orEmpty().startsWith("Alloha: ")
+            val reason = when {
+                ownError -> text
+                text.isEmpty() -> javaClass.simpleName
+                else -> "${javaClass.simpleName}: $text"
+            }
+            return reason.take(MAX_REASON_LENGTH)
+        }
     }
 }

@@ -18,6 +18,7 @@ import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.awaitOnline
 import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
+import su.afk.yummy.tv.feature.player.utils.recoveryFailureSummary
 import su.afk.yummy.tv.feature.player.utils.withAllohaAudio
 import javax.inject.Inject
 
@@ -51,6 +52,7 @@ internal class AllohaSourceBehavior @Inject constructor(
 
     override fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean {
         if (event.errorCode.isDecoderErrorCode()) return false
+        recovery.lastFailure = event.recoveryFailureSummary()
         if (recovery.isRecovering) {
             analytics.debugLog {
                 "Ignoring duplicate Alloha playback error during fresh-session recovery " +
@@ -97,6 +99,7 @@ internal class AllohaSourceBehavior @Inject constructor(
 
     override fun retriesFailedResolve(): Boolean {
         if (!recovery.isRecovering || !handles(host.state)) return false
+        recovery.lastFailure = RESOLVE_FAILED_SUMMARY
         // Провал резолва во время восстановления считается такой же попыткой, как ошибка
         // воспроизведения: бюджет [PlayerAllohaRecoveryHandler.MAX_ATTEMPTS] общий, после его
         // исчерпания scheduleFreshAttempt покажет ошибку и подсказку сменить плеер/озвучку.
@@ -212,6 +215,9 @@ internal class AllohaSourceBehavior @Inject constructor(
                 errorType = ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE,
                 positionMs = host.state.playbackPositionMs,
                 retryAttempts = PlayerAllohaRecoveryHandler.MAX_ATTEMPTS,
+                // Код исходной ошибки — в cause, а не в errorCode: сетевые коды в errorCode
+                // глушатся аналитикой, и отчёт об исчерпании пропал бы целиком.
+                errorCause = recovery.lastFailure,
             )
             recovery.reset()
             host.changePlayerHint.cancel()
@@ -326,6 +332,7 @@ internal class AllohaSourceBehavior @Inject constructor(
 
         private const val ALLOHA_PLAYER_NAME = "alloha"
         private const val ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE = "alloha_recovery_exhausted"
+        private const val RESOLVE_FAILED_SUMMARY = "resolve_failed"
         private const val PLAYBACK_RECOVERY_DELAY_MS = 1_000L
         private const val RECOVERY_HINT_DELAY_MS = 15_000L
 
