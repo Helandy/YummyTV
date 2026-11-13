@@ -13,56 +13,29 @@ import su.afk.yummy.tv.core.utils.formatting.formatRating
 import su.afk.yummy.tv.feature.details.details.model.ExternalRatingLabel
 import su.afk.yummy.tv.feature.details.presentation.R
 
+/** Рейтинг yani крупной звездой, внешние — следом; без разделителей, чтобы перенос строки не оставлял висящих точек. */
 @Composable
 internal fun HeroRatingRow(details: AnimeDetails) {
     val yaniRating = details.rating.average
     val ratings = buildList {
         details.rating.kinopoisk?.let {
-            add(
-                ExternalRatingLabel(
-                    label = stringResource(
-                        R.string.details_kinopoisk_rating,
-                        it.formatRating(),
-                    ),
-                    rating = it,
-                )
-            )
+            add(ExternalRatingLabel(stringResource(R.string.details_kinopoisk_rating, it.formatRating()), it))
         }
         details.rating.shikimori?.let {
-            add(
-                ExternalRatingLabel(
-                    label = stringResource(
-                        R.string.details_shikimori_rating,
-                        it.formatRating(),
-                    ),
-                    rating = it,
-                )
-            )
+            add(ExternalRatingLabel(stringResource(R.string.details_shikimori_rating_short, it.formatRating()), it))
         }
         details.rating.myAnimeList?.let {
-            add(
-                ExternalRatingLabel(
-                    label = stringResource(
-                        R.string.details_mal_rating,
-                        it.formatRating(),
-                    ),
-                    rating = it,
-                )
-            )
+            add(ExternalRatingLabel(stringResource(R.string.details_mal_rating, it.formatRating()), it))
         }
     }
     if (yaniRating == null && ratings.isEmpty()) return
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(6.dp),
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        yaniRating?.let { rating ->
-            YaniRatingLabel(rating)
-        }
-        ratings.forEach { rating ->
-            RatingLabel(rating)
-        }
+        yaniRating?.let { rating -> YaniRatingLabel(rating) }
+        ratings.forEach { rating -> RatingLabel(rating) }
     }
 }

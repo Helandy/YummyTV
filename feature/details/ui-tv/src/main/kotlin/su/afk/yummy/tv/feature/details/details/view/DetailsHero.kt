@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
-import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
@@ -163,7 +162,8 @@ internal fun DetailsHero(
         }
         val rowSpacing = if (isCompactHeight) 28.dp else 48.dp
         val columnSpacing = if (isCompactHeight) 8.dp else 12.dp
-        val titleMaxLines = 3
+        val titleFontSize = if (isCompactHeight) 34.sp else 40.sp
+        val titleTailFontSize = if (isCompactHeight) 22.sp else 26.sp
         val posterWidth = if (isCompactHeight) HERO_POSTER_WIDTH_COMPACT else HERO_POSTER_WIDTH
 
         val description = if (showDescription) details.description.trim() else ""
@@ -225,21 +225,21 @@ internal fun DetailsHero(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        MarqueeTitleText(
-                            text = details.title,
+                        DetailsHeroTitle(
+                            title = details.title,
                             style = MaterialTheme.typography.displaySmall.copy(
-                                fontSize = 30.sp,
+                                fontSize = titleFontSize,
+                                lineHeight = titleFontSize * 1.1f,
+                                letterSpacing = (-0.5).sp,
+                                fontWeight = FontWeight.Bold,
                                 color = if (titleFocused) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
                                 },
                             ),
-                            fontWeight = FontWeight.SemiBold,
-                            minLines = 1,
-                            maxLines = titleMaxLines,
-                            isFocused = titleFocused,
-                            marqueeWhenOverflow = true,
+                            tailFontSize = titleTailFontSize,
+                            tailLineHeight = titleTailFontSize * 1.2f,
                             modifier = Modifier
                                 .weight(1f)
                                 .alignByBaseline()
@@ -341,14 +341,18 @@ internal fun DetailsHero(
                         .graphicsLayer { alpha = posterAlpha },
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    HeroRatingRow(details)
-
                     val posterShape = RoundedCornerShape(HERO_POSTER_CORNER)
+                    val posterGlow = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(2f / 3f)
-                            .shadow(HERO_POSTER_ELEVATION, posterShape)
+                            .shadow(
+                                elevation = HERO_POSTER_ELEVATION,
+                                shape = posterShape,
+                                ambientColor = posterGlow,
+                                spotColor = posterGlow,
+                            )
                             .border(
                                 1.dp,
                                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f),
@@ -366,6 +370,8 @@ internal fun DetailsHero(
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
+
+                    HeroRatingRow(details)
                 }
             }
             if (descriptionTail.isNotEmpty()) {
@@ -386,8 +392,8 @@ internal fun DetailsHero(
 internal val HERO_BACKDROP_BLUR = 26.dp
 private val HERO_POSTER_WIDTH = 340.dp
 private val HERO_POSTER_WIDTH_COMPACT = 300.dp
-private val HERO_POSTER_CORNER = 16.dp
-private val HERO_POSTER_ELEVATION = 16.dp
+private val HERO_POSTER_CORNER = 20.dp
+private val HERO_POSTER_ELEVATION = 24.dp
 internal val HERO_APPEAR_SHIFT = 18.dp
 internal const val HERO_APPEAR_MILLIS = 380
 internal const val HERO_POSTER_APPEAR_DELAY_MILLIS = 100

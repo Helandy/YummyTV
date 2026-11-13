@@ -68,6 +68,7 @@
     <string name="details_back_to_search">Вернуться к поиску</string>
     <string name="details_kinopoisk_rating">КП %1$s</string>
     <string name="details_shikimori_rating">Shikimori %1$s</string>
+    <string name="details_shikimori_rating_short">Shiki %1$s</string>
     <string name="details_mal_rating">MAL %1$s</string>
     <string name="details_library_picker_title">Добавить в список</string>
     <string name="details_library_list_watching">Смотрю</string>

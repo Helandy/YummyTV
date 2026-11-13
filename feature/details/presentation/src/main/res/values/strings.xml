@@ -68,6 +68,7 @@
     <string name="details_back_to_search">Back to search</string>
     <string name="details_kinopoisk_rating">KP %1$s</string>
     <string name="details_shikimori_rating">Shikimori %1$s</string>
+    <string name="details_shikimori_rating_short">Shiki %1$s</string>
     <string name="details_mal_rating">MAL %1$s</string>
     <string name="details_library_picker_title">Add to list</string>
     <string name="details_library_list_watching">Watching</string>

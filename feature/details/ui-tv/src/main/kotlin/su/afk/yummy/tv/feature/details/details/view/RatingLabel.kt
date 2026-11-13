@@ -12,7 +12,7 @@ import su.afk.yummy.tv.feature.details.details.model.ExternalRatingLabel
 internal fun RatingLabel(rating: ExternalRatingLabel) {
     Text(
         text = rating.label,
-        style = MaterialTheme.typography.labelMedium,
+        style = MaterialTheme.typography.labelLarge,
         maxLines = 1,
         color = rating.rating.toRatingTextColor(),
     )

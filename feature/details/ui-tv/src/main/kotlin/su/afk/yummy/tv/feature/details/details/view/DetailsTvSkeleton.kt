@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -21,7 +23,8 @@ import su.afk.yummy.tv.core.designsystem.skeleton.SkeletonBlock
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
 
 private const val TV_DESCRIPTION_SKELETON_LINES = 3
-private const val TV_BUTTON_SKELETON_ROWS = 2
+private const val TV_LABELED_BUTTON_SKELETON_COUNT = 2
+private const val TV_ICON_BUTTON_SKELETON_COUNT = 4
 
 /** Скелетон героя деталки на ТВ: колонка с текстом и кнопками слева, постер справа. */
 @Composable
@@ -43,7 +46,7 @@ internal fun DetailsTvSkeleton(modifier: Modifier = Modifier) {
                 shimmer = shimmer,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
-                    .height(40.dp),
+                    .height(44.dp),
             )
             SkeletonBlock(
                 shimmer = shimmer,
@@ -57,25 +60,47 @@ internal fun DetailsTvSkeleton(modifier: Modifier = Modifier) {
                     .fillMaxWidth(0.5f)
                     .height(18.dp),
             )
-            Column(
-                modifier = Modifier.padding(top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+            // Главные кнопки — две пилюли 1.5 : 1 и круг «Любимого»; под ними пилюли «Серии»/«Подписки» и иконки.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                repeat(TV_BUTTON_SKELETON_ROWS) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        repeat(2) {
-                            SkeletonBlock(
-                                shimmer = shimmer,
-                                shape = RoundedCornerShape(20.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(40.dp),
-                            )
-                        }
-                    }
+                listOf(1.5f, 1f).forEach { weight ->
+                    SkeletonBlock(
+                        shimmer = shimmer,
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .weight(weight)
+                            .height(52.dp),
+                    )
+                }
+                SkeletonBlock(
+                    shimmer = shimmer,
+                    shape = CircleShape,
+                    modifier = Modifier.size(52.dp),
+                )
+            }
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                repeat(TV_LABELED_BUTTON_SKELETON_COUNT) {
+                    SkeletonBlock(
+                        shimmer = shimmer,
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .width(120.dp)
+                            .height(48.dp),
+                    )
+                }
+                repeat(TV_ICON_BUTTON_SKELETON_COUNT) {
+                    SkeletonBlock(
+                        shimmer = shimmer,
+                        shape = CircleShape,
+                        modifier = Modifier.size(48.dp),
+                    )
                 }
             }
             SkeletonBlock(
@@ -95,7 +120,7 @@ internal fun DetailsTvSkeleton(modifier: Modifier = Modifier) {
         }
         SkeletonBlock(
             shimmer = shimmer,
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(20.dp),
             modifier = Modifier
                 .width(340.dp)
                 .aspectRatio(2f / 3f),

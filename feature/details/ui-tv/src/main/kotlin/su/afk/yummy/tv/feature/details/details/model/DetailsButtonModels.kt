@@ -14,24 +14,6 @@ internal data class ButtonData(
     val onClick: () -> Unit,
     val overrideColor: Color? = null,
     val enabled: Boolean = true,
+    /** Короткий счётчик в углу иконки (комментарии, рецензии). */
+    val badge: String? = null,
 )
-
-internal sealed interface ButtonRowData {
-    val key: String
-    val buttonIndices: List<Int>
-
-    data class Single(val index: Int, val button: ButtonData) : ButtonRowData {
-        override val key = button.action.name
-        override val buttonIndices = listOf(index)
-    }
-
-    data class Pair(
-        val firstIndex: Int,
-        val first: ButtonData,
-        val secondIndex: Int?,
-        val second: ButtonData?,
-    ) : ButtonRowData {
-        override val key = "${first.action.name}_${second?.action?.name.orEmpty()}"
-        override val buttonIndices = listOfNotNull(firstIndex, secondIndex)
-    }
-}

@@ -28,13 +28,14 @@ internal fun YaniRatingLabel(rating: Double) {
             contentDescription = null,
             tint = color,
             modifier = Modifier
-                .height(17.dp)
-                .width(17.dp),
+                .height(22.dp)
+                .width(22.dp),
         )
-        Spacer(modifier = Modifier.width(3.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = rating.formatRating(),
-            style = MaterialTheme.typography.labelLarge.tabularNumerals(),
+            style = MaterialTheme.typography.titleMedium.tabularNumerals(),
+            fontWeight = FontWeight.Bold,
             color = color,
         )
     }

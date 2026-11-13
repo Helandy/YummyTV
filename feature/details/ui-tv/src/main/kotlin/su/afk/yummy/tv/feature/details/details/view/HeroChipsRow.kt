@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.details.details.view
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -63,7 +63,7 @@ internal fun HeroChipsRow(
                 modifier = Modifier
                     .then(chipFocusModifier(index))
                     .tvFocusableClick(onClick = chip.onClick, shape = shape)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), shape)
+                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f), shape)
                     .padding(horizontal = 14.dp, vertical = 7.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,

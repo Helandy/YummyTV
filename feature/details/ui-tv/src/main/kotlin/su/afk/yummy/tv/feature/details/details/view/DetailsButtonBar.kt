@@ -1,19 +1,15 @@
 package su.afk.yummy.tv.feature.details.details.view
 
-import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
-import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
@@ -31,7 +27,6 @@ import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,33 +41,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
-import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.ButtonData
-import su.afk.yummy.tv.feature.details.details.model.ButtonRowData
 import su.afk.yummy.tv.feature.details.details.model.ButtonStyle
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.utils.label
@@ -252,6 +240,7 @@ internal fun DetailsButtonBar(
             Icons.AutoMirrored.Filled.Comment,
             ButtonStyle.Normal,
             onCommentsSelected,
+            badge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
         ),
         ButtonData(
             DetailsButtonAction.REVIEWS,
@@ -262,6 +251,7 @@ internal fun DetailsButtonBar(
             Icons.Filled.RateReview,
             ButtonStyle.Normal,
             onReviewsSelected,
+            badge = details.reviewsCount.takeIf { it > 0 }?.toCompactCount(),
         ),
         ButtonData(
             DetailsButtonAction.BLOGGER_VIDEOS,
@@ -288,7 +278,12 @@ internal fun DetailsButtonBar(
     val buttons = DetailsButtonAction.defaultOrder
         .filterNot { it in hiddenActions }
         .mapNotNull { availableButtons[it] }
-    val buttonRows = buttons.toButtonRows()
+    // Главные действия — крупными пилюлями («Любимое» — одним сердечком). Во втором ряду сначала
+    // пилюли с текстом («Серии», «Подписки»), затем круглые иконки с подписью при фокусе.
+    val primaryButtons = buttons.withIndex().filter { it.value.action in PrimaryActions }
+    val secondRowButtons = buttons.withIndex()
+        .filterNot { it.value.action in PrimaryActions }
+        .sortedBy { it.value.action !in LabeledActions }
     val initialFocusedAction = buttons.firstOrNull()?.action ?: DetailsButtonAction.WATCH
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -329,212 +324,127 @@ internal fun DetailsButtonBar(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        // i = W*(s-1)/(2s): при ширине кнопки W-2i и масштабе s выступ (W-2i)*(s-1)/2 == i,
-        // так что сфокусированная кнопка встаёт ровно по краю бара.
-        val focusInset = maxWidth * ((ButtonFocusedScale - 1f) / (2f * ButtonFocusedScale))
-        // Кнопок мало и они все помещаются, поэтому бар не скроллится: фокус просто ходит по строкам.
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = focusInset),
-            verticalArrangement = Arrangement.spacedBy(ButtonRowSpacing),
-        ) {
-            buttonRows.forEach { row ->
-                // Из нижнего ряда «вниз» ведёт прямо на чипы: поиск фокуса сам их не находит.
-                val rowDown = if (row === buttonRows.last() && bottomFocusRequester != null) {
-                    Modifier.focusProperties { down = bottomFocusRequester }
-                } else {
-                    Modifier
-                }
-                key(row.key) {
-                    when (row) {
-                        is ButtonRowData.Single -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(ButtonRowHeight),
-                            ) {
-                                DetailsActionButton(
-                                    button = row.button,
-                                    index = row.index,
-                                    focusRequester = focusRequesters[row.index],
-                                    onFocused = { focusedAction = row.button.action },
-                                    modifier = rowDown,
-                                )
-                            }
-                        }
+    var iconRowFocused by remember { mutableStateOf(false) }
+    // У пилюль текст и так виден — подпись только для круглых иконок.
+    val iconCaption = buttons.getOrNull(currentFocusedIndex)
+        ?.takeIf { iconRowFocused && it.action !in LabeledActions }
+        ?.label
+        .orEmpty()
+    // Из нижнего ряда «вниз» ведёт прямо на чипы: поиск фокуса сам их не находит.
+    val bottomDown = bottomFocusRequester?.let { Modifier.focusProperties { down = it } } ?: Modifier
+    // Геометрический поиск вниз застревает в скролл-контейнере второго ряда — ведём явно на его первую кнопку.
+    val primaryDown = secondRowButtons.firstOrNull()
+        ?.let { first -> Modifier.focusProperties { down = focusRequesters[first.index] } }
+        ?: bottomDown
 
-                        is ButtonRowData.Pair -> {
-                            Row(
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(PrimaryToIconsSpacing),
+    ) {
+        if (primaryButtons.isNotEmpty()) {
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                // i = W*(s-1)/(2s): при ширине ряда W-2i и масштабе s выступ сфокусированной кнопки
+                // не вылезает за край колонки.
+                val focusInset = maxWidth * ((PrimaryFocusedScale - 1f) / (2f * PrimaryFocusedScale))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = focusInset)
+                        .height(PrimaryRowHeight),
+                    horizontalArrangement = Arrangement.spacedBy(PrimaryButtonSpacing),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    primaryButtons.forEach { (index, button) ->
+                        key(button.action) {
+                            DetailsPrimaryButton(
+                                button = button,
+                                focusedScale = PrimaryFocusedScale,
+                                onClick = {
+                                    focusedAction = button.action
+                                    button.onClick()
+                                },
+                                iconOnly = button.action == DetailsButtonAction.FAVORITE,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(ButtonRowHeight),
-                                horizontalArrangement = Arrangement.spacedBy(ButtonColumnSpacing),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                DetailsActionButton(
-                                    button = row.first,
-                                    index = row.firstIndex,
-                                    focusRequester = focusRequesters[row.firstIndex],
-                                    onFocused = { focusedAction = row.first.action },
-                                    modifier = Modifier.weight(1f).then(rowDown),
-                                )
-                                if (row.second != null && row.secondIndex != null) {
-                                    DetailsActionButton(
-                                        button = row.second,
-                                        index = row.secondIndex,
-                                        focusRequester = focusRequesters[row.secondIndex],
-                                        onFocused = { focusedAction = row.second.action },
-                                        modifier = Modifier.weight(1f).then(rowDown),
+                                    .then(
+                                        when (button.action) {
+                                            DetailsButtonAction.FAVORITE -> Modifier.aspectRatio(1f)
+                                            DetailsButtonAction.WATCH -> Modifier.weight(WatchWeight)
+                                            else -> Modifier.weight(1f)
+                                        },
                                     )
-                                } else {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
+                                    .then(primaryDown)
+                                    .then(
+                                        if (button.action == DetailsButtonAction.WATCH) {
+                                            Modifier.testTag("watch_button")
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .focusRequester(focusRequesters[index])
+                                    .onFocusChanged { if (it.isFocused) focusedAction = button.action },
+                            )
                         }
                     }
                 }
             }
         }
-    }
-}
 
-private val ButtonRowHeight = 40.dp
-private val ButtonRowSpacing = 6.dp
-private val ButtonColumnSpacing = 12.dp
-private const val ButtonFocusedScale = 1.04f
-
-private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
-    var index = 0
-    while (index <= this@toButtonRows.lastIndex) {
-        val button = this@toButtonRows[index]
-        val nextButton = this@toButtonRows.getOrNull(index + 1)
-        if (button.action == DetailsButtonAction.WATCH || nextButton?.action == DetailsButtonAction.WATCH) {
-            if (button.action == DetailsButtonAction.WATCH) {
-                add(ButtonRowData.Single(index, button))
-            } else {
-                add(ButtonRowData.Pair(index, button, null, null))
-            }
-            index += 1
-        } else if (nextButton == null) {
-            // Последняя кнопка без пары растягивается на всю ширину, как «Смотреть».
-            add(ButtonRowData.Single(index, button))
-            index += 1
-        } else {
-            add(ButtonRowData.Pair(index, button, index + 1, nextButton))
-            index += 2
-        }
-    }
-}
-
-@Composable
-private fun DetailsActionButton(
-    button: ButtonData,
-    index: Int,
-    focusRequester: FocusRequester,
-    onFocused: () -> Unit,
-    modifier: Modifier = Modifier,
-    showLabel: Boolean = true,
-    iconSize: Dp = 18.dp,
-    verticalPadding: Dp = 8.dp,
-    focusedScale: Float = ButtonFocusedScale,
-) {
-    ActionButton(
-        label = button.label,
-        icon = button.icon,
-        style = button.style,
-        overrideColor = button.overrideColor,
-        showLabel = showLabel,
-        iconSize = iconSize,
-        verticalPadding = verticalPadding,
-        focusedScale = focusedScale,
-        enabled = button.enabled,
-        onClick = {
-            onFocused()
-            button.onClick()
-        },
-        modifier = modifier
-            .then(if (button.action == DetailsButtonAction.WATCH) Modifier.testTag("watch_button") else Modifier)
-            .focusRequester(focusRequester)
-            .onFocusChanged { focusState ->
-                if (focusState.isFocused) {
-                    onFocused()
+        if (secondRowButtons.isNotEmpty()) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { iconRowFocused = it.hasFocus }
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = IconRowFocusPadding, vertical = IconRowFocusPadding),
+                    horizontalArrangement = Arrangement.spacedBy(IconButtonSpacing),
+                ) {
+                    secondRowButtons.forEach { (index, button) ->
+                        key(button.action) {
+                            val onClick = {
+                                focusedAction = button.action
+                                button.onClick()
+                            }
+                            val focusModifier = bottomDown
+                                .focusRequester(focusRequesters[index])
+                                .onFocusChanged { if (it.isFocused) focusedAction = button.action }
+                            if (button.action in LabeledActions) {
+                                DetailsLabeledChipButton(button = button, onClick = onClick, modifier = focusModifier)
+                            } else {
+                                DetailsIconButton(button = button, onClick = onClick, modifier = focusModifier)
+                            }
+                        }
+                    }
                 }
-            },
-    )
-}
-
-@Composable
-private fun ActionButton(
-    label: String,
-    icon: ImageVector,
-    style: ButtonStyle,
-    overrideColor: Color? = null,
-    showLabel: Boolean = true,
-    iconSize: Dp = 18.dp,
-    verticalPadding: Dp = 8.dp,
-    focusedScale: Float = ButtonFocusedScale,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(6.dp)
-    val bgColor = if (overrideColor != null) {
-        overrideColor.copy(alpha = 0.20f)
-    } else {
-        when (style) {
-            ButtonStyle.Filled -> MaterialTheme.colorScheme.onSurface
-            ButtonStyle.Outlined -> MaterialTheme.colorScheme.primary
-            ButtonStyle.Normal -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
-        }
-    }
-    val textColor = if (overrideColor != null) {
-        overrideColor
-    } else {
-        when (style) {
-            ButtonStyle.Filled -> MaterialTheme.colorScheme.surface
-            ButtonStyle.Outlined -> MaterialTheme.colorScheme.onPrimary
-            ButtonStyle.Normal -> MaterialTheme.colorScheme.onSurface
-        }
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.5f)
-            .tvFocusableClick(
-                onClick = { if (enabled) onClick() },
-                shape = shape,
-                focusedScale = focusedScale,
-            )
-            .let { if (style == ButtonStyle.Filled) it.seasonalButtonDecor() else it }
-            .background(bgColor, shape)
-            .padding(horizontal = 20.dp, vertical = verticalPadding),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = textColor,
-                modifier = Modifier.size(iconSize),
-            )
-            if (showLabel) {
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
+                    text = iconCaption,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = textColor,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    // Высота держится и без подписи, чтобы ряд не прыгал при уходе фокуса.
+                    minLines = 1,
+                    modifier = Modifier.padding(start = IconRowFocusPadding),
                 )
             }
         }
     }
 }
+
+private val PrimaryActions = setOf(
+    DetailsButtonAction.WATCH,
+    DetailsButtonAction.LIBRARY,
+    DetailsButtonAction.FAVORITE,
+)
+private val LabeledActions = setOf(
+    DetailsButtonAction.EPISODES,
+    DetailsButtonAction.SUBSCRIPTIONS,
+)
+private val PrimaryRowHeight = 52.dp
+private val PrimaryButtonSpacing = 12.dp
+private val PrimaryToIconsSpacing = 10.dp
+private val IconButtonSpacing = 14.dp
+private val IconRowFocusPadding = 8.dp
+private const val PrimaryFocusedScale = 1.04f
+private const val WatchWeight = 1.5f
