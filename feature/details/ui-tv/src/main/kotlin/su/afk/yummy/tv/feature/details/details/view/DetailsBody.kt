@@ -130,7 +130,11 @@ internal fun DetailsBody(
     val heroChipFocus: @Composable (Int) -> Modifier = { index ->
         val key = "chips:$index"
         Modifier
-            .focusProperties { canFocus = true }
+            .focusProperties {
+                canFocus = true
+                // Вверх — явно на нижний ряд кнопок: поиск проваливался в его контейнер прокрутки, и фокус пропадал.
+                up = barLastRowFocusRequester
+            }
             .focusRequester(requesterFor(key))
             .onFocusChanged {
                 if (it.isFocused) {
