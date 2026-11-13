@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.details.details.view
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -52,6 +54,9 @@ import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
+import su.afk.yummy.tv.feature.details.details.utils.focusKey
+import su.afk.yummy.tv.feature.details.details.utils.isFocusRow
+import su.afk.yummy.tv.feature.details.details.utils.tryRequestFocus
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -87,6 +92,9 @@ internal fun DetailsBody(
     onBloggerVideosSelected: () -> Unit,
 ) {
     val barFocusRequester = remember { FocusRequester() }
+    // Нижний ряд кнопок: вход в бар снизу. Ряд прокручивается вбок, и поиск фокуса проваливался в сам
+    // контейнер прокрутки — фокус пропадал до следующего нажатия.
+    val barLastRowFocusRequester = remember { FocusRequester() }
     // Цель фокуса в ленте: после возврата из подэкрана фокус возвращается в неё, а не на кнопки хиро.
     var lastFocusTarget by rememberSaveable { mutableStateOf<String?>(null) }
     var restoreTarget by rememberSaveable { mutableStateOf<String?>(null) }
@@ -99,12 +107,20 @@ internal fun DetailsBody(
         .onFocusChanged { if (it.hasFocus) lastFocusTarget = key }
         .tvFocusRestorer()
 
+    // Последняя карточка каждого ряда — вход в ряд, когда фокус приходит в него сверху или снизу.
+    val lastRowIndex = remember { mutableMapOf<String, Int>() }
+
     // Ряды запоминают точную карточку: ключ цели — «секция:индекс».
     fun rowItemFocus(section: String): @Composable (Int) -> Modifier = { index ->
         val key = "$section:$index"
         Modifier
             .focusRequester(requesterFor(key))
-            .onFocusChanged { if (it.isFocused) lastFocusTarget = key }
+            .onFocusChanged {
+                if (it.isFocused) {
+                    lastFocusTarget = key
+                    lastRowIndex[section] = index
+                }
+            }
     }
 
     // Чипы живут внутри хиро: оно блокирует фокус на время восстановления, поэтому чип разрешает его себе сам,
@@ -195,6 +211,63 @@ internal fun DetailsBody(
         add(DetailsButtonAction.REVIEWS)
     }
 
+    // Разделы ленты под хиро в порядке из настроек — только те, что сейчас есть что показать.
+    val feedSections = state.sections.filter { section ->
+        when (section) {
+            // Показываются внутри хиро.
+            DetailsSectionKind.INFO, DetailsSectionKind.DESCRIPTION -> false
+            DetailsSectionKind.SCREENSHOTS -> hasScreenshots
+            DetailsSectionKind.VIDEO -> state.trailers.isNotEmpty() || hasBloggerVideos
+            // Пока extras грузятся, секции нет, чтобы лента не прыгала; после — есть всегда, даже без оценок.
+            DetailsSectionKind.RATING -> !state.isExtrasLoading || ratingOverview != null
+            DetailsSectionKind.UNIVERSE -> hasUniverse
+            DetailsSectionKind.SIMILAR -> true
+            DetailsSectionKind.COLLECTIONS -> state.collections.isNotEmpty()
+            DetailsSectionKind.REVIEWS -> details.reviewsCount > 0
+            DetailsSectionKind.COMMENTS -> true
+        }
+    }
+
+    // Вход в блок ленты при переходе вверх/вниз. Геометрический поиск между блоками ненадёжен: из ряда
+    // под хиро он проскакивал чипы к кнопкам, а в ряд попадал на ближайшую по горизонтали карточку,
+    // и с переставленными или скрытыми разделами это всплывало в разных местах. Не удалось — обычный поиск.
+    fun enterHeroFromBelow(): Boolean = listOfNotNull(
+        requesterFor(DESCRIPTION_TAIL_FOCUS_KEY),
+        requesterFor(DESCRIPTION_HEAD_FOCUS_KEY),
+        if (hasHeroChips) requesterFor("chips:$lastChipIndex") else null,
+        if (state.showSectionsHint) requesterFor(HERO_HINT_FOCUS_KEY) else null,
+        barLastRowFocusRequester,
+        barFocusRequester,
+    ).any { it.tryRequestFocus() }
+
+    fun enterSection(section: DetailsSectionKind): Boolean {
+        val key = section.focusKey
+        val requesters = if (section.isFocusRow) {
+            listOf(requesterFor("$key:${lastRowIndex[key] ?: 0}"), requesterFor("$key:0"))
+        } else {
+            listOf(requesterFor(key))
+        }
+        return requesters.distinct().any { it.tryRequestFocus() }
+    }
+
+    // [position] — место блока в ленте: -1 хиро, дальше индексы [feedSections].
+    fun Modifier.feedFocusNeighbors(position: Int): Modifier = this
+        .focusProperties {
+            onExit = {
+                val target = when (requestedFocusDirection) {
+                    FocusDirection.Up -> position - 1
+                    FocusDirection.Down -> position + 1
+                    else -> null
+                }
+                when {
+                    target == null -> Unit
+                    target == -1 -> enterHeroFromBelow()
+                    target in feedSections.indices -> enterSection(feedSections[target])
+                }
+            }
+        }
+        .focusGroup()
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -220,6 +293,7 @@ internal fun DetailsBody(
                 item(key = "hero") {
                     DetailsHero(
                         modifier = Modifier
+                            .feedFocusNeighbors(position = -1)
                             .focusProperties { canFocus = !isRestoringFocus }
                             .onFocusChanged {
                                 if (it.hasFocus && lastFocusTarget?.startsWith("chips:") != true &&
@@ -276,123 +350,95 @@ internal fun DetailsBody(
                         onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
                         chipFocusModifier = heroChipFocus,
                         chipsEntryFocusRequester = if (hasHeroChips) requesterFor("chips:0") else null,
+                        barLastRowFocusRequester = barLastRowFocusRequester,
                         // Описание внутри хиро: как и чип, само разрешает себе фокус на время восстановления.
                         descriptionFocusModifier = Modifier
                             .focusProperties {
                                 canFocus = true
-                                if (hasHeroChips) up = requesterFor("chips:$lastChipIndex")
+                                up = if (hasHeroChips) requesterFor("chips:$lastChipIndex") else barLastRowFocusRequester
                             }
-                            .then(rowItemFocus("description")(-1)),
+                            .then(rowItemFocus(DESCRIPTION_ROW)(DESCRIPTION_HEAD_INDEX)),
                         descriptionTailFocusModifier = Modifier
                             .focusProperties { canFocus = true }
-                            .then(rowItemFocus("description")(-2)),
+                            .then(rowItemFocus(DESCRIPTION_ROW)(DESCRIPTION_TAIL_INDEX)),
                         showChips = showHeroChips,
                         showDescription = showHeroDescription,
                     )
                 }
-                state.sections.forEach { section ->
+                feedSections.forEachIndexed { position, section ->
+                    val neighbors = Modifier.feedFocusNeighbors(position)
                     when (section) {
-                        // Показываются внутри хиро выше.
                         DetailsSectionKind.INFO, DetailsSectionKind.DESCRIPTION -> Unit
-                        DetailsSectionKind.SCREENSHOTS -> {
-                            if (hasScreenshots) {
-                                item(key = "screenshots") {
-                                    DetailsScreenshotsRow(
-                                        screenshots = state.screenshots,
-                                        onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
-                                        modifier = Modifier.tvWholeItemBringIntoView(),
-                                        itemFocusModifier = rowItemFocus("screenshots"),
-                                    )
-                                }
-                            }
+                        DetailsSectionKind.SCREENSHOTS -> item(key = "screenshots") {
+                            DetailsScreenshotsRow(
+                                screenshots = state.screenshots,
+                                onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
+                                modifier = neighbors.tvWholeItemBringIntoView(),
+                                itemFocusModifier = rowItemFocus(section.focusKey),
+                            )
                         }
-                        DetailsSectionKind.VIDEO -> {
-                            if (state.trailers.isNotEmpty() || hasBloggerVideos) {
-                                item(key = "video") {
-                                    DetailsVideoSection(
-                                        trailers = state.trailers,
-                                        bloggerVideosImageModels = details.poster.posterUrls(),
-                                        hasBloggerVideos = hasBloggerVideos,
-                                        onTrailersClick = onTrailersSelected,
-                                        onBloggerVideosClick = onBloggerVideosSelected,
-                                        modifier = Modifier.tvWholeItemBringIntoView(),
-                                        itemFocusModifier = rowItemFocus("video"),
-                                    )
-                                }
-                            }
+                        DetailsSectionKind.VIDEO -> item(key = "video") {
+                            DetailsVideoSection(
+                                trailers = state.trailers,
+                                bloggerVideosImageModels = details.poster.posterUrls(),
+                                hasBloggerVideos = hasBloggerVideos,
+                                onTrailersClick = onTrailersSelected,
+                                onBloggerVideosClick = onBloggerVideosSelected,
+                                modifier = neighbors.tvWholeItemBringIntoView(),
+                                itemFocusModifier = rowItemFocus(section.focusKey),
+                            )
                         }
-                        DetailsSectionKind.RATING -> {
-                            // Пока extras грузятся, секции нет, чтобы лента не прыгала; после — есть всегда, даже без оценок.
-                            if (!state.isExtrasLoading || ratingOverview != null) {
-                                item(key = "rating") {
-                                    DetailsRatingOverviewSection(
-                                        overview = ratingOverview,
-                                        userRating = userRating,
-                                        onClick = onRatingScreenSelected,
-                                        modifier = Modifier.sectionFocus("rating").tvWholeItemBringIntoView(),
-                                    )
-                                }
-                            }
+                        DetailsSectionKind.RATING -> item(key = "rating") {
+                            DetailsRatingOverviewSection(
+                                overview = ratingOverview,
+                                userRating = userRating,
+                                onClick = onRatingScreenSelected,
+                                modifier = neighbors.sectionFocus(section.focusKey).tvWholeItemBringIntoView(),
+                            )
                         }
-                        DetailsSectionKind.UNIVERSE -> {
-                            if (hasUniverse) {
-                                item(key = "universe") {
-                                    DetailsUniverseRow(
-                                        items = details.viewingOrder,
-                                        currentAnimeId = details.id,
-                                        onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
-                                        onShowAllClick = onViewingOrderSelected,
-                                        modifier = Modifier.tvWholeItemBringIntoView(),
-                                        itemFocusModifier = rowItemFocus("universe"),
-                                    )
-                                }
-                            }
+                        DetailsSectionKind.UNIVERSE -> item(key = "universe") {
+                            DetailsUniverseRow(
+                                items = details.viewingOrder,
+                                currentAnimeId = details.id,
+                                onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
+                                onShowAllClick = onViewingOrderSelected,
+                                modifier = neighbors.tvWholeItemBringIntoView(),
+                                itemFocusModifier = rowItemFocus(section.focusKey),
+                            )
                         }
-                        DetailsSectionKind.SIMILAR -> {
-                            item(key = "similar") {
-                                DetailsLinkRow(
-                                    label = stringResource(R.string.details_mobile_recommended_title),
-                                    icon = Icons.Filled.AutoAwesome,
-                                    onClick = onSimilarSelected,
-                                    modifier = Modifier.sectionFocus("similar").tvWholeItemBringIntoView(),
-                                )
-                            }
+                        DetailsSectionKind.SIMILAR -> item(key = "similar") {
+                            DetailsLinkRow(
+                                label = stringResource(R.string.details_mobile_recommended_title),
+                                icon = Icons.Filled.AutoAwesome,
+                                onClick = onSimilarSelected,
+                                modifier = neighbors.sectionFocus(section.focusKey).tvWholeItemBringIntoView(),
+                            )
                         }
-                        DetailsSectionKind.COLLECTIONS -> {
-                            if (state.collections.isNotEmpty()) {
-                                item(key = "collections") {
-                                    DetailsCollectionsRow(
-                                        collections = state.collections,
-                                        onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
-                                        onShowAllClick = onCollectionsSelected,
-                                        modifier = Modifier.tvWholeItemBringIntoView(),
-                                        itemFocusModifier = rowItemFocus("collections"),
-                                    )
-                                }
-                            }
+                        DetailsSectionKind.COLLECTIONS -> item(key = "collections") {
+                            DetailsCollectionsRow(
+                                collections = state.collections,
+                                onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
+                                onShowAllClick = onCollectionsSelected,
+                                modifier = neighbors.tvWholeItemBringIntoView(),
+                                itemFocusModifier = rowItemFocus(section.focusKey),
+                            )
                         }
-                        DetailsSectionKind.REVIEWS -> {
-                            if (details.reviewsCount > 0) {
-                                item(key = "reviews") {
-                                    DetailsLinkRow(
-                                        label = stringResource(R.string.details_reviews),
-                                        icon = Icons.Filled.RateReview,
-                                        badge = details.reviewsCount.toCompactCount(),
-                                        onClick = onReviewsSelected,
-                                        modifier = Modifier.sectionFocus("reviews").tvWholeItemBringIntoView(),
-                                    )
-                                }
-                            }
+                        DetailsSectionKind.REVIEWS -> item(key = "reviews") {
+                            DetailsLinkRow(
+                                label = stringResource(R.string.details_reviews),
+                                icon = Icons.Filled.RateReview,
+                                badge = details.reviewsCount.toCompactCount(),
+                                onClick = onReviewsSelected,
+                                modifier = neighbors.sectionFocus(section.focusKey).tvWholeItemBringIntoView(),
+                            )
                         }
-                        DetailsSectionKind.COMMENTS -> {
-                            item(key = "comments") {
-                                DetailsCommentsRow(
-                                    commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
-                                    onCommentsClick = onCommentsSelected,
-                                    onSearchClick = { onEvent(DetailsState.Event.NewSearchSelected) },
-                                    modifier = Modifier.sectionFocus("comments").tvWholeItemBringIntoView(),
-                                )
-                            }
+                        DetailsSectionKind.COMMENTS -> item(key = "comments") {
+                            DetailsCommentsRow(
+                                commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
+                                onCommentsClick = onCommentsSelected,
+                                onSearchClick = { onEvent(DetailsState.Event.NewSearchSelected) },
+                                modifier = neighbors.sectionFocus(section.focusKey).tvWholeItemBringIntoView(),
+                            )
                         }
                     }
                 }
@@ -403,3 +449,8 @@ internal fun DetailsBody(
 
 private val HeroPeekHeight = 96.dp
 private const val HERO_HINT_FOCUS_KEY = "hint"
+private const val DESCRIPTION_ROW = "description"
+private const val DESCRIPTION_HEAD_INDEX = -1
+private const val DESCRIPTION_TAIL_INDEX = -2
+private const val DESCRIPTION_HEAD_FOCUS_KEY = "$DESCRIPTION_ROW:$DESCRIPTION_HEAD_INDEX"
+private const val DESCRIPTION_TAIL_FOCUS_KEY = "$DESCRIPTION_ROW:$DESCRIPTION_TAIL_INDEX"

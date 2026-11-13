@@ -88,6 +88,8 @@ internal fun DetailsButtonBar(
     focusOnResume: Boolean,
     firstFocusRequester: FocusRequester,
     bottomFocusRequester: FocusRequester?,
+    /** Первая кнопка нижнего ряда — вход в бар снизу (из описания, из ленты). */
+    lastRowEntryFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFavoriteToggle: () -> Unit,
@@ -325,6 +327,7 @@ internal fun DetailsButtonBar(
     }
 
     var iconRowFocused by remember { mutableStateOf(false) }
+    val hasIconButtons = secondRowButtons.any { it.value.action !in LabeledActions }
     // У пилюль текст и так виден — подпись только для круглых иконок.
     val iconCaption = buttons.getOrNull(currentFocusedIndex)
         ?.takeIf { iconRowFocused && it.action !in LabeledActions }
@@ -381,6 +384,13 @@ internal fun DetailsButtonBar(
                                         },
                                     )
                                     .focusRequester(focusRequesters[index])
+                                    .then(
+                                        if (secondRowButtons.isEmpty() && index == primaryButtons.first().index) {
+                                            Modifier.focusRequester(lastRowEntryFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
                                     .onFocusChanged { if (it.isFocused) focusedAction = button.action },
                             )
                         }
@@ -396,7 +406,13 @@ internal fun DetailsButtonBar(
                         .fillMaxWidth()
                         .onFocusChanged { iconRowFocused = it.hasFocus }
                         .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = IconRowFocusPadding, vertical = IconRowFocusPadding),
+                        // Снизу хватает меньшего запаса: увеличенная кнопка выступает всего на пару dp.
+                        .padding(
+                            start = IconRowFocusPadding,
+                            end = IconRowFocusPadding,
+                            top = IconRowFocusPadding,
+                            bottom = IconRowBottomFocusPadding,
+                        ),
                     horizontalArrangement = Arrangement.spacedBy(IconButtonSpacing),
                 ) {
                     secondRowButtons.forEach { (index, button) ->
@@ -407,6 +423,13 @@ internal fun DetailsButtonBar(
                             }
                             val focusModifier = bottomDown
                                 .focusRequester(focusRequesters[index])
+                                .then(
+                                    if (index == secondRowButtons.first().index) {
+                                        Modifier.focusRequester(lastRowEntryFocusRequester)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
                                 .onFocusChanged { if (it.isFocused) focusedAction = button.action }
                             if (button.action in LabeledActions) {
                                 DetailsLabeledChipButton(button = button, onClick = onClick, modifier = focusModifier)
@@ -416,17 +439,20 @@ internal fun DetailsButtonBar(
                         }
                     }
                 }
-                Text(
-                    text = iconCaption,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    // Высота держится и без подписи, чтобы ряд не прыгал при уходе фокуса.
-                    minLines = 1,
-                    modifier = Modifier.padding(start = IconRowFocusPadding),
-                )
+                // Строка подписи нужна только круглым иконкам: у одних пилюль её место было бы пустой дырой.
+                if (hasIconButtons) {
+                    Text(
+                        text = iconCaption,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        // Высота держится и без подписи, чтобы ряд не прыгал при уходе фокуса.
+                        minLines = 1,
+                        modifier = Modifier.padding(start = IconRowFocusPadding),
+                    )
+                }
             }
         }
     }
@@ -446,5 +472,6 @@ private val PrimaryButtonSpacing = 12.dp
 private val PrimaryToIconsSpacing = 10.dp
 private val IconButtonSpacing = 14.dp
 private val IconRowFocusPadding = 8.dp
+private val IconRowBottomFocusPadding = 4.dp
 private const val PrimaryFocusedScale = 1.04f
 private const val WatchWeight = 1.5f

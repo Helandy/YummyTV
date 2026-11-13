@@ -37,9 +37,9 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -56,6 +56,7 @@ import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
+import su.afk.yummy.tv.feature.details.details.utils.localTopOf
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
 @Composable
@@ -97,6 +98,7 @@ internal fun DetailsHero(
     onDirectorSelected: (Int) -> Unit,
     chipFocusModifier: @Composable (index: Int) -> Modifier,
     chipsEntryFocusRequester: FocusRequester?,
+    barLastRowFocusRequester: FocusRequester,
     hintFocusRequester: FocusRequester,
     onHintFocused: (Boolean) -> Unit,
     minHeight: Dp,
@@ -133,16 +135,19 @@ internal fun DetailsHero(
     val infoShiftPx = with(density) { HERO_APPEAR_SHIFT.toPx() }
 
     // Высота хиро — минимум: если контент (длинное название, чипы, подсказка) не влезает, хиро растёт, а не наезжает на описание.
-    var heroTop by remember { mutableFloatStateOf(0f) }
-    var descriptionTop by remember { mutableFloatStateOf(0f) }
+    // Позиции — в координатах самого хиро, а не экрана: при прокрутке ленты они не меняются. Экранные
+    // уходили в минус, когда верх описания скрывался за кромкой, и прокрутка к хвосту описания
+    // переключалась на весь хиро — лента качалась вверх-вниз. NaN — ещё не измерено.
+    val heroCoordinates = remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var descriptionTop by remember { mutableFloatStateOf(Float.NaN) }
     Box(
         modifier = modifier
-            .onGloballyPositioned { heroTop = it.positionInRoot().y }
+            // Родитель получает onGloballyPositioned раньше детей — к их колбэкам координаты хиро уже есть.
+            .onGloballyPositioned { heroCoordinates.value = it }
             // Фокус на описании поднимает ленту так, чтобы оно уместилось вместе с продолжением под постером;
             // для остального хиро (кнопки, чипы) подгоняется весь блок.
             .tvWholeItemBringIntoView(rectOverride = { localRect, size ->
-                val descriptionLocalTop = descriptionTop - heroTop
-                if (size != IntSize.Zero && descriptionTop > 0f && localRect.top >= descriptionLocalTop - 40f) {
+                if (size != IntSize.Zero && !descriptionTop.isNaN() && localRect.top >= descriptionTop - 40f) {
                     Rect(0f, localRect.top, size.width.toFloat(), size.height.toFloat())
                 } else {
                     null
@@ -171,14 +176,14 @@ internal fun DetailsHero(
         val descriptionStyle = MaterialTheme.typography.bodyLarge
         var descriptionExpanded by rememberSaveable { mutableStateOf(false) }
         var tailOverflows by remember { mutableStateOf(false) }
-        var posterBottom by remember { mutableFloatStateOf(0f) }
+        var posterBottom by remember { mutableFloatStateOf(Float.NaN) }
         var headSize by remember { mutableStateOf(IntSize.Zero) }
         val paddingPx = with(density) { DetailsDescriptionPadding.toPx() }
         // Описание «обтекает» постер: сколько строк влезает рядом с ним, столько в голове, остальное — под постером.
         val splitIndex = remember(description, descriptionStyle, headSize, posterBottom, descriptionTop) {
             val availableHeight = posterBottom - descriptionTop - 2 * paddingPx
             val textWidth = (headSize.width - 2 * paddingPx).toInt()
-            if (description.isEmpty() || textWidth <= 0 || availableHeight <= 0f) {
+            if (description.isEmpty() || textWidth <= 0 || availableHeight.isNaN() || availableHeight <= 0f) {
                 description.length
             } else {
                 val layout = textMeasurer.measure(
@@ -276,6 +281,7 @@ internal fun DetailsHero(
                         focusOnResume = focusOnResume,
                         firstFocusRequester = downFocusRequester,
                         bottomFocusRequester = chipsEntryFocusRequester,
+                        lastRowEntryFocusRequester = barLastRowFocusRequester,
                         onWatchSelected = onWatchSelected,
                         onLibraryToggle = onLibraryToggle,
                         onFavoriteToggle = onFavoriteToggle,
@@ -329,7 +335,9 @@ internal fun DetailsHero(
                             onToggle = { descriptionExpanded = !descriptionExpanded },
                             modifier = descriptionFocusModifier
                                 .onSizeChanged { headSize = it }
-                                .onGloballyPositioned { descriptionTop = it.positionInRoot().y },
+                                .onGloballyPositioned { coordinates ->
+                                    heroCoordinates.value?.let { descriptionTop = it.localTopOf(coordinates) }
+                                },
                         )
                     }
                 }
@@ -337,7 +345,11 @@ internal fun DetailsHero(
                 Column(
                     modifier = Modifier
                         .width(posterWidth)
-                        .onGloballyPositioned { posterBottom = it.positionInRoot().y + it.size.height }
+                        .onGloballyPositioned { coordinates ->
+                            heroCoordinates.value?.let {
+                                posterBottom = it.localTopOf(coordinates) + coordinates.size.height
+                            }
+                        }
                         .graphicsLayer { alpha = posterAlpha },
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
