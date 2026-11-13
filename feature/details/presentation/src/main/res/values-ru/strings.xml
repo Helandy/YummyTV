@@ -34,7 +34,7 @@
     <string name="details_loading_episodes">Загружаем серии…</string>
     <string name="details_continue_episode">Продолжить · Серия %1$s</string>
     <string name="details_mobile_add_library">В список</string>
-    <string name="details_add_favorite">Любимые</string>
+    <string name="details_add_favorite">Любимое</string>
         <string name="details_mobile_sections">Разделы</string>
         <string name="details_mobile_video_section">Видео</string>
         <string name="details_mobile_blogger_videos_hint">Мнения и разборы</string>

@@ -7,7 +7,7 @@
     <string name="library_history_error">Не удалось загрузить историю просмотров</string>
         <string name="library_mobile_title">Библиотека</string>
     <string name="library_tab_continue_watching">Продолжить</string>
-    <string name="library_tab_favorites">Любимые</string>
+    <string name="library_tab_favorites">Любимое</string>
     <string name="library_tab_watching">Смотрю</string>
     <string name="library_tab_planned">В планах</string>
     <string name="library_tab_completed">Просмотрено</string>
