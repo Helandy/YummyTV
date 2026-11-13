@@ -3,7 +3,7 @@ package su.afk.yummy.tv.core.mvi
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 abstract class CoroutineViewModel : ViewModel() {
@@ -15,7 +15,7 @@ abstract class CoroutineViewModel : ViewModel() {
     protected abstract fun onError(exception: Throwable)
 
     private val viewModelJob = SupervisorJob()
-    protected val viewModelScope = CoroutineScope(Main + viewModelJob + handler)
+    protected val viewModelScope = CoroutineScope(Dispatchers.Main.immediate + viewModelJob + handler)
 
     override fun onCleared() {
         super.onCleared()
