@@ -222,8 +222,7 @@ internal fun DetailsBody(
                                 ) {
                                     lastFocusTarget = null
                                 }
-                            }
-                            .tvWholeItemBringIntoView(),
+                            },
                         details = details,
                         hasScreenshots = hasScreenshots,
                         minHeight = heroHeight,
@@ -271,19 +270,16 @@ internal fun DetailsBody(
                         onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
                         chipFocusModifier = heroChipFocus,
                         chipsEntryFocusRequester = if (hasHeroChips) requesterFor("chips:0") else null,
-                        descriptionContent = { collapsedLines ->
-                            DetailsDescriptionSection(
-                                details = details,
-                                collapsedLines = collapsedLines,
-                                // Описание внутри хиро: как и чип, само разрешает себе фокус на время восстановления.
-                                descriptionFocusModifier = Modifier
-                                    .focusProperties {
-                                        canFocus = true
-                                        if (hasHeroChips) up = requesterFor("chips:$lastChipIndex")
-                                    }
-                                    .then(rowItemFocus("description")(-1)),
-                            )
-                        },
+                        // Описание внутри хиро: как и чип, само разрешает себе фокус на время восстановления.
+                        descriptionFocusModifier = Modifier
+                            .focusProperties {
+                                canFocus = true
+                                if (hasHeroChips) up = requesterFor("chips:$lastChipIndex")
+                            }
+                            .then(rowItemFocus("description")(-1)),
+                        descriptionTailFocusModifier = Modifier
+                            .focusProperties { canFocus = true }
+                            .then(rowItemFocus("description")(-2)),
                     )
                 }
                 if (hasScreenshots) {

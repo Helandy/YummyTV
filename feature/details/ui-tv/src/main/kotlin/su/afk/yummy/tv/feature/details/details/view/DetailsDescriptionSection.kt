@@ -8,47 +8,60 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
-import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.presentation.R
 
-/** Описание с раскрытием по OK. */
-@Composable
-internal fun DetailsDescriptionSection(
-    details: AnimeDetails,
-    modifier: Modifier = Modifier,
-    descriptionFocusModifier: Modifier = Modifier,
-    collapsedLines: Int = 4,
-) {
-    if (details.description.isBlank()) return
+internal val DetailsDescriptionPadding = 12.dp
 
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    var overflows by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(8.dp)
+/** Начало описания: стоит рядом с постером, по OK раскрывает остаток. */
+@Composable
+internal fun DetailsDescriptionHead(
+    text: String,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .then(descriptionFocusModifier)
-            .tvFocusableClick(onClick = { expanded = !expanded }, shape = shape, focusedScale = 1.01f)
-            .padding(12.dp),
+            .tvFocusableClick(onClick = onToggle, shape = RoundedCornerShape(8.dp), focusedScale = 1.01f)
+            .padding(DetailsDescriptionPadding),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+        )
+    }
+}
+
+/** Остаток описания на всю ширину под постером (тоже фокусируется и раскрывает по OK); свёрнутый обрезается, раскрытый тянет хиро вниз. */
+@Composable
+internal fun DetailsDescriptionTail(
+    text: String,
+    expanded: Boolean,
+    overflows: Boolean,
+    onOverflowChanged: (Boolean) -> Unit,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .tvFocusableClick(onClick = onToggle, shape = RoundedCornerShape(8.dp), focusedScale = 1.01f)
+            .padding(DetailsDescriptionPadding),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
-            text = details.description,
+            text = text,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-            maxLines = if (expanded) Int.MAX_VALUE else collapsedLines,
+            maxLines = if (expanded) Int.MAX_VALUE else DESCRIPTION_TAIL_COLLAPSED_LINES,
             overflow = TextOverflow.Ellipsis,
-            onTextLayout = { if (!expanded) overflows = it.hasVisualOverflow },
+            onTextLayout = { if (!expanded) onOverflowChanged(it.hasVisualOverflow) },
         )
         if (overflows || expanded) {
             Text(
@@ -61,3 +74,5 @@ internal fun DetailsDescriptionSection(
         }
     }
 }
+
+private const val DESCRIPTION_TAIL_COLLAPSED_LINES = 2

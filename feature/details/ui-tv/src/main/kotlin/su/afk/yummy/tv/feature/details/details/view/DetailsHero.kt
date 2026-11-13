@@ -22,7 +22,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,9 +34,16 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
@@ -91,7 +101,8 @@ internal fun DetailsHero(
     hintFocusRequester: FocusRequester,
     onHintFocused: (Boolean) -> Unit,
     minHeight: Dp,
-    descriptionContent: @Composable (collapsedLines: Int) -> Unit,
+    descriptionFocusModifier: Modifier,
+    descriptionTailFocusModifier: Modifier,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -121,8 +132,21 @@ internal fun DetailsHero(
     val infoShiftPx = with(density) { HERO_APPEAR_SHIFT.toPx() }
 
     // Высота хиро — минимум: если контент (длинное название, чипы, подсказка) не влезает, хиро растёт, а не наезжает на описание.
+    var heroTop by remember { mutableFloatStateOf(0f) }
+    var descriptionTop by remember { mutableFloatStateOf(0f) }
     Box(
         modifier = modifier
+            .onGloballyPositioned { heroTop = it.positionInRoot().y }
+            // Фокус на описании поднимает ленту так, чтобы оно уместилось вместе с продолжением под постером;
+            // для остального хиро (кнопки, чипы) подгоняется весь блок.
+            .tvWholeItemBringIntoView(rectOverride = { localRect, size ->
+                val descriptionLocalTop = descriptionTop - heroTop
+                if (size != IntSize.Zero && descriptionTop > 0f && localRect.top >= descriptionLocalTop - 40f) {
+                    Rect(0f, localRect.top, size.width.toFloat(), size.height.toFloat())
+                } else {
+                    null
+                }
+            })
             .fillMaxWidth()
             .heightIn(min = minHeight)
             .background(MaterialTheme.colorScheme.surface),
@@ -140,10 +164,43 @@ internal fun DetailsHero(
         val titleMaxLines = 3
         val posterWidth = if (isCompactHeight) HERO_POSTER_WIDTH_COMPACT else HERO_POSTER_WIDTH
 
-        Row(
+        val description = details.description.trim()
+        val textMeasurer = rememberTextMeasurer()
+        val descriptionStyle = MaterialTheme.typography.bodyLarge
+        var descriptionExpanded by rememberSaveable { mutableStateOf(false) }
+        var tailOverflows by remember { mutableStateOf(false) }
+        var posterBottom by remember { mutableFloatStateOf(0f) }
+        var headSize by remember { mutableStateOf(IntSize.Zero) }
+        val paddingPx = with(density) { DetailsDescriptionPadding.toPx() }
+        // Описание «обтекает» постер: сколько строк влезает рядом с ним, столько в голове, остальное — под постером.
+        val splitIndex = remember(description, descriptionStyle, headSize, posterBottom, descriptionTop) {
+            val availableHeight = posterBottom - descriptionTop - 2 * paddingPx
+            val textWidth = (headSize.width - 2 * paddingPx).toInt()
+            if (description.isEmpty() || textWidth <= 0 || availableHeight <= 0f) {
+                description.length
+            } else {
+                val layout = textMeasurer.measure(
+                    text = description,
+                    style = descriptionStyle,
+                    constraints = Constraints(maxWidth = textWidth),
+                )
+                val fitting = (0 until layout.lineCount).count { layout.getLineBottom(it) <= availableHeight }
+                when {
+                    fitting <= 0 || fitting >= layout.lineCount -> description.length
+                    else -> layout.getLineEnd(fitting - 1)
+                }
+            }
+        }
+        val descriptionHead = description.substring(0, splitIndex).trimEnd()
+        val descriptionTail = description.substring(splitIndex).trimStart()
+
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+        ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(rowSpacing),
             verticalAlignment = Alignment.Top,
         ) {
@@ -252,13 +309,22 @@ internal fun DetailsHero(
                     )
                 }
 
-                // Описание занимает свободное место под кнопками; по OK раскрывается и тянет хиро вниз.
-                descriptionContent(if (isCompactHeight) 3 else 6)
+                // Описание занимает свободное место под кнопками рядом с постером; по OK раскрывается.
+                if (descriptionHead.isNotEmpty()) {
+                    DetailsDescriptionHead(
+                        text = descriptionHead,
+                        onToggle = { descriptionExpanded = !descriptionExpanded },
+                        modifier = descriptionFocusModifier
+                            .onSizeChanged { headSize = it }
+                            .onGloballyPositioned { descriptionTop = it.positionInRoot().y },
+                    )
+                }
             }
 
             Column(
                 modifier = Modifier
                     .width(posterWidth)
+                    .onGloballyPositioned { posterBottom = it.positionInRoot().y + it.size.height }
                     .graphicsLayer { alpha = posterAlpha },
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -288,6 +354,17 @@ internal fun DetailsHero(
                     )
                 }
             }
+        }
+        if (descriptionTail.isNotEmpty()) {
+            DetailsDescriptionTail(
+                text = descriptionTail,
+                expanded = descriptionExpanded,
+                overflows = tailOverflows,
+                onOverflowChanged = { tailOverflows = it },
+                onToggle = { descriptionExpanded = !descriptionExpanded },
+                modifier = descriptionTailFocusModifier,
+            )
+        }
         }
     }
 }

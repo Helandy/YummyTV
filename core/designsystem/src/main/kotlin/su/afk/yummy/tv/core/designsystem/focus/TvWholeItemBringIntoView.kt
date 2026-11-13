@@ -24,13 +24,20 @@ import androidx.compose.ui.unit.IntSize
  *   карточка уезжает за кромку. Параллельный запрос на ячейку не помогает — `ContentInViewNode`
  *   снимает запрос кнопки, только когда она сама дошла до пивота, и доскролливает.
  *
+ * [rectOverride] — вернуть свой прямоугольник вместо всей ячейки (null — обычное поведение), например
+ * чтобы по фокусу на описании внутри высокого хиро показать его вместе с продолжением.
+ *
  * [gridStart] — только для первого ряда: прямоугольник расширяется вверх до начала контента, и
  * вместе с рядом видна шапка грида («Коллекции», «N серий» и т.п.) и её фокусируемые элементы.
  */
 @OptIn(ExperimentalFoundationApi::class)
-fun Modifier.tvWholeItemBringIntoView(gridStart: TvGridStartExtent? = null): Modifier = composed {
+fun Modifier.tvWholeItemBringIntoView(
+    gridStart: TvGridStartExtent? = null,
+    rectOverride: ((localRect: Rect, size: IntSize) -> Rect?)? = null,
+): Modifier = composed {
     val responder = remember { WholeItemBringIntoViewResponder() }
     responder.gridStart = gridStart
+    responder.rectOverride = rectOverride
     onSizeChanged { responder.size = it }.bringIntoViewResponder(responder)
 }
 
@@ -38,8 +45,10 @@ fun Modifier.tvWholeItemBringIntoView(gridStart: TvGridStartExtent? = null): Mod
 private class WholeItemBringIntoViewResponder : BringIntoViewResponder {
     var size: IntSize = IntSize.Zero
     var gridStart: TvGridStartExtent? = null
+    var rectOverride: ((Rect, IntSize) -> Rect?)? = null
 
     override fun calculateRectForParent(localRect: Rect): Rect {
+        rectOverride?.invoke(localRect, size)?.let { return it }
         val itemRect = if (size == IntSize.Zero) {
             localRect
         } else {
