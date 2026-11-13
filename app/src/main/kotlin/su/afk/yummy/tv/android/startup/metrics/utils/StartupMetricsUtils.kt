@@ -1,10 +1,10 @@
-package su.afk.yummy.tv.android.startup.utils
+package su.afk.yummy.tv.android.startup.metrics.utils
 
 import android.app.ActivityManager
 import android.app.ApplicationStartInfo
 import android.content.Intent
 import android.os.Build
-import su.afk.yummy.tv.android.startup.model.StartupEntry
+import su.afk.yummy.tv.android.startup.metrics.model.StartupEntry
 import kotlin.math.ceil
 
 /**

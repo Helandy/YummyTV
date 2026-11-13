@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.widget
+package su.afk.yummy.tv.android.widget.utils
 
 import android.content.Context
 import su.afk.yummy.tv.R

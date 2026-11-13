@@ -1,7 +1,7 @@
-package su.afk.yummy.tv.android.startup
+package su.afk.yummy.tv.android.startup.metrics
 
-import su.afk.yummy.tv.android.startup.model.StartupMetrics
-import su.afk.yummy.tv.android.startup.utils.toStartupDurationBucket
+import su.afk.yummy.tv.android.startup.metrics.model.StartupMetrics
+import su.afk.yummy.tv.android.startup.metrics.utils.toStartupDurationBucket
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import javax.inject.Inject

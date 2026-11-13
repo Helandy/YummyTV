@@ -9,7 +9,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
  * heartbeat, пока приложение видимо пользователю.
  *
  * [ProcessLifecycleOwner] не подписывает наблюдателей сам — [start] нужно вызвать явно один раз
- * при старте процесса (см. `YummyTvApplication.onCreate`).
+ * при старте процесса (см. `AppStartupRunner` в :app).
  */
 abstract class ProcessLifecycleCoordinator : DefaultLifecycleObserver {
 

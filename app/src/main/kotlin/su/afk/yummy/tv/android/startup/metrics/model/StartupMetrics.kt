@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.startup.model
+package su.afk.yummy.tv.android.startup.metrics.model
 
 /**
  * Замер одного холодного старта. Все длительности отсчитываются от старта процесса.

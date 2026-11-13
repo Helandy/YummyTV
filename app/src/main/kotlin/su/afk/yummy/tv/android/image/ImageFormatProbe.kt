@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.startup
+package su.afk.yummy.tv.android.image
 
 import android.content.Context
 import android.graphics.Bitmap

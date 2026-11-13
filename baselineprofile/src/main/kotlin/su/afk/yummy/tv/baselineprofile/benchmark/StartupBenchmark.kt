@@ -29,7 +29,7 @@ class StartupBenchmark(
     fun startup() = rule.measureRepeated(
         packageName = targetPackageName,
         // StartupTimingMetric даёт и timeToFullDisplayMs — главная зовёт reportFullyDrawn;
-        // App.* — шаги Application.onCreate, см. YummyTvApplication
+        // App.* — шаги Application.onCreate, см. AppStartupRunner
         metrics = listOf(
             StartupTimingMetric(),
             TraceSectionMetric("App.%", TraceSectionMetric.Mode.Sum),

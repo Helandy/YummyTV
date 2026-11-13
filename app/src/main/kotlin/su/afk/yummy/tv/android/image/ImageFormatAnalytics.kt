@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.startup
+package su.afk.yummy.tv.android.image
 
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf

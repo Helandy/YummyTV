@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.startup
+package su.afk.yummy.tv.android.image
 
 import coil3.network.CacheStrategy
 import coil3.network.NetworkHeaders

@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.startup
+package su.afk.yummy.tv.android.startup.metrics
 
 import android.app.Activity
 import android.app.ActivityManager
@@ -17,15 +17,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.android.InterfaceRouterActivity
 import su.afk.yummy.tv.android.MobileActivity
 import su.afk.yummy.tv.android.TvActivity
-import su.afk.yummy.tv.android.startup.model.StartupEntry
-import su.afk.yummy.tv.android.startup.model.StartupMetrics
-import su.afk.yummy.tv.android.startup.model.StartupUi
-import su.afk.yummy.tv.android.startup.utils.isProcessStartedInForeground
-import su.afk.yummy.tv.android.startup.utils.lastProcessStartInfo
-import su.afk.yummy.tv.android.startup.utils.startReasonName
-import su.afk.yummy.tv.android.startup.utils.startTypeName
-import su.afk.yummy.tv.android.startup.utils.toStartupEntry
-import su.afk.yummy.tv.android.startup.utils.totalRamGb
+import su.afk.yummy.tv.android.startup.metrics.model.StartupEntry
+import su.afk.yummy.tv.android.startup.metrics.model.StartupMetrics
+import su.afk.yummy.tv.android.startup.metrics.model.StartupUi
+import su.afk.yummy.tv.android.startup.metrics.utils.isProcessStartedInForeground
+import su.afk.yummy.tv.android.startup.metrics.utils.lastProcessStartInfo
+import su.afk.yummy.tv.android.startup.metrics.utils.startReasonName
+import su.afk.yummy.tv.android.startup.metrics.utils.startTypeName
+import su.afk.yummy.tv.android.startup.metrics.utils.toStartupEntry
+import su.afk.yummy.tv.android.startup.metrics.utils.totalRamGb
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import javax.inject.Inject
 import javax.inject.Singleton

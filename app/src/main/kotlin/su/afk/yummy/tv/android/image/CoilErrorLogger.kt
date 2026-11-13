@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.startup
+package su.afk.yummy.tv.android.image
 
 import android.util.Log
 import coil3.util.Logger

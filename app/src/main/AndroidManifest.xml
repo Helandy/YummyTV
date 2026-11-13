@@ -30,7 +30,7 @@
     </queries>
 
     <application
-        android:name=".android.di.YummyTvApplication"
+        android:name=".android.YummyTvApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

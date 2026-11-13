@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.android.widget
+package su.afk.yummy.tv.android.widget.model
 
 import android.graphics.Bitmap
 

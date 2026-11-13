@@ -1,9 +1,11 @@
-package su.afk.yummy.tv.android.outbox
+package su.afk.yummy.tv.android.outbox.di
 
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
+import su.afk.yummy.tv.android.outbox.PendingMutationFlushRunner
 import su.afk.yummy.tv.core.model.mutation.PendingMutationFlusher
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
 import javax.inject.Singleton

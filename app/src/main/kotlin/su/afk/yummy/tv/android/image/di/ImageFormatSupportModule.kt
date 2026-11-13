@@ -1,10 +1,10 @@
-package su.afk.yummy.tv.android.di
+package su.afk.yummy.tv.android.image.di
 
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import su.afk.yummy.tv.android.startup.ImageFormatProbe
+import su.afk.yummy.tv.android.image.ImageFormatProbe
 import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 
 /** Проба форматов живёт в app (там libavif), а потребляется фичами через интерфейс из core:model. */

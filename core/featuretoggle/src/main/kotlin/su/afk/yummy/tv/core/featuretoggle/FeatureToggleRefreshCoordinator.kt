@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 /**
  * [FeatureToggleInitializer.initialize] запускает SDK один раз при холодном старте (см.
- * `YummyTvApplication.setupFeatureToggles`); этот класс дополнительно дёргает лёгкий
+ * `RemoteConfigInitializer` в :app); этот класс дополнительно дёргает лёгкий
  * [FeatureToggleInitializer.refresh] при каждом возврате приложения на передний план, чтобы
  * A/B-эксперименты и флаги не протухали, пока пользователь долго держит приложение в фоне.
  */
