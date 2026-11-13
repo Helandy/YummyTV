@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -428,6 +429,32 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(EVENT_HOME_BLOCKS_RESET)
     }
 
+    /** Пользователь открыл экран настройки блоков деталей. */
+    fun eventDetailsSectionsScreenOpened() {
+        tracker.track(EVENT_DETAILS_SECTIONS_SCREEN_OPENED)
+    }
+
+    /** Пользователь включил или выключил блок деталей. Параметры: block. */
+    fun eventDetailsSectionToggled(section: DetailsSectionKind) {
+        tracker.track(EVENT_DETAILS_SECTION_TOGGLED, analyticsParamsOf(PARAM_BLOCK to section.name.lowercase()))
+    }
+
+    /** Пользователь изменил порядок блоков деталей. Параметры: block, direction. */
+    fun eventDetailsSectionMoved(section: DetailsSectionKind, direction: DetailsButtonMoveDirection) {
+        tracker.track(
+            EVENT_DETAILS_SECTION_MOVED,
+            analyticsParamsOf(
+                PARAM_BLOCK to section.name.lowercase(),
+                PARAM_DIRECTION to direction.name.lowercase(),
+            ),
+        )
+    }
+
+    /** Пользователь сбросил блоки деталей. */
+    fun eventDetailsSectionsReset() {
+        tracker.track(EVENT_DETAILS_SECTIONS_RESET)
+    }
+
     /**
      * Пользователь сбросил порядок вкладок библиотеки.
      */
@@ -498,6 +525,10 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_HOME_BLOCK_TOGGLED = "settings_home_block_toggled"
         const val EVENT_HOME_BLOCK_MOVED = "settings_home_block_moved"
         const val EVENT_HOME_BLOCKS_RESET = "settings_home_blocks_reset"
+        const val EVENT_DETAILS_SECTIONS_SCREEN_OPENED = "settings_details_sections_screen"
+        const val EVENT_DETAILS_SECTION_TOGGLED = "settings_details_section_toggled"
+        const val EVENT_DETAILS_SECTION_MOVED = "settings_details_section_moved"
+        const val EVENT_DETAILS_SECTIONS_RESET = "settings_details_sections_reset"
         const val EVENT_LIBRARY_TAB_ORDER_RESET = "settings_library_tab_order_reset"
         const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"
         const val EVENT_INTERFACE_MODE_SELECTED = "settings_interface_mode_selected"

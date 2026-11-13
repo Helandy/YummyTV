@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -21,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.mobile.details.model.DetailsLink
 
-/** Крупная плоская кнопка без шеврона, чтобы боковые отступы были симметричны: «Показать комментарии» на всю ширину; сама учитывает системную навигацию внизу. */
+/** Крупная плоская кнопка без шеврона, чтобы боковые отступы были симметричны: «Показать комментарии» на всю ширину. */
 @Composable
 internal fun DetailsCommentsBar(
     link: DetailsLink,
@@ -31,8 +30,7 @@ internal fun DetailsCommentsBar(
         onClick = link.onClick,
         modifier = modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            .padding(horizontal = 16.dp)
             .testTag(link.testTag),
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.primaryContainer,

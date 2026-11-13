@@ -47,6 +47,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
@@ -166,9 +167,14 @@ internal fun DetailsBody(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     val ratingOverview = state.ratingOverview
-    val hasHeroChips = details.genres.any { it.id != null && it.title.isNotBlank() } ||
-        details.studios.any { it.id != null && it.title.isNotBlank() } ||
-        details.creators.any { it.id != null && it.title.isNotBlank() }
+    // Студии/жанры и описание на ТВ живут в хиро: настройка блоков их только скрывает.
+    val showHeroChips = DetailsSectionKind.INFO in state.sections
+    val showHeroDescription = DetailsSectionKind.DESCRIPTION in state.sections
+    val hasHeroChips = showHeroChips && (
+        details.genres.any { it.id != null && it.title.isNotBlank() } ||
+            details.studios.any { it.id != null && it.title.isNotBlank() } ||
+            details.creators.any { it.id != null && it.title.isNotBlank() }
+        )
     val hasScreenshots = state.screenshots.isNotEmpty()
     val hasUniverse = details.viewingOrder.size > 1
     val hasBloggerVideos = details.bloggerVideosCount > 0
@@ -280,91 +286,115 @@ internal fun DetailsBody(
                         descriptionTailFocusModifier = Modifier
                             .focusProperties { canFocus = true }
                             .then(rowItemFocus("description")(-2)),
+                        showChips = showHeroChips,
+                        showDescription = showHeroDescription,
                     )
                 }
-                if (hasScreenshots) {
-                    item(key = "screenshots") {
-                        DetailsScreenshotsRow(
-                            screenshots = state.screenshots,
-                            onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
-                            modifier = Modifier.tvWholeItemBringIntoView(),
-                            itemFocusModifier = rowItemFocus("screenshots"),
-                        )
+                state.sections.forEach { section ->
+                    when (section) {
+                        // Показываются внутри хиро выше.
+                        DetailsSectionKind.INFO, DetailsSectionKind.DESCRIPTION -> Unit
+                        DetailsSectionKind.SCREENSHOTS -> {
+                            if (hasScreenshots) {
+                                item(key = "screenshots") {
+                                    DetailsScreenshotsRow(
+                                        screenshots = state.screenshots,
+                                        onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
+                                        modifier = Modifier.tvWholeItemBringIntoView(),
+                                        itemFocusModifier = rowItemFocus("screenshots"),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.VIDEO -> {
+                            if (state.trailers.isNotEmpty() || hasBloggerVideos) {
+                                item(key = "video") {
+                                    DetailsVideoSection(
+                                        trailers = state.trailers,
+                                        bloggerVideosImageModels = details.poster.posterUrls(),
+                                        hasBloggerVideos = hasBloggerVideos,
+                                        onTrailersClick = onTrailersSelected,
+                                        onBloggerVideosClick = onBloggerVideosSelected,
+                                        modifier = Modifier.tvWholeItemBringIntoView(),
+                                        itemFocusModifier = rowItemFocus("video"),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.RATING -> {
+                            // Пока extras грузятся, секции нет, чтобы лента не прыгала; после — есть всегда, даже без оценок.
+                            if (!state.isExtrasLoading || ratingOverview != null) {
+                                item(key = "rating") {
+                                    DetailsRatingOverviewSection(
+                                        overview = ratingOverview,
+                                        userRating = userRating,
+                                        onClick = onRatingScreenSelected,
+                                        modifier = Modifier.sectionFocus("rating").tvWholeItemBringIntoView(),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.UNIVERSE -> {
+                            if (hasUniverse) {
+                                item(key = "universe") {
+                                    DetailsUniverseRow(
+                                        items = details.viewingOrder,
+                                        currentAnimeId = details.id,
+                                        onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
+                                        onShowAllClick = onViewingOrderSelected,
+                                        modifier = Modifier.tvWholeItemBringIntoView(),
+                                        itemFocusModifier = rowItemFocus("universe"),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.SIMILAR -> {
+                            item(key = "similar") {
+                                DetailsLinkRow(
+                                    label = stringResource(R.string.details_mobile_recommended_title),
+                                    icon = Icons.Filled.AutoAwesome,
+                                    onClick = onSimilarSelected,
+                                    modifier = Modifier.sectionFocus("similar").tvWholeItemBringIntoView(),
+                                )
+                            }
+                        }
+                        DetailsSectionKind.COLLECTIONS -> {
+                            if (state.collections.isNotEmpty()) {
+                                item(key = "collections") {
+                                    DetailsCollectionsRow(
+                                        collections = state.collections,
+                                        onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
+                                        onShowAllClick = onCollectionsSelected,
+                                        modifier = Modifier.tvWholeItemBringIntoView(),
+                                        itemFocusModifier = rowItemFocus("collections"),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.REVIEWS -> {
+                            if (details.reviewsCount > 0) {
+                                item(key = "reviews") {
+                                    DetailsLinkRow(
+                                        label = stringResource(R.string.details_reviews),
+                                        icon = Icons.Filled.RateReview,
+                                        badge = details.reviewsCount.toCompactCount(),
+                                        onClick = onReviewsSelected,
+                                        modifier = Modifier.sectionFocus("reviews").tvWholeItemBringIntoView(),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.COMMENTS -> {
+                            item(key = "comments") {
+                                DetailsCommentsRow(
+                                    commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
+                                    onCommentsClick = onCommentsSelected,
+                                    onSearchClick = { onEvent(DetailsState.Event.NewSearchSelected) },
+                                    modifier = Modifier.sectionFocus("comments").tvWholeItemBringIntoView(),
+                                )
+                            }
+                        }
                     }
-                }
-                if (state.trailers.isNotEmpty() || hasBloggerVideos) {
-                    item(key = "video") {
-                        DetailsVideoSection(
-                            trailers = state.trailers,
-                            bloggerVideosImageModels = details.poster.posterUrls(),
-                            hasBloggerVideos = hasBloggerVideos,
-                            onTrailersClick = onTrailersSelected,
-                            onBloggerVideosClick = onBloggerVideosSelected,
-                            modifier = Modifier.tvWholeItemBringIntoView(),
-                            itemFocusModifier = rowItemFocus("video"),
-                        )
-                    }
-                }
-                // Пока extras грузятся, секции нет, чтобы лента не прыгала; после — есть всегда, даже без оценок.
-                if (!state.isExtrasLoading || ratingOverview != null) {
-                    item(key = "rating") {
-                        DetailsRatingOverviewSection(
-                            overview = ratingOverview,
-                            userRating = userRating,
-                            onClick = onRatingScreenSelected,
-                            modifier = Modifier.sectionFocus("rating").tvWholeItemBringIntoView(),
-                        )
-                    }
-                }
-                if (hasUniverse) {
-                    item(key = "universe") {
-                        DetailsUniverseRow(
-                            items = details.viewingOrder,
-                            currentAnimeId = details.id,
-                            onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
-                            onShowAllClick = onViewingOrderSelected,
-                            modifier = Modifier.tvWholeItemBringIntoView(),
-                            itemFocusModifier = rowItemFocus("universe"),
-                        )
-                    }
-                }
-                item(key = "similar") {
-                    DetailsLinkRow(
-                        label = stringResource(R.string.details_mobile_recommended_title),
-                        icon = Icons.Filled.AutoAwesome,
-                        onClick = onSimilarSelected,
-                        modifier = Modifier.sectionFocus("similar").tvWholeItemBringIntoView(),
-                    )
-                }
-                if (state.collections.isNotEmpty()) {
-                    item(key = "collections") {
-                        DetailsCollectionsRow(
-                            collections = state.collections,
-                            onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
-                            onShowAllClick = onCollectionsSelected,
-                            modifier = Modifier.tvWholeItemBringIntoView(),
-                            itemFocusModifier = rowItemFocus("collections"),
-                        )
-                    }
-                }
-                if (details.reviewsCount > 0) {
-                    item(key = "reviews") {
-                        DetailsLinkRow(
-                            label = stringResource(R.string.details_reviews),
-                            icon = Icons.Filled.RateReview,
-                            badge = details.reviewsCount.toCompactCount(),
-                            onClick = onReviewsSelected,
-                            modifier = Modifier.sectionFocus("reviews").tvWholeItemBringIntoView(),
-                        )
-                    }
-                }
-                item(key = "comments") {
-                    DetailsCommentsRow(
-                        commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
-                        onCommentsClick = onCommentsSelected,
-                        onSearchClick = { onEvent(DetailsState.Event.NewSearchSelected) },
-                        modifier = Modifier.sectionFocus("comments").tvWholeItemBringIntoView(),
-                    )
                 }
             }
         }

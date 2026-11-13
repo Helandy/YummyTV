@@ -77,6 +77,7 @@ internal object SettingsPreferenceKeys {
     val subtitleEdgeKey = stringPreferencesKey("subtitle_edge")
     val libraryTabOrderKey = stringPreferencesKey("library_tab_order")
     val homeBlocksKey = stringPreferencesKey("home_blocks")
+    val detailsSectionsKey = stringPreferencesKey("details_sections")
     val hiddenRecommendationIdsKey = stringSetPreferencesKey("hidden_recommendation_ids")
     val appThemeKey = stringPreferencesKey("app_theme")
     val backgroundStyleKey = stringPreferencesKey("background_style")

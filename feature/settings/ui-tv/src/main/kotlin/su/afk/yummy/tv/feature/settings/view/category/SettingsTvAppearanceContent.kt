@@ -122,10 +122,13 @@ internal fun SettingsTvAppearanceContent(
         onSelected = { onEvent(SettingsState.Event.LibraryContinueWatchingCardSizeSelected(it)) },
         firstChoiceModifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
-    SettingsDivider()
+    SettingsBlockGap()
+    SettingsSectionTitle(text = stringResource(R.string.settings_section_sections_order))
     pickerRow(SettingsTvPicker.LIBRARY_TAB_ORDER, Modifier)
     SettingsDivider()
     pickerRow(SettingsTvPicker.HOME_BLOCKS, Modifier)
+    SettingsDivider()
+    pickerRow(SettingsTvPicker.DETAILS_SECTIONS, Modifier)
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_section_new_episodes))
     ToggleRow(

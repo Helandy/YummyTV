@@ -12,17 +12,4 @@ internal fun List<HomeBlockConfig>.toggledHomeBlock(block: HomeBlockKind): List<
 internal fun List<HomeBlockConfig>.movedHomeBlock(
     block: HomeBlockKind,
     direction: DetailsButtonMoveDirection,
-): List<HomeBlockConfig> {
-    val index = indexOfFirst { it.kind == block }
-    if (index == -1) return this
-    val targetIndex = when (direction) {
-        DetailsButtonMoveDirection.UP -> index - 1
-        DetailsButtonMoveDirection.DOWN -> index + 1
-    }
-    if (targetIndex !in indices) return this
-    return toMutableList().apply {
-        val moved = this[index]
-        this[index] = this[targetIndex]
-        this[targetIndex] = moved
-    }
-}
+): List<HomeBlockConfig> = swappedWithNeighbor(indexOfFirst { it.kind == block }, direction)

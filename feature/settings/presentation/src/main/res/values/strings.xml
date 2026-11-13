@@ -347,6 +347,20 @@
     <string name="settings_home_block_collections">Collections</string>
     <string name="settings_home_block_blogger_videos">From bloggers</string>
     <string name="settings_home_block_quick_actions">More</string>
+    <string name="settings_details_sections_title">Details sections</string>
+    <string name="settings_details_sections_hint">Show, hide and reorder sections on the anime page</string>
+    <string name="settings_details_section_info">Studios and genres</string>
+    <string name="settings_details_section_description">Description</string>
+    <string name="settings_section_sections_order">Section order</string>
+    <string name="settings_details_sections_tv_note">On TV, description and genres stay in the header: they can only be hidden there</string>
+    <string name="settings_details_section_screenshots">Screenshots</string>
+    <string name="settings_details_section_video">Videos</string>
+    <string name="settings_details_section_rating">Ratings</string>
+    <string name="settings_details_section_universe">Universe</string>
+    <string name="settings_details_section_similar">Similar</string>
+    <string name="settings_details_section_collections">Collections</string>
+    <string name="settings_details_section_reviews">Reviews</string>
+    <string name="settings_details_section_comments">Comments</string>
 
     <string name="settings_onboarding_reset">Show hints again</string>
     <string name="settings_onboarding_reset_hint">Welcome slides, screen tips and player tutorials will be shown again</string>

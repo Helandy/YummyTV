@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.settings.DetailsSectionConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -21,6 +22,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTrans
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsSectionsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBlocksKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
@@ -139,6 +141,14 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setHomeBlocks(blocks: List<HomeBlockConfig>) {
         store.edit { prefs -> prefs[homeBlocksKey] = blocks.toHomeBlocksPreference() }
+    }
+
+    override val detailsSections: Flow<List<DetailsSectionConfig>> = store.data.map { prefs ->
+        prefs[detailsSectionsKey].toDetailsSections()
+    }
+
+    override suspend fun setDetailsSections(sections: List<DetailsSectionConfig>) {
+        store.edit { prefs -> prefs[detailsSectionsKey] = sections.toDetailsSectionsPreference() }
     }
 
     override suspend fun setLibraryTabOrder(order: List<LibraryTabKind>) {

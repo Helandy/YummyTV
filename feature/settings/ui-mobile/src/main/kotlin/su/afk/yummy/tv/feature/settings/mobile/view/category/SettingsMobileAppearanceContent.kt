@@ -124,6 +124,8 @@ internal fun SettingsMobileAppearanceContent(
                 selected = state.libraryContinueWatchingCardSize,
                 onSelected = { onEvent(SettingsState.Event.LibraryContinueWatchingCardSizeSelected(it)) },
             )
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_section_sections_order)) {
             SettingsMobileNavigationRow(
                 label = stringResource(R.string.settings_library_tabs_order),
                 hint = stringResource(R.string.settings_library_tabs_order_hint),
@@ -133,6 +135,11 @@ internal fun SettingsMobileAppearanceContent(
                 label = stringResource(R.string.settings_home_blocks_title),
                 hint = stringResource(R.string.settings_home_blocks_hint),
                 onClick = { onEvent(SettingsState.Event.HomeBlocksSelected) },
+            )
+            SettingsMobileNavigationRow(
+                label = stringResource(R.string.settings_details_sections_title),
+                hint = stringResource(R.string.settings_details_sections_hint),
+                onClick = { onEvent(SettingsState.Event.DetailsSectionsSelected) },
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_section_new_episodes)) {

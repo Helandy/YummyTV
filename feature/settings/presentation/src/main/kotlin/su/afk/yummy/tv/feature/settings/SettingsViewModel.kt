@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
+import su.afk.yummy.tv.core.model.settings.DetailsSectionConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.TorrServerChecker
@@ -39,10 +40,13 @@ import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.model.TorrServerCheckStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsSectionsDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsHomeBlocksDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
+import su.afk.yummy.tv.feature.settings.utils.movedDetailsSection
 import su.afk.yummy.tv.feature.settings.utils.movedHomeBlock
+import su.afk.yummy.tv.feature.settings.utils.toggledDetailsSection
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
 import su.afk.yummy.tv.feature.settings.utils.toggledHomeBlock
 import java.util.Optional
@@ -99,6 +103,7 @@ class SettingsViewModel @Inject internal constructor(
                             it.kind == HomeBlockKind.MY_NEW_EPISODES && it.enabled
                         },
                         homeBlocks = snapshot.homeBlocks.toImmutableList(),
+                        detailsSections = snapshot.detailsSections.toImmutableList(),
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         accountShortcutsExpanded = snapshot.accountShortcutsExpanded,
                         seasonalTheme = seasonalThemeAt(System.currentTimeMillis()),
@@ -555,6 +560,31 @@ class SettingsViewModel @Inject internal constructor(
             SettingsState.Event.HomeBlocksReset -> viewModelScope.launch {
                 analytics.eventHomeBlocksReset()
                 settingsStore.setHomeBlocks(HomeBlockConfig.default)
+            }
+
+            is SettingsState.Event.DetailsSectionToggled -> viewModelScope.launch {
+                analytics.eventDetailsSectionToggled(event.section)
+                settingsStore.setDetailsSections(currentState.detailsSections.toggledDetailsSection(event.section))
+            }
+
+            is SettingsState.Event.DetailsSectionMoved -> viewModelScope.launch {
+                analytics.eventDetailsSectionMoved(event.section, event.direction)
+                settingsStore.setDetailsSections(
+                    currentState.detailsSections.movedDetailsSection(event.section, event.direction),
+                )
+            }
+
+            SettingsState.Event.DetailsSectionsScreenOpened -> {
+                analytics.eventDetailsSectionsScreenOpened()
+            }
+
+            SettingsState.Event.DetailsSectionsSelected -> {
+                nav.navigate(SettingsDetailsSectionsDestination)
+            }
+
+            SettingsState.Event.DetailsSectionsReset -> viewModelScope.launch {
+                analytics.eventDetailsSectionsReset()
+                settingsStore.setDetailsSections(DetailsSectionConfig.default)
             }
 
             SettingsState.Event.LibraryTabOrderSelected -> {

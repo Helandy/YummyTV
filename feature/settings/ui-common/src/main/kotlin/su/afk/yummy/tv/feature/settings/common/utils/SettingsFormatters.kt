@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -388,6 +389,22 @@ fun HomeBlockKind.label(): String = stringResource(
         HomeBlockKind.COLLECTIONS -> R.string.settings_home_block_collections
         HomeBlockKind.BLOGGER_VIDEOS -> R.string.settings_home_block_blogger_videos
         HomeBlockKind.QUICK_ACTIONS -> R.string.settings_home_block_quick_actions
+    },
+)
+
+@Composable
+fun DetailsSectionKind.label(): String = stringResource(
+    when (this) {
+        DetailsSectionKind.INFO -> R.string.settings_details_section_info
+        DetailsSectionKind.DESCRIPTION -> R.string.settings_details_section_description
+        DetailsSectionKind.SCREENSHOTS -> R.string.settings_details_section_screenshots
+        DetailsSectionKind.VIDEO -> R.string.settings_details_section_video
+        DetailsSectionKind.RATING -> R.string.settings_details_section_rating
+        DetailsSectionKind.UNIVERSE -> R.string.settings_details_section_universe
+        DetailsSectionKind.SIMILAR -> R.string.settings_details_section_similar
+        DetailsSectionKind.COLLECTIONS -> R.string.settings_details_section_collections
+        DetailsSectionKind.REVIEWS -> R.string.settings_details_section_reviews
+        DetailsSectionKind.COMMENTS -> R.string.settings_details_section_comments
     },
 )
 

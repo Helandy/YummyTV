@@ -103,6 +103,8 @@ internal fun DetailsHero(
     minHeight: Dp,
     descriptionFocusModifier: Modifier,
     descriptionTailFocusModifier: Modifier,
+    showChips: Boolean = true,
+    showDescription: Boolean = true,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -164,7 +166,7 @@ internal fun DetailsHero(
         val titleMaxLines = 3
         val posterWidth = if (isCompactHeight) HERO_POSTER_WIDTH_COMPACT else HERO_POSTER_WIDTH
 
-        val description = details.description.trim()
+        val description = if (showDescription) details.description.trim() else ""
         val textMeasurer = rememberTextMeasurer()
         val descriptionStyle = MaterialTheme.typography.bodyLarge
         var descriptionExpanded by rememberSaveable { mutableStateOf(false) }
@@ -283,22 +285,24 @@ internal fun DetailsHero(
                     modifier = Modifier.padding(top = 8.dp),
                 )
 
-                HeroChipsRow(
-                    details = details,
-                    onGenreSelected = onGenreSelected,
-                    onStudioSelected = onStudioSelected,
-                    onDirectorSelected = onDirectorSelected,
-                    // Кнопка подсказки стоит справа, а чип слева: поиск фокуса вниз по геометрии её не находит.
-                    chipFocusModifier = { index ->
-                        chipFocusModifier(index).then(
-                            if (showSectionsHint) {
-                                Modifier.focusProperties { down = hintFocusRequester }
-                            } else {
-                                Modifier
-                            },
-                        )
-                    },
-                )
+                if (showChips) {
+                    HeroChipsRow(
+                        details = details,
+                        onGenreSelected = onGenreSelected,
+                        onStudioSelected = onStudioSelected,
+                        onDirectorSelected = onDirectorSelected,
+                        // Кнопка подсказки стоит справа, а чип слева: поиск фокуса вниз по геометрии её не находит.
+                        chipFocusModifier = { index ->
+                            chipFocusModifier(index).then(
+                                if (showSectionsHint) {
+                                    Modifier.focusProperties { down = hintFocusRequester }
+                                } else {
+                                    Modifier
+                                },
+                            )
+                        },
+                    )
+                }
 
                 if (showSectionsHint) {
                     DetailsSectionsHint(

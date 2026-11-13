@@ -11,6 +11,8 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.DetailsSectionConfig
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
@@ -101,6 +103,7 @@ class SettingsState {
         val libraryTabOrder: ImmutableList<LibraryTabKind> =
             SettingsStore.defaultLibraryTabOrder.toImmutableList(),
         val homeBlocks: ImmutableList<HomeBlockConfig> = HomeBlockConfig.default.toImmutableList(),
+        val detailsSections: ImmutableList<DetailsSectionConfig> = DetailsSectionConfig.default.toImmutableList(),
         val videoExportDirectoryName: String? = null,
         val cacheStorageEntries: ImmutableList<CacheStorageEntry> = persistentListOf(),
         val cacheStorageTotalBytes: Long = 0L,
@@ -316,6 +319,24 @@ class SettingsState {
 
         /** Пользователь сбросил блоки главной к стандартным. */
         data object HomeBlocksReset : Event
+
+        /** Пользователь включил или выключил блок экрана деталей. */
+        data class DetailsSectionToggled(val section: DetailsSectionKind) : Event
+
+        /** Пользователь переместил блок экрана деталей в указанном направлении. */
+        data class DetailsSectionMoved(
+            val section: DetailsSectionKind,
+            val direction: DetailsButtonMoveDirection,
+        ) : Event
+
+        /** Пользователь открыл экран настройки блоков деталей. */
+        data object DetailsSectionsScreenOpened : Event
+
+        /** Пользователь перешёл к настройке блоков деталей. */
+        data object DetailsSectionsSelected : Event
+
+        /** Пользователь сбросил блоки деталей к стандартным. */
+        data object DetailsSectionsReset : Event
 
         /** Пользователь открыл категорию настроек (мобильный интерфейс). */
         data class CategorySelected(val category: SettingsCategory) : Event

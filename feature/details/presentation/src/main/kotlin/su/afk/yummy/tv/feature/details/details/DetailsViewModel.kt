@@ -140,6 +140,9 @@ class DetailsViewModel @AssistedInject internal constructor(
         appLifecycleSettingsStore.detailsSectionsHintDismissed
             .onEach { dismissed -> setState { copy(showSectionsHint = !dismissed) } }
             .launchIn(viewModelScope)
+        screenDataHandler.detailsSections
+            .onEach { sections -> setState { copy(sections = sections.toImmutableList()) } }
+            .launchIn(viewModelScope)
         combine(
             appLifecycleSettingsStore.onboardingWelcomeSeen,
             appLifecycleSettingsStore.onboardingToursSeen,

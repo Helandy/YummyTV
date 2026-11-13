@@ -1,10 +1,13 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -27,6 +30,11 @@ class DetailsScreenDataHandler @Inject constructor(
 ) {
 
     val yaniUserId: Flow<Int> = settingsStore.yaniUserId
+
+    /** Включённые пользователем блоки ленты деталей в выбранном им порядке. */
+    val detailsSections: Flow<List<DetailsSectionKind>> = settingsStore.detailsSections
+        .map { sections -> sections.filter { it.enabled }.map { it.kind } }
+        .distinctUntilChanged()
 
     /** Озвучка 4K, в которой тайтл смотрели раньше. */
     fun anime4kDubbing(animeId: Int): Flow<String?> = settingsStore.anime4kDubbing(animeId)

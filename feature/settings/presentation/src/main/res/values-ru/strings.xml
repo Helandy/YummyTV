@@ -344,6 +344,20 @@
     <string name="settings_home_block_collections">Коллекции</string>
     <string name="settings_home_block_blogger_videos">От блогеров</string>
     <string name="settings_home_block_quick_actions">Ещё</string>
+    <string name="settings_details_sections_title">Разделы деталки</string>
+    <string name="settings_details_sections_hint">Показать, скрыть и переставить разделы на странице аниме</string>
+    <string name="settings_details_section_info">Студии и жанры</string>
+    <string name="settings_details_section_description">Описание</string>
+    <string name="settings_section_sections_order">Порядок разделов</string>
+    <string name="settings_details_sections_tv_note">На ТВ описание и жанры остаются в шапке: там их можно только скрыть</string>
+    <string name="settings_details_section_screenshots">Скриншоты</string>
+    <string name="settings_details_section_video">Видео</string>
+    <string name="settings_details_section_rating">Оценки</string>
+    <string name="settings_details_section_universe">Вселенная</string>
+    <string name="settings_details_section_similar">Похожее</string>
+    <string name="settings_details_section_collections">Коллекции</string>
+    <string name="settings_details_section_reviews">Рецензии</string>
+    <string name="settings_details_section_comments">Комментарии</string>
 
     <string name="settings_onboarding_reset">Показать подсказки снова</string>
     <string name="settings_onboarding_reset_hint">Приветственные слайды, подсказки по экранам и обучение плеера покажутся заново</string>

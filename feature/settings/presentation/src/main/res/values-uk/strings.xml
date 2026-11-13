@@ -344,6 +344,20 @@
     <string name="settings_home_block_collections">Колекції</string>
     <string name="settings_home_block_blogger_videos">Від блогерів</string>
     <string name="settings_home_block_quick_actions">Ще</string>
+    <string name="settings_details_sections_title">Розділи сторінки аніме</string>
+    <string name="settings_details_sections_hint">Показати, приховати та переставити розділи на сторінці аніме</string>
+    <string name="settings_details_section_info">Студії та жанри</string>
+    <string name="settings_details_section_description">Опис</string>
+    <string name="settings_section_sections_order">Порядок розділів</string>
+    <string name="settings_details_sections_tv_note">На ТБ опис і жанри лишаються в шапці: там їх можна лише приховати</string>
+    <string name="settings_details_section_screenshots">Скриншоти</string>
+    <string name="settings_details_section_video">Відео</string>
+    <string name="settings_details_section_rating">Оцінки</string>
+    <string name="settings_details_section_universe">Всесвіт</string>
+    <string name="settings_details_section_similar">Схоже</string>
+    <string name="settings_details_section_collections">Колекції</string>
+    <string name="settings_details_section_reviews">Рецензії</string>
+    <string name="settings_details_section_comments">Коментарі</string>
 
     <string name="settings_onboarding_reset">Показати підказки знову</string>
     <string name="settings_onboarding_reset_hint">Вітальні слайди, підказки з екранів і навчання плеєра покажуться знову</string>

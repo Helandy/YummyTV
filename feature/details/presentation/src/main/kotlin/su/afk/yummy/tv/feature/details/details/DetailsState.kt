@@ -3,11 +3,13 @@ package su.afk.yummy.tv.feature.details.details
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeFrames
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -69,6 +71,8 @@ class DetailsState {
         val showSectionsHint: Boolean = false,
         /** Тур по деталке ещё не пройден и приветственные слайды уже закрыты. */
         val onboardingTourPending: Boolean = false,
+        /** Блоки ленты под шапкой в порядке, выбранном пользователем; скрытых здесь нет. */
+        val sections: ImmutableList<DetailsSectionKind> = DetailsSectionKind.entries.toImmutableList(),
     ) : UiState {
         /** Скриншоты для ряда и галереи: TMDB и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
         val screenshots: List<AnimeScreenshot>

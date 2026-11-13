@@ -52,6 +52,7 @@ import su.afk.yummy.tv.feature.details.details.model.DetailsCollections
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
+import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.feature.details.details.handler.DetailsScreenDataHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
@@ -123,6 +124,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         coEvery { playerNavigationHandler.confirmOpen(any()) } returns true
         every { stringProvider.get(any<Int>()) } returns "load error"
         every { screenDataHandler.yaniUserId } returns flowOf(0)
+        every { screenDataHandler.detailsSections } returns flowOf(DetailsSectionKind.entries)
         every { screenDataHandler.anime4kDubbing(any()) } returns flowOf(null)
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())
