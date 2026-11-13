@@ -66,7 +66,6 @@ class MainViewModelTest : BaseUnitTest() {
     private val tokenState = MutableStateFlow(YaniApplicationTokenState.DEFAULT)
     private val session = MutableStateFlow(AccountSession(isAuthorized = true, userId = 1))
     private val isOnline = MutableStateFlow(true)
-    private val welcomeSeen = MutableStateFlow(false)
     private val toursSeen = MutableStateFlow(emptySet<String>())
     private val mutationErrors = MutableSharedFlow<AccountMutationErrorEvent>()
     private val toggleUpdates = MutableSharedFlow<Long>()
@@ -75,9 +74,7 @@ class MainViewModelTest : BaseUnitTest() {
     fun setUp() {
         every { settingsStore.mainSettingsSnapshot } returns snapshot
         every { settingsStore.yaniApplicationTokenState } returns tokenState
-        every { settingsStore.onboardingWelcomeSeen } returns welcomeSeen
         every { settingsStore.onboardingToursSeen } returns toursSeen
-        coEvery { settingsStore.markOnboardingWelcomeSeen() } returns Unit
         coEvery { settingsStore.markOnboardingTourSeen(any()) } returns Unit
         every { accountRepository.observeSession() } returns session
         every { networkConnectivityMonitor.isOnline } returns isOnline
@@ -146,13 +143,8 @@ class MainViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `welcome slides go first and the main tour follows until it is passed`() {
+    fun `main tour is shown until it is passed`() {
         val viewModel = createViewModel()
-        assertTrue(viewModel.currentState.onboardingWelcomePending)
-        assertFalse(viewModel.currentState.showMainOnboardingTour)
-
-        welcomeSeen.value = true
-        assertFalse(viewModel.currentState.onboardingWelcomePending)
         assertTrue(viewModel.currentState.showMainOnboardingTour)
 
         toursSeen.value = setOf(MAIN_ONBOARDING_TOUR_ID)
@@ -163,10 +155,8 @@ class MainViewModelTest : BaseUnitTest() {
     fun `finished onboarding events are persisted`() {
         val viewModel = createViewModel()
 
-        viewModel.setEvent(Event.OnboardingWelcomeFinished)
         viewModel.setEvent(Event.OnboardingMainTourFinished)
 
-        coVerify(exactly = 1) { settingsStore.markOnboardingWelcomeSeen() }
         coVerify(exactly = 1) { settingsStore.markOnboardingTourSeen(MAIN_ONBOARDING_TOUR_ID) }
     }
 

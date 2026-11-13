@@ -2,9 +2,9 @@ package su.afk.yummy.tv.feature.settings
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.analytics.api.AnalyticsDeviceIdProvider
@@ -163,9 +163,8 @@ class SettingsViewModel @Inject internal constructor(
                 setState { copy(tvPlayerControlsTutorialDismissed = dismissed) }
             }
             .launchIn(viewModelScope)
-        combine(settingsStore.onboardingWelcomeSeen, settingsStore.onboardingToursSeen) { welcomeSeen, tours ->
-            welcomeSeen || tours.isNotEmpty()
-        }
+        settingsStore.onboardingToursSeen
+            .map { tours -> tours.isNotEmpty() }
             .onEach { available -> setState { copy(onboardingResetAvailable = available) } }
             .launchIn(viewModelScope)
         // Запасной режим хранения сессии показываем в "О приложении": пользователю со сломанным

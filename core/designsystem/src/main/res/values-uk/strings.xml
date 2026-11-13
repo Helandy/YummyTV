@@ -74,14 +74,5 @@
     <string name="onboarding_skip">Пропустити</string>
     <string name="onboarding_next">Далі</string>
     <string name="onboarding_done">Зрозуміло</string>
-    <string name="onboarding_start">Поїхали</string>
     <string name="onboarding_step_counter">%1$d / %2$d</string>
-    <string name="onboarding_welcome_catalog_title">Ласкаво просимо до YummyTV</string>
-    <string name="onboarding_welcome_catalog_text">Величезний каталог аніме з пошуком за жанрами, сезонами та роками й розкладом виходу серій.</string>
-    <string name="onboarding_welcome_lists_title">Ваші списки та прогрес</string>
-    <string name="onboarding_welcome_lists_text">Додавайте тайтли до списків, ставте оцінки й продовжуйте з того ж місця — прогрес зберігається та синхронізується з акаунтом.</string>
-    <string name="onboarding_welcome_dubbing_title">Озвучення та джерела</string>
-    <string name="onboarding_welcome_dubbing_text">Обирайте озвучення та джерело відео на сторінці тайтла. Позначайте улюблені — вони будуть першими в списку.</string>
-    <string name="onboarding_welcome_player_title">Зручний плеєр</string>
-    <string name="onboarding_welcome_player_text">Свайпами екраном змінюйте яскравість і гучність. Під час першого відкриття плеєра з’явиться коротка підказка.</string>
 </resources>

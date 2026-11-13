@@ -72,7 +72,6 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private val permissionRequested = MutableStateFlow(false)
     private val sectionsHintDismissed = MutableStateFlow(false)
-    private val onboardingWelcomeSeen = MutableStateFlow(true)
     private val onboardingToursSeen = MutableStateFlow(emptySet<String>())
     private val episodePushPromptShown = MutableStateFlow(false)
     private val episodePushEnabled = MutableStateFlow(true)
@@ -83,7 +82,6 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { notificationPermissionRequested } returns permissionRequested
         every { episodePushPromptShown } returns this@DetailsViewModelTest.episodePushPromptShown
         every { detailsSectionsHintDismissed } returns sectionsHintDismissed
-        every { onboardingWelcomeSeen } returns this@DetailsViewModelTest.onboardingWelcomeSeen
         every { onboardingToursSeen } returns this@DetailsViewModelTest.onboardingToursSeen
     }
     private val detailsNavigator: IDetailsNavigator = mockk()
@@ -216,12 +214,8 @@ class DetailsViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `onboarding tour waits for the welcome slides and is not repeated`() {
-        onboardingWelcomeSeen.value = false
+    fun `onboarding tour is shown once and not repeated`() {
         val viewModel = createViewModel()
-        assertFalse(viewModel.currentState.showOnboardingTour)
-
-        onboardingWelcomeSeen.value = true
         assertTrue(viewModel.currentState.showOnboardingTour)
 
         onboardingToursSeen.value = setOf(DETAILS_ONBOARDING_TOUR_ID)

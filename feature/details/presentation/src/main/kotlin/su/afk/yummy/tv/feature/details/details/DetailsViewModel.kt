@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -143,10 +144,8 @@ class DetailsViewModel @AssistedInject internal constructor(
         screenDataHandler.detailsSections
             .onEach { sections -> setState { copy(sections = sections.toImmutableList()) } }
             .launchIn(viewModelScope)
-        combine(
-            appLifecycleSettingsStore.onboardingWelcomeSeen,
-            appLifecycleSettingsStore.onboardingToursSeen,
-        ) { welcomeSeen, tours -> welcomeSeen && DETAILS_ONBOARDING_TOUR_ID !in tours }
+        appLifecycleSettingsStore.onboardingToursSeen
+            .map { tours -> DETAILS_ONBOARDING_TOUR_ID !in tours }
             .onEach { pending -> setState { copy(onboardingTourPending = pending) } }
             .launchIn(viewModelScope)
         screenDataHandler.observeLibraryState(animeId)

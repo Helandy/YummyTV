@@ -66,10 +66,6 @@ class MainViewModel @Inject internal constructor(
                 settingsStore.setSeasonalAnnouncedKey(seasonalAnnouncementKey(appClock.nowMillis()))
             }
 
-            MainState.Event.OnboardingWelcomeFinished -> viewModelScope.launch {
-                settingsStore.markOnboardingWelcomeSeen()
-            }
-
             MainState.Event.OnboardingMainTourFinished -> viewModelScope.launch {
                 settingsStore.markOnboardingTourSeen(MAIN_ONBOARDING_TOUR_ID)
             }
@@ -77,16 +73,9 @@ class MainViewModel @Inject internal constructor(
     }
 
     private fun observeOnboarding() {
-        combine(settingsStore.onboardingWelcomeSeen, settingsStore.onboardingToursSeen) { welcomeSeen, tours ->
-            welcomeSeen to tours
-        }
-            .onEach { (welcomeSeen, tours) ->
-                setState {
-                    copy(
-                        onboardingWelcomePending = !welcomeSeen,
-                        showMainOnboardingTour = welcomeSeen && MAIN_ONBOARDING_TOUR_ID !in tours,
-                    )
-                }
+        settingsStore.onboardingToursSeen
+            .onEach { tours ->
+                setState { copy(showMainOnboardingTour = MAIN_ONBOARDING_TOUR_ID !in tours) }
             }
             .launchIn(viewModelScope)
     }
