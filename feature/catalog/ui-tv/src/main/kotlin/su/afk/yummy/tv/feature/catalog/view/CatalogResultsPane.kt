@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.catalog.view
 
+import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
+import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -214,6 +216,7 @@ internal fun CatalogResultsPane(
             onRandomAnimeSelected = onRandomAnimeSelected,
         )
 
+        val resultsFade = rememberStateChangeFade(!isFilterPanelOpen && itemCount > 0)
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 isFilterPanelOpen -> FilterPanel(
@@ -284,6 +287,7 @@ internal fun CatalogResultsPane(
                         onItemSelected = onItemSelected,
                         showTitleYear = showTitleYear,
                         isRowLayout = isRowLayout,
+                        modifier = Modifier.stateChangeFade(resultsFade),
                     )
                 }
             }

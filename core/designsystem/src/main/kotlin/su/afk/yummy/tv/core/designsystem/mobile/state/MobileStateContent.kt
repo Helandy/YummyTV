@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.R
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
+import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 
 @Composable
 fun MobileStateContent(
@@ -23,18 +25,31 @@ fun MobileStateContent(
     emptyIcon: ImageVector = Icons.Filled.Info,
     content: @Composable () -> Unit,
 ) {
-    when {
-        isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            YummyLoadingIndicator()
+    val kind = when {
+        isLoading -> MobileStateKind.Loading
+        error != null -> MobileStateKind.Error
+        empty -> MobileStateKind.Empty
+        else -> MobileStateKind.Content
+    }
+    val fade = rememberStateChangeFade(kind)
+    Box(Modifier.fillMaxSize().stateChangeFade(fade)) {
+        when (kind) {
+            MobileStateKind.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                YummyLoadingIndicator()
+            }
+
+            MobileStateKind.Error -> MobileMessage(
+                title = error.orEmpty(),
+                actionLabel = if (onRetry != null) stringResource(R.string.common_retry) else null,
+                onAction = onRetry,
+            )
+
+            MobileStateKind.Empty ->
+                MobileMessage(title = emptyText, description = emptyDescription, icon = emptyIcon)
+
+            MobileStateKind.Content -> content()
         }
-
-        error != null -> MobileMessage(
-            title = error,
-            actionLabel = if (onRetry != null) stringResource(R.string.common_retry) else null,
-            onAction = onRetry,
-        )
-
-        empty -> MobileMessage(title = emptyText, description = emptyDescription, icon = emptyIcon)
-        else -> content()
     }
 }
+
+private enum class MobileStateKind { Loading, Error, Empty, Content }

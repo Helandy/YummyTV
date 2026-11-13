@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.designsystem.baseScreen
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -34,10 +35,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.core.model.ErrorItem
 
 internal enum class BaseScreenContentState {
-    Loading, Error, Empty, Content,
+    Loading,
+    Error,
+    Empty,
+    Content,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +53,7 @@ fun BaseScreen(
     contentModifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentWindowInsets: WindowInsets = WindowInsets.safeDrawing.only(
-        WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+        WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
     ),
 
     isScroll: Boolean = true,
@@ -94,9 +99,11 @@ fun BaseScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .let {
-                    if (scrollBehavior != null)
+                    if (scrollBehavior != null) {
                         it.nestedScroll(scrollBehavior.nestedScrollConnection)
-                    else it
+                    } else {
+                        it
+                    }
                 },
             topBar = {
                 if (customTopBar != null) {
@@ -148,19 +155,21 @@ fun BaseScreen(
             AnimatedContent(
                 targetState = screenState,
                 transitionSpec = {
-                    fadeIn() togetherWith fadeOut()
+                    fadeIn(tween(YummyMotion.Short)) togetherWith fadeOut(tween(YummyMotion.Quick))
                 },
                 label = "baseScreenContent",
             ) { targetState ->
                 when (targetState) {
                     BaseScreenContentState.Error -> Box(modifier = base) {
                         val currentError = error ?: return@Box
-                        (errorContent ?: { e, retry ->
-                            DefaultErrorContent(
-                                errorItem = e,
-                                onRetry = retry,
-                            )
-                        })(currentError, onRetry)
+                        (
+                            errorContent ?: { e, retry ->
+                                DefaultErrorContent(
+                                    errorItem = e,
+                                    onRetry = retry,
+                                )
+                            }
+                            )(currentError, onRetry)
                     }
 
                     BaseScreenContentState.Loading -> Box(modifier = base) {

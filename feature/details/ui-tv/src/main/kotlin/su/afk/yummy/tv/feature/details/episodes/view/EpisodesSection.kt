@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.episodes.view
 
+import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
+import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -31,6 +33,7 @@ internal fun EpisodesSection(
     episodeFlags: Map<String, EpisodeFlags> = emptyMap(),
     onRetry: (() -> Unit)? = null,
 ) {
+    val contentFade = rememberStateChangeFade(state is VideosUiState.Content)
     when (state) {
         VideosUiState.Loading, VideosUiState.NotLoaded -> EpisodesTvSkeleton()
 
@@ -55,7 +58,7 @@ internal fun EpisodesSection(
             episodeFlags = episodeFlags,
             onVideoSelected = onVideoSelected,
             onVideoLongPressed = onVideoLongPressed,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().stateChangeFade(contentFade),
         )
     }
 }

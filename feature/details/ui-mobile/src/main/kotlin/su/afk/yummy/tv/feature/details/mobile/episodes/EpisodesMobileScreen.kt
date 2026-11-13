@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes
 
+import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
+import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -103,11 +105,12 @@ fun EpisodesMobileScreen(
             emptyText = stringResource(R.string.details_episodes_empty),
             emptyIcon = Icons.Filled.PlayArrow,
         ) {
+            val episodesFade = rememberStateChangeFade(state.videosState is VideosUiState.Loading)
             if (state.videosState is VideosUiState.Loading) {
                 EpisodesMobileSkeleton(modifier = Modifier.mobileContentMaxWidth())
                 return@MobileStateContent
             }
-            Column(modifier = Modifier.mobileContentMaxWidth()) {
+            Column(modifier = Modifier.mobileContentMaxWidth().stateChangeFade(episodesFade)) {
                 if (state.visibleEpisodeGroups.isEmpty()) {
                     Text(
                         text = stringResource(R.string.details_episodes_filter_empty),

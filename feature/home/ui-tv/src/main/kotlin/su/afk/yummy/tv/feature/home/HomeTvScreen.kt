@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.feature.home
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
+import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 import android.widget.Toast
 import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.layout.Column
@@ -163,6 +167,7 @@ fun HomeTvScreen(
             message = state.statusMessage,
             modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal - 16.dp),
         )
+        val contentFade = rememberStateChangeFade(error == null && feed != null && state.hasInitialContent())
         when {
             error != null -> HomeError(
                 message = error,
@@ -175,19 +180,21 @@ fun HomeTvScreen(
                 modifier = Modifier.tvFocusablePlaceholder(focusHandoff),
             )
 
-            else -> HomeDashboard(
-                feed = feed,
-                blocks = state.blocks,
-                continueWatching = state.continueWatching,
-                launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
-                requestInitialFocus = focusHandoff.shouldFocusContent,
-                onInitialFocusHandled = focusHandoff::onContentFocused,
-                onContinueWatchingSelected = { entry ->
-                    onEvent(HomeState.Event.ContinueWatchingSelected(entry))
-                },
-                onItemSelected = onItemSelected,
-                onRecommendationLongClick = { item -> recommendationActionItem = item },
-            )
+            else -> Box(Modifier.fillMaxSize().stateChangeFade(contentFade)) {
+                HomeDashboard(
+                    feed = feed,
+                    blocks = state.blocks,
+                    continueWatching = state.continueWatching,
+                    launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
+                    requestInitialFocus = focusHandoff.shouldFocusContent,
+                    onInitialFocusHandled = focusHandoff::onContentFocused,
+                    onContinueWatchingSelected = { entry ->
+                        onEvent(HomeState.Event.ContinueWatchingSelected(entry))
+                    },
+                    onItemSelected = onItemSelected,
+                    onRecommendationLongClick = { item -> recommendationActionItem = item },
+                )
+            }
         }
     }
 
