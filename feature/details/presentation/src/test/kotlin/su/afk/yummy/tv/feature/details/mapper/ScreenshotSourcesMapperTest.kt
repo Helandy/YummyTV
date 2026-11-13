@@ -59,6 +59,17 @@ class ScreenshotSourcesMapperTest {
         assertEquals(listOf("screenshot_v1:7:0", "screenshot_v1:7:1"), merged.map { it.cacheKey })
     }
 
+    @Test
+    fun `single tmdb frame is topped up with yani screenshots up to six`() {
+        val frames = AnimeEpisodeFrames(tmdbStillUrls = listOf("t1"))
+
+        val merged = mergeScreenshotSources(ANIME_ID, frames, yani("y1", "y2", "y3", "y4", "y5", "y6", "y7"))
+
+        assertEquals(listOf("t1", "y2", "y3", "y4", "y5", "y6"), merged.map { it.url })
+        assertEquals(listOf("y1"), merged.first().fallbackUrls)
+        assertEquals("screenshot_v1:7:5", merged.last().cacheKey)
+    }
+
     private companion object {
         const val ANIME_ID = 7
     }
