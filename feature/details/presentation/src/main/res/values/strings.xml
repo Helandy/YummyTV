@@ -202,7 +202,7 @@
     <string name="details_total">Total: %1$d</string>
     <string name="details_director_prefix">Dir.: %1$s</string>
     <string name="details_in_library">In library</string>
-    <string name="details_add_library">Add to library</string>
+    <string name="details_add_library">Add to list</string>
         <string name="details_subscription_dubbing">Dubbing: %1$s</string>
     <string name="details_subscription_player">Player: %1$s</string>
     <string name="details_subscription_episodes">%1$d episodes</string>

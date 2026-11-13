@@ -74,7 +74,7 @@ internal fun DetailsPrimaryButton(
             .let { if (isFilled) it.seasonalButtonDecor() else it }
             .background(background, PrimaryButtonShape)
             .border(1.dp, outline, PrimaryButtonShape)
-            .padding(horizontal = if (iconOnly) 0.dp else 18.dp),
+            .padding(horizontal = if (iconOnly) 0.dp else 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {

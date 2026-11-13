@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.details.details.view
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -56,17 +56,17 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
-import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.ButtonData
 import su.afk.yummy.tv.feature.details.details.model.ButtonStyle
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.utils.label
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
-import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.model.DetailsWatchRestart
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsWatchRestart
 import su.afk.yummy.tv.feature.details.utils.statusColor
@@ -155,14 +155,23 @@ internal fun DetailsButtonBar(
         },
         style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
         onClick = onLibraryToggle,
-        overrideColor = if (isInLibrary) (libraryList
-            ?: UserAnimeList.WATCHING).statusColor() else null,
+        overrideColor = if (isInLibrary) {
+            (
+                libraryList
+                    ?: UserAnimeList.WATCHING
+                ).statusColor()
+        } else {
+            null
+        },
     )
     val favoriteButton = ButtonData(
         action = DetailsButtonAction.FAVORITE,
         label = stringResource(
-            if (isFavorite) R.string.details_add_favorite
-            else R.string.details_add_favorite,
+            if (isFavorite) {
+                R.string.details_add_favorite
+            } else {
+                R.string.details_add_favorite
+            },
         ),
         icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
         style = if (isFavorite) ButtonStyle.Outlined else ButtonStyle.Normal,
@@ -185,7 +194,7 @@ internal fun DetailsButtonBar(
                 icon = Icons.Filled.Notifications,
                 style = ButtonStyle.Normal,
                 onClick = onSubscriptionsSelected,
-            )
+            ),
         )
     } else {
         emptyList()
@@ -246,10 +255,14 @@ internal fun DetailsButtonBar(
         ),
         ButtonData(
             DetailsButtonAction.REVIEWS,
-            if (details.reviewsCount > 0) stringResource(
-                R.string.details_reviews_count,
-                details.reviewsCount
-            ) else stringResource(R.string.details_reviews),
+            if (details.reviewsCount > 0) {
+                stringResource(
+                    R.string.details_reviews_count,
+                    details.reviewsCount,
+                )
+            } else {
+                stringResource(R.string.details_reviews)
+            },
             Icons.Filled.RateReview,
             ButtonStyle.Normal,
             onReviewsSelected,
@@ -270,7 +283,7 @@ internal fun DetailsButtonBar(
                 Icons.Filled.PhotoLibrary,
                 ButtonStyle.Normal,
                 onScreenshotsSelected,
-            )
+            ),
         )
     } else {
         emptyList()
@@ -352,7 +365,8 @@ internal fun DetailsButtonBar(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = focusInset)
+                        // Справа крайняя кнопка — квадратная иконка: в фокусе она выступает всего на пару dp.
+                        .padding(start = focusInset, end = IconEndFocusPadding)
                         .height(PrimaryRowHeight),
                     horizontalArrangement = Arrangement.spacedBy(PrimaryButtonSpacing),
                     verticalAlignment = Alignment.CenterVertically,
@@ -473,5 +487,6 @@ private val PrimaryToIconsSpacing = 10.dp
 private val IconButtonSpacing = 14.dp
 private val IconRowFocusPadding = 8.dp
 private val IconRowBottomFocusPadding = 4.dp
+private val IconEndFocusPadding = 2.dp
 private const val PrimaryFocusedScale = 1.04f
-private const val WatchWeight = 1.5f
+private const val WatchWeight = 1.6f
