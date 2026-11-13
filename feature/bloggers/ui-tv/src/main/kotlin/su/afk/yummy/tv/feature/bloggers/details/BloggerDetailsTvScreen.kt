@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +30,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
@@ -47,14 +47,12 @@ fun BloggerDetailsTvScreen(
     val context = LocalContext.current
     val blogger = state.blogger
     val error = state.error?.asString()
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is BloggerDetailsState.Effect.ShowToast) Toast.makeText(
-                context,
-                it.message,
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+    effect.collectAsEffect {
+        if (it is BloggerDetailsState.Effect.ShowToast) Toast.makeText(
+            context,
+            it.message,
+            Toast.LENGTH_SHORT
+        ).show()
     }
     BackHandler { onEvent(BloggerDetailsState.Event.BackSelected) }
     when {

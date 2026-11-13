@@ -40,6 +40,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
@@ -60,16 +61,14 @@ fun BloggerVideoDetailsTvScreen(
     val context = LocalContext.current
     val video = state.video
     val error = state.error?.asString()
-    LaunchedEffect(Unit) {
-        effect.collect {
-            when (it) {
-                is BloggerVideoDetailsState.Effect.OpenVideo -> context.openExternalUri(it.url)
-                is BloggerVideoDetailsState.Effect.ShowToast -> Toast.makeText(
-                    context,
-                    it.message,
-                    Toast.LENGTH_SHORT,
-                ).show()
-            }
+    effect.collectAsEffect {
+        when (it) {
+            is BloggerVideoDetailsState.Effect.OpenVideo -> context.openExternalUri(it.url)
+            is BloggerVideoDetailsState.Effect.ShowToast -> Toast.makeText(
+                context,
+                it.message,
+                Toast.LENGTH_SHORT,
+            ).show()
         }
     }
     BackHandler { onEvent(BloggerVideoDetailsState.Event.BackSelected) }

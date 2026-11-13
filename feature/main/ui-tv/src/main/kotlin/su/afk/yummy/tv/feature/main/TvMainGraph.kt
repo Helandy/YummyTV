@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.main
 
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalPrompt
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -54,11 +54,9 @@ class TvMainGraph @Inject constructor(
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
             val toast = rememberGlobalToastState()
-            LaunchedEffect(effect) {
-                effect.collect { eff ->
-                    when (eff) {
-                        is MainState.Effect.ShowToast -> toast.show(eff.message)
-                    }
+            effect.collectAsEffect { eff ->
+                when (eff) {
+                    is MainState.Effect.ShowToast -> toast.show(eff.message)
                 }
             }
 

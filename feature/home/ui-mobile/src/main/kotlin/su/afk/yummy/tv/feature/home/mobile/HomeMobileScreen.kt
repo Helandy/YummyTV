@@ -48,6 +48,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.text.UiText
@@ -125,36 +126,34 @@ fun HomeMobileScreen(
         onEvent(HomeState.Event.ScreenResumed)
     }
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                is HomeState.Effect.ShowToast -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+    effect.collectAsEffect { event ->
+        when (event) {
+            is HomeState.Effect.ShowToast -> {
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
 
-                is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
+            is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
 
-                is HomeState.Effect.ShowRecommendationUndo -> {
-                    snackbarScope.launch {
-                        val result = snackbarHostState.showSnackbar(
-                            message = event.message,
-                            actionLabel = undoLabel,
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            onEvent(HomeState.Event.RecommendationRestoreRequested(event.animeId))
-                        }
+            is HomeState.Effect.ShowRecommendationUndo -> {
+                snackbarScope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = undoLabel,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        onEvent(HomeState.Event.RecommendationRestoreRequested(event.animeId))
                     }
                 }
+            }
 
-                is HomeState.Effect.ShowContinueWatchingUndo -> {
-                    snackbarScope.launch {
-                        val result = snackbarHostState.showSnackbar(
-                            message = event.message,
-                            actionLabel = undoLabel,
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            onEvent(HomeState.Event.ContinueWatchingRemoveUndone(event.animeId))
-                        }
+            is HomeState.Effect.ShowContinueWatchingUndo -> {
+                snackbarScope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = undoLabel,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        onEvent(HomeState.Event.ContinueWatchingRemoveUndone(event.animeId))
                     }
                 }
             }

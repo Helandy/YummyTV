@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -21,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.text.UiText
@@ -126,12 +126,10 @@ fun CollectionTvScreen(
 
     BackHandler { handleBack() }
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                is CollectionState.Effect.ShowToast ->
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect { event ->
+        when (event) {
+            is CollectionState.Effect.ShowToast ->
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusHighlight
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusIndicator
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
@@ -58,11 +59,9 @@ fun ReviewDetailsTvScreen(
     onEvent: (ReviewDetailsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is ReviewDetailsState.Effect.ShowToast) {
-                Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect {
+        if (it is ReviewDetailsState.Effect.ShowToast) {
+            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
         }
     }
 

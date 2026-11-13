@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +34,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.paging.getOrNull
 import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -78,12 +78,10 @@ fun CollectionsCatalogMobileScreen(
         },
     )
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                is CollectionsCatalogState.Effect.ShowToast ->
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect { event ->
+        when (event) {
+            is CollectionsCatalogState.Effect.ShowToast ->
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
         }
     }
 

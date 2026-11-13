@@ -27,6 +27,7 @@ internal fun DetailsDescriptionSection(
     details: AnimeDetails,
     modifier: Modifier = Modifier,
     descriptionFocusModifier: Modifier = Modifier,
+    collapsedLines: Int = 4,
 ) {
     if (details.description.isBlank()) return
 
@@ -45,7 +46,7 @@ internal fun DetailsDescriptionSection(
             text = details.description,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-            maxLines = if (expanded) Int.MAX_VALUE else 4,
+            maxLines = if (expanded) Int.MAX_VALUE else collapsedLines,
             overflow = TextOverflow.Ellipsis,
             onTextLayout = { if (!expanded) overflows = it.hasVisualOverflow },
         )

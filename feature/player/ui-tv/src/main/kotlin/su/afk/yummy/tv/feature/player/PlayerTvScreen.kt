@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
@@ -100,12 +101,10 @@ fun PlayerTvScreen(
     var backToastJob by remember { mutableStateOf<Job?>(null) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
     var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
-    LaunchedEffect(effect) {
-        effect.collect { eff ->
-            when (eff) {
-                is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
-                is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
-            }
+    effect.collectAsEffect { eff ->
+        when (eff) {
+            is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+            is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
         }
     }
     LaunchedEffect(sourceToastText) {

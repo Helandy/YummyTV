@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
@@ -105,23 +106,21 @@ fun HomeTvScreen(
         onEvent(HomeState.Event.ScreenResumed)
     }
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                is HomeState.Effect.ShowToast -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+    effect.collectAsEffect { event ->
+        when (event) {
+            is HomeState.Effect.ShowToast -> {
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
 
-                is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
+            is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
 
-                // На ТВ откат недоступен — показываем обычное уведомление.
-                is HomeState.Effect.ShowRecommendationUndo -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+            // На ТВ откат недоступен — показываем обычное уведомление.
+            is HomeState.Effect.ShowRecommendationUndo -> {
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
 
-                is HomeState.Effect.ShowContinueWatchingUndo -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+            is HomeState.Effect.ShowContinueWatchingUndo -> {
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -23,7 +23,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +50,7 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.InlineError
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -73,17 +73,15 @@ fun RegistrationMobileScreen(
     val context = LocalContext.current
     val captchaHint = stringResource(R.string.account_captcha_required_toast)
 
-    LaunchedEffect(effect) {
-        effect.collect { effectItem ->
-            when (effectItem) {
-                RegistrationState.Effect.HideKeyboard -> {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                }
-
-                RegistrationState.Effect.ShowCaptchaHint -> Toast.makeText(context, captchaHint, Toast.LENGTH_SHORT).show()
-                RegistrationState.Effect.DiscardAutofill -> autofillManager?.cancel()
+    effect.collectAsEffect { effectItem ->
+        when (effectItem) {
+            RegistrationState.Effect.HideKeyboard -> {
+                keyboardController?.hide()
+                focusManager.clearFocus()
             }
+
+            RegistrationState.Effect.ShowCaptchaHint -> Toast.makeText(context, captchaHint, Toast.LENGTH_SHORT).show()
+            RegistrationState.Effect.DiscardAutofill -> autofillManager?.cancel()
         }
     }
 

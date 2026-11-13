@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringInt
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.paging.getOrNull
 import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
@@ -61,11 +62,9 @@ fun ReviewsListTvScreen(
 ) {
     val context = LocalContext.current
     val reviews = state.reviews.collectAsLazyPagingItems()
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is ReviewsListState.Effect.ShowToast) {
-                Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect {
+        if (it is ReviewsListState.Effect.ShowToast) {
+            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
         }
     }
     Column(

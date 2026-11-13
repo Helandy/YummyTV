@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.main.mobile
 
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalPrompt
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -72,11 +72,9 @@ class MobileMainGraph @Inject internal constructor(
         ScreenNavigator(viewModel) { state, effect, onEvent ->
             val accountSettingsFocusRequester = remember { FocusRequester() }
             val toast = rememberGlobalToastState()
-            LaunchedEffect(effect) {
-                effect.collect { eff ->
-                    when (eff) {
-                        is MainState.Effect.ShowToast -> toast.show(eff.message)
-                    }
+            effect.collectAsEffect { eff ->
+                when (eff) {
+                    is MainState.Effect.ShowToast -> toast.show(eff.message)
                 }
             }
 

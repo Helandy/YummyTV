@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -14,6 +13,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
 import su.afk.yummy.tv.feature.posts.mobile.view.PostDetailsBody
 import su.afk.yummy.tv.feature.posts.presentation.R
@@ -26,15 +26,13 @@ fun PostDetailsMobileScreen(
     onEvent: (PostDetailsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is PostDetailsState.Effect.ShowToast) {
-                Toast.makeText(
-                    context,
-                    it.message,
-                    Toast.LENGTH_LONG,
-                ).show()
-            }
+    effect.collectAsEffect {
+        if (it is PostDetailsState.Effect.ShowToast) {
+            Toast.makeText(
+                context,
+                it.message,
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
     BaseScreen(

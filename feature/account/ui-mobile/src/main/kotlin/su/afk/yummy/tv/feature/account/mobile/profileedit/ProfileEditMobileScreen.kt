@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.messageRes
@@ -76,11 +76,9 @@ fun ProfileEditMobileScreen(
             if (uri != null && kind != null) cropRequest = uri to kind
         }
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            if (event is ProfileEditState.Effect.Message) {
-                Toast.makeText(context, event.type.messageRes(), Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect { event ->
+        if (event is ProfileEditState.Effect.Message) {
+            Toast.makeText(context, event.type.messageRes(), Toast.LENGTH_SHORT).show()
         }
     }
 

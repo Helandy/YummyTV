@@ -89,6 +89,7 @@ internal fun DetailsHero(
     hintFocusRequester: FocusRequester,
     onHintFocused: (Boolean) -> Unit,
     minHeight: Dp,
+    descriptionContent: @Composable (collapsedLines: Int) -> Unit,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -248,6 +249,9 @@ internal fun DetailsHero(
                             .onFocusChanged { onHintFocused(it.isFocused) },
                     )
                 }
+
+                // Описание занимает свободное место под кнопками; по OK раскрывается и тянет хиро вниз.
+                descriptionContent(if (isCompactHeight) 3 else 6)
             }
 
             Column(

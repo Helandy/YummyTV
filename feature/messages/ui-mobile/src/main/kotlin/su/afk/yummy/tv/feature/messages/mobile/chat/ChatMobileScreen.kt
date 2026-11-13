@@ -46,6 +46,7 @@ import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.messages.model.GLOBAL_CHAT_USER_ID
 import su.afk.yummy.tv.feature.messages.chat.ChatState
@@ -89,21 +90,19 @@ fun ChatMobileScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        effect.collect { item ->
-            if (item is ChatState.Effect.ShowMessage) {
-                val message = when (item.type) {
-                    ChatState.MessageType.SEND_FAILED -> R.string.messages_send_failed
-                    ChatState.MessageType.EDIT_FAILED -> R.string.messages_edit_failed
-                    ChatState.MessageType.READ_FAILED -> R.string.messages_read_failed
-                    ChatState.MessageType.DELETE_FAILED -> R.string.messages_delete_failed
-                    ChatState.MessageType.RESTORE_FAILED -> R.string.messages_restore_failed
-                    ChatState.MessageType.CLAIM_FAILED -> R.string.messages_claim_failed
-                    ChatState.MessageType.CLAIM_SENT -> R.string.messages_claim_sent
-                    ChatState.MessageType.BAN_FAILED -> R.string.messages_ban_failed
-                }
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    effect.collectAsEffect { item ->
+        if (item is ChatState.Effect.ShowMessage) {
+            val message = when (item.type) {
+                ChatState.MessageType.SEND_FAILED -> R.string.messages_send_failed
+                ChatState.MessageType.EDIT_FAILED -> R.string.messages_edit_failed
+                ChatState.MessageType.READ_FAILED -> R.string.messages_read_failed
+                ChatState.MessageType.DELETE_FAILED -> R.string.messages_delete_failed
+                ChatState.MessageType.RESTORE_FAILED -> R.string.messages_restore_failed
+                ChatState.MessageType.CLAIM_FAILED -> R.string.messages_claim_failed
+                ChatState.MessageType.CLAIM_SENT -> R.string.messages_claim_sent
+                ChatState.MessageType.BAN_FAILED -> R.string.messages_ban_failed
             }
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
     LaunchedEffect(listState, state.canLoadOlder) {

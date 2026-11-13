@@ -38,6 +38,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -89,12 +90,10 @@ fun PlayerMobileScreen(
     var showErrorQualitySheet by rememberSaveable { mutableStateOf(false) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
     var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
-    LaunchedEffect(effect) {
-        effect.collect { eff ->
-            when (eff) {
-                is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
-                is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
-            }
+    effect.collectAsEffect { eff ->
+        when (eff) {
+            is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+            is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
         }
     }
     LaunchedEffect(sourceToastText) {

@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
@@ -100,16 +101,14 @@ fun LibraryMobileScreen(
         tabs.associateWith { tab -> state.mobileTabItemCount(tab) }
     }
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                LibraryState.Effect.ItemRemoved -> {
-                    Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
-                }
+    effect.collectAsEffect { event ->
+        when (event) {
+            LibraryState.Effect.ItemRemoved -> {
+                Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
+            }
 
-                is LibraryState.Effect.ShowToast -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+            is LibraryState.Effect.ShowToast -> {
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +38,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.videodownload.VideoDownloadState
@@ -76,19 +76,17 @@ fun VideoDownloadMobileScreen(
             onEvent(VideoDownloadState.Event.ExportDirectoryGranted(it.toString()))
         }
     }
-    LaunchedEffect(Unit) {
-        effect.collect { exportEffect ->
-            when (exportEffect) {
-                VideoDownloadState.Effect.OpenExportDirectoryPicker ->
-                    exportDirectoryPicker.launch(null)
+    effect.collectAsEffect { exportEffect ->
+        when (exportEffect) {
+            VideoDownloadState.Effect.OpenExportDirectoryPicker ->
+                exportDirectoryPicker.launch(null)
 
-                VideoDownloadState.Effect.ExportDirectorySelectionFailed ->
-                    Toast.makeText(
-                        context,
-                        R.string.video_export_directory_error,
-                        Toast.LENGTH_LONG,
-                    ).show()
-            }
+            VideoDownloadState.Effect.ExportDirectorySelectionFailed ->
+                Toast.makeText(
+                    context,
+                    R.string.video_export_directory_error,
+                    Toast.LENGTH_LONG,
+                ).show()
         }
     }
     val occupiedSize = state.occupiedBytes.formatDiskSize()

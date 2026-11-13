@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +37,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.utils.formatting.formatFeedDateTime
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.openExternalUri
@@ -57,16 +57,14 @@ fun BloggerVideoDetailsMobileScreen(
     val context = LocalContext.current
     val video = state.video
     val error = state.error?.asString()
-    LaunchedEffect(Unit) {
-        effect.collect {
-            when (it) {
-                is BloggerVideoDetailsState.Effect.OpenVideo -> context.openExternalUri(it.url)
-                is BloggerVideoDetailsState.Effect.ShowToast -> Toast.makeText(
-                    context,
-                    it.message,
-                    Toast.LENGTH_SHORT,
-                ).show()
-            }
+    effect.collectAsEffect {
+        when (it) {
+            is BloggerVideoDetailsState.Effect.OpenVideo -> context.openExternalUri(it.url)
+            is BloggerVideoDetailsState.Effect.ShowToast -> Toast.makeText(
+                context,
+                it.message,
+                Toast.LENGTH_SHORT,
+            ).show()
         }
     }
     BackHandler { onEvent(BloggerVideoDetailsState.Event.BackSelected) }

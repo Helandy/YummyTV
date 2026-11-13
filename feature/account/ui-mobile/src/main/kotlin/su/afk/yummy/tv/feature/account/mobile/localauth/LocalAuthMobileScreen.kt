@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.InlineError
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.permissions.missingLocalNetworkPermissionNames
 import su.afk.yummy.tv.core.designsystem.permissions.rememberLocalNetworkPermissionGate
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
@@ -103,12 +104,10 @@ fun LocalAuthMobileScreen(
         onDismiss = permissionGate::dismiss,
     )
 
-    LaunchedEffect(effect) {
-        effect.collect { effectItem ->
-            when (effectItem) {
-                LocalAuthState.Effect.TransferSuccess ->
-                    Toast.makeText(context, transferSuccessMessage, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect { effectItem ->
+        when (effectItem) {
+            LocalAuthState.Effect.TransferSuccess ->
+                Toast.makeText(context, transferSuccessMessage, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -19,7 +19,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.feature.reviews.details.ReviewDetailsState
 import su.afk.yummy.tv.feature.reviews.mobile.utils.displayCompactReviewCount
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewAnimeCard
@@ -57,11 +57,9 @@ fun ReviewDetailsMobileScreen(
 ) {
     val context = LocalContext.current
     var confirmDelete by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is ReviewDetailsState.Effect.ShowToast) {
-                Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect {
+        if (it is ReviewDetailsState.Effect.ShowToast) {
+            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
         }
     }
 

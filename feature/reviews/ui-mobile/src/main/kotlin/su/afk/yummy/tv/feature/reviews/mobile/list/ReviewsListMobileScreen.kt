@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +28,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.paging.getOrNull
 import su.afk.yummy.tv.core.designsystem.paging.safeItemKey
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
@@ -46,11 +46,9 @@ fun ReviewsListMobileScreen(
 ) {
     val context = LocalContext.current
     val items = state.reviews.collectAsLazyPagingItems()
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is ReviewsListState.Effect.ShowToast) {
-                Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
-            }
+    effect.collectAsEffect {
+        if (it is ReviewsListState.Effect.ShowToast) {
+            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
         }
     }
 

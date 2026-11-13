@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +34,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.bloggers.details.BloggerDetailsState
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoMobileCard
@@ -50,15 +50,13 @@ fun BloggerDetailsMobileScreen(
     val context = LocalContext.current
     val blogger = state.blogger
     val error = state.error?.asString()
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is BloggerDetailsState.Effect.ShowToast) {
-                Toast.makeText(
-                    context,
-                    it.message,
-                    Toast.LENGTH_SHORT,
-                ).show()
-            }
+    effect.collectAsEffect {
+        if (it is BloggerDetailsState.Effect.ShowToast) {
+            Toast.makeText(
+                context,
+                it.message,
+                Toast.LENGTH_SHORT,
+            ).show()
         }
     }
     BackHandler { onEvent(BloggerDetailsState.Event.BackSelected) }

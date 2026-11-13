@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.mobile.details
 
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.onboarding.OnboardingTourEffect
 import su.afk.yummy.tv.feature.details.utils.DETAILS_ONBOARDING_TOUR_ID
 import su.afk.yummy.tv.feature.details.mobile.details.utils.mobileDetailsTourSteps
@@ -18,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -118,12 +118,10 @@ fun DetailsMobileScreen(
     val listState = rememberLazyListState()
     val notificationPermissionGate = rememberNotificationPermissionGate()
     val context = LocalContext.current
-    LaunchedEffect(effect) {
-        effect.collect { detailsEffect ->
-            when (detailsEffect) {
-                is DetailsState.Effect.ShareAnime ->
-                    context.shareText(text = detailsEffect.url, subject = detailsEffect.title)
-            }
+    effect.collectAsEffect { detailsEffect ->
+        when (detailsEffect) {
+            is DetailsState.Effect.ShareAnime ->
+                context.shareText(text = detailsEffect.url, subject = detailsEffect.title)
         }
     }
     val isOffline = LocalIsOffline.current

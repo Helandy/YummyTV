@@ -216,7 +216,10 @@ internal fun DetailsBody(
                         modifier = Modifier
                             .focusProperties { canFocus = !isRestoringFocus }
                             .onFocusChanged {
-                                if (it.hasFocus && lastFocusTarget?.startsWith("chips:") != true && lastFocusTarget != HERO_HINT_FOCUS_KEY) {
+                                if (it.hasFocus && lastFocusTarget?.startsWith("chips:") != true &&
+                                    lastFocusTarget?.startsWith("description:") != true &&
+                                    lastFocusTarget != HERO_HINT_FOCUS_KEY
+                                ) {
                                     lastFocusTarget = null
                                 }
                             }
@@ -268,21 +271,19 @@ internal fun DetailsBody(
                         onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
                         chipFocusModifier = heroChipFocus,
                         chipsEntryFocusRequester = if (hasHeroChips) requesterFor("chips:0") else null,
-                    )
-                }
-                item(key = "description") {
-                    DetailsDescriptionSection(
-                        details = details,
-                        descriptionFocusModifier = rowItemFocus("description")(-1).then(
-                            if (hasHeroChips) {
-                                Modifier.focusProperties { up = requesterFor("chips:$lastChipIndex") }
-                            } else {
-                                Modifier
-                            },
-                        ),
-                        modifier = Modifier
-                            .tvWholeItemBringIntoView()
-                            .padding(horizontal = DetailsSectionHorizontalPadding),
+                        descriptionContent = { collapsedLines ->
+                            DetailsDescriptionSection(
+                                details = details,
+                                collapsedLines = collapsedLines,
+                                // Описание внутри хиро: как и чип, само разрешает себе фокус на время восстановления.
+                                descriptionFocusModifier = Modifier
+                                    .focusProperties {
+                                        canFocus = true
+                                        if (hasHeroChips) up = requesterFor("chips:$lastChipIndex")
+                                    }
+                                    .then(rowItemFocus("description")(-1)),
+                            )
+                        },
                     )
                 }
                 if (hasScreenshots) {

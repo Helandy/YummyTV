@@ -38,6 +38,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
@@ -131,16 +132,14 @@ fun LibraryTvScreen(
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
-    LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                LibraryState.Effect.ItemRemoved -> {
-                    Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
-                }
+    effect.collectAsEffect { event ->
+        when (event) {
+            LibraryState.Effect.ItemRemoved -> {
+                Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
+            }
 
-                is LibraryState.Effect.ShowToast -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+            is LibraryState.Effect.ShowToast -> {
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
         }
     }

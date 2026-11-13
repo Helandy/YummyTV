@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +65,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.formatFeedDateTime
@@ -84,15 +84,13 @@ fun PostDetailsTvScreen(
     onEvent: (PostDetailsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        effect.collect {
-            if (it is PostDetailsState.Effect.ShowToast) {
-                Toast.makeText(
-                    context,
-                    it.message,
-                    Toast.LENGTH_LONG,
-                ).show()
-            }
+    effect.collectAsEffect {
+        if (it is PostDetailsState.Effect.ShowToast) {
+            Toast.makeText(
+                context,
+                it.message,
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
     when {

@@ -53,6 +53,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -115,17 +116,15 @@ fun AccountMobileScreen(
         }
     }
 
-    LaunchedEffect(effect) {
-        effect.collect { effectItem ->
-            when (effectItem) {
-                AccountState.Effect.HideKeyboard -> {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                }
-
-                AccountState.Effect.ShowCaptchaHint -> Toast.makeText(context, captchaHint, Toast.LENGTH_SHORT).show()
-                AccountState.Effect.DiscardAutofill -> autofillManager?.cancel()
+    effect.collectAsEffect { effectItem ->
+        when (effectItem) {
+            AccountState.Effect.HideKeyboard -> {
+                keyboardController?.hide()
+                focusManager.clearFocus()
             }
+
+            AccountState.Effect.ShowCaptchaHint -> Toast.makeText(context, captchaHint, Toast.LENGTH_SHORT).show()
+            AccountState.Effect.DiscardAutofill -> autofillManager?.cancel()
         }
     }
 

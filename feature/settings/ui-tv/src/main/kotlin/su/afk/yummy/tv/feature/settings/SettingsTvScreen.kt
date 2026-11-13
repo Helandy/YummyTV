@@ -38,6 +38,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.utils.system.restartApplication
@@ -91,58 +92,56 @@ fun SettingsTvScreen(
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
 
-    LaunchedEffect(Unit) {
-        effect.collect { settingsEffect ->
-            when (settingsEffect) {
-                SettingsState.Effect.RestartApplication -> if (!context.restartApplication()) {
-                    Toast.makeText(
-                        context,
-                        R.string.settings_interface_restart_failed,
-                        Toast.LENGTH_LONG,
-                    ).show()
-                }
-
-                SettingsState.Effect.ColdRestartApplication -> if (!context.restartApplicationCold()) {
-                    Toast.makeText(
-                        context,
-                        R.string.settings_log_recording_restart_failed,
-                        Toast.LENGTH_LONG,
-                    ).show()
-                }
-
-                // На приставках часто нет приложений для ACTION_SEND: тогда сохраняем файл в память.
-                is SettingsState.Effect.ShareLogs -> {
-                    val send = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_STREAM, settingsEffect.uri.toUri())
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
-                    val canShare = context.packageManager.queryIntentActivities(send, 0).isNotEmpty()
-                    val shared = canShare && runCatching {
-                        context.startActivity(
-                            Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                        )
-                    }.isSuccess
-                    if (!shared) onEvent(SettingsState.Event.SaveLogsClicked)
-                }
-
-                is SettingsState.Effect.LogsSaved -> Toast.makeText(
+    effect.collectAsEffect { settingsEffect ->
+        when (settingsEffect) {
+            SettingsState.Effect.RestartApplication -> if (!context.restartApplication()) {
+                Toast.makeText(
                     context,
-                    context.getString(R.string.settings_logs_saved, settingsEffect.path),
+                    R.string.settings_interface_restart_failed,
                     Toast.LENGTH_LONG,
                 ).show()
-
-                SettingsState.Effect.LogsFailed ->
-                    Toast.makeText(context, R.string.settings_logs_failed, Toast.LENGTH_LONG).show()
-
-                SettingsState.Effect.CacheCleared ->
-                    Toast.makeText(context, R.string.settings_clear_cache_done, Toast.LENGTH_SHORT).show()
-
-                SettingsState.Effect.CacheClearFailed ->
-                    Toast.makeText(context, R.string.settings_clear_cache_failed, Toast.LENGTH_LONG).show()
-
-                else -> Unit
             }
+
+            SettingsState.Effect.ColdRestartApplication -> if (!context.restartApplicationCold()) {
+                Toast.makeText(
+                    context,
+                    R.string.settings_log_recording_restart_failed,
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+
+            // На приставках часто нет приложений для ACTION_SEND: тогда сохраняем файл в память.
+            is SettingsState.Effect.ShareLogs -> {
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_STREAM, settingsEffect.uri.toUri())
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                val canShare = context.packageManager.queryIntentActivities(send, 0).isNotEmpty()
+                val shared = canShare && runCatching {
+                    context.startActivity(
+                        Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }.isSuccess
+                if (!shared) onEvent(SettingsState.Event.SaveLogsClicked)
+            }
+
+            is SettingsState.Effect.LogsSaved -> Toast.makeText(
+                context,
+                context.getString(R.string.settings_logs_saved, settingsEffect.path),
+                Toast.LENGTH_LONG,
+            ).show()
+
+            SettingsState.Effect.LogsFailed ->
+                Toast.makeText(context, R.string.settings_logs_failed, Toast.LENGTH_LONG).show()
+
+            SettingsState.Effect.CacheCleared ->
+                Toast.makeText(context, R.string.settings_clear_cache_done, Toast.LENGTH_SHORT).show()
+
+            SettingsState.Effect.CacheClearFailed ->
+                Toast.makeText(context, R.string.settings_clear_cache_failed, Toast.LENGTH_LONG).show()
+
+            else -> Unit
         }
     }
 
