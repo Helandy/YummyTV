@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.watchlater.mobile
 
+import su.afk.yummy.tv.core.designsystem.motion.listItemMotion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,6 +72,7 @@ fun WatchLaterMobileScreen(
                 items(state.items, key = { "${it.animeId}_${it.episode}" }) { item ->
                     WatchLaterMobileCard(
                         item = item,
+                        modifier = listItemMotion(),
                         onClick = {
                             onEvent(
                                 WatchLaterState.Event.ItemSelected(item.animeId, item.episode),

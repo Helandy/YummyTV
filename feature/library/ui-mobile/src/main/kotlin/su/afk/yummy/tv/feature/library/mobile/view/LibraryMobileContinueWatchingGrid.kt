@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.library.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.gridItemMotion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,7 +72,7 @@ internal fun LibraryMobileContinueWatchingGrid(
                 entry = entry,
                 episodeLabel = episodeLabel,
                 isLoading = entry.animeId == launchingAnimeId,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = gridItemMotion().fillMaxWidth(),
                 onDetails = { onDetailsSelected(entry) },
                 onDelete = { onDeleteSelected(entry) },
                 onClick = { onEntrySelected(entry) },

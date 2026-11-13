@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.mobile.mysubscriptions
 
+import su.afk.yummy.tv.core.designsystem.motion.listItemMotion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -83,6 +84,7 @@ fun MySubscriptionsMobileScreen(
                 ) { subscription ->
                     MySubscriptionMobileRow(
                         subscription = subscription,
+                        modifier = listItemMotion(),
                         onClick = {
                             onEvent(
                                 MySubscriptionsState.Event.SubscriptionSelected(subscription.animeId),

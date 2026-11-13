@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.library.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.listItemMotion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -124,6 +125,7 @@ internal fun LibraryMobilePage(
             val card = remember(item, tab, posterUrls) { item.toTitleListCardUi(tab, posterUrls) }
             MobileTitleListCard(
                 item = card,
+                modifier = listItemMotion(),
                 nowEpochSeconds = nowEpochSeconds,
                 showYear = state.showTitleYear,
                 trailingAction = {
