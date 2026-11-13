@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -34,7 +35,7 @@ internal fun TvMainContentPane(
         } else {
             0.dp
         },
-        animationSpec = tween(durationMillis = TvSideMenuAnimationDurationMillis),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "TvMainContentPaneOffset",
     )
 

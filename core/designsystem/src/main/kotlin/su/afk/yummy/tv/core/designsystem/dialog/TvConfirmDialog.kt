@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.dialog
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -151,7 +152,7 @@ private fun TvConfirmOption(
     val focused by interactionSource.collectIsFocusedAsState()
     val bgColor by animateColorAsState(
         targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
-        animationSpec = tween(durationMillis = 150),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "confirmOptionBg",
     )
     val textColor = when {

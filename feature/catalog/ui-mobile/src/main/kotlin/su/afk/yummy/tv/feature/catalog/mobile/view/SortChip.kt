@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
@@ -29,7 +30,7 @@ internal fun SortChip(
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (reversed == true) 0f else 180f,
-        animationSpec = tween(durationMillis = CHIP_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "sortDirectionRotation",
     )
     FilterChip(

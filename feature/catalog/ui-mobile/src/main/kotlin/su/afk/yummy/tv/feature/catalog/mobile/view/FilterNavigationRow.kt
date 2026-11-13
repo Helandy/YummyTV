@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -49,7 +50,7 @@ internal fun FilterNavigationRow(
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
-        animationSpec = tween(durationMillis = CHIP_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "filterNavIconTint",
     )
 
@@ -79,10 +80,10 @@ internal fun FilterNavigationRow(
         )
         AnimatedVisibility(
             visible = hasSelection,
-            enter = expandHorizontally(tween(CHIP_ANIMATION_MILLIS)) +
-                    fadeIn(tween(CHIP_ANIMATION_MILLIS)),
-            exit = shrinkHorizontally(tween(CHIP_ANIMATION_MILLIS)) +
-                    fadeOut(tween(CHIP_ANIMATION_MILLIS)),
+            enter = expandHorizontally(tween(YummyMotion.Short)) +
+                    fadeIn(tween(YummyMotion.Short)),
+            exit = shrinkHorizontally(tween(YummyMotion.Short)) +
+                    fadeOut(tween(YummyMotion.Short)),
         ) {
             Text(
                 text = selectedCount.toString(),

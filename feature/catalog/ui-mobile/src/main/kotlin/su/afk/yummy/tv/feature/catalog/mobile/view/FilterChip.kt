@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -35,7 +36,7 @@ internal fun FilterChip(
         } else {
             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
         },
-        animationSpec = tween(durationMillis = CHIP_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "filterChipBorder",
     )
     val backgroundColor by animateColorAsState(
@@ -44,7 +45,7 @@ internal fun FilterChip(
         } else {
             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f)
         },
-        animationSpec = tween(durationMillis = CHIP_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "filterChipBackground",
     )
     val contentColor by animateColorAsState(
@@ -53,7 +54,7 @@ internal fun FilterChip(
         } else {
             MaterialTheme.colorScheme.onBackground
         },
-        animationSpec = tween(durationMillis = CHIP_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "filterChipContent",
     )
 

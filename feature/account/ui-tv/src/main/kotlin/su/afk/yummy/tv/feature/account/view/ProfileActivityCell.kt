@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -59,12 +60,12 @@ internal fun ProfileActivityCell(
             cell.isFuture -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
             else -> Color.Transparent
         },
-        animationSpec = tween(CELL_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "activityCellBorder",
     )
     val scale by animateFloatAsState(
         targetValue = if (focused) FOCUSED_CELL_SCALE else 1f,
-        animationSpec = tween(CELL_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "activityCellScale",
     )
     Box(
@@ -100,5 +101,4 @@ internal fun ProfileActivityCell(
     }
 }
 
-private const val CELL_ANIMATION_DURATION_MS = 150
 private const val FOCUSED_CELL_SCALE = 1.08f

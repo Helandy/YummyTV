@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.tv
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalPanelDecor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.animation.AnimatedVisibility
@@ -23,10 +24,10 @@ fun TvOverlayAppear(
     }
     AnimatedVisibility(
         visibleState = visibleState,
-        enter = fadeIn(tween(TV_OVERLAY_APPEAR_MILLIS)) +
+        enter = fadeIn(tween(YummyMotion.Short)) +
                 scaleIn(
                     initialScale = TV_OVERLAY_APPEAR_INITIAL_SCALE,
-                    animationSpec = tween(TV_OVERLAY_APPEAR_MILLIS),
+                    animationSpec = tween(YummyMotion.Short),
                 ),
         exit = ExitTransition.None,
         modifier = modifier,
@@ -35,5 +36,4 @@ fun TvOverlayAppear(
     }
 }
 
-private const val TV_OVERLAY_APPEAR_MILLIS = 200
 private const val TV_OVERLAY_APPEAR_INITIAL_SCALE = 0.92f

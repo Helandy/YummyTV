@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -157,7 +158,7 @@ private fun LibraryListOptionItem(
     val shape = RoundedCornerShape(12.dp)
     val bgColor by animateColorAsState(
         targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
-        animationSpec = tween(durationMillis = 150),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "libraryListItemBg",
     )
     val textColor = if (focused) Color.Black else Color.White

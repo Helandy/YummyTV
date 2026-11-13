@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -33,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.feature.account.common.utils.label
 
-private const val TAB_ANIMATION_DURATION_MS = 150
 private const val MAX_BADGE_COUNT = 9
 
 @Composable
@@ -54,7 +54,7 @@ internal fun AccountTabButton(
             selected -> MaterialTheme.colorScheme.onBackground
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
-        animationSpec = tween(TAB_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "accountTabContent",
     )
     val indicatorColor by animateColorAsState(
@@ -63,7 +63,7 @@ internal fun AccountTabButton(
             selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
             else -> Color.Transparent
         },
-        animationSpec = tween(TAB_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "accountTabIndicator",
     )
     val containerColor by animateColorAsState(
@@ -72,7 +72,7 @@ internal fun AccountTabButton(
         } else {
             Color.Transparent
         },
-        animationSpec = tween(TAB_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "accountTabContainer",
     )
 

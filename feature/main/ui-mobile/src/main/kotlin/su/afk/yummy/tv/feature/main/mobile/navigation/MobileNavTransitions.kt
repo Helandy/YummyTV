@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.mobile.navigation
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -40,8 +41,8 @@ internal fun mobileNavTransitionSpec(style: NavTransitionStyle): NavTransitionSp
                 ),
             ) + scaleIn(
                 initialScale = MOBILE_NAV_TRANSITION_SCALE,
-                animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
-            ) togetherWith fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS))
+                animationSpec = tween(YummyMotion.Medium),
+            ) togetherWith fadeOut(tween(YummyMotion.Quick))
         }
     }
 
@@ -71,10 +72,10 @@ internal fun mobileNavPopTransitionSpec(style: NavTransitionStyle): NavTransitio
                     durationMillis = MOBILE_NAV_FADE_IN_MILLIS,
                     delayMillis = MOBILE_NAV_FADE_IN_DELAY_MILLIS,
                 ),
-            ) togetherWith fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS)) +
+            ) togetherWith fadeOut(tween(YummyMotion.Quick)) +
                 scaleOut(
                     targetScale = MOBILE_NAV_TRANSITION_SCALE,
-                    animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
+                    animationSpec = tween(YummyMotion.Medium),
                 )
         }
     }
@@ -84,10 +85,8 @@ internal fun mobileNavPopTransitionSpec(style: NavTransitionStyle): NavTransitio
     }
 }
 
-private const val MOBILE_NAV_TRANSITION_MILLIS = 300
 private const val MOBILE_NAV_SLIDE_MILLIS = 320
 private const val MOBILE_NAV_PARALLAX_DIVIDER = 5
 private const val MOBILE_NAV_FADE_IN_MILLIS = 220
 private const val MOBILE_NAV_FADE_IN_DELAY_MILLIS = 60
-private const val MOBILE_NAV_FADE_OUT_MILLIS = 120
 private const val MOBILE_NAV_TRANSITION_SCALE = 0.94f

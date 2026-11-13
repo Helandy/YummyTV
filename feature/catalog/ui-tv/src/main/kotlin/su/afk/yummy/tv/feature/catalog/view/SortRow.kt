@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
@@ -13,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 
-private const val SORT_DIRECTION_ANIMATION_MILLIS = 180
 
 /**
  * Row of a sort option. The selected one shows the order with a rotating arrow instead of
@@ -31,7 +31,7 @@ internal fun SortRow(
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (reversed == true) 0f else 180f,
-        animationSpec = tween(durationMillis = SORT_DIRECTION_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "sortDirectionRotation",
     )
     SelectableRow(

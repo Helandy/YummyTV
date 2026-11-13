@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -67,7 +68,7 @@ internal fun SheetHeader(
             // visibility is animated with alpha only to avoid layout shifts below.
             val actionAlpha by animateFloatAsState(
                 targetValue = if (actionVisible) 1f else 0f,
-                animationSpec = tween(durationMillis = CHIP_ANIMATION_MILLIS),
+                animationSpec = tween(durationMillis = YummyMotion.Short),
                 label = "sheetHeaderAction",
             )
             TextButton(

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.focus
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
@@ -13,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-private const val TV_FOCUS_BORDER_ANIMATION_MILLIS = 180
 
 @Composable
 fun TvFocusOverlay(
@@ -26,7 +26,7 @@ fun TvFocusOverlay(
         } else {
             Color.Transparent
         },
-        animationSpec = tween(durationMillis = TV_FOCUS_BORDER_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "tvFocusOverlayBorder",
     )
     if (borderColor.alpha > 0f) {

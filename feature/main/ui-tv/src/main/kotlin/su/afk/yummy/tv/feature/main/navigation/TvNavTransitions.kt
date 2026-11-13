@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.navigation
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -29,22 +30,22 @@ private val noTransition: ContentTransform = EnterTransition.None togetherWith E
 internal fun tvNavTransitionSpec(style: NavTransitionStyle): NavTransitionSpec = when (style) {
     NavTransitionStyle.SLIDE -> {
         {
-            slideInHorizontally(tween(TV_NAV_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) {
+            slideInHorizontally(tween(YummyMotion.Medium, easing = FastOutSlowInEasing)) {
                 it / TV_NAV_SLIDE_DIVIDER
-            } + fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) togetherWith
-                slideOutHorizontally(tween(TV_NAV_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) {
+            } + fadeIn(tween(YummyMotion.Medium)) togetherWith
+                slideOutHorizontally(tween(YummyMotion.Medium, easing = FastOutSlowInEasing)) {
                     -it / TV_NAV_SLIDE_DIVIDER
-                } + fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
+                } + fadeOut(tween(YummyMotion.Medium))
         }
     }
 
     NavTransitionStyle.FADE_SCALE -> {
         {
-            fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) +
+            fadeIn(tween(YummyMotion.Medium)) +
                 scaleIn(
                     initialScale = TV_NAV_TRANSITION_SCALE,
-                    animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
-                ) togetherWith fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
+                    animationSpec = tween(YummyMotion.Medium),
+                ) togetherWith fadeOut(tween(YummyMotion.Medium))
         }
     }
 
@@ -65,12 +66,12 @@ internal fun tvNavPopTransitionSpec(style: NavTransitionStyle): NavTransitionSpe
             if (initialState.entries.any { it.contentKey == PLAYER_CONTENT_KEY }) {
                 noTransition
             } else {
-                slideInHorizontally(tween(TV_NAV_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) {
+                slideInHorizontally(tween(YummyMotion.Medium, easing = FastOutSlowInEasing)) {
                     -it / TV_NAV_SLIDE_DIVIDER
-                } + fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) togetherWith
-                    slideOutHorizontally(tween(TV_NAV_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) {
+                } + fadeIn(tween(YummyMotion.Medium)) togetherWith
+                    slideOutHorizontally(tween(YummyMotion.Medium, easing = FastOutSlowInEasing)) {
                         it / TV_NAV_SLIDE_DIVIDER
-                    } + fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
+                    } + fadeOut(tween(YummyMotion.Medium))
             }
         }
     }
@@ -80,11 +81,11 @@ internal fun tvNavPopTransitionSpec(style: NavTransitionStyle): NavTransitionSpe
             if (initialState.entries.any { it.contentKey == PLAYER_CONTENT_KEY }) {
                 noTransition
             } else {
-                fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) togetherWith
-                    fadeOut(tween(TV_NAV_TRANSITION_MILLIS)) +
+                fadeIn(tween(YummyMotion.Medium)) togetherWith
+                    fadeOut(tween(YummyMotion.Medium)) +
                     scaleOut(
                         targetScale = TV_NAV_TRANSITION_SCALE,
-                        animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
+                        animationSpec = tween(YummyMotion.Medium),
                     )
             }
         }
@@ -95,6 +96,5 @@ internal fun tvNavPopTransitionSpec(style: NavTransitionStyle): NavTransitionSpe
     }
 }
 
-private const val TV_NAV_TRANSITION_MILLIS = 280
 private const val TV_NAV_TRANSITION_SCALE = 1.05f
 private const val TV_NAV_SLIDE_DIVIDER = 10

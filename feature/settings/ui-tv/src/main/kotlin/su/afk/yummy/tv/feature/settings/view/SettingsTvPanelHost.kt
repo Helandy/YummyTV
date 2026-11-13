@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -65,7 +66,7 @@ internal fun SettingsTvPanelHost(
     ) {
         AnimatedContent(
             targetState = selectedTab,
-            transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(180)) },
+            transitionSpec = { fadeIn(tween(YummyMotion.Short)) togetherWith fadeOut(tween(YummyMotion.Short)) },
             label = "settings_tab_content",
             modifier = Modifier.widthIn(max = 720.dp),
         ) { tab ->

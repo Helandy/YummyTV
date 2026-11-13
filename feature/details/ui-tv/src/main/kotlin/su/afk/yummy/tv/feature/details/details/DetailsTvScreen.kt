@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.details
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -108,7 +109,7 @@ fun DetailsTvScreen(
     ) {
         Crossfade(
             targetState = screenState,
-            animationSpec = tween(durationMillis = 260),
+            animationSpec = tween(durationMillis = YummyMotion.Medium),
             label = "detailsScreenState",
         ) { target ->
             when (target) {

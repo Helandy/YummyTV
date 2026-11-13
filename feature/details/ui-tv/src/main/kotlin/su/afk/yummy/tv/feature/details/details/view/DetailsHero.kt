@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -115,18 +116,18 @@ internal fun DetailsHero(
     LaunchedEffect(Unit) { appeared = true }
     val infoAlpha by animateFloatAsState(
         targetValue = if (appeared) 1f else 0f,
-        animationSpec = tween(durationMillis = HERO_APPEAR_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Long),
         label = "heroInfoAlpha",
     )
     val infoShift by animateFloatAsState(
         targetValue = if (appeared) 0f else 1f,
-        animationSpec = tween(durationMillis = HERO_APPEAR_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Long),
         label = "heroInfoShift",
     )
     val posterAlpha by animateFloatAsState(
         targetValue = if (appeared) 1f else 0f,
         animationSpec = tween(
-            durationMillis = HERO_APPEAR_MILLIS,
+            durationMillis = YummyMotion.Long,
             delayMillis = HERO_POSTER_APPEAR_DELAY_MILLIS,
         ),
         label = "heroPosterAlpha",
@@ -407,5 +408,4 @@ private val HERO_POSTER_WIDTH_COMPACT = 300.dp
 private val HERO_POSTER_CORNER = 20.dp
 private val HERO_POSTER_ELEVATION = 24.dp
 internal val HERO_APPEAR_SHIFT = 18.dp
-internal const val HERO_APPEAR_MILLIS = 380
 internal const val HERO_POSTER_APPEAR_DELAY_MILLIS = 100

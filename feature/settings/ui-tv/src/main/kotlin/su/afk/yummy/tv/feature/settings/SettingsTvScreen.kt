@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -179,8 +180,8 @@ fun SettingsTvScreen(
         // На экране всегда две колонки: с открытыми вариантами список категорий уезжает влево.
         AnimatedVisibility(
             visible = openedPicker == null,
-            enter = fadeIn(tween(180)) + expandHorizontally(tween(180)),
-            exit = fadeOut(tween(120)) + shrinkHorizontally(tween(120)),
+            enter = fadeIn(tween(YummyMotion.Short)) + expandHorizontally(tween(YummyMotion.Short)),
+            exit = fadeOut(tween(YummyMotion.Quick)) + shrinkHorizontally(tween(YummyMotion.Quick)),
         ) {
             Row {
                 SettingsTvCategoryList(
@@ -214,8 +215,8 @@ fun SettingsTvScreen(
 
         AnimatedVisibility(
             visible = openedPicker != null,
-            enter = fadeIn(tween(180)) + expandHorizontally(tween(180)),
-            exit = fadeOut(tween(120)) + shrinkHorizontally(tween(120)),
+            enter = fadeIn(tween(YummyMotion.Short)) + expandHorizontally(tween(YummyMotion.Short)),
+            exit = fadeOut(tween(YummyMotion.Quick)) + shrinkHorizontally(tween(YummyMotion.Quick)),
         ) {
             // Держим последний пикер, пока колонка уезжает.
             var shownPicker by remember { mutableStateOf(openedPicker) }

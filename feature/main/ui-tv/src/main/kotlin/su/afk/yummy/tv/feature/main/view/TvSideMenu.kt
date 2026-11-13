@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.feature.main.utils.tvSideMenuMetrics
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.verticalScroll
@@ -92,7 +93,7 @@ internal fun TvSideMenu(
 
     val menuWidth by animateDpAsState(
         targetValue = if (expanded) TvSideMenuExpandedWidth else TvSideMenuCollapsedWidth,
-        animationSpec = tween(durationMillis = TvSideMenuAnimationDurationMillis),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "TvSideMenuWidth",
     )
     val backgroundColor = MaterialTheme.colorScheme.background

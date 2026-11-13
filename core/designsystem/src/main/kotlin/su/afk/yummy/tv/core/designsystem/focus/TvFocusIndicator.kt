@@ -1,10 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.focus
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalFocusLights
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -22,7 +21,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 
-private const val TV_FOCUS_BORDER_ANIMATION_MILLIS = 180
 
 /**
  * Индикатор фокуса для НЕкликабельных фокус-остановок (текст/картинки, по которым
@@ -39,15 +37,12 @@ fun Modifier.tvFocusIndicator(
     val focused by interactionSource.collectIsFocusedAsState()
     val scale by animateFloatAsState(
         targetValue = if (focused) focusedScale else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMediumLow,
-        ),
+        animationSpec = YummyMotion.scaleSpring(),
         label = "tvFocusIndicatorScale",
     )
     val borderColor by animateColorAsState(
         targetValue = if (focused) focusedBorderColor else Color.Transparent,
-        animationSpec = tween(durationMillis = TV_FOCUS_BORDER_ANIMATION_MILLIS),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "tvFocusIndicatorBorder",
     )
 

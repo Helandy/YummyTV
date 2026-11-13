@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -64,7 +65,7 @@ internal fun SettingsCategoryItem(
             selected -> colors.primary.copy(alpha = 0.15f)
             else -> Color.Transparent
         },
-        animationSpec = tween(150),
+        animationSpec = tween(YummyMotion.Short),
         label = "settingsCategoryItemBackground",
     )
     val contentColor by animateColorAsState(
@@ -73,7 +74,7 @@ internal fun SettingsCategoryItem(
             selected -> colors.primary
             else -> colors.onSurfaceVariant
         },
-        animationSpec = tween(150),
+        animationSpec = tween(YummyMotion.Short),
         label = "settingsCategoryItemContent",
     )
     val accentColor = when {

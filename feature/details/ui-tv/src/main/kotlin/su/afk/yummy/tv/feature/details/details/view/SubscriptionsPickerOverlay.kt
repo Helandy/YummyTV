@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -186,7 +187,7 @@ private fun SubscriptionOptionItem(
     }
     val bgColor by animateColorAsState(
         targetValue = targetBgColor,
-        animationSpec = tween(durationMillis = 150),
+        animationSpec = tween(durationMillis = YummyMotion.Short),
         label = "subscriptionItemBg",
     )
     val textColor = if (focused) Color.Black else Color.White

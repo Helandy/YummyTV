@@ -25,10 +25,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 
 private val StarPaleYellow = Color(0xFFD8C47A)
 private val StarDeepYellow = Color(0xFFC9A100)
-private const val STAR_ANIMATION_MS = 160
 
 /**
  * Звезда озвучки/балансера для ТВ: отдельная иконка справа от строки, фокус на неё уходит
@@ -46,7 +46,7 @@ fun TvSourceStarButton(
     val focused by interactionSource.collectIsFocusedAsState()
     val scale by animateFloatAsState(
         targetValue = if (focused) 1.18f else 1f,
-        animationSpec = tween(STAR_ANIMATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "tvSourceStarScale",
     )
     val background by animateColorAsState(
@@ -56,7 +56,7 @@ fun TvSourceStarButton(
             focused -> StarPaleYellow.copy(alpha = 0.22f)
             else -> Color.White.copy(alpha = 0.06f)
         },
-        animationSpec = tween(STAR_ANIMATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "tvSourceStarBackground",
     )
     val tint by animateColorAsState(
@@ -67,7 +67,7 @@ fun TvSourceStarButton(
             focused -> Color.White.copy(alpha = 0.9f)
             else -> Color.White.copy(alpha = 0.45f)
         },
-        animationSpec = tween(STAR_ANIMATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "tvSourceStarTint",
     )
     Box(

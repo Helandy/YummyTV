@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.view.common
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -199,7 +200,7 @@ private fun BalancerOptionItem(
     if (isSupported) {
         val bgColor by animateColorAsState(
             targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
-            animationSpec = tween(durationMillis = 150),
+            animationSpec = tween(durationMillis = YummyMotion.Short),
             label = "balancerItemBg",
         )
         val textColor = if (focused) Color.Black else Color.White

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -28,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.feature.account.common.utils.label
 
-private const val TILE_ANIMATION_DURATION_MS = 150
 
 /**
  * Общий вид плитки профиля: анимированные фон, рамка и лёгкое увеличение при фокусе.
@@ -47,22 +47,22 @@ internal fun Modifier.profileTileVisual(
         } else {
             MaterialTheme.colorScheme.onSurface.copy(alpha = unfocusedContainerAlpha)
         },
-        animationSpec = tween(TILE_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "profileTileContainer",
     )
     val borderColor by animateColorAsState(
         targetValue = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = tween(TILE_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "profileTileBorder",
     )
     val borderWidth by animateDpAsState(
         targetValue = if (focused) 3.dp else 2.dp,
-        animationSpec = tween(TILE_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "profileTileBorderWidth",
     )
     val scale by animateFloatAsState(
         targetValue = if (focused) focusedScale else 1f,
-        animationSpec = tween(TILE_ANIMATION_DURATION_MS),
+        animationSpec = tween(YummyMotion.Short),
         label = "profileTileScale",
     )
 

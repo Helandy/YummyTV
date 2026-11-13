@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -83,8 +84,8 @@ internal fun CatalogMobileFilterPanel(
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visibleState = visibleState,
-            enter = fadeIn(tween(PANEL_ANIMATION_MILLIS)),
-            exit = fadeOut(tween(PANEL_ANIMATION_MILLIS)),
+            enter = fadeIn(tween(YummyMotion.Medium)),
+            exit = fadeOut(tween(YummyMotion.Medium)),
         ) {
             Box(
                 modifier = Modifier
@@ -100,8 +101,8 @@ internal fun CatalogMobileFilterPanel(
 
         AnimatedVisibility(
             visibleState = visibleState,
-            enter = slideInHorizontally(tween(PANEL_ANIMATION_MILLIS)) { it },
-            exit = slideOutHorizontally(tween(PANEL_ANIMATION_MILLIS)) { it },
+            enter = slideInHorizontally(tween(YummyMotion.Medium)) { it },
+            exit = slideOutHorizontally(tween(YummyMotion.Medium)) { it },
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
             val panelShape = RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
@@ -124,12 +125,12 @@ internal fun CatalogMobileFilterPanel(
                     targetState = genrePickerMode,
                     transitionSpec = {
                         val forward = targetState != null
-                        slideInHorizontally(tween(PANEL_CONTENT_ANIMATION_MILLIS)) { fullWidth ->
+                        slideInHorizontally(tween(YummyMotion.Medium)) { fullWidth ->
                             if (forward) fullWidth else -fullWidth
-                        } + fadeIn(tween(PANEL_CONTENT_ANIMATION_MILLIS)) togetherWith
-                                slideOutHorizontally(tween(PANEL_CONTENT_ANIMATION_MILLIS)) { fullWidth ->
+                        } + fadeIn(tween(YummyMotion.Medium)) togetherWith
+                                slideOutHorizontally(tween(YummyMotion.Medium)) { fullWidth ->
                                     if (forward) -fullWidth else fullWidth
-                                } + fadeOut(tween(PANEL_CONTENT_ANIMATION_MILLIS))
+                                } + fadeOut(tween(YummyMotion.Medium))
                     },
                     modifier = Modifier.fillMaxSize(),
                     label = "filterPanelContent",
@@ -183,6 +184,4 @@ internal fun CatalogMobileFilterPanel(
     }
 }
 
-private const val PANEL_ANIMATION_MILLIS = 280
-private const val PANEL_CONTENT_ANIMATION_MILLIS = 260
 private const val PANEL_WIDTH_FRACTION = 0.86f
