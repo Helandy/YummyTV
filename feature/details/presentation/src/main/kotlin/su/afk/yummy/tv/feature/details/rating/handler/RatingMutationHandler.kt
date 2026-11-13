@@ -1,7 +1,9 @@
 package su.afk.yummy.tv.feature.details.rating.handler
 
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
@@ -36,15 +38,23 @@ internal class RatingMutationHandler @Inject constructor(
         )
     }
 
+    /**
+     * Мутация неотменяемая: пользователь может выйти с экрана сразу после выбора, и VM рейтинга
+     * очистится — без этого запрос и запись в кэш обрываются, и деталка не увидит новую оценку.
+     */
     suspend fun setRating(animeId: Int, rating: Int): RatingMutationResult =
-        runSuspendCatching { setAnimeRating(animeId, rating) }
-            .toMutationResult(PendingMutation.SetRating(animeId, rating))
-            .alsoSyncLibrary(animeId, rating)
+        withContext(NonCancellable) {
+            runSuspendCatching { setAnimeRating(animeId, rating) }
+                .toMutationResult(PendingMutation.SetRating(animeId, rating))
+                .alsoSyncLibrary(animeId, rating)
+        }
 
     suspend fun deleteRating(animeId: Int): RatingMutationResult =
-        runSuspendCatching { deleteAnimeRating(animeId) }
-            .toMutationResult(PendingMutation.DeleteRating(animeId))
-            .alsoSyncLibrary(animeId, rating = null)
+        withContext(NonCancellable) {
+            runSuspendCatching { deleteAnimeRating(animeId) }
+                .toMutationResult(PendingMutation.DeleteRating(animeId))
+                .alsoSyncLibrary(animeId, rating = null)
+        }
 
     /**
      * Локальная библиотека иначе узнает об оценке только при следующей синхронизации списков —
