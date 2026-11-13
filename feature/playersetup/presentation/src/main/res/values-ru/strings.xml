@@ -28,8 +28,8 @@
     <string name="player_setup_mobile_orientation_hint">Системная следует автоповороту; остальные режимы фиксируют ориентацию</string>
     <string name="player_setup_mobile_orientation_system">Системная</string>
     <string name="player_setup_mobile_orientation_portrait">Вертикально</string>
-    <string name="player_setup_mobile_pip_label">Плавающий режим (PiP)</string>
-    <string name="player_setup_mobile_pip_hint">Включать при выходе из приложения во время воспроизведения</string>
+    <string name="player_setup_mobile_pip_label">Плавающее видео (PiP)</string>
+    <string name="player_setup_mobile_pip_hint">Когда вы сворачиваете приложение, видео не останавливается, а продолжает идти в небольшом окошке поверх других приложений</string>
     <string name="player_setup_mobile_section_general">Общее</string>
     <string name="player_setup_mobile_orientation_system_hint">Следовать системной настройке поворота экрана</string>
     <string name="player_setup_mobile_orientation_sensor_landscape">Альбомная (датчик)</string>

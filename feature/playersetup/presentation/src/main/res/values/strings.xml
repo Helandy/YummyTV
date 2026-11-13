@@ -28,8 +28,8 @@
     <string name="player_setup_mobile_orientation_hint">System follows auto-rotate; the other modes lock the orientation</string>
     <string name="player_setup_mobile_orientation_system">System</string>
     <string name="player_setup_mobile_orientation_portrait">Portrait</string>
-    <string name="player_setup_mobile_pip_label">Picture-in-Picture (PiP)</string>
-    <string name="player_setup_mobile_pip_hint">Switch on automatically when leaving the app during playback</string>
+    <string name="player_setup_mobile_pip_label">Floating video (PiP)</string>
+    <string name="player_setup_mobile_pip_hint">When you leave the app, the video keeps playing in a small window on top of other apps</string>
     <string name="player_setup_mobile_section_general">General</string>
     <string name="player_setup_mobile_orientation_system_hint">Follow the system rotation setting</string>
     <string name="player_setup_mobile_orientation_sensor_landscape">Landscape (sensor)</string>
