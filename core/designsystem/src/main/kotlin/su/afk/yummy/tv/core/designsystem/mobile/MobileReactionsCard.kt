@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.input.popOnSelect
+import su.afk.yummy.tv.core.designsystem.mobile.input.rememberToggleHaptic
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 
@@ -137,8 +139,12 @@ private fun MobileReactionButton(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 13.dp),
 ) {
+    val toggleHaptic = rememberToggleHaptic()
     Surface(
-        onClick = onClick,
+        onClick = {
+            toggleHaptic(selected)
+            onClick()
+        },
         modifier = modifier,
         enabled = enabled,
         color = if (selected) {
@@ -155,7 +161,7 @@ private fun MobileReactionButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp).popOnSelect(selected))
             Text(
                 text = count.toCompactCount(),
                 style = MaterialTheme.typography.labelLarge,

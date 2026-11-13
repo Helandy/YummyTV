@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,12 +36,14 @@ fun MobileNewsCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     ElevatedCard(
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .pressScale(interactionSource)
+            .clickable(interactionSource = interactionSource, indication = LocalIndication.current, onClick = onClick),
     ) {
         imageUrl?.takeIf(String::isNotBlank)?.let {
             CachedAsyncImage(

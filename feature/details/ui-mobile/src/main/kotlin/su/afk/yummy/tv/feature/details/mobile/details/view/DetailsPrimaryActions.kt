@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.rememberToggleHaptic
+import su.afk.yummy.tv.core.designsystem.mobile.input.popOnSelect
 import su.afk.yummy.tv.core.designsystem.onboarding.onboardingTarget
 import su.afk.yummy.tv.feature.details.mobile.details.utils.MOBILE_DETAILS_WATCH_TARGET
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
@@ -119,8 +121,12 @@ internal fun DetailsPrimaryActions(
             customItem(
                 buttonGroupContent = {
                     val interactionSource = remember { MutableInteractionSource() }
+                    val toggleHaptic = rememberToggleHaptic()
                     FilledTonalButton(
-                        onClick = onFavoriteToggle,
+                        onClick = {
+                            toggleHaptic(state.isFavorite)
+                            onFavoriteToggle()
+                        },
                         interactionSource = interactionSource,
                         colors = if (state.isFavorite) {
                             ButtonDefaults.filledTonalButtonColors(
@@ -138,6 +144,7 @@ internal fun DetailsPrimaryActions(
                         Icon(
                             imageVector = if (state.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                             contentDescription = null,
+                            modifier = Modifier.popOnSelect(state.isFavorite),
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(

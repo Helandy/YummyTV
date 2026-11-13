@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,10 +48,18 @@ fun MobileProgressMediaCard(
     onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Card(
         modifier = modifier
+            .pressScale(interactionSource)
             .clickablePointer()
-            .combinedClickable(enabled = !isLoading, onLongClick = onLongClick, onClick = onClick),
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                enabled = !isLoading,
+                onLongClick = onLongClick,
+                onClick = onClick,
+            ),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {

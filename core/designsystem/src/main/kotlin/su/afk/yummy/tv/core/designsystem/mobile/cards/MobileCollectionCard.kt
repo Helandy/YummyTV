@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -29,15 +33,20 @@ fun MobileCollectionCard(
     modifier: Modifier = Modifier,
     badge: (@Composable BoxScope.() -> Unit)? = null,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().pressScale(interactionSource),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Column(
             Modifier
                 .clickablePointer()
-                .combinedClickable(onClick = onClick),
+                .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
+                    onClick = onClick,
+                ),
         ) {
             PostersCollage(
                 posterUrls = posterUrls,

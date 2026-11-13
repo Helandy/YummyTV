@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -53,8 +57,9 @@ fun MobileTitleRowCard(
     onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().pressScale(interactionSource),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
@@ -64,7 +69,12 @@ fun MobileTitleRowCard(
                 .height(PosterWidth / TITLE_POSTER_ASPECT_RATIO)
                 .clickablePointer()
                 .onSecondaryClick(onLongClick)
-                .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+                .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                ),
         ) {
             Box(Modifier.width(PosterWidth).fillMaxHeight().seasonalCardDecor(animeId ?: posterUrls.firstOrNull().hashCode())) {
                 FallbackAsyncImage(

@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.comments.mobile.view
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.rememberToggleHaptic
+import su.afk.yummy.tv.core.designsystem.mobile.input.popOnSelect
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -28,10 +30,14 @@ internal fun VoteButton(
 ) {
     val voteColor = if (isLike) LikeColor else DislikeColor
     val tint = if (selected) voteColor else voteColor.copy(alpha = 0.72f)
+    val toggleHaptic = rememberToggleHaptic()
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
+            .clickable {
+                toggleHaptic(selected)
+                onClick()
+            }
             .padding(horizontal = 6.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -40,7 +46,7 @@ internal fun VoteButton(
             imageVector = if (isLike) Icons.Filled.ThumbUp else Icons.Filled.ThumbDown,
             contentDescription = null,
             tint = tint,
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(18.dp).popOnSelect(selected),
         )
         Text(
             text = count.toString(),

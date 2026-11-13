@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.similar.view
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.rememberToggleHaptic
+import su.afk.yummy.tv.core.designsystem.mobile.input.popOnSelect
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,17 +71,25 @@ private fun VoteButton(
     icon: ImageVector,
     onClick: () -> Unit,
 ) {
+    val toggleHaptic = rememberToggleHaptic()
     // Свой голос — залитая кнопка в цвет реакции, чужие — тот же цвет, но приглушённый.
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(
-            onClick = onClick,
+            onClick = {
+                toggleHaptic(selected)
+                onClick()
+            },
             enabled = enabled,
             colors = IconButtonDefaults.iconButtonColors(
                 containerColor = if (selected) color.copy(alpha = 0.18f) else Color.Transparent,
                 contentColor = if (selected) color else color.copy(alpha = 0.7f),
             ),
         ) {
-            Icon(imageVector = icon, contentDescription = contentDescription)
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.popOnSelect(selected),
+            )
         }
         Text(
             text = count.toString(),

@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -40,13 +44,15 @@ fun MobileTitleListCard(
     val viewerRating = if (showViewerMark) LocalLibraryUserRatings.current[item.animeId] else null
     val ownerRating = item.userRating?.takeIf { it in 1..10 }
     val year = item.yearText(showYear)
+    val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .pressScale(interactionSource)
             .clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f))
             .clickablePointer()
-            .clickable(onClick = onClick),
+            .clickable(interactionSource = interactionSource, indication = LocalIndication.current, onClick = onClick),
     ) {
         TitleListRowContent(
             item = item,

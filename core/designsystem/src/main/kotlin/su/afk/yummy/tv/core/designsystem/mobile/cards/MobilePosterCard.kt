@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -61,8 +65,9 @@ fun MobilePosterCard(
     onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Card(
-        modifier = modifier,
+        modifier = modifier.pressScale(interactionSource),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
@@ -71,6 +76,8 @@ fun MobilePosterCard(
                 .clickablePointer()
                 .onSecondaryClick(onLongClick)
                 .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
                     onClick = onClick,
                     onLongClick = onLongClick,
                 ),
