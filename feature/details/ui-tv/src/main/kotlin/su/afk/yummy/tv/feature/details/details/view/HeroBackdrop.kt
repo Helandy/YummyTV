@@ -38,7 +38,7 @@ private fun HeroBackdropImage(backdropUrls: List<String>, surface: Color) {
         models = backdropUrls,
         contentDescription = null,
         contentScale = ContentScale.Crop,
-        alpha = 0.38f,
+        alpha = 0.5f,
         modifier = Modifier
             .fillMaxSize()
             .blur(HERO_BACKDROP_BLUR),
@@ -49,9 +49,19 @@ private fun HeroBackdropImage(backdropUrls: List<String>, surface: Color) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        surface.copy(alpha = 0.55f),
-                        surface.copy(alpha = 0.85f),
+                        surface.copy(alpha = 0.4f),
+                        surface.copy(alpha = 0.75f),
                     ),
+                ),
+            ),
+    )
+    // Слева текст — гасим фон сильнее, справа арт остаётся ярким (как в карусели на главной).
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(surface.copy(alpha = 0.9f), Color.Transparent),
                 ),
             ),
     )

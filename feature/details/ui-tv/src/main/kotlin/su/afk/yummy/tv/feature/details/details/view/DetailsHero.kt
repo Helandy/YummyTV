@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.details.view
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -136,7 +138,7 @@ internal fun DetailsHero(
         val rowSpacing = if (isCompactHeight) 28.dp else 48.dp
         val columnSpacing = if (isCompactHeight) 8.dp else 12.dp
         val titleMaxLines = 3
-        val posterWidth = if (isCompactHeight) 260.dp else 300.dp
+        val posterWidth = if (isCompactHeight) HERO_POSTER_WIDTH_COMPACT else HERO_POSTER_WIDTH
 
         Row(
             modifier = Modifier
@@ -262,11 +264,18 @@ internal fun DetailsHero(
             ) {
                 HeroRatingRow(details)
 
+                val posterShape = RoundedCornerShape(HERO_POSTER_CORNER)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(2f / 3f),
-                    shape = RoundedCornerShape(12.dp),
+                        .aspectRatio(2f / 3f)
+                        .shadow(HERO_POSTER_ELEVATION, posterShape)
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f),
+                            posterShape,
+                        ),
+                    shape = posterShape,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     ),
@@ -284,6 +293,10 @@ internal fun DetailsHero(
 }
 
 internal val HERO_BACKDROP_BLUR = 26.dp
+private val HERO_POSTER_WIDTH = 340.dp
+private val HERO_POSTER_WIDTH_COMPACT = 300.dp
+private val HERO_POSTER_CORNER = 16.dp
+private val HERO_POSTER_ELEVATION = 16.dp
 internal val HERO_APPEAR_SHIFT = 18.dp
 internal const val HERO_APPEAR_MILLIS = 380
 internal const val HERO_POSTER_APPEAR_DELAY_MILLIS = 100
