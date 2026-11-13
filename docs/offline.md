@@ -3,6 +3,35 @@
 Сводка по всем слоям (данные, очередь, плеер, загрузки) и как это проверять на устройстве. Детали
 каждого слоя — в профильных документах, ссылки ниже.
 
+## Обзор
+
+```mermaid
+flowchart TB
+    UI[UI: ТВ и мобилка] --> UC[UseCase]
+    UC --> REPO[Repository]
+    REPO -->|свежий кэш| ROOM[(Room yummy_cache.db<br/>таблицы + document_cache)]
+    REPO -->|нет или устарел| NET[Ktor / Yani API]
+    NET -->|успех: запись в кэш| ROOM
+    NET -.->|ошибка сети| ROOM
+    REPO -->|мутации при сбое| OUTBOX[(pending_mutations)]
+    OUTBOX -->|isOnline → flushNow| NET
+
+    UI --> COIL[Coil: память + диск]
+    UI --> PLAYER[Плеер]
+    PLAYER -->|скачанная серия| MEDIA3[(Media3 SimpleCache<br/>video_download_cache)]
+    PLAYER -->|стрим| CDN[CDN: ссылка из resolveCache, 3 мин, в памяти]
+
+    MON[NetworkConnectivityMonitor] -->|isOnline| BANNER[OfflineBanner]
+    MON -->|isOffline| PLAYER
+    MON --> OUTBOX
+```
+
+Данные идут по принципу offline-first: свежий кэш отдаётся сразу, устаревший — только если сеть
+не ответила. Пользовательские данные (библиотека, прогресс, загрузки, очередь) живут в Room и кэш-очисткой
+не затрагиваются. Детали слоёв: [storage-and-cache.md](storage-and-cache.md),
+[continue-watching.md](continue-watching.md), [new-episodes.md](new-episodes.md),
+[video-download.md](video-download.md).
+
 ## Монитор сети
 
 `NetworkConnectivityMonitor` (`core/network`):

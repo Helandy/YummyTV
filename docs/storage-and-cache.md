@@ -184,3 +184,50 @@ PendingMutationSyncWorker (WorkManager, NetworkType.CONNECTED) → PendingMutati
   `CoilImageLoaderInstaller`).
 - Токен лежит не в DataStore, а в SharedPreferences (KDoc `YaniAuthPreferences`: токен должен
   оставаться зашифрованным на диске).
+
+## Схемы
+
+Чтение с offline-first (`offlineFirstCache`, `DocumentCacheStore.getOrFetch`):
+
+```mermaid
+sequenceDiagram
+    participant VM as UseCase / Repository
+    participant C as Кэш (Room)
+    participant N as Сеть (Yani)
+    VM->>C: прочитать запись
+    alt свежая (cachedAt + TTL > now) и нет forceRefresh
+        C-->>VM: данные
+    else нет или устарела
+        VM->>N: запрос
+        alt успех
+            N-->>VM: ответ
+            VM->>C: записать (cachedAt = now)
+            VM-->>VM: отдать свежее
+        else ошибка
+            VM->>C: взять устаревшее
+            C-->>VM: данные (или ошибка, если кэша нет)
+        end
+    end
+```
+
+Слои кэша и сроки жизни:
+
+```mermaid
+flowchart LR
+    subgraph Диск
+        R[(Room v70<br/>кэш: TTL от 1 мин до 7 дн<br/>пользовательское: не чистится)]
+        CD[(Coil disk<br/>размер из настроек)]
+        MD[(Media3 SimpleCache<br/>только скачанные серии)]
+    end
+    subgraph Память
+        CM[Coil memory<br/>% от RAM]
+        RC[resolveCache ссылок плеера<br/>3 мин, до 8 записей]
+        DNS[DNS BlockedHostDns<br/>5 мин / 1 мин при ошибке]
+    end
+    TEN[Tenrai флаги серий<br/>document_cache 7 дн, резерв 24 ч] --> R
+```
+
+Прочее: HTTP-кэша в Ktor нет (`expectSuccess = true`, один ретрай GET на 5xx и сетевые ошибки);
+кэша стриминга Media3 при обычном просмотре нет. Версия в имени namespace (`-v4`, `-v5`) — ручная
+инвалидация при смене формата. Параметр `isOnline` в `offlineFirstCache` по умолчанию `true` и не
+передаётся намеренно (см. [offline.md](offline.md)).

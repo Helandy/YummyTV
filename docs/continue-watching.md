@@ -203,3 +203,26 @@ playback-цель. Presentation превращает её в destination пле�
 Постеры для обеих поверхностей — software-bitmap через синглтон Coil
 (`ContinueWatchingPosterUtils`):
 hardware-bitmap не сериализуется ни в иконку ярлыка, ни в RemoteViews.
+
+## Схема сборки карточки
+
+```mermaid
+flowchart TB
+    L[(Room watch_progress<br/>локальный)] --> M
+    R[GET /video/last-watches<br/>кэш, TTL 60 с] --> M
+    S[(suppressions<br/>скрыто вручную)] --> M
+    V[(кэш /videos<br/>watched на сервере)] --> REC
+
+    M[mergeWithRemote<br/>одна карточка на тайтл<br/>свежее побеждает, при равенстве локальное] -->|эхо ±15 с: локальная дата<br/>зеркало 4K source://: локальная| REC[reconcileWithEpisodeProgress]
+    REC -->|досмотрено + suggestNextEpisode| NEXT[REMOTE_NEXT_EPISODE<br/>номер + 1, позиция 0]
+    REC --> CARD[Карточка: LOCAL / REMOTE / REMOTE_NEXT_EPISODE<br/>до 8 штук]
+    NEXT --> CARD
+    CARD -->|клик| RES[ResolveContinueWatchingLaunchUseCase]
+    RES -->|скачано| OFF[плеер из файла]
+    RES -->|иначе| NETP[плеер: поиск видео, позиция]
+```
+
+Известное расхождение: `selectContinueWatchingVideo` (`PlayerDestinationBuilder`, используется деталкой)
+ищет видео сначала по `videoId`, затем по URL, а запуск с главной (`ContinueWatchingTargetUtils.findExactMatch`)
+для `source://` сначала сопоставляет URL. Если у серии 4K и двойник-балансер, «Продолжить» в деталке
+может открыть двойник. Проверено по коду, вживую не воспроизводилось.

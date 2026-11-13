@@ -190,3 +190,26 @@ KDoc `PlayerNavigationDelegate`: прогресс сохраняется в `ioS
   (см. [navigation.md](navigation.md), диплинки).
 - `ITvIntegration` защищён `DeviceAwareTvIntegration`: на телефоне всё no-op, потому что
   TvProvider/TvContract вне TV недоступны. Новый метод в интерфейсе нужно продублировать в guard.
+
+## Схема записи прогресса
+
+```mermaid
+sequenceDiagram
+    participant P as Плеер (PlayerProgressHandler)
+    participant DB as Room watch_progress
+    participant API as PUT /video/{id}
+    participant Q as Outbox pending_mutations
+    P->>DB: saveProgress (позиция ≥ 30 с)
+    loop не чаще раза в 10 с, userId > 0 и videoId > 0
+        P->>API: {time, duration, times[] - дельта секунд}
+    end
+    P->>API: финальная отправка при выходе (force)
+    alt сеть недоступна и это force или досмотр
+        P->>Q: enqueue MarkWatched
+        Note over Q: секунды помечены synced, чтобы не задвоить
+        Q->>API: flush при isOnline (4xx отбрасываются, кроме 408, 425, 429, 401)
+    end
+```
+
+Другие устройства получают данные pull'ом: `/video/last-watches` и `watched*` из `/videos` при открытии
+главной или `requestRefresh`. Отдельного push нет. Подробнее про слияние — [continue-watching.md](continue-watching.md).
