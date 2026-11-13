@@ -16,6 +16,7 @@
 | Объявление, строка-сообщение, min-версия | На лету: по `FeatureToggleUpdateObserver.updates` после активации |
 | Резервное обновление APK                 | При каждой проверке обновлений / скачивании                       |
 | `anime4k_enabled`                        | При обращении к источнику                                         |
+| `anime4k_ads_enabled`, `anime4k_yandex_rewarded_ad_unit_id` | При каждом показе рекламы перед 4K          |
 
 ## Ключи
 
@@ -86,6 +87,8 @@
 | Ключ              | Тип     | По умолчанию | Описание                                    |
 |-------------------|---------|--------------|---------------------------------------------|
 | `anime4k_enabled` | boolean | `true`       | Источник 4K. `false` отключает его удалённо 
+| `anime4k_ads_enabled` | boolean | `false` | Rewarded-реклама Яндекса перед 4K. `false` = реклама пропускается |
+| `anime4k_yandex_rewarded_ad_unit_id` | string | пусто | Ad unit id блока. Пусто = локальный `yummytv.yandexRewardedAdUnitId` |
 
 ## Добавление нового флага
 

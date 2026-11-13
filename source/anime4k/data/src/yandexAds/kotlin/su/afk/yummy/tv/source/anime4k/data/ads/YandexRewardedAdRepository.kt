@@ -18,8 +18,10 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.player.ResolveProgress
+import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.utils.system.ForegroundAdGate
 import su.afk.yummy.tv.source.anime4k.data.BuildConfig
+import su.afk.yummy.tv.source.anime4k.data.flag.Anime4kFeatureFlag
 import su.afk.yummy.tv.source.anime4k.domain.repository.RewardedAdRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,10 +31,13 @@ import kotlin.coroutines.resume
 /**
  * Rewarded-реклама Яндекса. Серверной верификации у SDK нет: награда это клиентский `onRewarded`.
  * Любой сбой (нет Activity, не загрузилась, показ упал) означает `false`: ссылок без рекламы не будет.
- * В debug-сборке или при выключенном [ADS_ENABLED] реклама пропускается: согласие и награда выдаются сразу.
+ * В debug-сборке или при выключенном флаге `anime4k_ads_enabled` реклама пропускается: согласие и награда выдаются сразу.
+ * Id блока берётся из флага `anime4k_yandex_rewarded_ad_unit_id`, при пустом — из BuildConfig.
  */
 @Singleton
-internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepository {
+internal class YandexRewardedAdRepository @Inject constructor(
+    private val featureToggleProvider: FeatureToggleProvider,
+) : RewardedAdRepository {
 
     private var initialized = false
 
@@ -41,10 +46,15 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
     private var preOpenConsentAtMs = 0L
 
     private val adsBypassed: Boolean
-        get() = BuildConfig.DEBUG || !ADS_ENABLED
+        get() = BuildConfig.DEBUG || !featureToggleProvider.isEnabled(Anime4kFeatureFlag.adsEnabled)
 
     override val isAvailable: Boolean
-        get() = adsBypassed || BuildConfig.YANDEX_REWARDED_AD_UNIT_ID.isNotBlank()
+        get() = adsBypassed || adUnitId().isNotBlank()
+
+    /** Id блока из Varioqub; пустой — локальный из `local.properties`. */
+    private fun adUnitId(): String =
+        featureToggleProvider.getString(Anime4kFeatureFlag.rewardedAdUnitId).trim()
+            .ifBlank { BuildConfig.YANDEX_REWARDED_AD_UNIT_ID }
 
     override suspend fun askConsent(): Boolean {
         reportResolveStep(PlayerStreamResolveStatus.AskingConsent)
@@ -86,7 +96,7 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
         val loader = RewardedAdLoader(activity)
         continuation.invokeOnCancellation { loader.cancelLoading() }
         loader.loadAd(
-            AdRequest.Builder(BuildConfig.YANDEX_REWARDED_AD_UNIT_ID).build(),
+            AdRequest.Builder(adUnitId()).build(),
             object : RewardedAdLoadListener {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     if (continuation.isActive) continuation.resume(rewardedAd)
@@ -126,8 +136,6 @@ internal class YandexRewardedAdRepository @Inject constructor() : RewardedAdRepo
     }
 
     private companion object {
-        const val ADS_ENABLED = false
-
         const val LOAD_TIMEOUT_MS = 15_000L
         const val PRE_OPEN_CONSENT_TTL_MS = 30_000L
     }

@@ -7,12 +7,17 @@ plugins {
     id("yummytv.android.hilt")
 }
 
+// false — рекламный SDK Яндекса не попадает в сборку, вместо него заглушка без рекламы.
+val yandexAdsEnabled = providers.gradleProperty("yummytv.ads.yandex").map(String::toBoolean).getOrElse(true)
+
 android {
     namespace = "su.afk.yummy.tv.source.anime4k.data"
 
     buildFeatures {
         buildConfig = true
     }
+
+    sourceSets.getByName("main").kotlin.directories.add(if (yandexAdsEnabled) "src/yandexAds/kotlin" else "src/noAds/kotlin")
 
     defaultConfig {
         buildConfigField(
@@ -45,7 +50,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
     // Версия намеренно не в общем каталоге: удаление каталога source/anime4k не оставляет следов.
-    implementation("com.yandex.android:mobileads:8.6.0")
+    if (yandexAdsEnabled) implementation("com.yandex.android:mobileads:8.6.0")
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test.network)
