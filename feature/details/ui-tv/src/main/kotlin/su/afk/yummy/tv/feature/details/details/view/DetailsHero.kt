@@ -24,28 +24,28 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
@@ -199,176 +199,186 @@ internal fun DetailsHero(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+                .padding(
+                    start = horizontalPadding,
+                    end = horizontalPadding,
+                    top = verticalPadding,
+                    // С остатком описания снизу блок кончается текстом: большой отступ до «Видео» не нужен.
+                    bottom = if (descriptionTail.isNotEmpty()) 8.dp else verticalPadding,
+                ),
         ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(rowSpacing),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .graphicsLayer {
-                        alpha = infoAlpha
-                        translationY = infoShift * infoShiftPx
-                    },
-                verticalArrangement = Arrangement.spacedBy(columnSpacing),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(rowSpacing),
+                verticalAlignment = Alignment.Top,
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .graphicsLayer {
+                            alpha = infoAlpha
+                            translationY = infoShift * infoShiftPx
+                        },
+                    verticalArrangement = Arrangement.spacedBy(columnSpacing),
                 ) {
-                    MarqueeTitleText(
-                        text = details.title,
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            fontSize = 30.sp,
-                            color = if (titleFocused) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface,
-                        ),
-                        fontWeight = FontWeight.SemiBold,
-                        minLines = 1,
-                        maxLines = titleMaxLines,
-                        isFocused = titleFocused,
-                        marqueeWhenOverflow = true,
-                        modifier = Modifier
-                            .weight(1f)
-                            .alignByBaseline()
-                            .focusRequester(titleFocusRequester)
-                            .focusProperties { down = downFocusRequester }
-                            .focusable()
-                            .onFocusChanged { fs -> titleFocused = fs.isFocused },
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        MarqueeTitleText(
+                            text = details.title,
+                            style = MaterialTheme.typography.displaySmall.copy(
+                                fontSize = 30.sp,
+                                color = if (titleFocused) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                            ),
+                            fontWeight = FontWeight.SemiBold,
+                            minLines = 1,
+                            maxLines = titleMaxLines,
+                            isFocused = titleFocused,
+                            marqueeWhenOverflow = true,
+                            modifier = Modifier
+                                .weight(1f)
+                                .alignByBaseline()
+                                .focusRequester(titleFocusRequester)
+                                .focusProperties { down = downFocusRequester }
+                                .focusable()
+                                .onFocusChanged { fs -> titleFocused = fs.isFocused },
+                        )
+                        userRating?.let { userRating ->
+                            // По первой строке заголовка, а не по центру двух строк.
+                            UserRatingChip(
+                                rating = userRating,
+                                textStyle = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.alignByBaseline(),
+                            )
+                        }
+                    }
+
+                    HeroMetaRow(details)
+                    HeroEpisodesRow(details)
+
+                    DetailsButtonBar(
+                        details = details,
+                        hasScreenshots = hasScreenshots,
+                        isInLibrary = isInLibrary,
+                        isFavorite = isFavorite,
+                        libraryList = libraryList,
+                        videosState = videosState,
+                        isWatchLoading = isWatchLoading,
+                        watchProgress = watchProgress,
+                        canSubscribe = canSubscribe,
+                        restoreFocusRequest = restoreButtonFocusRequest,
+                        hiddenActions = hiddenActions,
+                        focusOnResume = focusOnResume,
+                        firstFocusRequester = downFocusRequester,
+                        bottomFocusRequester = chipsEntryFocusRequester,
+                        onWatchSelected = onWatchSelected,
+                        onLibraryToggle = onLibraryToggle,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onSubscriptionsSelected = onSubscriptionsSelected,
+                        onDetailsSelected = onFullDetailsSelected,
+                        onEpisodesSelected = onEpisodesSelected,
+                        onTrailersSelected = onTrailersSelected,
+                        onSimilarSelected = onSimilarSelected,
+                        onViewingOrderSelected = onViewingOrderSelected,
+                        onScreenshotsSelected = onScreenshotsSelected,
+                        onRatingSelected = onRatingScreenSelected,
+                        onCollectionsSelected = onCollectionsSelected,
+                        onCommentsSelected = onCommentsSelected,
+                        onReviewsSelected = onReviewsSelected,
+                        onBloggerVideosSelected = onBloggerVideosSelected,
+                        modifier = Modifier.padding(top = 8.dp),
                     )
-                    userRating?.let { userRating ->
-                        // По первой строке заголовка, а не по центру двух строк.
-                        UserRatingChip(
-                            rating = userRating,
-                            textStyle = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.alignByBaseline(),
+
+                    if (showChips) {
+                        HeroChipsRow(
+                            details = details,
+                            onGenreSelected = onGenreSelected,
+                            onStudioSelected = onStudioSelected,
+                            onDirectorSelected = onDirectorSelected,
+                            // Кнопка подсказки стоит справа, а чип слева: поиск фокуса вниз по геометрии её не находит.
+                            chipFocusModifier = { index ->
+                                chipFocusModifier(index).then(
+                                    if (showSectionsHint) {
+                                        Modifier.focusProperties { down = hintFocusRequester }
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                            },
+                        )
+                    }
+
+                    if (showSectionsHint) {
+                        DetailsSectionsHint(
+                            onDismiss = onSectionsHintDismissed,
+                            dismissFocusModifier = Modifier
+                                .focusRequester(hintFocusRequester)
+                                .onFocusChanged { onHintFocused(it.isFocused) },
+                        )
+                    }
+
+                    // Описание занимает свободное место под кнопками рядом с постером; по OK раскрывается.
+                    if (descriptionHead.isNotEmpty()) {
+                        DetailsDescriptionHead(
+                            text = descriptionHead,
+                            onToggle = { descriptionExpanded = !descriptionExpanded },
+                            modifier = descriptionFocusModifier
+                                .onSizeChanged { headSize = it }
+                                .onGloballyPositioned { descriptionTop = it.positionInRoot().y },
                         )
                     }
                 }
 
-                HeroMetaRow(details)
-                HeroEpisodesRow(details)
-
-                DetailsButtonBar(
-                    details = details,
-                    hasScreenshots = hasScreenshots,
-                    isInLibrary = isInLibrary,
-                    isFavorite = isFavorite,
-                    libraryList = libraryList,
-                    videosState = videosState,
-                    isWatchLoading = isWatchLoading,
-                    watchProgress = watchProgress,
-                    canSubscribe = canSubscribe,
-                    restoreFocusRequest = restoreButtonFocusRequest,
-                    hiddenActions = hiddenActions,
-                    focusOnResume = focusOnResume,
-                    firstFocusRequester = downFocusRequester,
-                    bottomFocusRequester = chipsEntryFocusRequester,
-                    onWatchSelected = onWatchSelected,
-                    onLibraryToggle = onLibraryToggle,
-                    onFavoriteToggle = onFavoriteToggle,
-                    onSubscriptionsSelected = onSubscriptionsSelected,
-                    onDetailsSelected = onFullDetailsSelected,
-                    onEpisodesSelected = onEpisodesSelected,
-                    onTrailersSelected = onTrailersSelected,
-                    onSimilarSelected = onSimilarSelected,
-                    onViewingOrderSelected = onViewingOrderSelected,
-                    onScreenshotsSelected = onScreenshotsSelected,
-                    onRatingSelected = onRatingScreenSelected,
-                    onCollectionsSelected = onCollectionsSelected,
-                    onCommentsSelected = onCommentsSelected,
-                    onReviewsSelected = onReviewsSelected,
-                    onBloggerVideosSelected = onBloggerVideosSelected,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-
-                if (showChips) {
-                    HeroChipsRow(
-                        details = details,
-                        onGenreSelected = onGenreSelected,
-                        onStudioSelected = onStudioSelected,
-                        onDirectorSelected = onDirectorSelected,
-                        // Кнопка подсказки стоит справа, а чип слева: поиск фокуса вниз по геометрии её не находит.
-                        chipFocusModifier = { index ->
-                            chipFocusModifier(index).then(
-                                if (showSectionsHint) {
-                                    Modifier.focusProperties { down = hintFocusRequester }
-                                } else {
-                                    Modifier
-                                },
-                            )
-                        },
-                    )
-                }
-
-                if (showSectionsHint) {
-                    DetailsSectionsHint(
-                        onDismiss = onSectionsHintDismissed,
-                        dismissFocusModifier = Modifier
-                            .focusRequester(hintFocusRequester)
-                            .onFocusChanged { onHintFocused(it.isFocused) },
-                    )
-                }
-
-                // Описание занимает свободное место под кнопками рядом с постером; по OK раскрывается.
-                if (descriptionHead.isNotEmpty()) {
-                    DetailsDescriptionHead(
-                        text = descriptionHead,
-                        onToggle = { descriptionExpanded = !descriptionExpanded },
-                        modifier = descriptionFocusModifier
-                            .onSizeChanged { headSize = it }
-                            .onGloballyPositioned { descriptionTop = it.positionInRoot().y },
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .width(posterWidth)
-                    .onGloballyPositioned { posterBottom = it.positionInRoot().y + it.size.height }
-                    .graphicsLayer { alpha = posterAlpha },
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                HeroRatingRow(details)
-
-                val posterShape = RoundedCornerShape(HERO_POSTER_CORNER)
-                Card(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(2f / 3f)
-                        .shadow(HERO_POSTER_ELEVATION, posterShape)
-                        .border(
-                            1.dp,
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f),
-                            posterShape,
-                        ),
-                    shape = posterShape,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
+                        .width(posterWidth)
+                        .onGloballyPositioned { posterBottom = it.positionInRoot().y + it.size.height }
+                        .graphicsLayer { alpha = posterAlpha },
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    FallbackAsyncImage(
-                        models = details.poster.posterUrls(),
-                        contentDescription = details.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
+                    HeroRatingRow(details)
+
+                    val posterShape = RoundedCornerShape(HERO_POSTER_CORNER)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(2f / 3f)
+                            .shadow(HERO_POSTER_ELEVATION, posterShape)
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f),
+                                posterShape,
+                            ),
+                        shape = posterShape,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ),
+                    ) {
+                        FallbackAsyncImage(
+                            models = details.poster.posterUrls(),
+                            contentDescription = details.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
             }
-        }
-        if (descriptionTail.isNotEmpty()) {
-            DetailsDescriptionTail(
-                text = descriptionTail,
-                expanded = descriptionExpanded,
-                overflows = tailOverflows,
-                onOverflowChanged = { tailOverflows = it },
-                onToggle = { descriptionExpanded = !descriptionExpanded },
-                modifier = descriptionTailFocusModifier,
-            )
-        }
+            if (descriptionTail.isNotEmpty()) {
+                DetailsDescriptionTail(
+                    text = descriptionTail,
+                    expanded = descriptionExpanded,
+                    overflows = tailOverflows,
+                    onOverflowChanged = { tailOverflows = it },
+                    onToggle = { descriptionExpanded = !descriptionExpanded },
+                    // Зазор от постера: рамка фокуса с увеличением не должна его задевать.
+                    modifier = Modifier.padding(top = 6.dp).then(descriptionTailFocusModifier),
+                )
+            }
         }
     }
 }
