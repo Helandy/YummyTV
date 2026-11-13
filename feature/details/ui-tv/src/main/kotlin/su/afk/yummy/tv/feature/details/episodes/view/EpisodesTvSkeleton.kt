@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -48,7 +50,7 @@ internal fun EpisodesTvSkeleton(modifier: Modifier = Modifier) {
             )
         }
         items(List(EPISODE_SKELETON_COUNT) { it }) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column {
                 SkeletonBlock(
                     shimmer = shimmer,
                     shape = RoundedCornerShape(8.dp),
@@ -56,12 +58,32 @@ internal fun EpisodesTvSkeleton(modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                         .height(SkeletonThumbnailHeight),
                 )
-                SkeletonBlock(
-                    shimmer = shimmer,
+                // Текстовая часть настоящей карточки: минимум 88dp, отступы 10/8, шаг 3dp.
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(14.dp),
-                )
+                        .heightIn(min = 88.dp)
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    SkeletonBlock(
+                        shimmer = shimmer,
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(14.dp),
+                    )
+                    SkeletonBlock(
+                        shimmer = shimmer,
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(12.dp),
+                    )
+                    SkeletonBlock(
+                        shimmer = shimmer,
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(12.dp),
+                    )
+                }
             }
         }
     }

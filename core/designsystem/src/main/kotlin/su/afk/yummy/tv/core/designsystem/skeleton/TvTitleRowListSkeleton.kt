@@ -40,11 +40,13 @@ fun TvTitleRowListSkeleton(
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.width(PosterWidth).height(PosterWidth / TITLE_POSTER_ASPECT_RATIO),
                 )
-                Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.5f).height(16.dp))
-                    SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.2f).height(14.dp))
-                    SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.9f).height(14.dp))
-                    SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.7f).height(14.dp))
+                // Как у TvTitleRowCard: отступ 10dp, шаг 4dp, название, рейтинг с годом и 3 строки описания.
+                Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    SkeletonTextLine(shimmer = shimmer, widthFraction = 0.5f, lineHeight = 24.dp)
+                    SkeletonTextLine(shimmer = shimmer, widthFraction = 0.2f, lineHeight = 24.dp)
+                    SkeletonTextLine(shimmer = shimmer, widthFraction = 0.9f, lineHeight = 20.dp)
+                    SkeletonTextLine(shimmer = shimmer, widthFraction = 0.85f, lineHeight = 20.dp)
+                    SkeletonTextLine(shimmer = shimmer, widthFraction = 0.6f, lineHeight = 20.dp)
                 }
             }
         }

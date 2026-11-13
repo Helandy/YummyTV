@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +31,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 
-private val SkeletonCardWidth = 188.dp
-private val SkeletonPosterHeight = 258.dp
 
 @Composable
 internal fun SimilarLoadingState(modifier: Modifier = Modifier) {
@@ -70,34 +72,30 @@ internal fun SimilarLoadingState(modifier: Modifier = Modifier) {
 
 @Composable
 private fun SimilarSkeletonCard(alpha: Float, color: Color) {
-    Column(
-        modifier = Modifier.width(SkeletonCardWidth),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    // Ширина и пропорции постера — как у TvTitleCard, под постером название в две строки (bodyLarge, 24dp).
+    Column(modifier = Modifier.width(currentTvTitleCardDimensions().width)) {
         SkeletonBlock(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(SkeletonPosterHeight),
+                .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
             alpha = alpha,
             color = color,
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(12.dp),
         )
-        SkeletonBlock(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(16.dp),
-            alpha = alpha,
-            color = color,
-            shape = RoundedCornerShape(5.dp),
-        )
-        SkeletonBlock(
-            modifier = Modifier
-                .fillMaxWidth(0.6f)
-                .height(14.dp),
-            alpha = alpha,
-            color = color,
-            shape = RoundedCornerShape(5.dp),
-        )
+        Column(modifier = Modifier.padding(10.dp)) {
+            repeat(2) { index ->
+                Box(Modifier.fillMaxWidth().height(24.dp), contentAlignment = Alignment.CenterStart) {
+                    SkeletonBlock(
+                        modifier = Modifier
+                            .fillMaxWidth(if (index == 0) 0.9f else 0.6f)
+                            .height(16.dp),
+                        alpha = alpha,
+                        color = color,
+                        shape = RoundedCornerShape(5.dp),
+                    )
+                }
+            }
+        }
     }
 }
 

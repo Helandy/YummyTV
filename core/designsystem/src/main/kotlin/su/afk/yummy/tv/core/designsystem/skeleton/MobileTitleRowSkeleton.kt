@@ -27,11 +27,14 @@ fun MobileTitleRowSkeleton(
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.width(PosterWidth).height(PosterWidth / TITLE_POSTER_ASPECT_RATIO),
         )
-        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.8f).height(14.dp))
-            SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.4f).height(12.dp))
-            SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.95f).height(12.dp))
-            SkeletonBlock(shimmer = shimmer, modifier = Modifier.fillMaxWidth(0.7f).height(12.dp))
+        // Как у карточки: отступ 8dp, шаг 4dp, название (titleSmall), рейтинг с годом и до 4 строк описания.
+        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.8f, lineHeight = 20.dp)
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.4f, lineHeight = 20.dp)
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.95f, lineHeight = 16.dp)
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.9f, lineHeight = 16.dp)
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.95f, lineHeight = 16.dp)
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.7f, lineHeight = 16.dp)
         }
     }
 }

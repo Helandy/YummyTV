@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -21,10 +21,7 @@ fun TvPosterCardSkeleton(
     modifier: Modifier = Modifier,
     width: Dp = currentTvTitleCardDimensions().width,
 ) {
-    Column(
-        modifier = modifier.width(width),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    Column(modifier = modifier.width(width)) {
         SkeletonBlock(
             shimmer = shimmer,
             shape = RoundedCornerShape(12.dp),
@@ -32,11 +29,10 @@ fun TvPosterCardSkeleton(
                 .fillMaxWidth()
                 .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
         )
-        SkeletonBlock(
-            shimmer = shimmer,
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(14.dp),
-        )
+        // Под постером у настоящей карточки: отступ 10dp и название ровно в две строки bodyLarge.
+        Column(modifier = Modifier.padding(10.dp)) {
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.9f, lineHeight = 24.dp)
+            SkeletonTextLine(shimmer = shimmer, widthFraction = 0.6f, lineHeight = 24.dp)
+        }
     }
 }

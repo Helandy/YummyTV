@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,20 +39,24 @@ internal fun EpisodesMobileSkeleton(modifier: Modifier = Modifier) {
     ) {
         repeat(EPISODE_SKELETON_COUNT) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 SkeletonBlock(
                     shimmer = shimmer,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RectangleShape,
                     modifier = Modifier
-                        .width(128.dp)
-                        .aspectRatio(16f / 9f),
+                        .weight(0.42f)
+                        .aspectRatio(1.45f),
                 )
                 Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .weight(0.58f)
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     SkeletonBlock(
                         shimmer = shimmer,

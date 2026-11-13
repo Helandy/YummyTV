@@ -21,7 +21,7 @@ import su.afk.yummy.tv.core.designsystem.skeleton.SkeletonBlock
 import su.afk.yummy.tv.core.designsystem.skeleton.rememberSkeletonShimmer
 
 private const val TV_DESCRIPTION_SKELETON_LINES = 3
-private const val TV_BUTTON_SKELETON_COUNT = 4
+private const val TV_BUTTON_SKELETON_ROWS = 2
 
 /** Скелетон героя деталки на ТВ: колонка с текстом и кнопками слева, постер справа. */
 @Composable
@@ -43,7 +43,7 @@ internal fun DetailsTvSkeleton(modifier: Modifier = Modifier) {
                 shimmer = shimmer,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
-                    .height(36.dp),
+                    .height(40.dp),
             )
             SkeletonBlock(
                 shimmer = shimmer,
@@ -57,7 +57,33 @@ internal fun DetailsTvSkeleton(modifier: Modifier = Modifier) {
                     .fillMaxWidth(0.5f)
                     .height(18.dp),
             )
-            Spacer(Modifier.height(8.dp))
+            Column(
+                modifier = Modifier.padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                repeat(TV_BUTTON_SKELETON_ROWS) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        repeat(2) {
+                            SkeletonBlock(
+                                shimmer = shimmer,
+                                shape = RoundedCornerShape(20.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp),
+                            )
+                        }
+                    }
+                }
+            }
+            SkeletonBlock(
+                shimmer = shimmer,
+                modifier = Modifier
+                    .fillMaxWidth(0.55f)
+                    .height(28.dp),
+            )
             repeat(TV_DESCRIPTION_SKELETON_LINES) { index ->
                 SkeletonBlock(
                     shimmer = shimmer,
@@ -66,24 +92,12 @@ internal fun DetailsTvSkeleton(modifier: Modifier = Modifier) {
                         .height(16.dp),
                 )
             }
-            Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                repeat(TV_BUTTON_SKELETON_COUNT) {
-                    SkeletonBlock(
-                        shimmer = shimmer,
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier
-                            .width(140.dp)
-                            .height(48.dp),
-                    )
-                }
-            }
         }
         SkeletonBlock(
             shimmer = shimmer,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
-                .width(300.dp)
+                .width(340.dp)
                 .aspectRatio(2f / 3f),
         )
     }

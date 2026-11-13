@@ -65,39 +65,53 @@ private fun PostLoadingCard(skeletonColor: Color) {
                     .aspectRatio(16f / 9f)
                     .background(skeletonColor),
             )
+            // Как у MobileNewsCard: отступ 16dp, шаг 8dp, рубрика (чип 32dp), заголовок в 2 строки titleLarge,
+            // анонс в 3 строки bodyMedium и подпись.
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 SkeletonBlock(
                     modifier = Modifier
                         .width(88.dp)
-                        .height(28.dp),
+                        .height(32.dp),
                     color = skeletonColor,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(8.dp),
                 )
                 SkeletonBlock(
                     modifier = Modifier
-                        .fillMaxWidth(0.82f)
+                        .fillMaxWidth(0.9f)
+                        .height(24.dp),
+                    color = skeletonColor,
+                )
+                SkeletonBlock(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
                         .height(24.dp),
                     color = skeletonColor,
                 )
                 SkeletonBlock(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(15.dp),
+                        .height(16.dp),
+                    color = skeletonColor,
+                )
+                SkeletonBlock(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(16.dp),
                     color = skeletonColor,
                 )
                 SkeletonBlock(
                     modifier = Modifier
                         .fillMaxWidth(0.68f)
-                        .height(15.dp),
+                        .height(16.dp),
                     color = skeletonColor,
                 )
                 SkeletonBlock(
                     modifier = Modifier
                         .width(132.dp)
-                        .height(13.dp),
+                        .height(14.dp),
                     color = skeletonColor,
                 )
             }

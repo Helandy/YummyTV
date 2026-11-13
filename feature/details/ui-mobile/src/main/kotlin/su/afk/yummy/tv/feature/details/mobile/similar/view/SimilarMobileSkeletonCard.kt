@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTextPadding
+import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterTitleStyle
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,9 +26,13 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
 
 @Composable
 internal fun SimilarMobileSkeletonCard(alpha: Float, color: Color) {
+    val titleLineHeight = with(LocalDensity.current) {
+        currentMobilePosterTitleStyle().lineHeight.takeIf { it.isSp }?.toDp() ?: 20.dp
+    }
+    // Повторяет MobilePosterCard: тот же фон, форма, пропорции постера и название в две строки.
     Card(
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         SkeletonBlock(
             modifier = Modifier
@@ -35,25 +43,20 @@ internal fun SimilarMobileSkeletonCard(alpha: Float, color: Color) {
             shape = RoundedCornerShape(0.dp),
         )
         Column(
-            modifier = Modifier.padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(horizontal = currentMobilePosterTextPadding(), vertical = 8.dp),
         ) {
-            SkeletonBlock(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(14.dp),
-                alpha = alpha,
-                color = color,
-                shape = RoundedCornerShape(4.dp),
-            )
-            SkeletonBlock(
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(12.dp),
-                alpha = alpha,
-                color = color,
-                shape = RoundedCornerShape(4.dp),
-            )
+            repeat(2) { index ->
+                Box(Modifier.fillMaxWidth().height(titleLineHeight), contentAlignment = Alignment.CenterStart) {
+                    SkeletonBlock(
+                        modifier = Modifier
+                            .fillMaxWidth(if (index == 0) 0.9f else 0.6f)
+                            .height(12.dp),
+                        alpha = alpha,
+                        color = color,
+                        shape = RoundedCornerShape(4.dp),
+                    )
+                }
+            }
         }
     }
 }
