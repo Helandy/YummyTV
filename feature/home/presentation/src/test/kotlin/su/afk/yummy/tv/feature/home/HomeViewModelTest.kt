@@ -61,6 +61,10 @@ import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.HomeState.Effect
 import su.afk.yummy.tv.feature.home.HomeState.Event
+import su.afk.yummy.tv.feature.home.handler.HomeAnnouncementHandler
+import su.afk.yummy.tv.feature.home.handler.HomeContinueWatchingHandler
+import su.afk.yummy.tv.feature.home.handler.HomePromptsHandler
+import su.afk.yummy.tv.feature.home.handler.HomeRecommendationHandler
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
@@ -158,23 +162,33 @@ class HomeViewModelTest : BaseUnitTest() {
         getBloggerVideos = getBloggerVideos,
         getCachedHomeFeed = getCachedHomeFeed,
         refreshHomeFeed = refreshHomeFeed,
-        setAnimeRecommendationIgnored = setAnimeRecommendationIgnored,
-        observeContinueWatching = observeContinueWatching,
         refreshRemoteContinueWatching = refreshRemoteContinueWatching,
-        removeCachedContinueWatching = removeCachedContinueWatching,
         observeLibraryNewEpisodeAnimeIds = observeLibraryNewEpisodeAnimeIds,
         getRecentlyAiredSchedule = getRecentlyAiredSchedule,
         appClock = appClock,
         observeWatchedEpisodes = observeWatchedEpisodes,
         stringProvider = stringProvider,
-        resolveContinueWatchingLaunch = resolveContinueWatchingLaunch,
         playerNavigator = playerNavigator,
         settingsStore = settingsStore,
         tvIntegration = tvIntegration,
-        featureToggleProvider = featureToggleProvider,
-        featureToggleUpdateObserver = featureToggleUpdateObserver,
         analytics = analytics,
-        analyticsTracker = analyticsTracker,
+        continueWatchingHandler = HomeContinueWatchingHandler(
+            observeContinueWatching = observeContinueWatching,
+            removeCachedContinueWatching = removeCachedContinueWatching,
+            resolveContinueWatchingLaunch = resolveContinueWatchingLaunch,
+            settingsStore = settingsStore,
+        ),
+        recommendationHandler = HomeRecommendationHandler(
+            settingsStore = settingsStore,
+            setAnimeRecommendationIgnored = setAnimeRecommendationIgnored,
+        ),
+        promptsHandler = HomePromptsHandler(settingsStore = settingsStore),
+        announcementHandler = HomeAnnouncementHandler(
+            settingsStore = settingsStore,
+            featureToggleProvider = featureToggleProvider,
+            featureToggleUpdateObserver = featureToggleUpdateObserver,
+            analyticsTracker = analyticsTracker,
+        ),
     )
 
     private fun item(id: Int) = HomeFeedItem(id, "Title $id", "", null, null, null, mockk())
