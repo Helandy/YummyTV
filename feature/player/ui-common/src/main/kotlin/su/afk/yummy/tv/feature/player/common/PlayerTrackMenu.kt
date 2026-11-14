@@ -17,14 +17,17 @@ import su.afk.yummy.tv.feature.player.presentation.R
 class PlayerTrackMenu internal constructor(
     private val alloha: PlayerAllohaTracks,
     private val inStream: PlayerTrackSelectionState,
+    private val offerInStreamTracks: Boolean,
 ) {
     /** Источник — Alloha: списки и выбор идут через неё. */
     val usesAlloha: Boolean get() = alloha.isAvailable
 
-    // Панель/вкладка подписана «Alloha», поэтому показывается только для самой Alloha, а не для
-    // любого потока с лишними дорожками (Kodik такие иногда отдаёт).
-    val showAudioChoice: Boolean get() = usesAlloha && alloha.hasAudioChoice
-    val showSubtitleChoice: Boolean get() = usesAlloha && alloha.hasSubtitleChoice
+    // Дорожки внутри потока предлагаем только там, где это настоящий файл с несколькими дорожками
+    // (торрент): у Kodik и прочих HLS лишние дорожки бывают служебными.
+    val showAudioChoice: Boolean
+        get() = if (usesAlloha) alloha.hasAudioChoice else offerInStreamTracks && inStream.hasSelectableAudio
+    val showSubtitleChoice: Boolean
+        get() = if (usesAlloha) alloha.hasSubtitleChoice else offerInStreamTracks && inStream.hasSelectableText
 
     val audioOptions: List<PlayerTrackOption>
         get() = if (usesAlloha) alloha.audioOptions else inStream.audioOptions
@@ -93,5 +96,9 @@ fun rememberPlayerTrackMenu(
             subtitlesOffLabel = subtitlesOffLabel,
         )
     }
-    return remember(alloha, inStream) { PlayerTrackMenu(alloha, inStream) }
+    // Метку раздачи ставит только торрент-источник: это файл с набором дорожек, а не HLS-манифест.
+    val offerInStreamTracks = !state.streamSourceLabel.isNullOrBlank()
+    return remember(alloha, inStream, offerInStreamTracks) {
+        PlayerTrackMenu(alloha, inStream, offerInStreamTracks)
+    }
 }

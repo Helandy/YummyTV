@@ -11,6 +11,8 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
+import su.afk.yummy.tv.feature.player.common.utils.disambiguated
+import su.afk.yummy.tv.feature.player.common.utils.readableTrackLabel
 
 /** Одна выбираемая дорожка (озвучка или субтитр) в панели выбора. Индекс — позиция в списке опций. */
 data class PlayerTrackOption(val index: Int, val label: String)
@@ -36,16 +38,18 @@ class PlayerTrackSelectionState internal constructor(
     val audioOptions: List<PlayerTrackOption>
         get() = tracks.groups
             .filter { it.type == C.TRACK_TYPE_AUDIO && it.isSupported }
-            .mapIndexed { index, group -> PlayerTrackOption(index, group.label(index)) }
+            .mapIndexed { index, group -> group.label(index) }
+            .disambiguated()
+            .mapIndexed(::PlayerTrackOption)
 
     val textOptions: List<PlayerTrackOption>
         get() = buildList {
             add(PlayerTrackOption(PLAYER_TEXT_TRACK_OFF_INDEX, offLabel))
             tracks.groups
                 .filter { it.type == C.TRACK_TYPE_TEXT && it.isSupported }
-                .forEachIndexed { index, group ->
-                    add(PlayerTrackOption(index + 1, group.label(index)))
-                }
+                .mapIndexed { index, group -> group.label(index) }
+                .disambiguated()
+                .forEachIndexed { index, label -> add(PlayerTrackOption(index + 1, label)) }
         }
 
     val hasSelectableAudio: Boolean get() = audioOptions.size > 1
@@ -108,7 +112,7 @@ class PlayerTrackSelectionState internal constructor(
 
     private fun Tracks.Group.label(index: Int): String {
         val format = (0 until length).firstOrNull(::isTrackSupported)?.let(::getTrackFormat)
-        return format?.label ?: format?.language?.uppercase() ?: fallbackLabel(index)
+        return format?.readableTrackLabel(fallbackLabel(index)) ?: fallbackLabel(index)
     }
 }
 

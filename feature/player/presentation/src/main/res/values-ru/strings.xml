@@ -47,7 +47,7 @@
     <string name="player_brightness_auto_title">Автояркость</string>
     <string name="player_brightness_auto_hint">Следовать системной яркости. Свайп по левому краю задаёт её вручную.</string>
     <string name="player_volume_title">Громкость</string>
-    <string name="player_audio_track_title">Alloha</string>
+    <string name="player_audio_track_title">Аудиодорожка</string>
     <string name="player_subtitles_off">Выключено</string>
     <string name="player_track_fallback">Дорожка %1$d</string>
     <string name="player_quality_meta">Поток видео</string>

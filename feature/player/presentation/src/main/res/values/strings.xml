@@ -47,7 +47,7 @@
     <string name="player_brightness_auto_title">Auto brightness</string>
     <string name="player_brightness_auto_hint">Follow the system brightness. A swipe on the left edge sets it manually.</string>
     <string name="player_volume_title">Volume</string>
-    <string name="player_audio_track_title">Alloha</string>
+    <string name="player_audio_track_title">Audio track</string>
     <string name="player_subtitles_off">Off</string>
     <string name="player_track_fallback">Track %1$d</string>
     <string name="player_quality_meta">Video stream</string>
