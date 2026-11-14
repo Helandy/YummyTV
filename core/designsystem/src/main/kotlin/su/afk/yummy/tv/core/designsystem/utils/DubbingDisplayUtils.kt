@@ -5,6 +5,7 @@ private val DISPLAY_NAMES = mapOf(
     "творческаястудиямир" to "Студия Мир",
     "студиямир" to "Студия Мир",
     "studiomir" to "Студия Мир",
+    "etozhesandy" to "EtoZheSandy",
 )
 
 /**

@@ -160,6 +160,9 @@ private val DUBBING_LOGOS: Map<String, Int> = mapOf(
     "ruanime" to R.drawable.dub_ruanime,
     "руаниме" to R.drawable.dub_ruanime,
     "deep" to R.drawable.dub_deep,
+    "etozhesandy" to R.drawable.dub_etozhesandy,
+    "этожесэнди" to R.drawable.dub_etozhesandy,
+    "этожесанди" to R.drawable.dub_etozhesandy,
     // «Поиск торрента» из модуля source/torrent: ключ — название пункта на каждом языке интерфейса.
     "поискторрента" to R.drawable.dub_torrent,
     "searchtorrent" to R.drawable.dub_torrent,
