@@ -244,13 +244,13 @@
     <string name="settings_subtitle_edge_shadow">Тень</string>
     <string name="settings_player_buffer_title">Размер буфера плеера</string>
     <string name="settings_player_buffer_minimal">Минимальный</string>
-    <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 16 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка.</string>
+    <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 32 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка.</string>
     <string name="settings_player_buffer_small">Малый</string>
-    <string name="settings_player_buffer_small_hint">18–30 с запаса, до 24 МБ ОЗУ. Экономит память.</string>
+    <string name="settings_player_buffer_small_hint">25–45 с запаса, до 64 МБ ОЗУ. Экономит память.</string>
     <string name="settings_player_buffer_medium">Средний</string>
-    <string name="settings_player_buffer_medium_hint">25–60 с запаса, до 64 МБ ОЗУ. Больше запас на среднем соединении.</string>
+    <string name="settings_player_buffer_medium_hint">30–90 с запаса, до 86 МБ ОЗУ. Больше запас на среднем соединении.</string>
     <string name="settings_player_buffer_large">Большой</string>
-    <string name="settings_player_buffer_large_hint">30–120 с запаса, до 96 МБ ОЗУ. Для нестабильного соединения.</string>
+    <string name="settings_player_buffer_large_hint">45–180 с запаса, до 128 МБ ОЗУ. Для нестабильного соединения.</string>
     <string name="settings_player_buffer_details">%1$s: %2$d–%3$d сек, %4$d МБ</string>
     <string name="settings_browser_user_agent_title">User-Agent балансеров</string>
     <string name="settings_browser_user_agent_windows_chrome">Windows · Chrome</string>
