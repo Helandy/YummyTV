@@ -24,11 +24,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.components.CachedAsyncImage
+import su.afk.yummy.tv.core.designsystem.components.BlurredBackdropPoster
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.formatFeedDateTime
 import su.afk.yummy.tv.domain.posts.model.PostSummary
@@ -109,11 +108,10 @@ private fun PostPreview(
         contentAlignment = Alignment.Center,
     ) {
         if (imageUrl != null) {
-            CachedAsyncImage(
-                imageUrl,
-                contentDescription,
-                Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
+            BlurredBackdropPoster(
+                url = imageUrl,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
             )
         } else {
             Icon(
