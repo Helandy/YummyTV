@@ -20,8 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -49,6 +51,8 @@ internal fun MobilePlayerMenuRow(
     icon: ImageVector? = null,
     /** Поясняющая строка под названием (мельче и приглушённее). */
     subtitle: String? = null,
+    /** Цвет названия; по умолчанию обычный цвет текста. */
+    labelColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
     Row(
         modifier = modifier
@@ -77,7 +81,12 @@ internal fun MobilePlayerMenuRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = if (trailing is MobilePlayerMenuRowTrailing.Choice && trailing.selected) {
+                    FontWeight.SemiBold
+                } else {
+                    null
+                },
+                color = labelColor,
             )
             if (subtitle != null) {
                 Text(
