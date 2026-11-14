@@ -1,7 +1,9 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -87,25 +90,45 @@ internal fun MobilePlayerSettingsSheet(
                 .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            MobilePlayerMenuPageHeader(
-                title = stringResource(R.string.player_mobile_track_settings_title),
-                onBack = onDismiss,
-            )
             val dubbingLabel = stringResource(R.string.player_dubbing_title)
             val playerLabel = stringResource(R.string.player_name_prefix)
-            MobilePlayerTrackSettingsTabs(
-                tabs = trackTabs,
-                selectedTab = trackTabs[trackPagerState.currentPage],
-                labelFor = { tab ->
-                    when (tab) {
-                        MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
-                        MobilePlayerTrackSettingsTab.Player -> playerLabel
-                    }
-                },
-                onTabSelected = { tab ->
-                    scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
-                },
-            )
+            val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val tabs: @Composable (Modifier) -> Unit = { tabsModifier ->
+                MobilePlayerTrackSettingsTabs(
+                    tabs = trackTabs,
+                    selectedTab = trackTabs[trackPagerState.currentPage],
+                    labelFor = { tab ->
+                        when (tab) {
+                            MobilePlayerTrackSettingsTab.Dubbing -> dubbingLabel
+                            MobilePlayerTrackSettingsTab.Player -> playerLabel
+                        }
+                    },
+                    onTabSelected = { tab ->
+                        scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
+                    },
+                    compact = isLandscape,
+                    modifier = tabsModifier,
+                )
+            }
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    MobilePlayerMenuPageHeader(
+                        title = stringResource(R.string.player_mobile_track_settings_title),
+                        onBack = onDismiss,
+                        modifier = Modifier.weight(1f),
+                    )
+                    tabs(Modifier)
+                }
+            } else {
+                MobilePlayerMenuPageHeader(
+                    title = stringResource(R.string.player_mobile_track_settings_title),
+                    onBack = onDismiss,
+                )
+                tabs(Modifier)
+            }
             HorizontalPager(
                 state = trackPagerState,
                 verticalAlignment = Alignment.Top,

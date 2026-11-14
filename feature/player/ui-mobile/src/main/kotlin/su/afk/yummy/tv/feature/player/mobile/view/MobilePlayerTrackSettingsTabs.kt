@@ -25,9 +25,10 @@ internal fun MobilePlayerTrackSettingsTabs(
     labelFor: (MobilePlayerTrackSettingsTab) -> String,
     onTabSelected: (MobilePlayerTrackSettingsTab) -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = if (compact) modifier else modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f),
     ) {
@@ -41,7 +42,8 @@ internal fun MobilePlayerTrackSettingsTabs(
                     label = labelFor(tab),
                     selected = tab == selectedTab,
                     onClick = { onTabSelected(tab) },
-                    modifier = Modifier.weight(1f),
+                    compact = compact,
+                    modifier = if (compact) Modifier else Modifier.weight(1f),
                 )
             }
         }
@@ -53,6 +55,7 @@ private fun MobilePlayerTrackSettingsTabItem(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -71,14 +74,13 @@ private fun MobilePlayerTrackSettingsTabItem(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = (if (compact) Modifier else Modifier.fillMaxWidth())
+                .padding(horizontal = if (compact) 16.dp else 12.dp, vertical = if (compact) 6.dp else 10.dp),
         )
     }
 }
