@@ -10,23 +10,25 @@ import kotlin.math.abs
 
 private const val CobwebToCardWidth = 0.42f
 private val CobwebLastDigits = 1..3
+private val SnowCapLastDigits = 4..7
 
 /**
- * Праздничная накладка на постер карточки: на Хэллоуин — паутина в углу, но не на каждой, а только
- * если последняя цифра [itemId] от 1 до 3 (примерно у трети); на Новый год — снежная шапка.
+ * Праздничная накладка на постер карточки: не на каждой, а по последней цифре [itemId]: на Хэллоуин — паутина в углу при 1–3, на Новый год —
+ * снежная шапка при 4–7.
  */
 @Composable
-fun Modifier.seasonalCardDecor(itemId: Int): Modifier = when (rememberSeasonalTheme()) {
-    SeasonalTheme.NONE -> this
-    SeasonalTheme.HALLOWEEN -> when (abs(itemId % 10)) {
-        in CobwebLastDigits -> drawWithContent {
+fun Modifier.seasonalCardDecor(itemId: Int): Modifier {
+    val theme = rememberSeasonalTheme()
+    val lastDigit = abs(itemId % 10)
+    return when (theme) {
+        SeasonalTheme.NONE -> this
+        SeasonalTheme.HALLOWEEN -> if (lastDigit !in CobwebLastDigits) this else drawWithContent {
             drawContent()
             drawCornerWeb(Offset.Zero, 1f, size.width * CobwebToCardWidth)
         }
-        else -> this
-    }
-    SeasonalTheme.NEW_YEAR -> drawWithContent {
-        drawContent()
-        drawSnowCap(capHeight = 4.dp.toPx())
+        SeasonalTheme.NEW_YEAR -> if (lastDigit !in SnowCapLastDigits) this else drawWithContent {
+            drawContent()
+            drawSnowCap(capHeight = 4.dp.toPx())
+        }
     }
 }

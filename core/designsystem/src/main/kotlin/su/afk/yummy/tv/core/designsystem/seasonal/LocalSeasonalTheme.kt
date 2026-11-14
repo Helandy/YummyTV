@@ -22,5 +22,9 @@ fun rememberSeasonalTheme(): SeasonalTheme {
     if (!LocalSeasonalDecorationsEnabled.current) return SeasonalTheme.NONE
     val override = LocalSeasonalThemeOverride.current
     val nowMillis = LocalNowMillis.current
-    return remember(override) { override ?: seasonalThemeAt(nowMillis()) }
+    // Ключ по номеру дня: на долгоживущей сессии (ТВ) тема сменится на границе сезона без перезапуска.
+    val dayIndex = nowMillis() / MILLIS_PER_DAY
+    return remember(override, dayIndex) { override ?: seasonalThemeAt(nowMillis()) }
 }
+
+private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000

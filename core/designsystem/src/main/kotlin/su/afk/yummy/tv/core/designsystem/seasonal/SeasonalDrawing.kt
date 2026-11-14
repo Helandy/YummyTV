@@ -11,6 +11,9 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
+import kotlin.math.sin
+import kotlin.math.pow
+import kotlin.math.PI
 
 private val PumpkinColor = Color(0xFFFF7A1A)
 private val PumpkinDark = Color(0xFFD95F00)
@@ -66,17 +69,31 @@ internal fun DrawScope.drawPumpkin(base: Offset, size: Float, alpha: Float = 1f)
     drawPath(smile, FaceColor.copy(alpha = alpha), style = Stroke(width = size * 0.08f))
 }
 
-/** Снежная шапка вдоль верхней кромки: [inset] отступает от краёв (скруглённые углы кнопок). */
+/**
+ * Снежный сугроб вдоль верхней кромки: к краям плавно сходит на нет, нижняя линия волнистая.
+ * [inset] отступает от краёв (скруглённые углы кнопок).
+ */
 internal fun DrawScope.drawSnowCap(capHeight: Float, inset: Float = 0f) {
     val width = size.width - inset * 2f
     if (width <= 0f) return
-    drawRect(SnowColor, Offset(inset, 0f), Size(width, capHeight))
-    val bumps = (width / (capHeight * 2.2f)).toInt().coerceAtLeast(1)
-    val bumpStep = width / bumps
-    for (i in 0 until bumps) {
-        val radius = capHeight * (0.5f + 0.35f * ((i * 7) % 5) / 4f)
-        drawCircle(SnowColor, radius, Offset(inset + bumpStep * (i + 0.5f), capHeight))
+    val step = (capHeight * 0.75f).coerceAtLeast(1f)
+    val samples = (width / step).toInt().coerceAtLeast(2)
+    val waveLength = capHeight * 5f
+    val path = Path().apply {
+        moveTo(inset, 0f)
+        for (i in 0..samples) {
+            val t = i / samples.toFloat()
+            val x = inset + width * t
+            // Огибающая: ноль на концах, чтобы снег не обрывался стенкой.
+            val envelope = sin(PI * t).toFloat().coerceAtLeast(0f).pow(0.7f)
+            val wobble = 0.7f + 0.2f * sin(x / waveLength * 2f * PI.toFloat()) +
+                0.1f * sin(x / (waveLength * 0.37f) * 2f * PI.toFloat() + 1.3f)
+            lineTo(x, capHeight * 1.5f * envelope * wobble)
+        }
+        lineTo(inset + width, 0f)
+        close()
     }
+    drawPath(path, SnowColor)
 }
 
 /** Шапка Деда Мороза на круглой аватарке размера [size] (от левого верхнего угла аватарки). */

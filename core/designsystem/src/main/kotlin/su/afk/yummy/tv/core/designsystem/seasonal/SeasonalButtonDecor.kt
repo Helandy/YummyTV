@@ -19,7 +19,8 @@ fun Modifier.seasonalButtonDecor(): Modifier {
         SeasonalTheme.NONE -> this
         SeasonalTheme.NEW_YEAR -> drawWithContent {
             drawContent()
-            drawSnowCap(capHeight = 4.dp.toPx(), inset = 10.dp.toPx())
+            // Отступ не меньше радиуса скругления кнопки, иначе снег повиснет за её углами.
+            drawSnowCap(capHeight = 4.dp.toPx(), inset = (size.height / 2f).coerceIn(10.dp.toPx(), 28.dp.toPx()))
         }
         SeasonalTheme.HALLOWEEN -> drawWithContent {
             drawContent()

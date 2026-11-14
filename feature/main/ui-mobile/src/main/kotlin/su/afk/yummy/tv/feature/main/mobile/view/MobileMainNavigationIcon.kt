@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalAvatarHat
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
 @Composable
@@ -32,6 +33,7 @@ internal fun <T> MobileMainNavigationIcon(item: MobileMenuItem<T>, selected: Boo
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(AvatarIconSize)
+                    .seasonalAvatarHat()
                     .clip(CircleShape)
                     .border(
                         width = 2.dp,

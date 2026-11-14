@@ -14,9 +14,13 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.sin
 import kotlin.random.Random
 
-private const val FlakeCount = 36
+private const val FlakeCount = 26
 private const val SEED = 20260101
 private const val NanosPerSecond = 1_000_000_000f
+
+/** Доля снежинок, которые «тают» в полёте, не долетев до низа (в каждом новом падении выбирается заново). */
+private const val DissolveChance = 0.4f
+private const val DissolveFadeLength = 0.2f
 
 private class Flake(
     val x: Float,
@@ -53,12 +57,27 @@ internal fun Snowfall(modifier: Modifier = Modifier) {
     }
     Canvas(modifier.fillMaxSize()) {
         val t = nanos.longValue / NanosPerSecond
-        flakes.forEach { flake ->
+        flakes.forEachIndexed { index, flake ->
             val radius = flake.radiusDp.dp.toPx()
-            val progress = (flake.offset + t * flake.speed) % 1f
+            val travelled = flake.offset + t * flake.speed
+            val progress = travelled % 1f
             val y = progress * (size.height + radius * 4f) - radius * 2f
             val x = flake.x * size.width + sin(t * flake.sway + flake.phase) * flake.swayDp.dp.toPx()
-            drawCircle(Color.White.copy(alpha = flake.alpha), radius, Offset(x, y))
+            val alpha = flake.alpha * dissolveFactor(index, travelled.toInt(), progress)
+            if (alpha > 0f) drawCircle(Color.White.copy(alpha = alpha), radius, Offset(x, y))
         }
     }
+}
+
+/**
+ * Множитель прозрачности: часть снежинок в конкретном падении плавно растворяется на случайной высоте.
+ * Решение детерминировано по (снежинка, номер падения), без состояния и аллокаций.
+ */
+private fun dissolveFactor(flakeIndex: Int, fallIndex: Int, progress: Float): Float {
+    val hash = (flakeIndex * 73856093) xor (fallIndex * 19349663)
+    val chance = (hash and 0xFFFF) / 65535f
+    if (chance >= DissolveChance) return 1f
+    val endsAt = 0.35f + ((hash ushr 16) and 0xFFFF) / 65535f * 0.5f
+    val start = endsAt - DissolveFadeLength
+    return (1f - (progress - start) / DissolveFadeLength).coerceIn(0f, 1f)
 }

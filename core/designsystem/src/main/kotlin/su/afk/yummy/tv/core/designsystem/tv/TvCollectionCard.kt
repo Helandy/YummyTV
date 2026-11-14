@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.tv
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -53,7 +54,8 @@ fun TvCollectionCard(
                 posterUrls = posterUrls,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(COLLAGE_ASPECT_RATIO),
+                    .aspectRatio(COLLAGE_ASPECT_RATIO)
+                    .seasonalCardDecor(title.hashCode()),
                 overlay = { badge?.invoke(this) },
             )
             MarqueeTitleText(

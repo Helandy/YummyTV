@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -67,7 +68,8 @@ fun MobileProgressMediaCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .seasonalCardDecor(title.hashCode()),
         ) {
             if (!placeholderText.isNullOrBlank()) {
                 Text(

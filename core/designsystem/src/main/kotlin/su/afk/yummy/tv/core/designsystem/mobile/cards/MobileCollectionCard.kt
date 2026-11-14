@@ -1,10 +1,8 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
-import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
-import androidx.compose.runtime.remember
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,12 +13,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.PostersCollage
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 
 private const val COLLAGE_ASPECT_RATIO = 2.4f
 
@@ -52,7 +53,8 @@ fun MobileCollectionCard(
                 posterUrls = posterUrls,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(COLLAGE_ASPECT_RATIO),
+                    .aspectRatio(COLLAGE_ASPECT_RATIO)
+                    .seasonalCardDecor(title.hashCode()),
                 overlay = { badge?.invoke(this) },
             )
             Text(

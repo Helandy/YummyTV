@@ -31,6 +31,7 @@ import su.afk.yummy.tv.core.navigation.manager.BackStackHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
+import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.main.MainViewModel
 import su.afk.yummy.tv.feature.main.api.MainGraph
@@ -82,16 +83,8 @@ class MobileMainGraph @Inject internal constructor(
                 backgroundStyle = state.backgroundStyle,
                 isTelevision = false,
             ) {
-                ConfirmDialogHost(isTelevision = false)
-                ChoiceDialogHost(isTelevision = false)
                 val onboarding = rememberOnboardingController()
                 val tabRootReady = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination
-                SeasonalPrompt(
-                    theme = state.seasonalPrompt,
-                    isTelevision = false,
-                    ready = tabRootReady,
-                    onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
-                )
                 CompositionLocalProvider(
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
@@ -104,6 +97,14 @@ class MobileMainGraph @Inject internal constructor(
                     },
                     LocalOnboardingController provides onboarding,
                 ) {
+                    ConfirmDialogHost(isTelevision = false)
+                    ChoiceDialogHost(isTelevision = false)
+                    SeasonalPrompt(
+                        theme = state.seasonalPrompt,
+                        isTelevision = false,
+                        ready = tabRootReady,
+                        onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
+                    )
                     OnboardingTourEffect(
                         tourId = MAIN_ONBOARDING_TOUR_ID,
                         steps = mobileMainTourSteps,
@@ -123,7 +124,8 @@ class MobileMainGraph @Inject internal constructor(
                             onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = true))
                         },
                         toastMessage = toast.message,
-                        showSeasonalOverlay = !isFullscreenDestination,
+                        // Как на ТВ: снег везде, кроме плеера (детали тоже украшены).
+                        showSeasonalOverlay = currentDestination !is PlayerDestination,
                     ) {
                         AppNavHost(
                             navManager = navManager,

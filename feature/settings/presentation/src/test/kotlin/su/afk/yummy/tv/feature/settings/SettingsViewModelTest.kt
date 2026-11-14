@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -118,6 +119,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         settingsStore = settingsStore,
+        appClock = object : AppClock { override fun nowMillis() = 0L },
         episodePushSettingsStore = episodePushSettingsStore,
         appLifecycleSettingsStore = appLifecycleSettingsStore,
         yaniAuthPreferences = yaniAuthPreferences,

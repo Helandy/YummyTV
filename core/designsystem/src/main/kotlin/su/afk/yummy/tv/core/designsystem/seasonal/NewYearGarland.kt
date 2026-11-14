@@ -38,12 +38,18 @@ private const val BulbsPerSegment = 3
 /** Новогодняя гирлянда: провисающий провод с мерцающими лампочками. Касания не перехватывает. */
 @Composable
 fun NewYearGarland(modifier: Modifier = Modifier, height: Dp = GarlandHeight) {
-    val phase by rememberInfiniteTransition(label = "garland").animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(TwinkleMillis, easing = LinearEasing), RepeatMode.Restart),
-        label = "garlandPhase",
-    )
+    // Без анимаций (системный флаг или слабое устройство) гирлянда статична: бесконечный переход не запускаем.
+    val phase = if (rememberSeasonalOverlayEnabled()) {
+        val animated by rememberInfiniteTransition(label = "garland").animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(TwinkleMillis, easing = LinearEasing), RepeatMode.Restart),
+            label = "garlandPhase",
+        )
+        animated
+    } else {
+        0f
+    }
     Canvas(modifier.fillMaxWidth().height(height)) {
         drawGarland(phase)
     }

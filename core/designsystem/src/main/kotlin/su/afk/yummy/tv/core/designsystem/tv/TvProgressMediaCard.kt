@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.tv
 
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -93,6 +94,7 @@ fun TvProgressMediaCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(thumbnailHeight)
+                    .seasonalCardDecor(title.hashCode())
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {

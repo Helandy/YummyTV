@@ -8,13 +8,20 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 
 /**
- * Украшение шторок и диалогов на Хэллоуин: паутина в обоих верхних углах и паук на нити из
+ * Украшение шторок и диалогов. Новый год — снежная шапка по верхней кромке. Хэллоуин: паутина в обоих верхних углах и паук на нити из
  * правой. Рисуется поверх содержимого, но только в углах.
  */
 @Composable
 fun Modifier.seasonalPanelDecor(): Modifier {
     val theme = rememberSeasonalTheme()
     val phase = rememberSpiderPhase()
+    if (theme == SeasonalTheme.NEW_YEAR) {
+        return drawWithContent {
+            drawContent()
+            // Отступ от краёв, чтобы шапка не торчала за скруглёнными углами шторки.
+            drawSnowCap(capHeight = 4.dp.toPx(), inset = 24.dp.toPx())
+        }
+    }
     if (theme != SeasonalTheme.HALLOWEEN) return this
     return drawWithContent {
         drawContent()

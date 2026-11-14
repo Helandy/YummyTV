@@ -65,14 +65,6 @@ class TvMainGraph @Inject constructor(
                 backgroundStyle = state.backgroundStyle,
                 isTelevision = true,
             ) {
-                ConfirmDialogHost(isTelevision = true)
-                ChoiceDialogHost(isTelevision = true)
-                SeasonalPrompt(
-                    theme = state.seasonalPrompt,
-                    isTelevision = true,
-                    ready = showMainMenu,
-                    onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
-                )
                 CompositionLocalProvider(
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
@@ -80,6 +72,14 @@ class TvMainGraph @Inject constructor(
                     LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,
                 ) {
+                    ConfirmDialogHost(isTelevision = true)
+                    ChoiceDialogHost(isTelevision = true)
+                    SeasonalPrompt(
+                        theme = state.seasonalPrompt,
+                        isTelevision = true,
+                        ready = showMainMenu,
+                        onAnswer = { disable -> onEvent(MainState.Event.SeasonalPromptAnswered(disable)) },
+                    )
                     TvMainScaffold(
                         selectedRoot = navManager.currentRoot,
                         contentFocusKey = navManager.currentRoot to currentDestination,

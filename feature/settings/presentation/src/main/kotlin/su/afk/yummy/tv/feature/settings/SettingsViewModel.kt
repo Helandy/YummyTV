@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.analytics.api.AnalyticsDeviceIdProvider
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -58,6 +59,7 @@ class SettingsViewModel @Inject internal constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
+    private val appClock: AppClock,
     private val episodePushSettingsStore: EpisodePushSettingsStore,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
@@ -106,7 +108,7 @@ class SettingsViewModel @Inject internal constructor(
                         detailsSections = snapshot.detailsSections.toImmutableList(),
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         accountShortcutsExpanded = snapshot.accountShortcutsExpanded,
-                        seasonalTheme = seasonalThemeAt(System.currentTimeMillis()),
+                        seasonalTheme = seasonalThemeAt(appClock.nowMillis()),
                         newEpisodesSources = snapshot.newEpisodesSources,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
