@@ -56,7 +56,7 @@ internal fun MobilePlayerSettingsMenuSheet(
             page = MobilePlayerSettingsPage.Root
         }
     }
-    BaseBottomSheet(onDismissRequest = onDismiss, scrollableContent = true) {
+    BaseBottomSheet(onDismissRequest = onDismiss, scrollableContent = true, compactDragHandle = true) {
         HideSheetWindowSystemBars()
         // Назад на вложенной странице ведёт к главному списку, а не закрывает шторку. Обработчик
         // обязан жить внутри диалога шторки: снаружи его перебивает собственный back самой шторки.

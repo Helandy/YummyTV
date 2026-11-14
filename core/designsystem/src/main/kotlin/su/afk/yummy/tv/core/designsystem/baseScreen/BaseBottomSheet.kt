@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -80,6 +81,8 @@ fun BaseBottomSheet(
     contentPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     scrollableContent: Boolean = false,
+    /** Низкая «ручка»: у шторок с собственной шапкой стандартные 22dp сверху и снизу лишние. */
+    compactDragHandle: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val maxHeight = rememberBottomSheetMaxHeight()
@@ -91,6 +94,11 @@ fun BaseBottomSheet(
         onDismissRequest = onDismissRequest,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentWindowInsets = { WindowInsets(0.dp) },
+        dragHandle = if (compactDragHandle) {
+            { BottomSheetDefaults.DragHandle(modifier = Modifier.padding(vertical = 8.dp)) }
+        } else {
+            { BottomSheetDefaults.DragHandle() }
+        },
     ) {
         Column(
             modifier = Modifier
