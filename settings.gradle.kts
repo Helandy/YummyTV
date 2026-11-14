@@ -214,6 +214,12 @@ if (sourceEnabled("anime4k")) {
     include(":source:anime4k:data")
 }
 
+// Подпись запросов к своему серверу: приватный репозиторий в private/sitesign (в этом git его нет).
+// Нет каталога — приложение собирается, но запросы к API сайта уходят неподписанными.
+if (file("private/sitesign").isDirectory) {
+    include(":private:sitesign")
+}
+
 if (sourceEnabled("torrent")) {
     include(":source:torrent:domain")
     include(":source:torrent:data")

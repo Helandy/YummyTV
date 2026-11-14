@@ -58,9 +58,6 @@ private fun stepProblemRes(step: PlayerStreamResolveStatus?): Int? = when (step)
     PlayerStreamResolveStatus.LinkNotFound,
     PlayerStreamResolveStatus.ExtractingLink,
     -> R.string.player_problem_link_not_found
-    PlayerStreamResolveStatus.AskingConsent,
-    PlayerStreamResolveStatus.RequestingTicket,
-    -> R.string.player_problem_ticket
     PlayerStreamResolveStatus.RequestingStream,
     PlayerStreamResolveStatus.CheckingQualities,
     -> R.string.player_problem_stream_not_found

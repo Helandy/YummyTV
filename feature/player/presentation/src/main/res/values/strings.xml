@@ -219,14 +219,11 @@
     <string name="player_resolve_searching_episode">Looking for the episode…</string>
     <string name="player_resolve_extracting_link">Extracting the video link…</string>
     <string name="player_resolve_loading_playlist">Loading the quality playlist…</string>
-    <string name="player_resolve_asking_consent">Waiting for your choice…</string>
-    <string name="player_resolve_requesting_ticket">Requesting access…</string>
     <string name="player_resolve_failed_extracting_link">Failed at: extracting the video link</string>
     <string name="player_resolve_failed_loading_playlist">Failed at: loading the quality playlist</string>
     <string name="player_problem_episode_not_found">This episode is not on the source site</string>
     <string name="player_problem_player_not_found">The source page has no player for this episode</string>
     <string name="player_problem_link_not_found">The player was found, but it has no video link</string>
-    <string name="player_problem_ticket">Could not get access to the 4K dubbing</string>
     <string name="player_badge_downloaded">Downloaded</string>
     <string name="player_menu_subtitles">Subtitles</string>
     <string name="player_menu_audio_track">Audio track</string>

@@ -8,21 +8,17 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
-import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
-import su.afk.yummy.tv.core.network.yummy.signSiteRequest
 import su.afk.yummy.tv.data.details.dto.EpisodeFlagsBackupDto
 
 /** Резерв филлеров и рекапов: копия Tenrai на YummyTV API. Нужен, только если сам Tenrai не ответил. */
 class YummyEpisodeFlagsApi(
     private val clientProvider: YaniHttpClientProvider,
     private val siteApiConfig: SiteApiConfig,
-    private val signers: Set<SiteRequestSigner> = emptySet(),
 ) {
     /** Пометки тайтла; 404 (копии ещё нет) — это отсутствие данных, а не пустой список, поэтому бросается как ошибка. */
     suspend fun getFlags(malId: Int): EpisodeFlagsBackupDto {
         val url = "${siteApiConfig.baseUrl}/episode-flags/$malId"
         val response = clientProvider.get().get(url) {
-            signSiteRequest(signers, "GET", url)
             expectSuccess = false
         }
         return when {

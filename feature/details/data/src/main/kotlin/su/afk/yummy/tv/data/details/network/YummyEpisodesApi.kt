@@ -9,8 +9,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
-import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
-import su.afk.yummy.tv.core.network.yummy.signSiteRequest
 import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 
 /**
@@ -20,7 +18,6 @@ import su.afk.yummy.tv.data.details.dto.YummyEpisodesDto
 class YummyEpisodesApi(
     private val clientProvider: YaniHttpClientProvider,
     private val siteApiConfig: SiteApiConfig,
-    private val signers: Set<SiteRequestSigner> = emptySet(),
 ) {
     /**
      * Серии записи. Смещение серий франшизы, которую TMDB хранит сквозной нумерацией, сервер считает сам.
@@ -31,7 +28,6 @@ class YummyEpisodesApi(
         val url = "${siteApiConfig.baseUrl}/anime/mal/$malId"
         val response = clientProvider.get().get(url) {
             parameter("lang", language)
-            signSiteRequest(signers, "GET", url)
             // Статус разбирается ниже: 404 — «серий нет», а не ошибка.
             expectSuccess = false
         }

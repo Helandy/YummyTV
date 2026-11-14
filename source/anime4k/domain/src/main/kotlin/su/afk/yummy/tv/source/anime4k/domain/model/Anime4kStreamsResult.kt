@@ -4,16 +4,10 @@ package su.afk.yummy.tv.source.anime4k.domain.model
 sealed interface Anime4kStreamsResult {
     data class Success(val streams: Anime4kStreams) : Anime4kStreamsResult
 
-    /** Пользователь отказался смотреть рекламу. */
-    data object Declined : Anime4kStreamsResult
-
-    /** Реклама не показана или награда не получена. */
-    data object AdNotRewarded : Anime4kStreamsResult
-
     /** Сервер ограничил частоту запросов (429). */
     data object RateLimited : Anime4kStreamsResult
 
-    /** Сервер отказал: тикет погашен раньше времени, просрочен или уже использован (403). */
+    /** Сервер не принял подпись запроса (401/403): сборка не официальная или устарела. */
     data object Rejected : Anime4kStreamsResult
 
     data object NotFound : Anime4kStreamsResult

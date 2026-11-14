@@ -19,39 +19,29 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
-import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import java.io.IOException
 
 class AnistarApiTest : BaseUnitTest() {
 
     private val requests = mutableListOf<HttpRequestData>()
-    private val signed = mutableListOf<Triple<String, String, String>>()
-
-    private val signer = object : SiteRequestSigner {
-        override fun headers(method: String, path: String, body: ByteArray): Map<String, String> {
-            signed += Triple(method, path, body.decodeToString())
-            return mapOf("X-Sig" to "sig")
-        }
-    }
-
-    private fun api(status: HttpStatusCode = HttpStatusCode.OK, body: String = "{}", signers: Set<SiteRequestSigner> = setOf(signer)): AnistarApi {
+    private fun api(status: HttpStatusCode = HttpStatusCode.OK, body: String = "{}"): AnistarApi {
         val engine = MockEngine { request ->
             requests += request
             if (status.value in 200..299) respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
             else respondError(status)
         }
         val client = HttpClient(engine) { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
-        return AnistarApi(client, signers, SiteApiConfig())
+        return AnistarApi(client, SiteApiConfig())
     }
 
     @Test
-    fun `mirror request is a signed get`() = runTest {
+    fun `mirror request is a plain get without a signature`() = runTest {
         val dto = api(body = """{"mirror":"https://v31.astar.bz"}""").getMirror()
 
         assertEquals(HttpMethod.Get, requests.single().method)
-        assertEquals("sig", requests.single().headers["X-Sig"])
-        assertEquals("/api/anistar/mirror", signed.single().second)
+        assertEquals("/api/anistar/mirror", requests.single().url.encodedPath)
+        assertEquals(null, requests.single().headers["X-Sig"])
         assertEquals("https://v31.astar.bz", dto.mirror)
     }
 
@@ -67,7 +57,6 @@ class AnistarApiTest : BaseUnitTest() {
 
         assertEquals("https://v31.astar.bz/test/player2/videoas_p2p_new.php?id=2658", requests.single().url.toString())
         assertEquals("<html>pl</html>", html)
-        assertTrue(signed.isEmpty())
     }
 
     @Test

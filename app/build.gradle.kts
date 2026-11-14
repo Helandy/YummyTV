@@ -89,6 +89,8 @@ androidComponents {
 }
 
 dependencies {
+    // Подпись запросов к своему серверу (приватный репозиторий): нет каталога private/sitesign, нет и зависимости.
+    findProject(":private:sitesign")?.let { implementation(it) }
     // Необязательный источник «4K»: нет каталога source/anime4k, нет и зависимости.
     findProject(":source:anime4k:data")?.let { implementation(it) }
     // Необязательный источник «Торренты» (TorrServer + JacRed/Jackett): нет каталога source/torrent, нет и зависимости.

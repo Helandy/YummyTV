@@ -34,12 +34,6 @@ enum class PlayerStreamResolveStatus {
     /** Загрузка плейлиста со списком качеств. */
     LoadingPlaylist,
 
-    /** Anime4k: вопрос о рекламе. */
-    AskingConsent,
-
-    /** Anime4k: получение тикета на просмотр. */
-    RequestingTicket,
-
     /** Торренты: на экране выбора раздачи, ждём выбор пользователя. */
     WaitingForTorrent,
 

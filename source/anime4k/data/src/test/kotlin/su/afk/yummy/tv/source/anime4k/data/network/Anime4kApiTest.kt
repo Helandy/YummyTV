@@ -15,13 +15,14 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kLookupRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsRequestDto
-import su.afk.yummy.tv.source.anime4k.data.signing.RequestSigner
+import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kApiException
 import java.io.IOException
 
@@ -29,10 +30,10 @@ class Anime4kApiTest : BaseUnitTest() {
 
     private val requests = mutableListOf<HttpRequestData>()
 
-    private class FakeSigner(override val isAvailable: Boolean = true) : RequestSigner {
+    private class FakeSigner(override val isAvailable: Boolean = true) : SiteRequestSigner {
         val calls = mutableListOf<Triple<String, String, String>>()
 
-        override fun headers(method: String, path: String, body: ByteArray): Map<String, String> {
+        override fun headers(method: String, path: String, query: String, body: ByteArray): Map<String, String> {
             calls += Triple(method, path, body.decodeToString())
             return mapOf("X-Sig" to "sig", "X-Sig-Ts" to "1")
         }
@@ -52,7 +53,7 @@ class Anime4kApiTest : BaseUnitTest() {
         val client = HttpClient(engine) {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         }
-        return Anime4kApi(client, signer)
+        return Anime4kApi(client, setOf(signer))
     }
 
     private val lookup = Anime4kLookupRequestDto(1735, "Наруто", listOf("Naruto"), 2002, "tv", 220)
@@ -71,52 +72,44 @@ class Anime4kApiTest : BaseUnitTest() {
     }
 
     @Test
-    fun `ticket is posted with the device header`() = runTest {
-        val dto = api(body = """{"ticket":"abc","notBeforeSec":20,"expiresInSec":300}""").requestTicket("dev123")
+    fun `streams request carries the target in json body and the device header`() = runTest {
+        val dto = api(body = """{"referer":"https://example.org/","files":[{"q":2160,"br":7500,"url":"https://v/x.mp4"}]}""")
+            .getStreams(Anime4kStreamsRequestDto(1735, "1", "1", "AlexFilm"), deviceId = "dev123")
 
         val request = requests.single()
-        assertEquals(HttpMethod.Post, request.method)
-        assertTrue(request.url.toString().endsWith("/anime4k/ticket"))
-        assertEquals("dev123", request.headers["X-Device-Id"])
-        assertEquals("abc", dto.ticket)
-    }
-
-    @Test
-    fun `streams request carries the ticket in json body`() = runTest {
-        val dto = api(body = """{"referer":"https://example.org/","files":[{"q":2160,"br":7500,"url":"https://v/x.mp4"}]}""")
-            .getStreams(Anime4kStreamsRequestDto("abc", 1735, "1", "1", "AlexFilm"), deviceId = null)
-
-        val body = requests.single().body.toByteArray().decodeToString()
-        assertTrue(body.contains("\"ticket\":\"abc\""))
+        val body = request.body.toByteArray().decodeToString()
+        assertTrue(request.url.toString().endsWith("/anime4k/streams"))
         assertTrue(body.contains("\"team\":\"AlexFilm\""))
-        assertNull(requests.single().headers["X-Device-Id"])
+        assertFalse(body.contains("ticket"))
+        assertEquals("dev123", request.headers["X-Device-Id"])
         assertEquals(2160, dto.files.single().q)
     }
 
     @Test
     fun `http statuses map to domain exceptions`() = runTest {
-        val rateLimited = runCatching { api(HttpStatusCode.TooManyRequests).requestTicket(null) }.exceptionOrNull()
-        val rejected = runCatching { api(HttpStatusCode.Forbidden).requestTicket(null) }.exceptionOrNull()
-        val server = runCatching { api(HttpStatusCode.InternalServerError).requestTicket(null) }.exceptionOrNull()
+        val target = Anime4kStreamsRequestDto(1735, "1", "1", "AlexFilm")
+        val rateLimited = runCatching { api(HttpStatusCode.TooManyRequests).getStreams(target, null) }.exceptionOrNull()
+        val rejected = runCatching { api(HttpStatusCode.Unauthorized).getStreams(target, null) }.exceptionOrNull()
+        val notFound = runCatching { api(HttpStatusCode.NotFound).getStreams(target, null) }.exceptionOrNull()
+        val server = runCatching { api(HttpStatusCode.InternalServerError).getStreams(target, null) }.exceptionOrNull()
 
         assertTrue(rateLimited is Anime4kApiException.RateLimited)
         assertTrue(rejected is Anime4kApiException.Rejected)
+        assertTrue(notFound is Anime4kApiException.NotFound)
         assertTrue(server is IOException)
     }
 
     @Test
     fun `every request is signed over method path and exact body`() = runTest {
         api(body = """{"available":false}""").findTitle(lookup)
-        api(body = """{"ticket":"abc","notBeforeSec":1,"expiresInSec":2}""").requestTicket("dev")
         val streams = api(body = """{"referer":"r","files":[]}""")
-        streams.getStreams(Anime4kStreamsRequestDto("abc", 1735, "1", "1", "AlexFilm"), null)
+        streams.getStreams(Anime4kStreamsRequestDto(1735, "1", "1", "AlexFilm"), null)
 
         val (titleMethod, titlePath, titleBody) = signer.calls[0]
         assertEquals("POST", titleMethod)
         assertEquals("/api/anime4k/title", titlePath)
         assertTrue(titleBody.contains("\"malId\":1735"))
-        assertEquals(Triple("POST", "/api/anime4k/ticket", ""), signer.calls[1])
-        val (method, path, signedBody) = signer.calls[2]
+        val (method, path, signedBody) = signer.calls[1]
         assertEquals("POST", method)
         assertEquals("/api/anime4k/streams", path)
         assertEquals(requests.last().body.toByteArray().decodeToString(), signedBody)

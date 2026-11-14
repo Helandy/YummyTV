@@ -26,15 +26,7 @@ data class Anime4kEpisodeResponseDto(
 )
 
 @Serializable
-data class Anime4kTicketResponseDto(
-    val ticket: String = "",
-    val notBeforeSec: Int = 0,
-    val expiresInSec: Int = 0,
-)
-
-@Serializable
 data class Anime4kStreamsRequestDto(
-    val ticket: String,
     val malId: Int,
     val season: String,
     val episode: String,

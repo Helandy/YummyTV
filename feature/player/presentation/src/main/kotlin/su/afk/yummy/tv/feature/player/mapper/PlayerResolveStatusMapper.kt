@@ -21,8 +21,6 @@ fun PlayerStreamResolveStatus?.loadingTextRes(): Int = when (this) {
     PlayerStreamResolveStatus.SearchingEpisode -> R.string.player_resolve_searching_episode
     PlayerStreamResolveStatus.ExtractingLink -> R.string.player_resolve_extracting_link
     PlayerStreamResolveStatus.LoadingPlaylist -> R.string.player_resolve_loading_playlist
-    PlayerStreamResolveStatus.AskingConsent -> R.string.player_resolve_asking_consent
-    PlayerStreamResolveStatus.RequestingTicket -> R.string.player_resolve_requesting_ticket
     PlayerStreamResolveStatus.EpisodeNotFound -> R.string.player_problem_episode_not_found
     PlayerStreamResolveStatus.PlayerNotFound -> R.string.player_problem_player_not_found
     PlayerStreamResolveStatus.LinkNotFound -> R.string.player_problem_link_not_found
@@ -52,9 +50,6 @@ fun PlayerStreamResolveStatus.failedStepTextRes(): Int = when (this) {
     PlayerStreamResolveStatus.SearchingEpisode -> R.string.player_problem_episode_not_found
     PlayerStreamResolveStatus.ExtractingLink -> R.string.player_resolve_failed_extracting_link
     PlayerStreamResolveStatus.LoadingPlaylist -> R.string.player_resolve_failed_loading_playlist
-    PlayerStreamResolveStatus.AskingConsent,
-    PlayerStreamResolveStatus.RequestingTicket,
-    -> R.string.player_problem_ticket
     PlayerStreamResolveStatus.EpisodeNotFound -> R.string.player_problem_episode_not_found
     PlayerStreamResolveStatus.PlayerNotFound -> R.string.player_problem_player_not_found
     PlayerStreamResolveStatus.LinkNotFound -> R.string.player_problem_link_not_found

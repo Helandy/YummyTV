@@ -13,21 +13,20 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
 import su.afk.yummy.tv.core.network.yummy.signSiteRequest
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kLookupRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsResponseDto
-import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTicketResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTitleResponseDto
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kApiException
-import su.afk.yummy.tv.source.anime4k.data.signing.RequestSigner
 import java.io.IOException
 import javax.inject.Inject
 
-/** Собственный сервер YummyTV: наличие 4K без рекламы, ссылки только по тикету. */
+/** Собственный сервер YummyTV: наличие 4K и ссылки на файлы. Обе ручки сервер отдаёт только подписанному запросу. */
 internal class Anime4kApi @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
-    private val signer: RequestSigner,
+    private val signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
     private val siteApiConfig: SiteApiConfig = SiteApiConfig(),
 ) {
     private val base: String get() = "${siteApiConfig.baseUrl}/anime4k"
@@ -39,16 +38,6 @@ internal class Anime4kApi @Inject constructor(
         val response = client.post(url) {
             sign("POST", url, body.toByteArray(Charsets.UTF_8))
             setBody(TextContent(body, ContentType.Application.Json))
-        }
-        response.requireSuccess()
-        return response.body()
-    }
-
-    suspend fun requestTicket(deviceId: String?): Anime4kTicketResponseDto {
-        val url = "$base/ticket"
-        val response = client.post(url) {
-            deviceId?.let { header(DEVICE_HEADER, it) }
-            sign("POST", url, ByteArray(0))
         }
         response.requireSuccess()
         return response.body()
@@ -68,7 +57,7 @@ internal class Anime4kApi @Inject constructor(
     }
 
     private fun HttpRequestBuilder.sign(method: String, url: String, body: ByteArray) {
-        signSiteRequest(listOf(signer), method, url, body)
+        signSiteRequest(signers, method, url, body)
     }
 
     private fun io.ktor.client.statement.HttpResponse.requireSuccess() {

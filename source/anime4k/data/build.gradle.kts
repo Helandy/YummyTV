@@ -1,14 +1,8 @@
-import su.afk.yummy.tv.buildlogic.buildConfigObfuscatedSecret
-import su.afk.yummy.tv.buildlogic.buildConfigSecret
-
 plugins {
     id("yummytv.android.library")
     alias(libs.plugins.kotlinSerialization)
     id("yummytv.android.hilt")
 }
-
-// false — рекламный SDK Яндекса не попадает в сборку, вместо него заглушка без рекламы.
-val yandexAdsEnabled = providers.gradleProperty("yummytv.ads.yandex").map(String::toBoolean).getOrElse(true)
 
 android {
     namespace = "su.afk.yummy.tv.source.anime4k.data"
@@ -16,29 +10,10 @@ android {
     buildFeatures {
         buildConfig = true
     }
-
-    sourceSets.getByName("main").kotlin.directories.add(if (yandexAdsEnabled) "src/yandexAds/kotlin" else "src/noAds/kotlin")
-
-    defaultConfig {
-        buildConfigField(
-            "String",
-            "YANDEX_REWARDED_AD_UNIT_ID",
-            buildConfigSecret("yummytv.yandexRewardedAdUnitId"),
-        )
-        buildConfigField(
-            "String",
-            "API_SIGNING_SECRET",
-            buildConfigObfuscatedSecret(
-                "yummytv.apiSigningSecret",
-                "su.afk.yummy.tv.source.anime4k.data.signing.SecretDecoder",
-            ),
-        )
-    }
 }
 
 dependencies {
     implementation(project(":source:anime4k:domain"))
-    implementation(project(":core:designsystem"))
     implementation(project(":core:featuretoggle"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
@@ -49,8 +24,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
-    // Версия намеренно не в общем каталоге: удаление каталога source/anime4k не оставляет следов.
-    if (yandexAdsEnabled) implementation("com.yandex.android:mobileads:8.6.0")
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test.network)

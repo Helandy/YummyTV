@@ -3,13 +3,11 @@ package su.afk.yummy.tv.source.anime4k.data.mapper
 import su.afk.yummy.tv.core.model.anime.utils.prioritizeAnimeTitles
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kLookupRequestDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsResponseDto
-import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTicketResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTitleResponseDto
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kEpisode
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kFile
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kStreams
-import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTicket
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTitle
 
 internal object Anime4kMapper {
@@ -31,11 +29,6 @@ internal object Anime4kMapper {
             .map { Anime4kEpisode(number = it.number, season = it.season, dubbings = it.dubbings.filter(String::isNotBlank)) }
             .filter { it.number.isNotBlank() && it.dubbings.isNotEmpty() }
         return episodes.takeIf { it.isNotEmpty() }?.let { Anime4kTitle(malId = malId, episodes = it) }
-    }
-
-    fun toTicket(dto: Anime4kTicketResponseDto): Anime4kTicket {
-        require(dto.ticket.isNotBlank()) { "Сервер не выдал тикет" }
-        return Anime4kTicket(value = dto.ticket, notBeforeSec = dto.notBeforeSec, expiresInSec = dto.expiresInSec)
     }
 
     fun toStreams(dto: Anime4kStreamsResponseDto): Anime4kStreams {

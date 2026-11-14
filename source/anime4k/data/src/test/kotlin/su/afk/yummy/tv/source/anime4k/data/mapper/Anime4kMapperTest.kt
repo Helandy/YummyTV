@@ -8,7 +8,6 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kEpisodeResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamFileDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kStreamsResponseDto
-import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTicketResponseDto
 import su.afk.yummy.tv.source.anime4k.data.dto.Anime4kTitleResponseDto
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 
@@ -55,14 +54,6 @@ class Anime4kMapperTest : BaseUnitTest() {
         assertEquals(7, title?.malId)
         assertEquals(1, title?.episodes?.size)
         assertEquals(listOf("AlexFilm"), title?.episodes?.single()?.dubbings)
-    }
-
-    @Test
-    fun `ticket without value is rejected`() {
-        val error = runCatching { Anime4kMapper.toTicket(Anime4kTicketResponseDto(ticket = "")) }.exceptionOrNull()
-
-        assertTrue(error is IllegalArgumentException)
-        assertEquals("abc", Anime4kMapper.toTicket(Anime4kTicketResponseDto("abc", 20, 300)).value)
     }
 
     @Test

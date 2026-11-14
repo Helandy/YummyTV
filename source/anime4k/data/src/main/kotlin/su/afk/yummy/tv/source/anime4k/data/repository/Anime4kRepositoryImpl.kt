@@ -8,7 +8,6 @@ import su.afk.yummy.tv.source.anime4k.data.network.Anime4kApi
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kLookup
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kStreams
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTarget
-import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTicket
 import su.afk.yummy.tv.source.anime4k.domain.model.Anime4kTitle
 import su.afk.yummy.tv.source.anime4k.domain.repository.Anime4kRepository
 import su.afk.yummy.tv.core.utils.system.DeviceHashProvider
@@ -37,14 +36,9 @@ internal class Anime4kRepositoryImpl @Inject constructor(
         return title
     }
 
-    override suspend fun requestTicket(): Anime4kTicket {
-        reportResolveStep(PlayerStreamResolveStatus.RequestingTicket)
-        return Anime4kMapper.toTicket(api.requestTicket(deviceHashProvider.get()))
-    }
-
-    override suspend fun getStreams(ticket: Anime4kTicket, target: Anime4kTarget): Anime4kStreams {
+    override suspend fun getStreams(target: Anime4kTarget): Anime4kStreams {
+        reportResolveStep(PlayerStreamResolveStatus.RequestingStream)
         val request = Anime4kStreamsRequestDto(
-            ticket = ticket.value,
             malId = target.malId,
             season = target.season,
             episode = target.episode,

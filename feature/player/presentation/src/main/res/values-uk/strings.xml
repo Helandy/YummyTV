@@ -219,14 +219,11 @@
     <string name="player_resolve_searching_episode">Шукаємо серію…</string>
     <string name="player_resolve_extracting_link">Дістаємо посилання на відео…</string>
     <string name="player_resolve_loading_playlist">Завантажуємо плейлист якостей…</string>
-    <string name="player_resolve_asking_consent">Чекаємо ваш вибір…</string>
-    <string name="player_resolve_requesting_ticket">Запитуємо доступ…</string>
     <string name="player_resolve_failed_extracting_link">Збій на кроці: отримання посилання на відео</string>
     <string name="player_resolve_failed_loading_playlist">Збій на кроці: завантаження плейлиста якостей</string>
     <string name="player_problem_episode_not_found">Цієї серії немає на сайті джерела</string>
     <string name="player_problem_player_not_found">На сторінці джерела немає плеєра для цієї серії</string>
     <string name="player_problem_link_not_found">Плеєр знайдено, але посилання на відео в ньому немає</string>
-    <string name="player_problem_ticket">Не вдалося отримати доступ до 4K-озвучення</string>
     <string name="player_badge_downloaded">Завантажено</string>
     <string name="player_menu_subtitles">Субтитри</string>
     <string name="player_menu_audio_track">Аудіодоріжка</string>
