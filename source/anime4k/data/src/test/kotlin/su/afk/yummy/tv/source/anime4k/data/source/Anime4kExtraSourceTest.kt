@@ -78,6 +78,17 @@ class Anime4kExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
+    fun `possible title is shown under the 4K? player`() = runTest {
+        enabled(true)
+        coEvery { repository.getTitle(any()) } returns title.copy(isPossible = true)
+
+        val videos = videoRepository().videos(details(1735))
+
+        assertEquals(3, videos.size)
+        assertTrue(videos.all { it.player == "4K?" && it.iframeUrl.startsWith("source://anime4k/1735/") })
+    }
+
+    @Test
     fun `no title or no mal id or disabled gives nothing`() = runTest {
         coEvery { repository.getTitle(any()) } returns null
 

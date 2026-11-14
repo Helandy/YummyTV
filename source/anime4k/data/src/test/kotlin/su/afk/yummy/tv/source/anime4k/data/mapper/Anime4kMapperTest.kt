@@ -38,6 +38,21 @@ class Anime4kMapperTest : BaseUnitTest() {
     }
 
     @Test
+    fun `lost 4k with possible flag keeps episodes and is marked possible`() {
+        val dto = Anime4kTitleResponseDto(
+            available = false,
+            possible = true,
+            episodes = listOf(Anime4kEpisodeResponseDto("1", "1", listOf("AlexFilm"))),
+        )
+
+        val title = Anime4kMapper.toTitle(7, dto)
+
+        assertTrue(title?.isPossible == true)
+        assertEquals(1, title?.episodes?.size)
+        assertTrue(Anime4kMapper.toTitle(7, dto.copy(available = true, possible = false))?.isPossible == false)
+    }
+
+    @Test
     fun `title keeps episodes with dubbings only`() {
         val title = Anime4kMapper.toTitle(
             7,

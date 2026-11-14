@@ -16,6 +16,8 @@ data class Anime4kLookupRequestDto(
 data class Anime4kTitleResponseDto(
     val available: Boolean = false,
     val episodes: List<Anime4kEpisodeResponseDto> = emptyList(),
+    /** 4K у тайтла был, но сервер его больше не находит: возможно, вернётся. */
+    val possible: Boolean = false,
 )
 
 @Serializable

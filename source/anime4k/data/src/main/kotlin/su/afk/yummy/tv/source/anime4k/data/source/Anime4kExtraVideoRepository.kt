@@ -44,7 +44,7 @@ internal class Anime4kExtraVideoRepository @Inject constructor(
                     id = -(url.hashCode() and Int.MAX_VALUE) - 1,
                     episode = episode.number,
                     dubbing = team,
-                    player = PLAYER_NAME,
+                    player = if (title.isPossible) PLAYER_NAME_POSSIBLE else PLAYER_NAME,
                     playerId = null,
                     iframeUrl = url,
                     durationSeconds = null,
@@ -55,5 +55,8 @@ internal class Anime4kExtraVideoRepository @Inject constructor(
 
     private companion object {
         const val PLAYER_NAME = "4K"
+
+        /** 4K сервер больше не подтверждает, но серии помнит: возможно, вернётся. */
+        const val PLAYER_NAME_POSSIBLE = "4K?"
     }
 }

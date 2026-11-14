@@ -22,13 +22,13 @@ internal object Anime4kMapper {
         episodes = lookup.episodes,
     )
 
-    /** `null`, если сервер сказал, что 4K нет, или не прислал ни одной серии с озвучкой. */
+    /** `null`, если сервер говорит, что 4K нет (и даже возможным он не считается), или не прислал ни одной серии с озвучкой. */
     fun toTitle(malId: Int, dto: Anime4kTitleResponseDto): Anime4kTitle? {
-        if (!dto.available) return null
+        if (!dto.available && !dto.possible) return null
         val episodes = dto.episodes
             .map { Anime4kEpisode(number = it.number, season = it.season, dubbings = it.dubbings.filter(String::isNotBlank)) }
             .filter { it.number.isNotBlank() && it.dubbings.isNotEmpty() }
-        return episodes.takeIf { it.isNotEmpty() }?.let { Anime4kTitle(malId = malId, episodes = it) }
+        return episodes.takeIf { it.isNotEmpty() }?.let { Anime4kTitle(malId = malId, episodes = it, isPossible = !dto.available) }
     }
 
     fun toStreams(dto: Anime4kStreamsResponseDto): Anime4kStreams {
