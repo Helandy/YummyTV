@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.mobile.account
 
 import android.widget.Toast
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -405,8 +406,10 @@ fun AccountMobileScreen(
                     MobileSwipeableTabsPager(
                         state = tabsState,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .animateContentSize()
+                            .fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        pageSpacing = 16.dp,
                         key = { page -> accountTabs[page].name },
                     ) { page ->
                         when (accountTabs[page]) {
