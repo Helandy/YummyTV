@@ -1,6 +1,10 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +54,7 @@ internal fun DetailsRatingRow(
                 RatingLabel(
                     label = stringResource(
                         R.string.details_kinopoisk_rating,
-                        it.formatRating()
+                        it.formatRating(),
                     ),
                     isPrimary = false,
                     rating = it,
@@ -89,16 +93,23 @@ internal fun DetailsRatingRow(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         DetailsAverageRating(
             rating = average,
             expandable = externalLabels.isNotEmpty(),
             onClick = { showExternalRatings = !showExternalRatings },
         )
-        AnimatedVisibility(visible = showExternalRatings && externalLabels.isNotEmpty()) {
+        // Отступ над чипами живёт внутри анимируемого контента: spacedBy у Column добавлял его
+        // скачком в начале раскрытия и убирал скачком в конце сворачивания.
+        AnimatedVisibility(
+            visible = showExternalRatings && externalLabels.isNotEmpty(),
+            enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+            exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
+        ) {
             FlowRow(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
