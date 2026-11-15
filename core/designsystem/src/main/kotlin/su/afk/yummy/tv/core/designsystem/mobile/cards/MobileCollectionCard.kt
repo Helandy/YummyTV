@@ -25,6 +25,9 @@ import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 
 private const val COLLAGE_ASPECT_RATIO = 2.4f
 
+/** Соотношение коллажа для горизонтальных рядов (главная, деталка): на 50% выше, чем в сетках (2.4 / 1.5). */
+const val COLLECTION_ROW_COLLAGE_ASPECT_RATIO = 1.6f
+
 /** Плоская карточка коллекции: коллаж из трёх постеров, [badge] в верхнем правом углу и название ниже. */
 @Composable
 fun MobileCollectionCard(
@@ -32,6 +35,7 @@ fun MobileCollectionCard(
     posterUrls: List<String>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    collageAspectRatio: Float = COLLAGE_ASPECT_RATIO,
     badge: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -53,7 +57,7 @@ fun MobileCollectionCard(
                 posterUrls = posterUrls,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(COLLAGE_ASPECT_RATIO)
+                    .aspectRatio(collageAspectRatio)
                     .seasonalCardDecor(title.hashCode()),
                 overlay = { badge?.invoke(this) },
             )

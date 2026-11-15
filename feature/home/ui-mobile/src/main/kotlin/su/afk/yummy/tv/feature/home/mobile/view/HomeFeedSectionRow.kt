@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterSpacing
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
+import su.afk.yummy.tv.core.designsystem.mobile.cards.COLLECTION_ROW_COLLAGE_ASPECT_RATIO
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -83,6 +84,7 @@ internal fun HomeFeedSectionRow(
                                         )
                                     },
                                     modifier = Modifier.width(cardWidth * 2),
+                                    collageAspectRatio = COLLECTION_ROW_COLLAGE_ASPECT_RATIO,
                                 )
                             } else {
                                 HomeItemCard(

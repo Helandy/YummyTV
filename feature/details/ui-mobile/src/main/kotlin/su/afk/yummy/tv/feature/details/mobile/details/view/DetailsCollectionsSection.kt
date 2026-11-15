@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.CollectionStatBadges
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileCollectionCard
+import su.afk.yummy.tv.core.designsystem.mobile.cards.COLLECTION_ROW_COLLAGE_ASPECT_RATIO
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -62,6 +63,7 @@ internal fun DetailsCollectionsSection(
                     },
                     onClick = { onCollectionClick(item.id) },
                     modifier = Modifier.width(260.dp),
+                    collageAspectRatio = COLLECTION_ROW_COLLAGE_ASPECT_RATIO,
                 )
             }
         }
