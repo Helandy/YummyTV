@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.details.details.view
 
-import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -52,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
@@ -166,7 +166,7 @@ internal fun DetailsHero(
             isCompactHeight -> 20.dp
             else -> 32.dp
         }
-        val rowSpacing = if (isCompactHeight) 28.dp else 48.dp
+        val rowSpacing = if (isCompactHeight) 22.dp else 28.dp
         val columnSpacing = if (isCompactHeight) 8.dp else 12.dp
         val titleFontSize = if (isCompactHeight) 34.sp else 40.sp
         val titleTailFontSize = if (isCompactHeight) 22.sp else 26.sp
@@ -395,7 +395,9 @@ internal fun DetailsHero(
                     onOverflowChanged = { tailOverflows = it },
                     onToggle = { descriptionExpanded = !descriptionExpanded },
                     // Зазор от постера: рамка фокуса с увеличением не должна его задевать.
-                    modifier = Modifier.padding(top = 6.dp).then(descriptionTailFocusModifier),
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .then(descriptionTailFocusModifier),
                 )
             }
         }
