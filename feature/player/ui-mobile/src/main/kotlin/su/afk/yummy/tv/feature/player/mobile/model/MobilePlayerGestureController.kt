@@ -160,7 +160,17 @@ internal class MobilePlayerGestureController(
             zoomChange = zoomChange,
         )
         liveVideoTransform = transform
-        onVideoTransformChanged(transform)
+    }
+
+    /**
+     * Завершает pinch-жест пальцами и отдаёт итоговый transform наружу одним событием:
+     * в процессе жеста кадр двигается только через [liveVideoTransform], иначе каждый кадр
+     * жеста стал бы событием во VM и записью в DataStore.
+     */
+    fun finishTransformGesture() {
+        if (!transformGestureActive) return
+        endTransformGesture()
+        onVideoTransformChanged(liveVideoTransform)
     }
 
     fun resetForPictureInPicture() {

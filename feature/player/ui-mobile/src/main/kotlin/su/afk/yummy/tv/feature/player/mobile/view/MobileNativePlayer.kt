@@ -593,7 +593,7 @@ internal fun MobileNativePlayer(
             onDoubleTap = seekController::stepSeek,
             onTransformStart = gestures::startTransformGesture,
             onTransform = gestures::applyVideoTransform,
-            onTransformEnd = gestures::endTransformGesture,
+            onTransformEnd = gestures::finishTransformGesture,
             onVerticalDragStart = gestures::startVerticalGesture,
             onVerticalDrag = gestures::applyVerticalGesture,
             onVerticalDragEnd = gestures::endVerticalGesture,

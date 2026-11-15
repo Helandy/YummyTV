@@ -15,7 +15,8 @@ import javax.inject.Inject
 /**
  * Настройки картинки (TV-размер/зум и мобильный transform), хранящиеся на пару тайтл/плеер.
  *
- * Owns scoped resize/transform subscriptions and debounced persistence jobs.
+ * Owns scoped resize/transform subscriptions and persistence jobs. Мобильный transform приходит
+ * одним событием в конце pinch-жеста, не покадрово.
  */
 internal class PlayerDisplaySettingsHandler @Inject constructor(
     private val settings: PlayerSettingsHandler,
@@ -76,6 +77,14 @@ internal class PlayerDisplaySettingsHandler @Inject constructor(
         if (!force && scope == activeResizeScope) return
         activeResizeScope = scope
         resizeJob?.cancel()
+        // Дефолты ставим ДО подписки: при прогретом DataStore сохранённое значение приходит
+        // синхронно (Main.immediate), и сброс после launchIn затирал бы его.
+        host.update {
+            copy(
+                resizeMode = PlayerResizeMode.FIT,
+                zoomLevel = PlayerZoomLevel.PERCENT_10,
+            )
+        }
         resizeJob = settings.observeResizeSettings(scope)
             .onEach { value ->
                 if (scope == activeResizeScope) {
@@ -83,12 +92,6 @@ internal class PlayerDisplaySettingsHandler @Inject constructor(
                 }
             }
             .launchIn(host.scope)
-        host.update {
-            copy(
-                resizeMode = PlayerResizeMode.FIT,
-                zoomLevel = PlayerZoomLevel.PERCENT_10,
-            )
-        }
     }
 
     private fun observeMobileTransform(host: PlayerStateHost, force: Boolean) {
@@ -97,6 +100,13 @@ internal class PlayerDisplaySettingsHandler @Inject constructor(
         activeMobileTransformScope = scope
         mobileTransformJob?.cancel()
         mobileTransformSaveJob?.cancel()
+        host.update {
+            copy(
+                mobileVideoScale = 1f,
+                mobileVideoOffsetX = 0f,
+                mobileVideoOffsetY = 0f,
+            )
+        }
         mobileTransformJob = settings.observeMobileVideoTransformSettings(scope)
             .onEach { value ->
                 if (scope == activeMobileTransformScope) {
@@ -110,13 +120,6 @@ internal class PlayerDisplaySettingsHandler @Inject constructor(
                 }
             }
             .launchIn(host.scope)
-        host.update {
-            copy(
-                mobileVideoScale = 1f,
-                mobileVideoOffsetX = 0f,
-                mobileVideoOffsetY = 0f,
-            )
-        }
     }
 
     private fun saveResize(host: PlayerStateHost, value: PlayerResizeSettings) {
