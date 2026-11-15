@@ -6,13 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
+import su.afk.yummy.tv.core.designsystem.theme.tabularNumerals
 import su.afk.yummy.tv.feature.details.details.model.ExternalRatingLabel
 
 @Composable
 internal fun RatingLabel(rating: ExternalRatingLabel) {
     Text(
         text = rating.label,
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.labelLarge.tabularNumerals(),
         maxLines = 1,
         color = rating.rating.toRatingTextColor(),
     )

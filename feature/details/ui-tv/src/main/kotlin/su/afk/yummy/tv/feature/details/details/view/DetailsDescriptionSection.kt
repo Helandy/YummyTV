@@ -27,7 +27,7 @@ internal fun DetailsDescriptionHead(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .tvFocusableClick(onClick = onToggle, shape = RoundedCornerShape(8.dp), focusedScale = 1.01f)
+            .tvFocusableClick(onClick = onToggle, shape = RoundedCornerShape(8.dp), focusedScale = 1f)
             .padding(DetailsDescriptionPadding),
     ) {
         Text(
@@ -51,7 +51,7 @@ internal fun DetailsDescriptionTail(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .tvFocusableClick(onClick = onToggle, shape = RoundedCornerShape(8.dp), focusedScale = 1.01f)
+            .tvFocusableClick(onClick = onToggle, shape = RoundedCornerShape(8.dp), focusedScale = 1f)
             .padding(DetailsDescriptionPadding),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
