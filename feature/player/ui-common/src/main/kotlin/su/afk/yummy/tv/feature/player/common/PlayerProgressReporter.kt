@@ -41,13 +41,19 @@ class PlayerProgressReporter internal constructor(
     /**
      * [forceRemoteSync] — отправить на сервер сразу, минуя интервал плановой синхронизации
      * (пауза, уход в фон): иначе накопленные секунды ждали бы следующего планового тика.
+     * [leaving] — уход из приложения: отправка через очередь мутаций, переживает смерть процесса.
      */
-    fun saveProgress(positionMs: Long, durationMs: Long, forceRemoteSync: Boolean = false) {
+    fun saveProgress(
+        positionMs: Long,
+        durationMs: Long,
+        forceRemoteSync: Boolean = false,
+        leaving: Boolean = false,
+    ) {
         val snapshot = source().buildProgressSnapshot(
             positionMs = positionMs,
             durationMs = durationMs,
         ) ?: return
-        onEvent(PlayerState.Event.SaveProgress(snapshot, forceRemoteSync = forceRemoteSync))
+        onEvent(PlayerState.Event.SaveProgress(snapshot, forceRemoteSync = forceRemoteSync, leaving = leaving))
         lastSaveTimeMs = System.currentTimeMillis()
     }
 }

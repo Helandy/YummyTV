@@ -669,16 +669,18 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.SaveProgress -> {
                 val s = currentState
                 val snapshot = event.snapshot
+                val request = playbackProgressHandler.progressSaveRequest(
+                    state = s,
+                    snapshot = snapshot,
+                    forceRemoteSync = event.forceRemoteSync,
+                    leaving = event.leaving,
+                )
+                // Уход из приложения: запись в app-scope, viewModelScope может отмениться раньше.
+                if (event.leaving) navigation.saveProgress(request)
                 viewModelScope.launch {
                     // Фоновое сохранение: сбой Room не должен уводить на экран ошибки посреди просмотра.
                     runSuspendCatching {
-                        playbackProgressHandler.saveProgress(
-                            playbackProgressHandler.progressSaveRequest(
-                                state = s,
-                                snapshot = snapshot,
-                                forceRemoteSync = event.forceRemoteSync,
-                            ),
-                        )
+                        if (!event.leaving) playbackProgressHandler.saveProgress(request)
                         libraryAutoListHandler.onProgressSaved(
                             animeId = s.animeId,
                             positionMs = snapshot.positionMs,
@@ -717,6 +719,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         changePlayerHint.cancel()
         // Скачанный файл играет без сети: живая сессия онлайн-источника не нужна.
         sourceStreamHandler.releaseStreamSessions()
+        navigation.saveProgressOnClear(host)
         viewModelScope.launch {
             val item = offlineSources.findDownloaded(downloadId)
             if (item == null) {

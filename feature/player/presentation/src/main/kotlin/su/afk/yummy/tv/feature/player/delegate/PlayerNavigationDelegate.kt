@@ -7,6 +7,8 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerProgressSaveRequest
+import su.afk.yummy.tv.feature.player.handler.PlayerProgressHandler
 import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
 import javax.inject.Inject
@@ -70,6 +72,22 @@ internal class PlayerNavigationDelegate @Inject constructor(
         }
     }
 
+    /**
+     * Финальная отправка, когда плеер уходит не через навигацию (закрыли окно PiP крестиком):
+     * обычное сохранение из UI идёт в `viewModelScope` и отменяется вместе с ним. Если прогресс
+     * уже ушёл при навигации, сервер пустой повтор не получит — его отсекает [PlayerProgressHandler].
+     */
+    fun saveProgressOnClear(host: PlayerStateHost) {
+        progress.currentProgressSaveRequest(state = host.state)?.let(::saveProgress)
+    }
+
+    /** Сохраняет прогресс в app-scope: переживает `viewModelScope`, отправка уходит в очередь мутаций. */
+    fun saveProgress(request: PlayerProgressSaveRequest) {
+        ioScope.launch {
+            runSuspendCatching { progress.saveProgress(request) }
+        }
+    }
+
     private fun openChild(host: PlayerStateHost, childDestination: (Int) -> NavKey) {
         val animeId = host.state.animeId
         if (animeId <= 0 || isNavigatingToChildScreen) return
@@ -91,8 +109,6 @@ internal class PlayerNavigationDelegate @Inject constructor(
         val request = progress.currentProgressSaveRequest(state = host.state)
         navigate()
         if (request == null) return
-        ioScope.launch {
-            runSuspendCatching { progress.saveProgress(request) }
-        }
+        saveProgress(request)
     }
 }

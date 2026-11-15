@@ -255,6 +255,8 @@ class PlayerState {
             val snapshot: PlayerProgressSnapshot,
             /** Отправить на сервер сразу, минуя интервал плановой синхронизации (пауза, уход в фон). */
             val forceRemoteSync: Boolean = false,
+            /** Уход из приложения (ON_PAUSE): отправка через очередь мутаций, переживает смерть процесса. */
+            val leaving: Boolean = false,
         ) : Event
 
         /** Пользователь выбрал пропуск сегмента указанного типа и диапазона. */

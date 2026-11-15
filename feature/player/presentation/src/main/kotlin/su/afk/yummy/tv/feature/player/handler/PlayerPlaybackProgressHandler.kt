@@ -30,12 +30,14 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
         state: PlayerState.State,
         snapshot: PlayerProgressSnapshot,
         forceRemoteSync: Boolean = false,
+        leaving: Boolean = false,
     ): PlayerProgressSaveRequest =
         PlayerProgressSaveRequest(
             context = state.progressContext(),
             snapshot = snapshot,
             remoteVideoId = state.remoteVideoId(),
             forceRemoteSync = forceRemoteSync,
+            leaving = leaving,
         )
 
     /**
@@ -56,6 +58,7 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
                 snapshot = snapshot,
                 remoteVideoId = state.remoteVideoId(),
                 forceRemoteSync = true,
+                leaving = true,
             )
         }
 
@@ -139,6 +142,7 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
             snapshot = request.snapshot,
             remoteVideoId = request.remoteVideoId,
             forceRemoteSync = request.forceRemoteSync,
+            leaving = request.leaving,
         )
     }
 
@@ -166,6 +170,8 @@ internal data class PlayerProgressSaveRequest(
     /** Id видео на сервере Yani; `0` — аналога нет (источник 4K без пары), прогресс только локальный. */
     val remoteVideoId: Int,
     val forceRemoteSync: Boolean = false,
+    /** Уход с плеера или из приложения: отправка через очередь мутаций, переживает смерть процесса. */
+    val leaving: Boolean = false,
 )
 
 /** Запрос на сохранение точки продолжения просмотра. */

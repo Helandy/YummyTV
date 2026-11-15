@@ -15,10 +15,14 @@ internal class OutboxPendingMutationQueue(
         error: Throwable,
     ): Boolean {
         if (!error.isRetryableMutationFailure()) return false
+        enqueue(mutation)
+        return true
+    }
+
+    override suspend fun enqueue(mutation: PendingMutation) {
         val (type, payload) = mutation.toTypeAndPayload()
         outbox.enqueue(type, payload)
         scheduler.scheduleFlush()
-        return true
     }
 
     private fun PendingMutation.toTypeAndPayload(): Pair<String, String> = when (this) {

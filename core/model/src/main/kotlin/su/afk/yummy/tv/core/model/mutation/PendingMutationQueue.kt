@@ -9,4 +9,10 @@ interface PendingMutationQueue {
      * делает и возвращает false.
      */
     suspend fun enqueueOnNetworkFailure(mutation: PendingMutation, error: Throwable): Boolean
+
+    /**
+     * Ставит [mutation] в очередь, не пробуя отправить сразу, и запускает досылку через WorkManager.
+     * Для записей при уходе из приложения: запись локальная и быстрая, а отправка переживёт смерть процесса.
+     */
+    suspend fun enqueue(mutation: PendingMutation)
 }
