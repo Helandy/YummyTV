@@ -82,7 +82,7 @@ class LibraryViewModel @Inject internal constructor(
         const val KEY_SELECTED_TAB = "selectedTab"
 
         /** Не чаще, чем раз в столько, возврат на экран тянет списки с сервера. */
-        const val RESUME_REFRESH_MIN_INTERVAL_MS = 2 * 60_000L
+        const val RESUME_REFRESH_MIN_INTERVAL_MS = 60_000L
     }
 
     private var remoteListsJob: Job? = null
