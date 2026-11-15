@@ -33,6 +33,11 @@ class PlayerNetworkErrorUtilsTest {
     }
 
     @Test
+    fun `http2 connection failure is a network failure`() {
+        assertTrue(isNetworkResolveFailure(null, "IOException: Required SETTINGS preface not received"))
+    }
+
+    @Test
     fun `parsing failure is not a network failure`() {
         assertFalse(isNetworkResolveFailure(null, "missing anime_id"))
         assertFalse(isNetworkResolveFailure(IllegalStateException("boom"), null))

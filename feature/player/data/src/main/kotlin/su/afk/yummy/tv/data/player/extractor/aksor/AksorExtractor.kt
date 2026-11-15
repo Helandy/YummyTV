@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.common.player.isAksorPlayerUrl
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
@@ -19,9 +20,9 @@ import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import java.io.IOException
 import java.net.URI
 import javax.inject.Inject
-import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal class AksorExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -38,31 +39,40 @@ internal class AksorExtractor @Inject constructor(
         request: PlayerStreamRequest,
         context: android.content.Context,
     ): PlayerStreamResolveResult =
-        extractStream(request.iframeUrl)?.toResolveResult() ?: PlayerStreamResolveResult.Failed("Aksor: no stream found")
+        extractStream(request.iframeUrl).let { outcome ->
+            outcome.stream?.toResolveResult()
+                // Сетевой сбой отдаём с типом исключения в префиксе: аналитика узнаёт в нём проблему
+                // сети пользователя, а не «потока нет».
+                ?: PlayerStreamResolveResult.Failed(outcome.networkFailure ?: "Aksor: no stream found")
+        }
 
-    private suspend fun extractStream(iframeUrl: String): ExtractedStream? =
+    private class Outcome(val stream: ExtractedStream? = null, val networkFailure: String? = null)
+
+    private suspend fun extractStream(iframeUrl: String): Outcome =
         withContext(Dispatchers.IO) {
+            var networkFailure: String? = null
+            fun noteNetwork(e: Throwable) {
+                if (e is IOException) networkFailure = "${e::class.java.simpleName}: ${e.message.orEmpty().take(60)}"
+            }
             try {
                 val playerUrl = normalizeUrl(iframeUrl)
                 val hash = extractHash(playerUrl) ?: run {
-                    return@withContext null
+                    return@withContext Outcome()
                 }
                 val headers = streamHeaders(playerUrl)
                 val apiUrl = "$PLAYER_ORIGIN/api/video/$hash"
 
                 val qualities = runSuspendCatching {
                     fetchApiQualities(apiUrl, referer = playerUrl)
-                }.getOrNull()
+                }.onFailure(::noteNetwork).getOrNull()
 
                 val streamUrl = qualities?.values?.lastOrNull()
-                    ?: fetchFallbackStreamUrl(playerUrl, hash)
-                    ?: return@withContext null
+                    ?: runSuspendCatching { fetchFallbackStreamUrl(playerUrl, hash) }
+                        .onFailure(::noteNetwork)
+                        .getOrNull()
+                    ?: return@withContext Outcome(networkFailure = networkFailure)
 
-                ExtractedStream(
-                    url = streamUrl,
-                    headers = headers,
-                    qualities = qualities,
-                )
+                Outcome(ExtractedStream(url = streamUrl, headers = headers, qualities = qualities))
             } catch (e: Exception) {
                 currentCoroutineContext().ensureActive()
                 analyticsTracker.logExtractorFailure(
@@ -71,7 +81,8 @@ internal class AksorExtractor @Inject constructor(
                     "unexpected extractor error",
                     e,
                 )
-                null
+                noteNetwork(e)
+                Outcome(networkFailure = networkFailure)
             }
         }
 

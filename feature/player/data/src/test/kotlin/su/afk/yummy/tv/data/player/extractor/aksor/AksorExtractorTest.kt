@@ -127,6 +127,14 @@ class AksorExtractorTest : BaseUnitTest() {
     }
 
     @Test
+    fun `network failure is reported with the exception type`() = runTest {
+        http.get("player.aksor.tv/api/video/$HASH") { throw java.net.SocketTimeoutException("timeout") }
+        http.get("player.aksor.tv/video/$HASH") { throw java.net.SocketTimeoutException("timeout") }
+
+        assertEquals(PlayerStreamResolveResult.Failed("SocketTimeoutException: timeout"), extract())
+    }
+
+    @Test
     fun `player url without a hash fails without requests`() = runTest {
         val result = extract("https://player.aksor.tv/")
 

@@ -165,7 +165,9 @@ internal class VkExtractor @Inject constructor(
                     )
                 }
                 analyticsTracker.logExtractorFailure("VK", normalizedUrl, "no stream URLs found")
-                return@withContext VkOutcome.Failed("no stream URLs found (${sourceHtml.length} chars)")
+                return@withContext VkOutcome.Failed(
+                    "no stream URLs found (${sourceHtml.length} chars, ${sourceHtml.pageDiagnostics(videoExtUrl != null)})",
+                )
             }
 
             val qualities = orderQualityMap(
@@ -476,4 +478,10 @@ internal class VkExtractor @Inject constructor(
     private val VIDEO_EXT_FROM_IFRAME_PATTERNS = listOf(
         Regex("video_ext\\.php[^\"']*?oid=([^&\"']+)&id=([^&\"']+)", RegexOption.IGNORE_CASE),
     )
+}
+
+/** Короткая сводка страницы для отчёта: по ней видно, пустая ли это заглушка VK, а не нужна ли правка парсера. */
+private fun String.pageDiagnostics(viaVideoExt: Boolean): String {
+    val title = Regex("<title[^>]*>([^<]{1,40})").find(this)?.groupValues?.get(1)?.trim().orEmpty()
+    return "videoExt=$viaVideoExt, title=\"$title\""
 }

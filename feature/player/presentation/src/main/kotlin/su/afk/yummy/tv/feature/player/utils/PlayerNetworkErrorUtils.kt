@@ -24,6 +24,8 @@ private val NETWORK_ERROR_MESSAGE_MARKERS = listOf(
     "connection reset",
     "connection refused",
     "unexpected end of stream",
+    "required settings preface not received",
+    "stream was reset",
 )
 
 /**
