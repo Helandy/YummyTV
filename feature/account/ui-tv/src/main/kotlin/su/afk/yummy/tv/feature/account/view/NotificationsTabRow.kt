@@ -16,7 +16,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
-import su.afk.yummy.tv.domain.account.model.hasOpenAction
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.NotificationsTabState
 
@@ -62,12 +61,12 @@ internal fun NotificationsTabRow(
         notification = notification,
         onClick = {
             notificationsTabState.handleNotificationFocus(index, notificationIds)
-            if (notification.hasOpenAction) {
-                notificationsTabState.beginOpeningNotification(notification.id)
-                onEvent(AccountState.Event.NotificationSelected(notification.id))
-            } else {
-                onEvent(AccountState.Event.NotificationExpandToggled(notification.id))
-            }
+            onEvent(AccountState.Event.NotificationExpandToggled(notification.id))
+        },
+        onOpen = {
+            notificationsTabState.handleNotificationFocus(index, notificationIds)
+            notificationsTabState.beginOpeningNotification(notification.id)
+            onEvent(AccountState.Event.NotificationSelected(notification.id))
         },
         expanded = expanded,
         onLinkClick = { slug ->

@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -74,12 +75,12 @@ internal fun AccountMobileNotificationRow(
         modifier = modifier
             .fillMaxWidth()
             .then(
-                if (isOpenable) {
+                if (isExpandable) {
+                    Modifier.clickable(onClick = onToggleExpand)
+                } else if (isOpenable) {
                     Modifier
                         .clickable(onClick = onClick)
                         .semantics { contentDescription = openLabel }
-                } else if (isExpandable) {
-                    Modifier.clickable(onClick = onToggleExpand)
                 } else {
                     Modifier
                 }
@@ -138,6 +139,9 @@ internal fun AccountMobileNotificationRow(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 )
+                if (expanded && isOpenable) {
+                    TextButton(onClick = onClick) { Text(openLabel) }
+                }
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (isExpandable) {

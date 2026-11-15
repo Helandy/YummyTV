@@ -57,17 +57,17 @@ internal fun NotificationRow(
     onReadDirectionRight: (() -> Boolean)? = null,
     onDeleteDirectionLeft: (() -> Boolean)? = null,
     expanded: Boolean = false,
+    onOpen: () -> Unit = {},
     onLinkClick: (slug: String) -> Unit = {},
     linkModifier: (index: Int) -> Modifier = { Modifier },
 ) {
     val shape = RoundedCornerShape(12.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val isOpenable = notification.hasOpenAction
-    val isActionable = isOpenable || notification.isExpandable
     val rowModifier = modifier
         .fillMaxWidth()
         .tvFocusableClick(
-            onClick = if (isActionable) onClick else ({ }),
+            onClick = if (notification.isExpandable) onClick else if (isOpenable) onOpen else ({ }),
             interactionSource = interactionSource,
             shape = shape,
             focusedScale = 1.01f,
@@ -119,6 +119,14 @@ internal fun NotificationRow(
                     maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+                if (expanded && isOpenable) {
+                    AccountAction(
+                        label = stringResource(R.string.account_open),
+                        icon = Icons.Filled.PlayCircle,
+                        onClick = onOpen,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                }
                 if (expanded) {
                     notification.links.forEachIndexed { linkIndex, link ->
                         AccountAction(

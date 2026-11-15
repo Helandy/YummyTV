@@ -24,7 +24,7 @@ object MobileBottomBarDefaults {
             MobileNavigationLayout.BottomBar -> ExtraContentBottomPadding
             MobileNavigationLayout.Rail,
             MobileNavigationLayout.Hidden,
-            -> navigationBarsInset() + ExtraContentBottomPadding
+                -> navigationBarsInset() + ExtraContentBottomPadding
         }
 
     @Composable
