@@ -28,6 +28,7 @@ import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
@@ -50,6 +51,7 @@ import su.afk.yummy.tv.feature.account.account.handler.AccountRefreshResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountSessionHandler
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
+import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
@@ -68,6 +70,7 @@ class AccountViewModelTest : BaseUnitTest() {
     private val watchLaterNavigator: IWatchLaterNavigator = mockk(relaxed = true)
     private val accountRepository: AccountRepository = mockk()
     private val detailsNavigator: IDetailsNavigator = mockk(relaxed = true)
+    private val commentsNavigator: ICommentsNavigator = mockk(relaxed = true)
     private val videoDownloadNavigator: IVideoDownloadNavigator = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk(relaxed = true)
     private val faqNavigator: IFaqNavigator = mockk(relaxed = true)
@@ -111,6 +114,7 @@ class AccountViewModelTest : BaseUnitTest() {
         watchLaterNavigator = watchLaterNavigator,
         observeAccountSession = ObserveAccountSessionUseCase(accountRepository),
         detailsNavigator = detailsNavigator,
+        commentsNavigator = commentsNavigator,
         videoDownloadNavigator = videoDownloadNavigator,
         accountNavigator = accountNavigator,
         faqNavigator = faqNavigator,
@@ -471,6 +475,58 @@ class AccountViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { nav.navigate(any()) }
         assertFalse(vm.currentState.isNotificationOpening)
         assertTrue(vm.currentState.notifications.single().viewed)
+    }
+
+    @Test
+    fun `post comment notification opens the post comments and marks itself read`() {
+        val comment = notification(1).copy(type = "comment", clickUri = "/posts/2516#comment9", subjectTitle = "Пост")
+        stubHub(notifications = Result.success(listOf(comment)))
+        coEvery { notificationMutationHandler.markNotificationRead(1) } returns AccountNotificationMutationOutcome.Success
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NotificationSelected(1))
+
+        verify(exactly = 1) { commentsNavigator.getCommentsDest(CommentTargetType.POST, 2516, showDetailsAction = true) }
+        verify(exactly = 1) { nav.navigate(any()) }
+        assertTrue(vm.currentState.notifications.single().viewed)
+    }
+
+    @Test
+    fun `anime comment notification opens the title comments by the id from the notification`() {
+        val comment = notification(1, slug = "slug").copy(
+            type = "comment",
+            clickUri = "/catalog/item/slug#comment9",
+            isNewEpisode = false,
+            animeId = 77,
+            subjectTitle = "Тайтл",
+        )
+        stubHub(notifications = Result.success(listOf(comment)))
+        coEvery { notificationMutationHandler.markNotificationRead(1) } returns AccountNotificationMutationOutcome.Success
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NotificationSelected(1))
+
+        verify(exactly = 1) {
+            commentsNavigator.getAnimeCommentsDest(77, showDetailsAction = true)
+        }
+        verify(exactly = 0) { detailsNavigator.getDetailsDest(any()) }
+        coVerify(exactly = 0) { notificationHandler.resolveAnimeId(any()) }
+    }
+
+    @Test
+    fun `anime comment notification without an id is not openable`() {
+        val comment = notification(1, slug = "slug").copy(
+            type = "comment",
+            clickUri = "/catalog/item/slug#comment9",
+            isNewEpisode = false,
+        )
+        stubHub(notifications = Result.success(listOf(comment)))
+        val vm = createViewModel()
+
+        vm.setEvent(Event.NotificationSelected(1))
+
+        verify(exactly = 0) { nav.navigate(any()) }
+        coVerify(exactly = 0) { notificationHandler.resolveAnimeId(any()) }
     }
 
     @Test

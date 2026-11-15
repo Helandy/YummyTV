@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.account
 
+import androidx.navigation3.runtime.NavKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.core.model.error.toDisplayDetails
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -18,10 +20,12 @@ import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
+import su.afk.yummy.tv.domain.account.model.NotificationCommentTarget
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.domain.account.model.commentTarget
 import su.afk.yummy.tv.domain.account.model.isExpandable
 import su.afk.yummy.tv.domain.account.model.totalUnreadCount
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -40,6 +44,7 @@ import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.account.utils.decrementCount
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
+import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
@@ -58,6 +63,7 @@ class AccountViewModel @Inject internal constructor(
     private val appearanceSettingsStore: AppearanceSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
+    private val commentsNavigator: ICommentsNavigator,
     private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val watchLaterNavigator: IWatchLaterNavigator,
     private val accountNavigator: IAccountNavigator,
@@ -373,9 +379,15 @@ class AccountViewModel @Inject internal constructor(
 
     private fun openNotification(id: Int) {
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
-        if (!notification.isNewEpisode) return
-        val slug = notification.animeSlug ?: return
-        openNotificationAnime(notification, slug)
+        when (val target = notification.commentTarget) {
+            null -> {
+                if (!notification.isNewEpisode) return
+                val slug = notification.animeSlug ?: return
+                openNotificationAnime(notification, slug)
+            }
+
+            else -> openNotificationComments(notification, target)
+        }
     }
 
     private fun openNotificationLink(notificationId: Int, slug: String) {
@@ -397,6 +409,28 @@ class AccountViewModel @Inject internal constructor(
             )
         }
         if (expanding && !notification.viewed) markNotificationReadOptimistically(id)
+    }
+
+    private fun openNotificationComments(
+        notification: ProfileNotification,
+        target: NotificationCommentTarget,
+    ) {
+        when (target) {
+            is NotificationCommentTarget.Post -> openComments(
+                notification,
+                commentsNavigator.getCommentsDest(CommentTargetType.POST, target.postId, showDetailsAction = true),
+            )
+
+            is NotificationCommentTarget.Anime -> openComments(notification, animeCommentsDest(target.animeId))
+        }
+    }
+
+    private fun animeCommentsDest(animeId: Int) =
+        commentsNavigator.getAnimeCommentsDest(animeId, showDetailsAction = true)
+
+    private fun openComments(notification: ProfileNotification, destination: NavKey) {
+        if (!notification.viewed) markNotificationReadOptimistically(notification.id)
+        nav.navigate(destination)
     }
 
     private fun openNotificationAnime(notification: ProfileNotification, slug: String) {

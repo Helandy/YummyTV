@@ -125,6 +125,11 @@ fun CommentsTvScreen(
                 initialFocusRequester = headerFocusRequester,
                 onSortSelected = { onEvent(CommentsState.Event.SortSelected(it)) },
                 onRefresh = { onEvent(CommentsState.Event.RefreshSelected) },
+                onOpenDetails = if (state.hasDetailsAction) {
+                    { onEvent(CommentsState.Event.DetailsSelected) }
+                } else {
+                    null
+                },
             )
         }
         Box(

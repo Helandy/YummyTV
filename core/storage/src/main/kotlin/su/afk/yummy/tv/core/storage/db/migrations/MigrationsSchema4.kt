@@ -478,3 +478,14 @@ internal val MIGRATION_69_70 = object : Migration(69, 70) {
         db.execSQL("ALTER TABLE video_downloads ADD COLUMN endingEndMs INTEGER")
     }
 }
+
+/**
+ * Название и id тайтла/поста в закэшированных уведомлениях: экран комментариев из уведомления
+ * показывает, к чему они относятся. У уже закэшированных записей остаются null до обновления ленты.
+ */
+internal val MIGRATION_70_71 = object : Migration(70, 71) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE account_notifications ADD COLUMN subjectTitle TEXT")
+        db.execSQL("ALTER TABLE account_notifications ADD COLUMN animeId INTEGER")
+    }
+}

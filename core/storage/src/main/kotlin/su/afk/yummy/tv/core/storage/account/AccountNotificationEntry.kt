@@ -33,4 +33,8 @@ data class AccountNotificationEntry(
     val isNewEpisode: Boolean,
     /** JSON-массив ссылок на аниме из текста уведомления. */
     @ColumnInfo(defaultValue = "[]") val linksJson: String = "[]",
+    /** Название тайтла или поста, о котором уведомление (комментарии). */
+    val subjectTitle: String? = null,
+    /** Id тайтла из уведомления; сохраняет запрос id по slug. */
+    val animeId: Int? = null,
 )

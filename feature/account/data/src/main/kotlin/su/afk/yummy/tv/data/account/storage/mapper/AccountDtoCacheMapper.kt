@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
 import su.afk.yummy.tv.data.account.utils.toCatalogItemSlug
 import su.afk.yummy.tv.data.account.utils.toLinksJson
 import su.afk.yummy.tv.data.account.utils.toNotificationLinks
+import su.afk.yummy.tv.data.account.utils.toNotificationSubject
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.account.dto.common.YaniAccountPosterDto
 import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeTypeDto
@@ -235,6 +236,8 @@ internal fun List<YaniNotificationDto>.toNotificationsPageCache(
                 objectId = item.objectId,
                 animeSlug = item.clickUri.toCatalogItemSlug(),
                 isNewEpisode = item.type == "anime_episode" && item.subType == "new_episode",
+                subjectTitle = item.data.toNotificationSubject()?.title,
+                animeId = item.data.toNotificationSubject()?.animeId,
                 linksJson = (item.titleHtml + " " + item.textHtml).toNotificationLinks().toLinksJson(),
             )
         },

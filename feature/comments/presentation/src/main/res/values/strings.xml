@@ -44,5 +44,6 @@
     <string name="comments_report_offtopic">Off-topic</string>
     <string name="comments_report_other">Other</string>
     <string name="comments_refresh">Refresh</string>
+    <string name="comments_open_details">Details</string>
     <string name="comments_input_hint_tv">Press OK to write a comment</string>
 </resources>

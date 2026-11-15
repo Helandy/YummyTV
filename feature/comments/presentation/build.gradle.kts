@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:details:api"))
+    implementation(project(":feature:posts:api"))
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.bundles.compose.presentation)

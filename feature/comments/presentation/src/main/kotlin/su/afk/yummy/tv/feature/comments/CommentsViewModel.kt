@@ -41,19 +41,25 @@ import su.afk.yummy.tv.feature.comments.utils.replaceComment
 import su.afk.yummy.tv.feature.comments.utils.updateVote
 import su.afk.yummy.tv.feature.comments.utils.withOverlays
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.posts.IPostsNavigator
 
 private const val COMMENTS_PAGE_SIZE = 20
+
+/** Цели, у которых есть собственный экран, куда можно перейти из комментариев. */
+private fun CommentTargetType.hasDetails() = this == CommentTargetType.ANIME || this == CommentTargetType.POST
 
 @HiltViewModel(assistedFactory = CommentsViewModel.Factory::class)
 class CommentsViewModel @AssistedInject internal constructor(
     @Assisted private val targetType: CommentTargetType,
     @Assisted private val targetId: Int,
     @Assisted private val initialTotalCount: Int?,
+    @Assisted private val showDetailsAction: Boolean,
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val accountNavigator: IAccountNavigator,
     private val detailsNavigator: IDetailsNavigator,
+    private val postsNavigator: IPostsNavigator,
     private val settingsStore: YaniAccountSettingsStore,
     private val stringProvider: StringProvider,
     private val getComments: GetCommentsUseCase,
@@ -64,7 +70,12 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(targetType: CommentTargetType, targetId: Int, totalCount: Int?): CommentsViewModel
+        fun create(
+            targetType: CommentTargetType,
+            targetId: Int,
+            totalCount: Int?,
+            showDetailsAction: Boolean,
+        ): CommentsViewModel
     }
 
     private val target = CommentTarget(targetType, targetId)
@@ -77,6 +88,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             sort = defaultSort,
             comments = createCommentsFlow(defaultSort),
             totalCount = initialTotalCount,
+            hasDetailsAction = showDetailsAction && targetType.hasDetails(),
         )
 
     private var visibleComments: Map<Int, CommentUi> = emptyMap()
@@ -157,6 +169,12 @@ class CommentsViewModel @AssistedInject internal constructor(
                     analytics.eventAuthorSelected(target, event.userId)
                     nav.navigate(accountNavigator.getUserProfileDest(event.userId))
                 }
+            }
+
+            CommentsState.Event.DetailsSelected -> when (targetType) {
+                CommentTargetType.ANIME -> nav.navigate(detailsNavigator.getDetailsDest(targetId))
+                CommentTargetType.POST -> nav.navigate(postsNavigator.details(targetId))
+                else -> Unit
             }
 
             is CommentsState.Event.AnimeSelected -> {

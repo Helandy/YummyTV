@@ -101,3 +101,10 @@ data class YaniClaimCommentBodyDto(
 data class YaniBooleanResponseDto(
     val response: Boolean = false,
 )
+
+/** Тело ошибки yani: `error` — готовый к показу текст причины отказа. */
+@Serializable
+data class YaniCommentErrorDto(
+    val error: String = "",
+    @SerialName("error_title") val errorTitle: String = "",
+)

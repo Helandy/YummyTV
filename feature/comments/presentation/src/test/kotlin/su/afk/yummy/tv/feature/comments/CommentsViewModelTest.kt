@@ -44,6 +44,7 @@ import su.afk.yummy.tv.feature.comments.CommentsState.Event
 import su.afk.yummy.tv.feature.comments.handler.CommentVoteChange
 import su.afk.yummy.tv.feature.comments.handler.CommentsMutationHandler
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.posts.IPostsNavigator
 
 class CommentsViewModelTest : BaseUnitTest() {
 
@@ -52,6 +53,7 @@ class CommentsViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk()
     private val detailsNavigator: IDetailsNavigator = mockk()
+    private val postsNavigator: IPostsNavigator = mockk()
     private val settingsStore: YaniAccountSettingsStore = mockk()
     private val stringProvider: StringProvider = mockk()
     private val repository: CommentsRepository = mockk()
@@ -66,17 +68,23 @@ class CommentsViewModelTest : BaseUnitTest() {
         every { stringProvider.get(any<Int>()) } answers { "res${firstArg<Int>()}" }
         every { accountNavigator.getUserProfileDest(any()) } returns navKey
         every { detailsNavigator.getDetailsDest(any()) } returns navKey
+        every { postsNavigator.details(any()) } returns navKey
     }
 
-    private fun createViewModel(targetType: CommentTargetType = CommentTargetType.POST) = CommentsViewModel(
+    private fun createViewModel(
+        targetType: CommentTargetType = CommentTargetType.POST,
+        showDetailsAction: Boolean = false,
+    ) = CommentsViewModel(
         targetType = targetType,
         targetId = TARGET_ID,
         initialTotalCount = null,
+        showDetailsAction = showDetailsAction,
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,
         accountNavigator = accountNavigator,
         detailsNavigator = detailsNavigator,
+        postsNavigator = postsNavigator,
         settingsStore = settingsStore,
         stringProvider = stringProvider,
         getComments = GetCommentsUseCase(repository),
@@ -116,6 +124,24 @@ class CommentsViewModelTest : BaseUnitTest() {
         assertEquals(ME_ID, state.currentUserId)
         assertTrue(state.isSignedIn)
         verify(exactly = 1) { analytics.eventScreenOpened(any(), CommentSort.BEST) }
+    }
+
+    @Test
+    fun `details action is offered for anime and posts opened from a notification`() {
+        assertTrue(createViewModel(CommentTargetType.ANIME, showDetailsAction = true).currentState.hasDetailsAction)
+        assertTrue(createViewModel(CommentTargetType.POST, showDetailsAction = true).currentState.hasDetailsAction)
+        assertFalse(createViewModel(CommentTargetType.ANIME).currentState.hasDetailsAction)
+        assertFalse(createViewModel(CommentTargetType.USER, showDetailsAction = true).currentState.hasDetailsAction)
+    }
+
+    @Test
+    fun `details selected opens the post for post comments`() {
+        val vm = createViewModel(CommentTargetType.POST, showDetailsAction = true)
+
+        vm.setEvent(CommentsState.Event.DetailsSelected)
+
+        verify(exactly = 1) { postsNavigator.details(TARGET_ID) }
+        verify(exactly = 1) { nav.navigate(any()) }
     }
 
     @Test

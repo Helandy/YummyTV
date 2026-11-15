@@ -185,6 +185,8 @@ internal fun AccountNotificationsPageCache.toNotifications(): List<ProfileNotifi
             animeSlug = it.animeSlug,
             isNewEpisode = it.isNewEpisode,
             links = it.linksJson.fromLinksJson(),
+            subjectTitle = it.subjectTitle,
+            animeId = it.animeId,
         )
     }
 

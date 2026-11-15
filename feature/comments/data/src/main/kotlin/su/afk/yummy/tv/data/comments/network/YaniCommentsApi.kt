@@ -51,44 +51,56 @@ class YaniCommentsApi(
         targetId: Int,
         body: YaniPostCommentBodyDto,
     ): YaniCommentResponseDto =
-        clientProvider.get().post("$YANI_BASE_URL/comments/$targetType/$targetId") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }.body()
+        withServerMessage {
+            clientProvider.get().post("$YANI_BASE_URL/comments/$targetType/$targetId") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }.body()
+        }
 
     suspend fun updateComment(
         commentId: Int,
         body: YaniPatchCommentBodyDto,
     ): YaniCommentResponseDto =
-        clientProvider.get().patch("$YANI_BASE_URL/comments/$commentId") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }.body()
+        withServerMessage {
+            clientProvider.get().patch("$YANI_BASE_URL/comments/$commentId") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }.body()
+        }
 
     suspend fun deleteComment(commentId: Int): YaniBooleanResponseDto =
-        clientProvider.get().delete("$YANI_BASE_URL/comments/$commentId") {
-            contentType(ContentType.Application.Json)
-            setBody(YaniDeleteCommentBodyDto())
-        }.body()
+        withServerMessage {
+            clientProvider.get().delete("$YANI_BASE_URL/comments/$commentId") {
+                contentType(ContentType.Application.Json)
+                setBody(YaniDeleteCommentBodyDto())
+            }.body()
+        }
 
     suspend fun voteComment(
         commentId: Int,
         body: YaniVoteCommentBodyDto,
     ): YaniVoteCommentResponseDto =
-        clientProvider.get().put("$YANI_BASE_URL/comments/$commentId/vote") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }.body()
+        withServerMessage {
+            clientProvider.get().put("$YANI_BASE_URL/comments/$commentId/vote") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }.body()
+        }
 
     suspend fun removeCommentVote(commentId: Int): YaniVoteCommentResponseDto =
-        clientProvider.get().delete("$YANI_BASE_URL/comments/$commentId/vote").body()
+        withServerMessage {
+            clientProvider.get().delete("$YANI_BASE_URL/comments/$commentId/vote").body()
+        }
 
     suspend fun reportComment(
         commentId: Int,
         body: YaniClaimCommentBodyDto,
     ): YaniBooleanResponseDto =
-        clientProvider.get().put("$YANI_BASE_URL/comments/$commentId/claim") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }.body()
+        withServerMessage {
+            clientProvider.get().put("$YANI_BASE_URL/comments/$commentId/claim") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }.body()
+        }
 }

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -134,6 +136,13 @@ fun CommentsMobileScreen(
             MobileTopBar(
                 title = stringResource(R.string.comments_title),
                 onBack = { onEvent(CommentsState.Event.BackSelected) },
+                actions = {
+                    if (state.hasDetailsAction) {
+                        TextButton(onClick = { onEvent(CommentsState.Event.DetailsSelected) }) {
+                            Text(stringResource(R.string.comments_open_details))
+                        }
+                    }
+                },
             )
         },
     ) {

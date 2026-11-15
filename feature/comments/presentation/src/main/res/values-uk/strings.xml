@@ -44,5 +44,6 @@
     <string name="comments_report_offtopic">Офтоп</string>
     <string name="comments_report_other">Інше</string>
     <string name="comments_refresh">Оновити</string>
+    <string name="comments_open_details">Деталі</string>
     <string name="comments_input_hint_tv">Натисніть ОК, щоб написати коментар</string>
 </resources>

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.commentSubjectTitle
 import su.afk.yummy.tv.domain.account.model.hasOpenAction
 import su.afk.yummy.tv.domain.account.model.isExpandable
 import su.afk.yummy.tv.feature.account.mobile.account.utils.buildNotificationText
@@ -127,6 +128,15 @@ internal fun AccountMobileNotificationRow(
                     maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+                notification.commentSubjectTitle?.let { subjectTitle ->
+                    Text(
+                        text = subjectTitle,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = if (expanded) Int.MAX_VALUE else 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Text(
                     text = bodyText,
                     style = MaterialTheme.typography.bodySmall,

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.commentSubjectTitle
 import su.afk.yummy.tv.domain.account.model.hasOpenAction
 import su.afk.yummy.tv.domain.account.model.isExpandable
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -112,6 +113,15 @@ internal fun NotificationRow(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+                notification.commentSubjectTitle?.let { subjectTitle ->
+                    Text(
+                        text = subjectTitle,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = if (expanded) Int.MAX_VALUE else 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Text(
                     text = notification.text,
                     style = MaterialTheme.typography.bodyMedium,

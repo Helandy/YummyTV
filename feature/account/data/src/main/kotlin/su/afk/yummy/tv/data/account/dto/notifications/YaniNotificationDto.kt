@@ -17,4 +17,6 @@ data class YaniNotificationDto(
     @SerialName("sub_type") val subType: String = "",
     val viewed: Boolean = false,
     @SerialName("object_id") val objectId: Int? = null,
+    /** Вложенные объекты уведомления (`comment`, `anime`, `post`…); у разных типов форма разная. */
+    val data: JsonElement? = null,
 )
