@@ -80,10 +80,16 @@ class LibraryViewModel @Inject internal constructor(
 
     private companion object {
         const val KEY_SELECTED_TAB = "selectedTab"
+
+        /** Не чаще, чем раз в столько, возврат на экран тянет списки с сервера. */
+        const val RESUME_REFRESH_MIN_INTERVAL_MS = 2 * 60_000L
     }
 
     private var remoteListsJob: Job? = null
     private var signedInUserId: Int = 0
+
+    /** Время последней успешной синхронизации списков (`0` — ещё не было). */
+    private var lastRemoteSyncAtMs: Long = 0L
 
     init {
         analytics.eventScreenOpened()
@@ -225,7 +231,7 @@ class LibraryViewModel @Inject internal constructor(
             }
 
             LibraryState.Event.ScreenResumed -> {
-                refreshRemoteLists(forceRefresh = true)
+                refreshRemoteListsIfStale()
                 loadCachedContinueWatching()
                 loadHistoryLocalProgress()
             }
@@ -284,6 +290,18 @@ class LibraryViewModel @Inject internal constructor(
         if (signedInUserId > 0) loadRemoteLists(signedInUserId, forceRefresh)
     }
 
+    /**
+     * Возврат на экран: свои правки уже лежат в локальной базе, с сервера нужны только изменения с
+     * других устройств. Полная синхронизация (снимок, push, перезапись Room) на каждый ON_RESUME
+     * будила сеть при любом переключении вкладок, поэтому — не чаще [RESUME_REFRESH_MIN_INTERVAL_MS]
+     * и не поверх уже идущей загрузки.
+     */
+    private fun refreshRemoteListsIfStale() {
+        if (remoteListsJob?.isActive == true) return
+        if (System.currentTimeMillis() - lastRemoteSyncAtMs < RESUME_REFRESH_MIN_INTERVAL_MS) return
+        refreshRemoteLists(forceRefresh = true)
+    }
+
     private fun loadRemoteLists(
         userId: Int,
         forceRefresh: Boolean = false,
@@ -293,6 +311,7 @@ class LibraryViewModel @Inject internal constructor(
             setState { copy(isRemoteLoading = true, remoteError = null) }
             when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId, forceRefresh)) {
                 is RemoteLibrarySyncResult.Success -> {
+                    lastRemoteSyncAtMs = System.currentTimeMillis()
                     result.pushErrors.forEach { analytics.eventLoadError(it) }
                     setState {
                         copy(

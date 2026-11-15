@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -118,6 +120,12 @@ class HomeViewModel @Inject internal constructor(
     private var feedParams = HomeFeedVisibilityParams()
 
     private var loadJob: Job? = null
+
+    /**
+     * Загрузки «Новых серий» идут по одной: при открытии главной их зовут init, первый кадр и
+     * ON_RESUME разом. Следующая ждёт первую и берёт уже свежий кэш расписания, а не качает его заново.
+     */
+    private val recentlyAiredMutex = Mutex()
 
     /** «Продолжить просмотр» как пришло из источника, до скрытия ожидающих удаления. */
     private var rawContinueWatching: List<HomeContinueWatchingItem> = emptyList()
@@ -323,11 +331,13 @@ class HomeViewModel @Inject internal constructor(
     /** Расписание кэшируется на час, поэтому лишней нагрузки на API это не даёт; ошибка не мешает главной. */
     private fun loadRecentlyAired() {
         viewModelScope.launch {
-            runSuspendCatching { getRecentlyAiredSchedule(appClock.nowMillis() / 1_000L) }
-                .onSuccess { items ->
-                    feedParams = feedParams.copy(recentlyAired = items)
-                    applyHiddenRecommendations()
-                }
+            recentlyAiredMutex.withLock {
+                runSuspendCatching { getRecentlyAiredSchedule(appClock.nowMillis() / 1_000L) }
+                    .onSuccess { items ->
+                        feedParams = feedParams.copy(recentlyAired = items)
+                        applyHiddenRecommendations()
+                    }
+            }
         }
     }
 

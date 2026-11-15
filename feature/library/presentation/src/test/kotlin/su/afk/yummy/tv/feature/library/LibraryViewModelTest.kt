@@ -322,13 +322,22 @@ class LibraryViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `resume refreshes the remote lists and local progress`() {
+    fun `resume right after a sync refreshes local progress but not the remote lists`() {
         val vm = createViewModel()
 
         vm.setEvent(Event.ScreenResumed)
 
-        coVerify(exactly = 2) { remoteLibrarySyncHandler.loadRemoteLists(USER_ID, true) }
+        coVerify(exactly = 1) { remoteLibrarySyncHandler.loadRemoteLists(USER_ID, true) }
         coVerify(exactly = 2) { getMeaningfulVideoProgress() }
+    }
+
+    @Test
+    fun `explicit refresh always syncs the remote lists`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.RefreshRequested)
+
+        coVerify(exactly = 2) { remoteLibrarySyncHandler.loadRemoteLists(USER_ID, true) }
     }
 
     @Test
