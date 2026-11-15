@@ -11,12 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlin.math.sin
 import kotlin.random.Random
 
 private const val FlakeCount = 26
 private const val SEED = 20260101
 private const val NanosPerSecond = 1_000_000_000f
+
+/** Пауза между кадрами снега: вместе с ожиданием кадра выходит ~30 fps. */
+private const val FramePauseMillis = 25L
 
 /** Доля снежинок, которые «тают» в полёте, не долетев до низа (в каждом новом падении выбирается заново). */
 private const val DissolveChance = 0.4f
@@ -33,7 +37,7 @@ private class Flake(
     val swayDp: Float,
 )
 
-/** Лёгкий снегопад: один Canvas, время читается только в draw — рекомпозиций нет. */
+/** Лёгкий снегопад: один Canvas, время читается только в draw — рекомпозиций нет, ~30 fps. */
 @Composable
 internal fun Snowfall(modifier: Modifier = Modifier) {
     val flakes = remember {
@@ -52,8 +56,13 @@ internal fun Snowfall(modifier: Modifier = Modifier) {
         }
     }
     val nanos = remember { mutableLongStateOf(0L) }
+    // ~30 кадров/с вместо частоты экрана: снег медленный, разницы не видно, а на 90/120 Гц
+    // экране покадровая перерисовка поверх всего приложения не даёт панели снизить частоту.
     LaunchedEffect(Unit) {
-        while (true) withFrameNanos { nanos.longValue = it }
+        while (true) {
+            withFrameNanos { nanos.longValue = it }
+            delay(FramePauseMillis)
+        }
     }
     Canvas(modifier.fillMaxSize()) {
         val t = nanos.longValue / NanosPerSecond

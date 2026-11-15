@@ -20,7 +20,8 @@ class HomeFeedRefreshScheduler @Inject constructor(
     fun schedule() {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             HOME_FEED_REFRESH_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            // UPDATE, а не KEEP: у поставленного раньше задания нет условия по заряду батареи.
+            ExistingPeriodicWorkPolicy.UPDATE,
             createRefreshRequest(),
         )
     }
@@ -38,9 +39,11 @@ class HomeFeedRefreshScheduler @Inject constructor(
             )
             .build()
 
+    // Фоновое освежение ленты и виджетов не срочное: при низком заряде пропускаем.
     private fun networkConstraints() =
         Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(true)
             .build()
 
     private companion object {

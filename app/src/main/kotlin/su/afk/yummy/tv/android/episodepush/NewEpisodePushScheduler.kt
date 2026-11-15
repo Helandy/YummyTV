@@ -34,7 +34,8 @@ class NewEpisodePushScheduler @Inject constructor(
     fun scheduleLibraryPush() {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             LIBRARY_EPISODE_PUSH_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            // UPDATE, а не KEEP: у поставленного раньше задания нет условия по заряду батареи.
+            ExistingPeriodicWorkPolicy.UPDATE,
             createLibraryPushRequest(),
         )
     }
@@ -88,9 +89,11 @@ class NewEpisodePushScheduler @Inject constructor(
             )
             .build()
 
+    // Пуш о серии подождёт: при низком заряде фоновый сетевой запуск раз в 3 часа не нужен.
     private fun networkConstraints() =
         Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(true)
             .build()
 
     private companion object {

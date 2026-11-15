@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.SystemClock
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,9 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var probeJob: Job? = null
+
+    /** Когда последний раз запускали пробу (`elapsedRealtime`); сбрасывается при смене набора сетей. */
+    private var lastProbeAtMs = 0L
     private val knownNetworks = mutableSetOf<Network>()
     private val validatedNetworks = mutableSetOf<Network>()
     private val unmeteredNetworks = mutableSetOf<Network>()
@@ -55,7 +59,7 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
                     network: Network,
                     capabilities: NetworkCapabilities,
                 ) {
-                    knownNetworks.add(network)
+                    val isNewNetwork = knownNetworks.add(network)
                     if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
                         validatedNetworks.add(network)
                     } else {
@@ -66,29 +70,47 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
                     } else {
                         unmeteredNetworks.remove(network)
                     }
-                    publishState()
+                    publishState(networksChanged = isNewNetwork)
                 }
 
                 override fun onLost(network: Network) {
                     knownNetworks.remove(network)
                     validatedNetworks.remove(network)
                     unmeteredNetworks.remove(network)
-                    publishState()
+                    publishState(networksChanged = true)
                 }
             },
         )
     }
 
-    private fun publishState() {
+    /**
+     * [networksChanged] — сеть появилась или пропала. Иначе колбэк пришёл из-за смены свойств той же
+     * сети (на мобильной связи — при каждом колебании сигнала и полосы): тогда повторная проба не
+     * чаще [PROBE_MIN_INTERVAL_MS], а вердикт прошлой остаётся в силе.
+     */
+    private fun publishState(networksChanged: Boolean) {
         isOnline.value = validatedNetworks.isNotEmpty()
         isUnmetered.value = unmeteredNetworks.isNotEmpty()
-        probeJob?.cancel()
+        if (networksChanged) lastProbeAtMs = 0L
         when {
-            validatedNetworks.isNotEmpty() -> isOffline.value = false
+            validatedNetworks.isNotEmpty() -> {
+                probeJob?.cancel()
+                isOffline.value = false
+            }
             // Сетей нет вовсе («Самолёт», выключен Wi-Fi): проба не нужна.
-            knownNetworks.isEmpty() -> isOffline.value = true
+            knownNetworks.isEmpty() -> {
+                probeJob?.cancel()
+                isOffline.value = true
+            }
             // Сеть есть, но система её не подтвердила: офлайн, только если проба тоже не прошла.
-            else -> probeJob = scope.launch { isOffline.value = !isInternetReachable() }
+            else -> {
+                val now = SystemClock.elapsedRealtime()
+                val probeIsFresh = lastProbeAtMs > 0L && now - lastProbeAtMs < PROBE_MIN_INTERVAL_MS
+                if (!networksChanged && (probeJob?.isActive == true || probeIsFresh)) return
+                probeJob?.cancel()
+                lastProbeAtMs = now
+                probeJob = scope.launch { isOffline.value = !isInternetReachable() }
+            }
         }
     }
 
@@ -118,5 +140,6 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
     private companion object {
         val PROBE_ADDRESSES = listOf("1.1.1.1" to 443, "8.8.8.8" to 443)
         const val PROBE_TIMEOUT_MS = 1_500
+        const val PROBE_MIN_INTERVAL_MS = 15_000L
     }
 }

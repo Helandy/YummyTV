@@ -10,7 +10,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -39,19 +41,19 @@ private const val BulbsPerSegment = 3
 @Composable
 fun NewYearGarland(modifier: Modifier = Modifier, height: Dp = GarlandHeight) {
     // Без анимаций (системный флаг или слабое устройство) гирлянда статична: бесконечный переход не запускаем.
-    val phase = if (rememberSeasonalOverlayEnabled()) {
-        val animated by rememberInfiniteTransition(label = "garland").animateFloat(
+    // Фаза читается только в draw: мерцание перерисовывает Canvas, а не перекомпоновывает бар.
+    val phase: State<Float> = if (rememberSeasonalOverlayEnabled()) {
+        rememberInfiniteTransition(label = "garland").animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(tween(TwinkleMillis, easing = LinearEasing), RepeatMode.Restart),
             label = "garlandPhase",
         )
-        animated
     } else {
-        0f
+        remember { mutableFloatStateOf(0f) }
     }
     Canvas(modifier.fillMaxWidth().height(height)) {
-        drawGarland(phase)
+        drawGarland(phase.value)
     }
 }
 
