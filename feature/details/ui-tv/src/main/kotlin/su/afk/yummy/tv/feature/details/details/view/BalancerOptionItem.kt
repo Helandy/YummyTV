@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -32,9 +31,13 @@ internal fun BalancerOptionItem(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
     if (isSupported) {
-        val bgColor = if (focused) Color.White else Color.White.copy(alpha = 0.12f)
+        val bgColor = if (focused) {
+            MaterialTheme.colorScheme.inverseSurface
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        }
         // Вне фокуса название плеера — акцентным цветом, как в мобильных шторках.
-        val textColor = if (focused) Color.Black else MaterialTheme.colorScheme.primary
+        val textColor = if (focused) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.primary
         Text(
             text = label,
             style = MaterialTheme.typography.titleMedium,
@@ -54,7 +57,7 @@ internal fun BalancerOptionItem(
         androidx.compose.foundation.layout.Row(
             modifier = Modifier
                 .clip(shape)
-                .background(Color.White.copy(alpha = 0.05f))
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 .padding(horizontal = 24.dp, vertical = 14.dp),
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -62,12 +65,12 @@ internal fun BalancerOptionItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.White.copy(alpha = 0.35f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
             )
             Text(
                 text = stringResource(R.string.details_unsupported),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.25f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
             )
         }
     }

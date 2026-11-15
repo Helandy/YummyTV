@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -68,6 +69,9 @@ internal fun DetailsMobileHero(
     val configuration = LocalConfiguration.current
     val posterWidth = (configuration.screenWidthDp.dp * 0.46f).coerceIn(150.dp, 210.dp)
     val posterUrls = details.poster.posterUrls()
+    // Сверху шапки лежат иконки цвета onSurface: на светлой теме вуаль светлая, иначе они сливаются с чёрным.
+    val lightBackground = MaterialTheme.colorScheme.background.luminance() > 0.5f
+    val heroTopScrim = if (lightBackground) MaterialTheme.colorScheme.background else Color.Black
 
     Box(
         modifier = Modifier
@@ -89,8 +93,8 @@ internal fun DetailsMobileHero(
                 .background(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
-                            0f to Color.Black.copy(alpha = 0.30f),
-                            0.36f to Color.Black.copy(alpha = 0.18f),
+                            0f to heroTopScrim.copy(alpha = if (lightBackground) 0.60f else 0.30f),
+                            0.36f to heroTopScrim.copy(alpha = if (lightBackground) 0.40f else 0.18f),
                             0.54f to MaterialTheme.colorScheme.surface.copy(alpha = 0.26f),
                             0.76f to MaterialTheme.colorScheme.background.copy(alpha = 0.72f),
                             1f to MaterialTheme.colorScheme.background,

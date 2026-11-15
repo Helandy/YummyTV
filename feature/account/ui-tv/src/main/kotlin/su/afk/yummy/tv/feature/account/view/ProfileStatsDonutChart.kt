@@ -31,13 +31,14 @@ internal fun ProfileStatsDonutChart(
     modifier: Modifier = Modifier,
 ) {
     val totalValue = slices.positiveValueSum()
+    val emptyTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
     Box(
         modifier = modifier.size(132.dp),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             if (totalValue <= 0L) {
-                drawCircle(color = Color.White.copy(alpha = 0.12f))
+                drawCircle(color = emptyTrackColor)
                 return@Canvas
             }
             var startAngle = -90f

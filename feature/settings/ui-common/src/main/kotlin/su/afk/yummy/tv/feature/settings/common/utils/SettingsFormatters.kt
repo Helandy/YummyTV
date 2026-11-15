@@ -71,6 +71,11 @@ fun AppTheme.label(): String = stringResource(
         AppTheme.MINT -> R.string.settings_theme_mint
         AppTheme.OCEAN -> R.string.settings_theme_ocean
         AppTheme.GRAPHITE -> R.string.settings_theme_graphite
+        AppTheme.LAVENDER -> R.string.settings_theme_lavender
+        AppTheme.RUBY -> R.string.settings_theme_ruby
+        AppTheme.FOREST -> R.string.settings_theme_forest
+        AppTheme.SUNSET -> R.string.settings_theme_sunset
+        AppTheme.GOLD -> R.string.settings_theme_gold
         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic
     },
 )
@@ -83,6 +88,11 @@ fun AppTheme.hint(): String = stringResource(
         AppTheme.MINT -> R.string.settings_theme_mint_hint
         AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
         AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
+        AppTheme.LAVENDER -> R.string.settings_theme_lavender_hint
+        AppTheme.RUBY -> R.string.settings_theme_ruby_hint
+        AppTheme.FOREST -> R.string.settings_theme_forest_hint
+        AppTheme.SUNSET -> R.string.settings_theme_sunset_hint
+        AppTheme.GOLD -> R.string.settings_theme_gold_hint
         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic_hint
     },
 )

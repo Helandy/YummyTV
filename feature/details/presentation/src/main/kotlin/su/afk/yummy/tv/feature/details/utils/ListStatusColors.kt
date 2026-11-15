@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import su.afk.yummy.tv.core.designsystem.components.onThemeBackground
 import su.afk.yummy.tv.core.designsystem.components.icon
 import su.afk.yummy.tv.core.model.anime.CardListStatus
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
@@ -15,7 +16,7 @@ fun UserAnimeList.statusColor(): Color = when (this) {
     UserAnimeList.COMPLETED -> YummySemanticColors.StatusCompleted
     UserAnimeList.POSTPONED -> YummySemanticColors.StatusPostponed
     UserAnimeList.DROPPED -> YummySemanticColors.StatusDropped
-}
+}.onThemeBackground()
 
 fun UserAnimeList.statusIcon(): ImageVector = when (this) {
     UserAnimeList.WATCHING -> CardListStatus.WATCHING

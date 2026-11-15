@@ -1,17 +1,19 @@
 package su.afk.yummy.tv.core.designsystem.components
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 /**
  * Цвет столбца оценки в распределении голосов, как на AniList: оттенок идёт от красно-оранжевого
- * (оценка 1) к зелёному (оценка 10), насыщенность и яркость одинаковы.
+ * (оценка 1) к зелёному (оценка 10), насыщенность и яркость одинаковы; на светлом фоне цвет углубляется (см. [onThemeBackground]).
  */
+@Composable
 fun scoreDistributionColor(score: Int): Color =
     Color.hsl(
         hue = HUE_PER_SCORE * score.coerceIn(MIN_SCORE, MAX_SCORE),
         saturation = SATURATION,
         lightness = LIGHTNESS,
-    )
+    ).onThemeBackground()
 
 private const val MIN_SCORE = 1
 private const val MAX_SCORE = 10

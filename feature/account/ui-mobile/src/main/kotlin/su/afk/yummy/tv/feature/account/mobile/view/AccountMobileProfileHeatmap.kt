@@ -168,7 +168,7 @@ private fun AccountMobileHeatmapCell(
     val textColor = when {
         cell.isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         cell.intensity > 0.5f -> Color.White
-        cell.intensity > 0f -> Color.White.copy(alpha = 0.85f)
+        cell.intensity > 0f -> MaterialTheme.colorScheme.onSurface
         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     }
     val description = if (cell.isFuture) "" else cell.detailsLabel()

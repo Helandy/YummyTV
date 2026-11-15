@@ -49,7 +49,7 @@
     <string name="settings_background_system">System</string>
     <string name="settings_background_system_hint">Follow the device theme</string>
     <string name="settings_background_light">Light</string>
-    <string name="settings_background_light_hint">White background with dark text</string>
+    <string name="settings_background_light_hint">Light background tinted to the theme, dark text</string>
     <string name="settings_background_dark">Dark</string>
     <string name="settings_background_dark_hint">Dark background</string>
     <string name="settings_background_amoled">AMOLED</string>
@@ -131,6 +131,16 @@
     <string name="settings_theme_ocean_hint">Deep blue surfaces with a cool bright accent</string>
     <string name="settings_theme_graphite">Graphite</string>
     <string name="settings_theme_graphite_hint">Minimal grayscale theme with restrained contrast</string>
+    <string name="settings_theme_lavender">Lavender</string>
+    <string name="settings_theme_lavender_hint">Soft violet accent on deep purple-gray surfaces</string>
+    <string name="settings_theme_ruby">Ruby</string>
+    <string name="settings_theme_ruby_hint">Rich crimson accent on warm dark surfaces</string>
+    <string name="settings_theme_forest">Forest</string>
+    <string name="settings_theme_forest_hint">Calm leaf-green accent on dark woodland surfaces</string>
+    <string name="settings_theme_sunset">Sunset</string>
+    <string name="settings_theme_sunset_hint">Vivid vermilion accent on warm dusk surfaces</string>
+    <string name="settings_theme_gold">Gold</string>
+    <string name="settings_theme_gold_hint">Champagne gold accent on soft olive-dark surfaces</string>
     <string name="settings_theme_dynamic">Dynamic color</string>
     <string name="settings_theme_dynamic_hint">Material You palette from your wallpaper (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Compact</string>

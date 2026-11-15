@@ -6,6 +6,11 @@ enum class AppTheme {
     MINT,
     OCEAN,
     GRAPHITE,
+    LAVENDER,
+    RUBY,
+    FOREST,
+    SUNSET,
+    GOLD,
 
     /**
      * Системная палитра Material You: цвета берутся из обоев/акцента системы (Android 12+).

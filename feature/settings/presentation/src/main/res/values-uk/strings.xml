@@ -49,7 +49,7 @@
     <string name="settings_background_system">Як у системі</string>
     <string name="settings_background_system_hint">Слідувати темі пристрою</string>
     <string name="settings_background_light">Світла</string>
-    <string name="settings_background_light_hint">Білий фон із темним текстом</string>
+    <string name="settings_background_light_hint">Світлий фон у відтінку теми з темним текстом</string>
     <string name="settings_background_dark">Темна</string>
     <string name="settings_background_dark_hint">Темний фон</string>
     <string name="settings_background_amoled">AMOLED</string>
@@ -131,6 +131,16 @@
     <string name="settings_theme_ocean_hint">Глибокі сині поверхні та прохолодний світлий акцент</string>
     <string name="settings_theme_graphite">Графіт</string>
     <string name="settings_theme_graphite_hint">Мінімальна сіра тема зі стриманим контрастом</string>
+    <string name="settings_theme_lavender">Лаванда</string>
+    <string name="settings_theme_lavender_hint">М\'який фіолетовий акцент на глибоких бузково-сірих поверхнях</string>
+    <string name="settings_theme_ruby">Рубін</string>
+    <string name="settings_theme_ruby_hint">Насичений малиновий акцент на теплих темних поверхнях</string>
+    <string name="settings_theme_forest">Ліс</string>
+    <string name="settings_theme_forest_hint">Спокійний листяний акцент на темних лісових поверхнях</string>
+    <string name="settings_theme_sunset">Захід</string>
+    <string name="settings_theme_sunset_hint">Яскравий кіноварний акцент на теплих присмеркових поверхнях</string>
+    <string name="settings_theme_gold">Золото</string>
+    <string name="settings_theme_gold_hint">Шампанське золото на м\'яких оливково-темних поверхнях</string>
     <string name="settings_theme_dynamic">Dynamic color</string>
     <string name="settings_theme_dynamic_hint">Палітра Material You з шпалер системи (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Компактний</string>
