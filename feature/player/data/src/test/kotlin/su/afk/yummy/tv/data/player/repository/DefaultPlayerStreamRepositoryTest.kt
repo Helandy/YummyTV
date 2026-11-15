@@ -146,6 +146,25 @@ class DefaultPlayerStreamRepositoryTest : BaseUnitTest() {
     }
 
     @Test
+    fun `releasing sessions forgets cached streams only of sources that held a session`() = runTest {
+        plain.result = stream("a")
+        alloha.result = stream("b")
+        val repository = repository()
+        repository.resolve(request("https://plain/1"))
+        repository.resolve(request("https://alloha/1"))
+        alloha.hasSession = true
+
+        repository.releaseStreamSessions()
+        repository.resolve(request("https://plain/1"))
+        repository.resolve(request("https://alloha/1"))
+
+        assertEquals(1, plain.releaseCalls)
+        assertEquals(1, alloha.releaseCalls)
+        assertEquals(1, plain.extractCalls)
+        assertEquals(2, alloha.extractCalls)
+    }
+
+    @Test
     fun `alloha is cached like any other source and force refresh bypasses the cache`() = runTest {
         alloha.result = stream("a")
         val repository = repository()
@@ -172,8 +191,15 @@ class DefaultPlayerStreamRepositoryTest : BaseUnitTest() {
     private class FakeExtractor(private val prefix: String) : PlayerStreamExtractor {
         var result: PlayerStreamResolveResult = PlayerStreamResolveResult.Failed("unset")
         var extractCalls = 0
+        var hasSession = false
+        var releaseCalls = 0
 
         override fun supports(url: String): Boolean = url.startsWith(prefix)
+
+        override fun releaseSession(): Boolean {
+            releaseCalls++
+            return hasSession.also { hasSession = false }
+        }
 
         override suspend fun extract(
             request: PlayerStreamRequest,

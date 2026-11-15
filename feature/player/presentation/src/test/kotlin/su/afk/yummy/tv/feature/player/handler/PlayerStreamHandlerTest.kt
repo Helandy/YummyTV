@@ -245,6 +245,7 @@ class PlayerStreamHandlerTest : BaseUnitTest() {
         settingsStore = settingsStore,
         resolvePlayerStream = resolvePlayerStream,
         invalidatePlayerStreamCache = invalidateCache,
+        releasePlayerStreamSessions = mockk(relaxed = true),
         forgetExtraSourceSelection = forgetSelection,
         strings = strings,
         connectivity = connectivity,

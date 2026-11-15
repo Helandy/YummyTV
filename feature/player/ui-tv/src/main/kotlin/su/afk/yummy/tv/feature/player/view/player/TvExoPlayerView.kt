@@ -209,6 +209,7 @@ internal fun TvExoPlayerView(
     }
 
     PlayerKeepScreenOnEffect(
+        player = player,
         ended = prompts.ended,
     )
 

@@ -58,11 +58,11 @@ fun PlayerLifecycleEffect(
         var released = false
         var resumeAfterPause = false
 
-        fun saveProgress(activePlayer: Player) {
+        fun saveProgress(activePlayer: Player, forceRemoteSync: Boolean = false) {
             if (activePlayer.mediaItemCount == 0) return
             val snapshot = activePlayer.positionSnapshot(currentFallbackDuration())
             reporter.notifyPositionChanged(snapshot.positionMs, snapshot.durationMs)
-            reporter.saveProgress(snapshot.positionMs, snapshot.durationMs)
+            reporter.saveProgress(snapshot.positionMs, snapshot.durationMs, forceRemoteSync)
         }
 
         fun release() {
@@ -79,7 +79,8 @@ fun PlayerLifecycleEffect(
                     val keepPlaying = currentKeepPlayingOnPause()
                     resumeAfterPause = currentWantsPlay() && !keepPlaying
                     currentPlayer?.let { activePlayer ->
-                        saveProgress(activePlayer)
+                        // Уход в фон: процесс могут убить, поэтому на сервер сразу, а не по интервалу.
+                        saveProgress(activePlayer, forceRemoteSync = true)
                         if (!keepPlaying) activePlayer.pause()
                     }
                 }

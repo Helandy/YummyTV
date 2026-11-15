@@ -20,6 +20,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.ForgetExtraSourceSelectionUseCase
 import su.afk.yummy.tv.domain.player.usecase.InvalidatePlayerStreamCacheUseCase
+import su.afk.yummy.tv.domain.player.usecase.ReleasePlayerStreamSessionsUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -37,6 +38,7 @@ internal class PlayerStreamHandler @Inject constructor(
     private val settingsStore: PlayerSettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val invalidatePlayerStreamCache: InvalidatePlayerStreamCacheUseCase,
+    private val releasePlayerStreamSessions: ReleasePlayerStreamSessionsUseCase,
     private val forgetExtraSourceSelection: ForgetExtraSourceSelectionUseCase,
     private val strings: StringProvider,
     private val connectivity: NetworkConnectivityMonitor,
@@ -47,6 +49,9 @@ internal class PlayerStreamHandler @Inject constructor(
 
     /** Забывает закэшированный поток источника: его ссылки ведут на отказавший узел CDN. */
     fun invalidateCache(iframeUrl: String) = invalidatePlayerStreamCache(iframeUrl)
+
+    /** Закрывает живые сессии источников (сокет и отчёты Alloha) при уходе из плеера. */
+    fun releaseSessions() = releasePlayerStreamSessions()
 
     /** Источник модуля забывает выбор пользователя для видео; `true` — поток нужно перезагрузить. */
     fun forgetSourceSelection(iframeUrl: String): Boolean = forgetExtraSourceSelection(iframeUrl)

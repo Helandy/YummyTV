@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.utils.awaitPlaybackActive
 import su.afk.yummy.tv.feature.player.utils.QualityAdaptationDecision
 import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
 
@@ -121,6 +122,8 @@ fun PlayerQualityAdaptationEffect(
 
     LaunchedEffect(player, policy) {
         while (true) {
+            // На паузе и ошибке качество не оцениваем: спим до возобновления, а не тикаем каждые 5 с.
+            player.awaitPlaybackActive()
             delay(EVALUATE_INTERVAL_MS)
             val bufferedAheadMs = (player.bufferedPosition - player.currentPosition).coerceAtLeast(0L)
             val decision = policy.evaluate(currentQuality, currentQualities, bufferedAheadMs, nowMs())

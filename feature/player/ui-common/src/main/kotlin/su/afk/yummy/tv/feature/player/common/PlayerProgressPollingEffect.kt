@@ -8,13 +8,19 @@ import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.utils.PLAYER_PROGRESS_POLL_INTERVAL
+import su.afk.yummy.tv.feature.player.common.utils.awaitNextEvent
 import su.afk.yummy.tv.feature.player.common.utils.isAtPlayerEnd
+import su.afk.yummy.tv.feature.player.common.utils.isPlaybackActive
 import su.afk.yummy.tv.feature.player.common.utils.updateBufferedProgress
 
 /**
  * Секундный цикл плеера для ТВ и мобилки: позиция (с защитой после seek), длительность,
  * буферизация, notify раз в секунду и сохранение каждые 10 секунд
  * (на паузе — только при смене позиции).
+ *
+ * Без активного воспроизведения (пауза, ошибка, конец) цикл после нескольких тиков засыпает до
+ * ближайшего события плеера, а не будит main-поток каждую секунду. Перед сном позиция один раз
+ * сохраняется с принудительной отправкой на сервер, чтобы накопленные секунды не висели до выхода.
  *
  * Здесь же страховка конца эпизода: часть потоков не доигрывает до duration и не даёт
  * STATE_ENDED, поэтому конец ловим ещё и по позиции.
@@ -39,6 +45,8 @@ fun PlayerProgressPollingEffect(
         // позиция вне зоны конца, иначе промпт выскочит на старте
         var sawPositionBeforeEnd = false
         var lastSavedPositionMs = -1L
+        var lastIdleSyncPositionMs = -1L
+        var idleTicks = 0
         while (true) {
             val state = currentProgress
             val sinceSeek = System.currentTimeMillis() - state.lastSeekTimeMs
@@ -76,6 +84,21 @@ fun PlayerProgressPollingEffect(
                     sawPositionBeforeEnd = true
                 }
             }
+            if (player.isPlaybackActive()) {
+                idleTicks = 0
+                lastIdleSyncPositionMs = -1L
+            } else if (++idleTicks > IDLE_TICKS_BEFORE_SLEEP) {
+                if (episodeKey.isNotBlank() && state.duration > 0 &&
+                    state.currentPosition != lastIdleSyncPositionMs
+                ) {
+                    reporter.saveProgress(state.currentPosition, state.duration, forceRemoteSync = true)
+                    lastSavedPositionMs = state.currentPosition
+                    lastIdleSyncPositionMs = state.currentPosition
+                }
+                player.awaitNextEvent()
+                idleTicks = 0
+                continue
+            }
             delay(PLAYER_PROGRESS_POLL_INTERVAL)
         }
     }
@@ -85,3 +108,6 @@ fun PlayerProgressPollingEffect(
 private const val SEEK_SETTLE_MS = 1_000L
 private const val NOTIFY_INTERVAL_MS = 1_000L
 private const val SAVE_INTERVAL_MS = 10_000L
+
+/** Сколько секундных тиков без воспроизведения ждать перед сном: покрывает [SEEK_SETTLE_MS] после seek. */
+private const val IDLE_TICKS_BEFORE_SLEEP = 3

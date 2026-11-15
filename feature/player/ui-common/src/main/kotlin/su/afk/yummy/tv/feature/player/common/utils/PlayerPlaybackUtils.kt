@@ -6,6 +6,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.HttpDataSource
+import kotlinx.coroutines.CompletableDeferred
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.model.PlayerPositionSnapshot
 import kotlin.time.Duration.Companion.seconds
@@ -97,4 +98,35 @@ fun PlayerPlaybackProgressState.updateBufferedProgress(
         currentPosition = currentPositionMs,
         duration = durationMs,
     )
+}
+
+/**
+ * Плеер играет или вот-вот заиграет: воспроизведение запрошено, поток готов или догружается.
+ * Пауза, ошибка (IDLE) и конец потока активным воспроизведением не считаются.
+ */
+fun Player.isPlaybackActive(): Boolean =
+    playWhenReady && (playbackState == Player.STATE_READY || playbackState == Player.STATE_BUFFERING)
+
+/**
+ * Ждёт ближайшего события плеера (смена состояния, seek, загрузка и т.п.) без опроса.
+ * Слушатель снимается в том же потоке, где его поставили (main), в том числе при отмене.
+ */
+suspend fun Player.awaitNextEvent() {
+    val signal = CompletableDeferred<Unit>()
+    val listener = object : Player.Listener {
+        override fun onEvents(player: Player, events: Player.Events) {
+            signal.complete(Unit)
+        }
+    }
+    addListener(listener)
+    try {
+        signal.await()
+    } finally {
+        removeListener(listener)
+    }
+}
+
+/** Спит, пока воспроизведение не станет активным ([isPlaybackActive]). */
+suspend fun Player.awaitPlaybackActive() {
+    while (!isPlaybackActive()) awaitNextEvent()
 }

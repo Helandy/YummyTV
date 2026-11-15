@@ -29,11 +29,13 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
     fun progressSaveRequest(
         state: PlayerState.State,
         snapshot: PlayerProgressSnapshot,
+        forceRemoteSync: Boolean = false,
     ): PlayerProgressSaveRequest =
         PlayerProgressSaveRequest(
             context = state.progressContext(),
             snapshot = snapshot,
             remoteVideoId = state.remoteVideoId(),
+            forceRemoteSync = forceRemoteSync,
         )
 
     /**

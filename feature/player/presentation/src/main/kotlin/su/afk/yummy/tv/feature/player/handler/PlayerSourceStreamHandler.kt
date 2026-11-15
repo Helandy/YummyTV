@@ -335,6 +335,9 @@ internal class PlayerSourceStreamHandler @Inject constructor(
     /** Забывает закэшированный поток источника: его ссылки ведут на отказавший узел CDN. */
     fun invalidateStreamCache(iframeUrl: String) = streamHandler.invalidateCache(iframeUrl)
 
+    /** Закрывает живые сессии источников при уходе из плеера, чтобы они не работали в фоне. */
+    fun releaseStreamSessions() = streamHandler.releaseSessions()
+
     /** Источник модуля забывает выбор пользователя для видео; `true` — поток нужно перезагрузить. */
     fun forgetSourceSelection(iframeUrl: String): Boolean = streamHandler.forgetSourceSelection(iframeUrl)
 }

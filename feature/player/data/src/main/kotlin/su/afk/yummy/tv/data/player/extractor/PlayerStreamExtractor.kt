@@ -11,6 +11,13 @@ internal interface PlayerStreamExtractor {
     /** Экстрактор сам сообщает свои шаги через `request.onStatus`; сетевой слой для него отдаёт только подробности запросов. */
     val reportsOwnProgress: Boolean get() = false
 
+    /**
+     * Закрывает живую сессию воспроизведения (сокет, отчёты о просмотре), если экстрактор её держит.
+     * Возвращает `true`, если что-то было открыто: закэшированные потоки такого источника без сессии
+     * больше не годятся.
+     */
+    fun releaseSession(): Boolean = false
+
     suspend fun extract(
         request: PlayerStreamRequest,
         context: Context,

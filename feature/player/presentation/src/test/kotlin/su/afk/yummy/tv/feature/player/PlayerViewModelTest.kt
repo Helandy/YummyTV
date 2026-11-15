@@ -86,6 +86,7 @@ class PlayerViewModelTest : BaseUnitTest() {
         every { sourceStreamHandler.preparingStreamLoad(any(), any()) } answers { firstArg() }
         every { sourceStreamHandler.preparingStreamResolve(any(), any()) } answers { firstArg() }
         every { sourceStreamHandler.playbackErrorMessage(any(), any()) } returns "friendly error"
+        every { sourceStreamHandler.releaseStreamSessions() } returns Unit
         coEvery {
             sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns PlayerStreamLoadResult.State(state = streamState, consumedDestinationResume = false)
@@ -471,12 +472,23 @@ class PlayerViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `position ticks do not emit state until another event commits them`() {
+        val vm = createViewModel()
+
+        vm.setEvent(PlayerState.Event.PlaybackPositionChanged(positionMs = 5_000L, durationMs = 60_000L))
+        assertEquals(0L, vm.currentState.playbackPositionMs)
+
+        vm.setEvent(PlayerState.Event.ResizeModeSelected(PlayerResizeMode.ZOOM))
+        assertEquals(5_000L, vm.currentState.playbackPositionMs)
+        assertEquals(5_000L, vm.currentState.resumeFromMs)
+        assertEquals(60_000L, vm.currentState.playbackDurationMs)
+    }
+
+    @Test
     fun `position updates are stored and only played ones are counted as watched`() {
         val vm = createViewModel()
 
         vm.setEvent(PlayerState.Event.PlaybackPositionChanged(positionMs = 5_000L, durationMs = 60_000L))
-        assertEquals(5_000L, vm.currentState.playbackPositionMs)
-        assertEquals(60_000L, vm.currentState.playbackDurationMs)
         verify(exactly = 0) { playbackProgressHandler.recordWatchedTick(any(), any(), any()) }
 
         vm.setEvent(PlayerState.Event.PlaybackPositionChanged(positionMs = 6_000L, durationMs = 60_000L, isPlayed = true))

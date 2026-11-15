@@ -17,7 +17,12 @@ import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.withFullTimingIfWatched
 import javax.inject.Inject
 
-private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 10_000L
+/**
+ * Плановая отправка прогресса на сервер. Частые PUT не дают радиомодулю уснуть между загрузками
+ * сегментов видео, поэтому плановые идут раз в минуту, а пауза, уход в фон, выход, досмотр и
+ * смена видео отправляются сразу.
+ */
+private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 60_000L
 
 /** Хвост эпизода, который на сервер не отправляем как позицию/секунду (как в веб-клиенте). */
 private const val WATCH_END_TOLERANCE_SECONDS = 10
@@ -59,6 +64,9 @@ internal class PlayerProgressHandler @Inject constructor(
      */
     private val syncedSecondsByVideoId = mutableMapOf<Int, MutableSet<Int>>()
 
+    /** Последний снимок, ушедший в синхронизацию: при смене видео по нему досылаем его хвост. */
+    private var lastRemoteSnapshot: Pair<Int, PlayerProgressSnapshot>? = null
+
     /** Копит реально проигранную секунду (вызывается по тику ~1с из плеера). */
     fun recordWatchedSecond(videoId: Int, positionMs: Long, durationMs: Long) {
         if (videoId <= 0 || durationMs <= 0) return
@@ -95,7 +103,21 @@ internal class PlayerProgressHandler @Inject constructor(
             )
         }
 
+        flushPreviousVideoIfSwitched(remoteVideoId)
         syncRemoteProgress(savedSnapshot, remoteVideoId, force = forceRemoteSync)
+    }
+
+    /**
+     * Смена серии или источника внутри плеера: секунды прошлого видео, накопленные с последней
+     * плановой отправки, иначе остались бы неотправленными (плановые тики идут уже по новому id).
+     */
+    private suspend fun flushPreviousVideoIfSwitched(remoteVideoId: Int) {
+        if (remoteVideoId <= 0) return
+        val previous = synchronized(watchedLock) {
+            lastRemoteSnapshot?.takeIf { (videoId, _) -> videoId != remoteVideoId }
+        } ?: return
+        val (videoId, snapshot) = previous
+        syncRemoteProgress(snapshot, videoId, force = true)
     }
 
     suspend fun saveContinueTarget(
@@ -128,6 +150,7 @@ internal class PlayerProgressHandler @Inject constructor(
         force: Boolean,
     ) {
         if (videoId <= 0) return
+        synchronized(watchedLock) { lastRemoteSnapshot = videoId to snapshot }
         if (!isMeaningfulProgress(snapshot.positionMs, snapshot.durationMs)) {
             return
         }

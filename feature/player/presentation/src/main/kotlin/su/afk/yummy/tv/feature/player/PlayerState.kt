@@ -251,7 +251,11 @@ class PlayerState {
         ) : Event
 
         /** Плеер запросил сохранение снимка прогресса просмотра. */
-        data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
+        data class SaveProgress(
+            val snapshot: PlayerProgressSnapshot,
+            /** Отправить на сервер сразу, минуя интервал плановой синхронизации (пауза, уход в фон). */
+            val forceRemoteSync: Boolean = false,
+        ) : Event
 
         /** Пользователь выбрал пропуск сегмента указанного типа и диапазона. */
         data class SkipSegmentSelected(

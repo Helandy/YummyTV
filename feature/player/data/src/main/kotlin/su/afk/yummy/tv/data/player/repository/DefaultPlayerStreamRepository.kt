@@ -70,6 +70,14 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
         }
     }
 
+    override fun releaseStreamSessions() {
+        extractors.filter { it.releaseSession() }.forEach { extractor ->
+            synchronized(resolveCache) {
+                resolveCache.keys.removeAll { key -> extractor.supports(key.substringBeforeLast('|')) }
+            }
+        }
+    }
+
     private fun cachedStream(key: String): PlayerStreamResolveResult.Stream? =
         synchronized(resolveCache) {
             val cached = resolveCache[key] ?: return null

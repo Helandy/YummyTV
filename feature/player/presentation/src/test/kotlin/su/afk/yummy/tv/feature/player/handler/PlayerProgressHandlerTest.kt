@@ -114,6 +114,21 @@ class PlayerProgressHandlerTest : BaseUnitTest() {
     }
 
     @Test
+    fun `switching to another video flushes the unsent seconds of the previous one`() = runTest {
+        val handler = createHandler()
+        handler.recordWatchedSecond(VIDEO_ID, 100_000L, DURATION_MS)
+        handler.saveProgress(context, snapshot(positionMs = 100_000L))
+        handler.recordWatchedSecond(VIDEO_ID, 101_000L, DURATION_MS)
+        handler.saveProgress(context, snapshot(positionMs = 101_000L))
+
+        handler.saveProgress(context, snapshot(positionMs = 60_000L, videoId = OTHER_VIDEO_ID))
+
+        coVerify(exactly = 2) { saveVideoWatchProgress(VIDEO_ID, any(), any(), any()) }
+        coVerify(exactly = 1) { saveVideoWatchProgress(OTHER_VIDEO_ID, any(), any(), any()) }
+        assertEquals(listOf(listOf(100), listOf(101), emptyList()), sentTimes)
+    }
+
+    @Test
     fun `completion is sent right away and only once`() = runTest {
         val handler = createHandler()
         handler.saveProgress(context, snapshot(positionMs = 60_000L))
@@ -261,6 +276,7 @@ class PlayerProgressHandlerTest : BaseUnitTest() {
     private companion object {
         const val ANIME_ID = 42
         const val VIDEO_ID = 7
+        const val OTHER_VIDEO_ID = 8
         const val USER_ID = 5
         const val DURATION_S = 1440
         const val DURATION_MS = DURATION_S * 1000L

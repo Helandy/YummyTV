@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
-import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
@@ -277,11 +277,12 @@ internal fun MobileNativePlayer(
         }
     }
 
+    val player = mediaController
     PlayerKeepScreenOnEffect(
+        player = player,
         ended = endFlow.ended,
     )
 
-    val player = mediaController
     val isBuffering = rememberPlayerBufferingState(player)
     val showRecoveryIndicator = rememberDelayedRecoveryIndicator(state.isPlaybackRecovering)
     val isMediaReady = rememberPlayerMediaReadyState(player, playbackConfigKey)
@@ -547,12 +548,15 @@ internal fun MobileNativePlayer(
         ) {
             ContentFrame(
                 player = player,
-                surfaceType = SURFACE_TYPE_TEXTURE_VIEW,
+                surfaceType = SURFACE_TYPE_SURFACE_VIEW,
                 contentScale = playerContentScale(state.resizeMode, state.zoomLevel),
                 keepContentOnReset = state.isPlaybackRecovering,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
+                        // В PiP кадр целиком: сдвиг зума посчитан в пикселях полноэкранного плеера
+                        // и в маленьком окне увёл бы картинку за край.
+                        if (isInPictureInPictureMode) return@graphicsLayer
                         scaleX = gestures.liveVideoTransform.scale
                         scaleY = gestures.liveVideoTransform.scale
                         translationX = gestures.liveVideoTransform.offset.x
