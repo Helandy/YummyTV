@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 object MobileBottomBarDefaults {
 
     /** Высота самого бара без системного инсета: иконки без подписей, 80.dp из M3 избыточны. */
-    val BarHeight: Dp = 64.dp
+    val BarHeight: Dp = 56.dp
 
     val ExtraContentBottomPadding: Dp = 16.dp
 
@@ -24,7 +24,7 @@ object MobileBottomBarDefaults {
             MobileNavigationLayout.BottomBar -> ExtraContentBottomPadding
             MobileNavigationLayout.Rail,
             MobileNavigationLayout.Hidden,
-                -> navigationBarsInset() + ExtraContentBottomPadding
+            -> navigationBarsInset() + ExtraContentBottomPadding
         }
 
     @Composable
