@@ -81,6 +81,8 @@ fun CollectionsTvScreen(
         onEvent(CollectionsState.Event.BackSelected)
     }
 
+    // Key.Back — только через BackHandler: при predictive back KeyUp уходит в OnBackInvokedCallback
+    // мимо view-дерева, и Back, пойманный ещё и в onPreviewKeyEvent, срабатывает дважды.
     BackHandler { handleBack() }
     val error = state.error?.asString()
 
@@ -88,15 +90,9 @@ fun CollectionsTvScreen(
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                when (event.key) {
-                    Key.Back, Key.Escape -> {
-                        handleBack()
-                        true
-                    }
-
-                    else -> false
-                }
+                if (event.key != Key.Escape) return@onPreviewKeyEvent false
+                if (event.type == KeyEventType.KeyDown) handleBack()
+                true
             }
             .background(MaterialTheme.colorScheme.background),
     ) {

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog.view
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusGroup
@@ -119,6 +120,20 @@ internal fun FilterPanel(
         restoreGenreButtonMode = null
     }
 
+    fun handleBack() {
+        if (currentGenrePickerMode != null) {
+            restoreGenreButtonMode = currentGenrePickerMode
+            genrePickerMode = null
+        } else {
+            onClose()
+        }
+    }
+
+    // Key.Back — только через BackHandler (он зарегистрирован позже, чем у скаффолда, и
+    // перехватывает первым). Пойманный в onPreviewKeyEvent Back при predictive back отдаёт
+    // KeyUp системе, и BackHandler скаффолда следом раскрывает главное меню.
+    BackHandler { handleBack() }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -134,15 +149,8 @@ internal fun FilterPanel(
             .padding(horizontal = 24.dp, vertical = 20.dp)
             .verticalScroll(rememberScrollState())
             .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown || event.key != Key.Back) {
-                    return@onPreviewKeyEvent false
-                }
-                if (currentGenrePickerMode != null) {
-                    restoreGenreButtonMode = currentGenrePickerMode
-                    genrePickerMode = null
-                } else {
-                    onClose()
-                }
+                if (event.key != Key.Escape) return@onPreviewKeyEvent false
+                if (event.type == KeyEventType.KeyDown) handleBack()
                 true
             }
             .focusGroup(),

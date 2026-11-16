@@ -178,16 +178,12 @@ fun CollectionTvScreen(
         onRetry = onRetry,
         loadingFocusRequester = loadingFocusRequester,
         retryFocusRequester = retryFocusRequester,
+        // Key.Back — только через BackHandler выше: при predictive back KeyUp уходит в
+        // OnBackInvokedCallback мимо view-дерева, и пойманный здесь Back сработал бы дважды.
         modifier = Modifier.onPreviewKeyEvent { event ->
-            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-            when (event.key) {
-                Key.Back, Key.Escape -> {
-                    handleBack()
-                    true
-                }
-
-                else -> false
-            }
+            if (event.key != Key.Escape) return@onPreviewKeyEvent false
+            if (event.type == KeyEventType.KeyDown) handleBack()
+            true
         },
     )
 }

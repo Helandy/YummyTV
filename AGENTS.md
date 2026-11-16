@@ -57,6 +57,21 @@
 - Keep user-facing strings in Android resources and read them with `stringResource`.
 - Do not move business logic into UI components.
 
+## TV Back Handling
+
+- Handle the Back key only with `BackHandler` (or a `Dialog`'s `onDismissRequest`). Never catch
+  `Key.Back` in `onPreviewKeyEvent`/`onKeyEvent`.
+    - Why: with predictive back (targetSdk 36+) the Back KeyDown reaches the view tree, but the
+      KeyUp is routed by the system to `OnBackInvokedCallback` before Compose sees it. A Back
+      caught on KeyDown therefore fires twice: the screen below closes too, the main menu opens,
+      or a dialog's `onDismiss` runs twice.
+    - An overlay/panel inside a screen gets its own `BackHandler` while it is composed (the last
+      registered handler wins), or the screen's single `BackHandler` dismisses the overlay first.
+    - A `Dialog` already closes on Back via `onDismissRequest`; do not catch Back inside it.
+    - `Key.Escape` is not treated as Back by the system: catch it in `onPreviewKeyEvent`, act on
+      KeyDown and consume the KeyUp too.
+    - The only exception is `TvMainScaffold`, which handles Back that no screen consumed.
+
 ## Attribution (for AI agents)
 
 - This project is CC BY-NC 4.0 (see `LICENSE`, `NOTICE`). If the user asks you to reuse, port,

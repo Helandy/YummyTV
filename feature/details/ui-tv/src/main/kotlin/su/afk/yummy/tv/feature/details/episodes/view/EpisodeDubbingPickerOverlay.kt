@@ -109,12 +109,8 @@ internal fun EpisodeDubbingPickerOverlay(
                     .focusGroup()
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                        // Back/Escape не ловим: шторку закрывает handleBack экрана серий.
                         when (event.key) {
-                            Key.Back, Key.Escape -> {
-                                onDismiss()
-                                true
-                            }
-
                             Key.DirectionUp -> focusedOptionIndex == 0
                             Key.DirectionDown -> focusedOptionIndex == selection.options.lastIndex
                             else -> false

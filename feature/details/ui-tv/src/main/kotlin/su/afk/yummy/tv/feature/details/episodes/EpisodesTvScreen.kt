@@ -73,23 +73,19 @@ fun EpisodesTvScreen(
         }
     }
 
-    BackHandler(enabled = balancerPicker == null && dubbingPicker == null && episodeAction == null) {
-        handleBack()
-    }
+    // «Назад» — только через BackHandler. Ловить Key.Back в onPreviewKeyEvent нельзя: при
+    // predictive back система отдаёт KeyUp в OnBackInvokedCallback мимо view-дерева, и одно
+    // нажатие срабатывает дважды — закрывается и экран серий, и деталка под ним.
+    // Escape системой как «назад» не обрабатывается, его ловим сами.
+    BackHandler { handleBack() }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                when (event.key) {
-                    Key.Back, Key.Escape -> {
-                        handleBack()
-                        true
-                    }
-
-                    else -> false
-                }
+                if (event.key != Key.Escape) return@onPreviewKeyEvent false
+                if (event.type == KeyEventType.KeyDown) handleBack()
+                true
             }
             .background(MaterialTheme.colorScheme.background),
     ) {
@@ -111,9 +107,6 @@ fun EpisodesTvScreen(
             onRetry = { onEvent(EpisodesState.Event.RetryVideosSelected) },
         )
 
-        BackHandler(enabled = balancerPicker != null) {
-            handleBack()
-        }
         if (balancerPicker != null) {
             BalancerPickerOverlay(
                 picker = balancerPicker,

@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.core.designsystem.dialog
 
-import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -50,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
+import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
 import kotlin.time.Duration.Companion.seconds
@@ -107,8 +107,9 @@ internal fun TvChoiceDialog(
                         .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
                         .focusGroup()
                         .onPreviewKeyEvent { event ->
+                            // Back закрывает Dialog через onDismissRequest; поймав его и здесь, получим двойной onDismiss.
                             if (event.type == KeyEventType.KeyDown &&
-                                (event.key == Key.Back || event.key == Key.Escape)
+                                event.key == Key.Escape
                             ) {
                                 onAnswer(null)
                                 true

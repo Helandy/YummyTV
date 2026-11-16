@@ -127,7 +127,8 @@ internal fun BalancerPickerOverlay(
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                             when (event.key) {
-                                Key.Back, Key.Escape -> {
+                                // Back закрывает Dialog через onDismissRequest; поймав его и здесь, получим двойной onDismiss.
+                                Key.Escape -> {
                                     onDismiss()
                                     true
                                 }

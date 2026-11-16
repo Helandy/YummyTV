@@ -97,7 +97,8 @@ internal fun TvConfirmDialog(
                         .focusGroup()
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                            if (event.key == Key.Back || event.key == Key.Escape) {
+                            // Back закрывает Dialog через onDismissRequest; поймав его и здесь, получим двойной onDismiss.
+                            if (event.key == Key.Escape) {
                                 onDismiss()
                                 true
                             } else {
