@@ -1,9 +1,5 @@
 package su.afk.yummy.tv.feature.details.mobile.details
 
-import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
-import su.afk.yummy.tv.core.designsystem.onboarding.OnboardingTourEffect
-import su.afk.yummy.tv.feature.details.utils.DETAILS_ONBOARDING_TOUR_ID
-import su.afk.yummy.tv.feature.details.mobile.details.utils.mobileDetailsTourSteps
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,7 +33,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -47,6 +42,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
+import su.afk.yummy.tv.core.designsystem.onboarding.OnboardingTourEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.anime.posterUrls
@@ -56,6 +53,7 @@ import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
+import su.afk.yummy.tv.feature.details.mobile.details.utils.mobileDetailsTourSteps
 import su.afk.yummy.tv.feature.details.mobile.details.utils.tightenVerticalSpacing
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsCollectionsSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsCommentsBar
@@ -67,8 +65,8 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileSkeleton
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRatingOverviewCard
-import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRelationsBlock
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRatingOverviewSkeleton
+import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsRelationsBlock
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsScreenshotsRow
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsUniverseSection
@@ -78,6 +76,8 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.buildDetailsLinks
 import su.afk.yummy.tv.feature.details.mobile.details.view.commentsDetailsLink
 import su.afk.yummy.tv.feature.details.mobile.details.view.similarDetailsLink
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.utils.DETAILS_ONBOARDING_TOUR_ID
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -135,7 +135,9 @@ fun DetailsMobileScreen(
         isScroll = false,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
         customTopBar = {
-            if (details == null) {
+            // Пока идёт первая загрузка, кнопку «назад» рисует сам скелетон на месте шапки: панель
+            // Scaffold исчезала при появлении деталей раньше, чем гаснет скелетон, и постер прыгал вверх.
+            if (details == null && !state.isLoading) {
                 MobileTopBar(
                     title = "",
                     onBack = { onEvent(DetailsState.Event.BackSelected) },
@@ -143,7 +145,7 @@ fun DetailsMobileScreen(
             }
         },
         isLoading = state.isLoading && details == null,
-        loadingContent = { DetailsMobileSkeleton() },
+        loadingContent = { DetailsMobileSkeleton(onBack = { onEvent(DetailsState.Event.BackSelected) }) },
         error = error?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(DetailsState.Event.RetrySelected) },
         isEmpty = details == null,

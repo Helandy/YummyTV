@@ -246,7 +246,8 @@ internal fun DetailsMobileHero(
                 onWatchSelected = onWatchSelected,
                 onLibraryToggle = onLibraryToggle,
                 onFavoriteToggle = onFavoriteToggle,
-                modifier = Modifier.padding(top = 6.dp, bottom = 12.dp),
+                // Нижний зазор до «Серии/Подписки» — только 24dp общего spacedBy списка (было 12+24=36dp).
+                modifier = Modifier.padding(top = 6.dp),
             )
         }
     }

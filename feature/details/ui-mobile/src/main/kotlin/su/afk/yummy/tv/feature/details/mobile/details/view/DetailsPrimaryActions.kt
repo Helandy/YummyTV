@@ -1,10 +1,5 @@
 package su.afk.yummy.tv.feature.details.mobile.details.view
 
-import su.afk.yummy.tv.core.designsystem.mobile.input.rememberToggleHaptic
-import su.afk.yummy.tv.core.designsystem.mobile.input.popOnSelect
-import su.afk.yummy.tv.core.designsystem.onboarding.onboardingTarget
-import su.afk.yummy.tv.feature.details.mobile.details.utils.MOBILE_DETAILS_WATCH_TARGET
-import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,10 +13,10 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,13 +27,18 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.input.popOnSelect
+import su.afk.yummy.tv.core.designsystem.mobile.input.rememberToggleHaptic
+import su.afk.yummy.tv.core.designsystem.onboarding.onboardingTarget
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalButtonDecor
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
+import su.afk.yummy.tv.feature.details.mobile.details.utils.MOBILE_DETAILS_WATCH_TARGET
 import su.afk.yummy.tv.feature.details.mobile.details.utils.libraryLabel
 import su.afk.yummy.tv.feature.details.mobile.details.utils.watchLabel
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.utils.statusColor
 import su.afk.yummy.tv.feature.details.utils.statusIcon
 
@@ -55,7 +55,8 @@ internal fun DetailsPrimaryActions(
     val watchLabel = state.watchLabel(details)
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        // Между «Смотреть» и рядом «В список»/«Любимое»: 8dp выглядело слитно (issue #69).
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Button(
             onClick = onWatchSelected,
