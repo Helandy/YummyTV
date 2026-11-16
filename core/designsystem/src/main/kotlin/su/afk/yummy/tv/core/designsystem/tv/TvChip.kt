@@ -56,7 +56,6 @@ fun TvChip(
 
     Row(
         modifier = modifier
-            .background(containerColor, ChipShape)
             .tvFocusableClick(
                 onClick = onClick,
                 shape = ChipShape,
@@ -64,6 +63,9 @@ fun TvChip(
                 focusedScale = 1.06f,
                 focusedBorderColor = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary,
             )
+            // Фон — после tvFocusableClick, чтобы масштабироваться вместе с рамкой фокуса
+            // (иначе рамка «уезжает» от заливки и между ними виден зазор).
+            .background(containerColor, ChipShape)
             .padding(horizontal = 20.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(7.dp),
         verticalAlignment = Alignment.CenterVertically,
