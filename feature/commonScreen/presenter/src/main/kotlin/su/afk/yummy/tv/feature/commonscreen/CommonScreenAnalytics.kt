@@ -57,6 +57,15 @@ internal class CommonScreenAnalytics @Inject constructor(
         eventImage(EVENT_IMAGE_SELECT_INDEX, imageCount, selectedIndex)
     }
 
+    /**
+     * Пользователь нажал «Скачать» в общем просмотрщике.
+     *
+     * Параметры: image_count, selected_index.
+     */
+    fun eventImageDownload(imageCount: Int, selectedIndex: Int) {
+        eventImage(EVENT_IMAGE_DOWNLOAD, imageCount, selectedIndex)
+    }
+
     private fun eventImage(eventName: String, imageCount: Int, selectedIndex: Int) {
         tracker.track(
             eventName,
@@ -79,5 +88,6 @@ internal class CommonScreenAnalytics @Inject constructor(
         const val EVENT_IMAGE_NEXT = "image_view_next"
         const val EVENT_IMAGE_PREVIOUS = "image_view_previous"
         const val EVENT_IMAGE_SELECT_INDEX = "image_view_select_index"
+        const val EVENT_IMAGE_DOWNLOAD = "image_view_download"
     }
 }

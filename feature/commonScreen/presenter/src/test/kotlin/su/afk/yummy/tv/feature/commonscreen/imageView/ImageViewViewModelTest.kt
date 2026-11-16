@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.commonscreen.imageView
 
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -14,6 +16,7 @@ import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.commonscreen.CommonScreenAnalytics
+import su.afk.yummy.tv.feature.commonscreen.handler.ImageSaver
 import su.afk.yummy.tv.feature.commonscreen.navigator.CommonScreenDestination
 
 class ImageViewViewModelTest : BaseUnitTest() {
@@ -22,6 +25,7 @@ class ImageViewViewModelTest : BaseUnitTest() {
     private val retryStorage: RetryStorage = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
+    private val imageSaver: ImageSaver = mockk()
 
     @Before
     fun setUp() {
@@ -37,6 +41,7 @@ class ImageViewViewModelTest : BaseUnitTest() {
             retryStorage = retryStorage,
             navManager = nav,
             analytics = CommonScreenAnalytics(tracker),
+            imageSaver = imageSaver,
         )
 
     @Test
@@ -100,5 +105,16 @@ class ImageViewViewModelTest : BaseUnitTest() {
         createViewModel().setEvent(ImageViewState.Event.Back)
 
         verify(exactly = 1) { nav.back() }
+    }
+
+    @Test
+    fun `download saves the current image and resets the flag`() {
+        coEvery { imageSaver.save(any()) } returns Result.success(Unit)
+        val vm = createViewModel(selectedIndex = 1)
+
+        vm.setEvent(ImageViewState.Event.Download)
+
+        coVerify(exactly = 1) { imageSaver.save("b") }
+        assertEquals(false, vm.currentState.isDownloading)
     }
 }

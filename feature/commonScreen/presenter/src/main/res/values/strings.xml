@@ -2,4 +2,7 @@
 <resources>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
+    <string name="download">Download</string>
+    <string name="image_saved">Image saved to gallery</string>
+    <string name="image_save_failed">Could not save image</string>
 </resources>

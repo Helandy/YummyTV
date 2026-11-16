@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
     implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.navigation.compose)
     testImplementation(project(":core:testing"))

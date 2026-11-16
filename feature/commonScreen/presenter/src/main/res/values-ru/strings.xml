@@ -2,4 +2,7 @@
 <resources>
     <string name="previous">Предыдущее</string>
     <string name="next">Следующее</string>
+    <string name="download">Скачать</string>
+    <string name="image_saved">Картинка сохранена в галерею</string>
+    <string name="image_save_failed">Не удалось сохранить картинку</string>
 </resources>
