@@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.designsystem.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +41,7 @@ fun InfoBanner(
         visible = message != null,
         modifier = modifier,
         enter = expandVertically() + fadeIn(),
-        exit = shrinkVertically() + fadeOut(),
+        exit = fadeOut(tween(180)) + shrinkVertically(tween(260, delayMillis = 120)),
     ) {
         Surface(
             modifier = Modifier

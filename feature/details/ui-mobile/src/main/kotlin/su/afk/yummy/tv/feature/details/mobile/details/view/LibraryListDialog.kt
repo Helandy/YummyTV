@@ -26,6 +26,7 @@ internal fun LibraryListDialog(
         onDismiss = onDismiss,
     ) {
         MobilePickerItems(
+            animateCloseOnClick = true,
             items = options.map { option ->
                 MobilePickerItem(
                     key = option.name,

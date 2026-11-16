@@ -19,9 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.compose.runtime.SideEffect
+import su.afk.yummy.tv.core.designsystem.R
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 
 /**
@@ -50,6 +54,8 @@ fun MobileAlertDialog(
     content: (@Composable () -> Unit)? = null,
 ) {
     Dialog(onDismissRequest = onDismissRequest, properties = properties) {
+        val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
+        SideEffect { dialogWindow?.setWindowAnimations(R.style.YummyDialogFadeAnimation) }
         Surface(
             modifier = modifier,
             shape = MaterialTheme.shapes.extraLarge,

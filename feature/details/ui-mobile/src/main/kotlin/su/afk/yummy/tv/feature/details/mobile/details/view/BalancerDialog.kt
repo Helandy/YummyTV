@@ -30,6 +30,7 @@ internal fun BalancerDialog(
         onDismiss = onDismiss,
     ) {
         MobilePickerItems(
+            animateCloseOnClick = true,
             items = picker.options.map { option ->
                 MobilePickerItem(
                     key = "${option.playerName}:${option.video.id}",

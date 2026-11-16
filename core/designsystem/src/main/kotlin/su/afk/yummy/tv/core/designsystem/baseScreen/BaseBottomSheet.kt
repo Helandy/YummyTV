@@ -19,6 +19,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -87,11 +88,13 @@ fun BaseBottomSheet(
 ) {
     val maxHeight = rememberBottomSheetMaxHeight()
     val scrollState = rememberScrollState()
+    val closer = rememberSheetCloser(sheetState)
+    val animatedDismiss = rememberAnimatedDismiss(sheetState, onDismissRequest)
 
     ModalBottomSheet(
         modifier = modifier,
         sheetState = sheetState,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = animatedDismiss,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentWindowInsets = { WindowInsets(0.dp) },
         dragHandle = if (compactDragHandle) {
@@ -100,6 +103,7 @@ fun BaseBottomSheet(
             { BottomSheetDefaults.DragHandle() }
         },
     ) {
+      CompositionLocalProvider(LocalSheetCloser provides closer) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,5 +130,6 @@ fun BaseBottomSheet(
             }
             content()
         }
+      }
     }
 }

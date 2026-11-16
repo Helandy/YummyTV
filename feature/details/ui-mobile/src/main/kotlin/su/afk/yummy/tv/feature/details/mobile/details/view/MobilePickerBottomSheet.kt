@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.baseScreen.LocalSheetCloser
 import su.afk.yummy.tv.core.designsystem.components.LogoBadge
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.utils.formatCompactCount
@@ -60,8 +61,11 @@ internal fun MobilePickerBottomSheet(
 internal fun ColumnScope.MobilePickerItems(
     items: List<MobilePickerItem>,
     modifier: Modifier = Modifier,
+    /** Закрывать шторку с анимацией перед `onClick`: только когда клик гарантированно её убирает. */
+    animateCloseOnClick: Boolean = false,
 ) {
     val listState = rememberLazyListState()
+    val closeSheet = LocalSheetCloser.current
     ScrollToTopOnChange(order = items.map { it.key }, state = listState)
     LazyColumn(
         state = listState,
@@ -73,13 +77,16 @@ internal fun ColumnScope.MobilePickerItems(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(items, key = { it.key }) { item ->
-            MobilePickerItemRow(item)
+            MobilePickerItemRow(
+                item,
+                onClick = if (animateCloseOnClick) ({ closeSheet(item.onClick) }) else item.onClick,
+            )
         }
     }
 }
 
 @Composable
-private fun MobilePickerItemRow(item: MobilePickerItem) {
+private fun MobilePickerItemRow(item: MobilePickerItem, onClick: () -> Unit) {
     val colorScheme = MaterialTheme.colorScheme
     val background = if (item.enabled) {
         colorScheme.surfaceVariant.copy(alpha = 0.72f)
@@ -98,7 +105,7 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
             .testTag("picker_option")
             .clip(RoundedCornerShape(14.dp))
             .background(background)
-            .clickable(enabled = item.enabled, onClick = item.onClick)
+            .clickable(enabled = item.enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,

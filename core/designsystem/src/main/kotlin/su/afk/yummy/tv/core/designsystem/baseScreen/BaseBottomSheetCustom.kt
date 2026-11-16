@@ -9,6 +9,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -56,16 +57,20 @@ fun BaseBottomSheetCustom(
     content: @Composable (maxHeight: Dp) -> Unit,
 ) {
     val maxHeight = rememberBottomSheetMaxHeight()
+    val closer = rememberSheetCloser(sheetState)
+    val animatedDismiss = rememberAnimatedDismiss(sheetState, onDismissRequest)
 
     ModalBottomSheet(
         modifier = modifier,
         sheetState = sheetState,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = animatedDismiss,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentWindowInsets = { WindowInsets(0.dp) },
     ) {
-        Box(modifier = Modifier.seasonalPanelDecor().nestedScroll(rememberBottomOverscrollGuard())) {
-            content(maxHeight)
+        CompositionLocalProvider(LocalSheetCloser provides closer) {
+            Box(modifier = Modifier.seasonalPanelDecor().nestedScroll(rememberBottomOverscrollGuard())) {
+                content(maxHeight)
+            }
         }
     }
 }

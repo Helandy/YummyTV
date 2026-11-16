@@ -24,6 +24,7 @@ internal fun DubbingDialog(
         onDismiss = onDismiss,
     ) {
         MobilePickerItems(
+            animateCloseOnClick = true,
             items = picker.options.map { option ->
                 MobilePickerItem(
                     key = option.item.name,

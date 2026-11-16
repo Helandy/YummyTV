@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.mobile.details.view
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
@@ -104,7 +105,7 @@ internal fun DetailsRatingRow(
         AnimatedVisibility(
             visible = showExternalRatings && externalLabels.isNotEmpty(),
             enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-            exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
+            exit = fadeOut(tween(180)) + shrinkVertically(tween(260, delayMillis = 120), shrinkTowards = Alignment.Top),
         ) {
             FlowRow(
                 modifier = Modifier
