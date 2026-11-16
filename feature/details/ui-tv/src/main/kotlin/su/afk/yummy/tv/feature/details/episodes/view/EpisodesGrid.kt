@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchFilter
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -70,6 +73,8 @@ internal fun EpisodesGrid(
     episodeFlags: Map<String, EpisodeFlags>,
     onVideoSelected: (AnimeVideo) -> Unit,
     onVideoLongPressed: (List<AnimeVideo>) -> Unit,
+    watchFilter: EpisodeWatchFilter,
+    onWatchFilterSelected: (EpisodeWatchFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val episodeKeys = remember(episodeGroups) { episodeGroups.map { it.episode } }
@@ -175,17 +180,41 @@ internal fun EpisodesGrid(
                     verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical + TvTopAnchoredFocusInset),
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }, contentType = { "header" }) {
-                        Text(
-                            text = stringResource(
-                                R.string.details_episodes_count_title,
-                                episodeGroups.size,
-                            ),
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.onBackground,
+                        Column(
                             modifier = gridStartExtent.measure
                                 .fillMaxWidth()
                                 .padding(bottom = 2.dp),
-                        )
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        R.string.details_episodes_count_title,
+                                        episodeGroups.size,
+                                    ),
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                )
+                                EpisodeWatchFilterChips(
+                                    selected = watchFilter,
+                                    onSelected = { filter ->
+                                        lastFocusedIndex = 0
+                                        onWatchFilterSelected(filter)
+                                    },
+                                )
+                            }
+                            if (episodeGroups.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.details_episodes_filter_empty),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 16.dp),
+                                )
+                            }
+                        }
                     }
 
                     itemsIndexed(

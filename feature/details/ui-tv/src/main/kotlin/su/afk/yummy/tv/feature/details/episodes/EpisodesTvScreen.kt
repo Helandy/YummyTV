@@ -29,7 +29,7 @@ import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
     name = "Default",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
-    showBackground = true
+    showBackground = true,
 )
 @Composable
 private fun EpisodesTvScreenDefaultPreview() = ScreenPreviewTheme {
@@ -96,7 +96,9 @@ fun EpisodesTvScreen(
         EpisodesSection(
             state = state.videosState,
             animeId = state.animeId,
-            episodeGroups = state.episodeGroups,
+            episodeGroups = state.visibleEpisodeGroups,
+            watchFilter = state.watchFilter,
+            onWatchFilterSelected = { onEvent(EpisodesState.Event.WatchFilterSelected(it)) },
             bestDubbing = state.bestDubbing,
             watchProgress = state.watchProgress,
             restoreFocusRequest = restoreEpisodesFocusRequest,

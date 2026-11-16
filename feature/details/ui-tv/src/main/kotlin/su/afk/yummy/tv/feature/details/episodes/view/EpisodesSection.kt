@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchFilter
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -29,6 +30,8 @@ internal fun EpisodesSection(
     restoreFocusRequest: Int,
     onVideoSelected: (AnimeVideo) -> Unit,
     onVideoLongPressed: (List<AnimeVideo>) -> Unit,
+    watchFilter: EpisodeWatchFilter,
+    onWatchFilterSelected: (EpisodeWatchFilter) -> Unit,
     episodeInfo: Map<String, AnimeEpisodeInfo> = emptyMap(),
     episodeFlags: Map<String, EpisodeFlags> = emptyMap(),
     onRetry: (() -> Unit)? = null,
@@ -58,6 +61,8 @@ internal fun EpisodesSection(
             episodeFlags = episodeFlags,
             onVideoSelected = onVideoSelected,
             onVideoLongPressed = onVideoLongPressed,
+            watchFilter = watchFilter,
+            onWatchFilterSelected = onWatchFilterSelected,
             modifier = Modifier.fillMaxSize().stateChangeFade(contentFade),
         )
     }
