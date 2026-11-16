@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.feature.library.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /** Подтверждение удаления тайтла из списка Библиотеки на ТВ; по умолчанию фокус на «Удалить». */
 @Composable
@@ -27,6 +28,7 @@ internal fun LibraryTvRemoveConfirmDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.tvBackKeyForwarding(),
         title = { Text(stringResource(R.string.library_mobile_remove_title)) },
         text = { Text(stringResource(R.string.library_mobile_remove_message, title, listTitle)) },
         confirmButton = {

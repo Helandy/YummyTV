@@ -58,6 +58,7 @@ import su.afk.yummy.tv.feature.details.details.utils.label
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
 import su.afk.yummy.tv.feature.details.utils.statusIcon
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @Composable
 internal fun LibraryListPickerOverlay(
@@ -87,7 +88,7 @@ internal fun LibraryListPickerOverlay(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.82f))
                 .clickable(

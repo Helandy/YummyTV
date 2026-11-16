@@ -71,6 +71,7 @@ import su.afk.yummy.tv.feature.details.details.model.DubbingOption
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatCompactCount
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -98,7 +99,7 @@ internal fun DubbingPickerOverlay(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 // диалог — отдельное окно: теги как resource-id для сценариев профиля включаем в нём заново
                 .semantics { testTagsAsResourceId = true }
                 .fillMaxSize()

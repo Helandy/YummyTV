@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.focus.consumeLongPressRelease
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /** Подтверждение скрытия тайтла из блока рекомендаций на главной. */
 @Composable
@@ -42,7 +43,7 @@ internal fun TvRecommendationActionsDialog(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 .widthIn(max = 560.dp)
                 .consumeLongPressRelease(),
         ) {

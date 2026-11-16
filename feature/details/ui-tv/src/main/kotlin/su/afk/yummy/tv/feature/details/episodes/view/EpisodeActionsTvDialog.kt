@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.focus.consumeLongPressRelease
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /** Действия над серией по удержанию OK на карточке: пока это только отметка о просмотре. */
 @Composable
@@ -43,7 +44,7 @@ internal fun EpisodeActionsTvDialog(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 .widthIn(max = 560.dp)
                 .consumeLongPressRelease(),
         ) {

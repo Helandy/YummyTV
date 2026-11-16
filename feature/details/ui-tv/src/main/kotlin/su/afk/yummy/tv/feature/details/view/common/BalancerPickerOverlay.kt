@@ -74,6 +74,7 @@ import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatCompactCount
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -103,7 +104,7 @@ internal fun BalancerPickerOverlay(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 // диалог — отдельное окно: теги как resource-id для сценариев профиля включаем в нём заново
                 .semantics { testTagsAsResourceId = true }
                 .fillMaxSize()

@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 import su.afk.yummy.tv.core.designsystem.motion.YummyMotion
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
@@ -87,7 +88,7 @@ internal fun TvChoiceDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.82f))
                 .clickable(

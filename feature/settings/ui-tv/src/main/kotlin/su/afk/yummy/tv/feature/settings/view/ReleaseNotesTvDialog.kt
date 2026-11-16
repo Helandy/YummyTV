@@ -45,6 +45,7 @@ import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.color
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /** Шаг прокрутки списка изменений одним нажатием DPAD. */
 private const val DPAD_SCROLL_STEP_PX = 120
@@ -73,7 +74,7 @@ internal fun ReleaseNotesTvDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        modifier = Modifier
+        modifier = Modifier.tvBackKeyForwarding()
             .fillMaxWidth(DIALOG_WIDTH_FRACTION)
             .widthIn(max = DIALOG_MAX_WIDTH),
         properties = DialogProperties(usePlatformDefaultWidth = false),

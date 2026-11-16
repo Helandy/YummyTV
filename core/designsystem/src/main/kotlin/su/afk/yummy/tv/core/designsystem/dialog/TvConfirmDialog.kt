@@ -49,6 +49,7 @@ import kotlin.time.Duration.Companion.seconds
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /** ТВ-вид запроса подтверждения: оверлей как у выбора озвучки, фокус сразу на подтверждающей строке. */
 @OptIn(ExperimentalComposeUiApi::class)
@@ -74,7 +75,7 @@ internal fun TvConfirmDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 // диалог — отдельное окно: теги как resource-id для сценариев профиля включаем в нём заново
                 .semantics { testTagsAsResourceId = true }
                 .fillMaxSize()

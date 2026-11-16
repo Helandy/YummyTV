@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.permissions.LocalNetworkPermissionStep
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /**
  * Объяснение перед системным запросом доступа к локальной сети: пульт не подскажет,
@@ -34,6 +35,7 @@ internal fun LocalNetworkPermissionTvDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.tvBackKeyForwarding(),
         title = { Text(stringResource(R.string.account_local_network_permission_title)) },
         text = {
             Text(

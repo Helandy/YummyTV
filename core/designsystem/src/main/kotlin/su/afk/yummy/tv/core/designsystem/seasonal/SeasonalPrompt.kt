@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.designsystem.R
 import su.afk.yummy.tv.core.designsystem.dialog.ConfirmDialogRequest
 import su.afk.yummy.tv.core.designsystem.dialog.TvConfirmDialog
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /**
  * Один раз сообщает, что включилось праздничное оформление [theme], и даёт сразу отключить его.
@@ -53,6 +54,7 @@ fun SeasonalPrompt(
     } else {
         Dialog(onDismissRequest = { onAnswer(false) }) {
             Surface(
+                modifier = Modifier.tvBackKeyForwarding(),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {

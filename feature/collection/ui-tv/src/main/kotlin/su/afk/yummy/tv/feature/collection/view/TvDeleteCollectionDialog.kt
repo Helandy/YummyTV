@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.feature.collection.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @Composable
 internal fun TvDeleteCollectionDialog(
@@ -27,6 +28,7 @@ internal fun TvDeleteCollectionDialog(
 
     AlertDialog(
         onDismissRequest = { if (!isDeleting) onDismiss() },
+        modifier = Modifier.tvBackKeyForwarding(),
         title = { Text(stringResource(R.string.collection_delete_dialog_title)) },
         text = { Text(stringResource(R.string.collection_delete_dialog_message)) },
         confirmButton = {

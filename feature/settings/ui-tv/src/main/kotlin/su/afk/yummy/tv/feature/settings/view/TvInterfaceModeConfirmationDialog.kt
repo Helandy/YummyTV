@@ -12,6 +12,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @Composable
 internal fun TvInterfaceModeConfirmationDialog(
@@ -24,6 +25,7 @@ internal fun TvInterfaceModeConfirmationDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.tvBackKeyForwarding(),
         title = { Text(stringResource(R.string.settings_interface_confirm_title)) },
         text = {
             Text(

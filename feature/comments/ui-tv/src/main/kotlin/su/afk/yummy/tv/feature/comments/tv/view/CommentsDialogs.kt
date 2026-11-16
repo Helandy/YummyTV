@@ -18,6 +18,7 @@ import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.labelRes
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @Composable
 internal fun CommentsDialogs(
@@ -34,6 +35,7 @@ internal fun CommentsDialogs(
         LaunchedEffect(Unit) { confirmFocusRequester.requestFocus() }
         AlertDialog(
             onDismissRequest = { if (!isMutating) onDeleteDismissed() },
+            modifier = Modifier.tvBackKeyForwarding(),
             title = { Text(stringResource(R.string.comments_delete_title)) },
             text = { Text(stringResource(R.string.comments_delete_message)) },
             confirmButton = {
@@ -57,6 +59,7 @@ internal fun CommentsDialogs(
         LaunchedEffect(Unit) { firstReasonFocusRequester.requestFocus() }
         AlertDialog(
             onDismissRequest = { if (!isMutating) onReportDismissed() },
+            modifier = Modifier.tvBackKeyForwarding(),
             title = { Text(stringResource(R.string.comments_report_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

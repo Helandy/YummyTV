@@ -18,6 +18,7 @@ import androidx.compose.ui.window.Dialog
 import su.afk.yummy.tv.core.designsystem.components.GithubStarIcon
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusableButton
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @Composable
 internal fun HomeSupportPromptDialog(
@@ -28,7 +29,7 @@ internal fun HomeSupportPromptDialog(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
-            modifier = Modifier.widthIn(max = 560.dp),
+            modifier = Modifier.tvBackKeyForwarding().widthIn(max = 560.dp),
         ) {
             Column(
                 modifier = Modifier.padding(28.dp),

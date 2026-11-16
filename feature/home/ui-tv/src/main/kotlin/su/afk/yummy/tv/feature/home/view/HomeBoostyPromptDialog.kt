@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.designsystem.components.QrCode
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusableButton
 import su.afk.yummy.tv.core.utils.system.BOOSTY_URL
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /** Предложение поддержать на Boosty: на ТВ вместо кнопки перехода показан QR-код для телефона. */
 @Composable
@@ -35,7 +36,7 @@ internal fun HomeBoostyPromptDialog(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
-            modifier = Modifier.widthIn(max = 720.dp),
+            modifier = Modifier.tvBackKeyForwarding().widthIn(max = 720.dp),
         ) {
             Column(
                 modifier = Modifier.padding(28.dp),

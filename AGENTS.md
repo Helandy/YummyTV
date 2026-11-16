@@ -67,10 +67,14 @@
       or a dialog's `onDismiss` runs twice.
     - An overlay/panel inside a screen gets its own `BackHandler` while it is composed (the last
       registered handler wins), or the screen's single `BackHandler` dismisses the overlay first.
-    - A `Dialog` already closes on Back via `onDismissRequest`; do not catch Back inside it.
+    - A `Dialog` closes on Back via `onDismissRequest`; do not catch Back inside it.
+    - The root content of every TV `Dialog` must carry `Modifier.tvBackKeyForwarding()`
+      (`core.designsystem.focus`; for `AlertDialog` pass it as `modifier`). Without it, on
+      Android ≤ 15 Compose turns the unhandled Back into a focus exit, so the first press only drops
+      focus and the dialog closes on the second press. `TvMainScaffold` applies the same modifier to
+      the main window.
     - `Key.Escape` is not treated as Back by the system: catch it in `onPreviewKeyEvent`, act on
-      KeyDown and consume the KeyUp too.
-    - The only exception is `TvMainScaffold`, which handles Back that no screen consumed.
+      KeyDown and consume the KeyUp too. A `Dialog` is a separate window, so it handles Escape itself.
 
 ## Attribution (for AI agents)
 

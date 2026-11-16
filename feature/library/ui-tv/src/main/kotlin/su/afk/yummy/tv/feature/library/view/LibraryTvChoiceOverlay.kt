@@ -55,6 +55,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
 import su.afk.yummy.tv.feature.library.model.LibraryTvChoice
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 /**
  * Оверлей выбора из списка для библиотеки ТВ: сортировка и действия карточки.
@@ -87,7 +88,7 @@ internal fun LibraryTvChoiceOverlay(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.82f)),
             contentAlignment = Alignment.Center,

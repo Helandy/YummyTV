@@ -55,6 +55,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
 import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 
 @Composable
 internal fun SubscriptionsPickerOverlay(
@@ -89,7 +90,7 @@ internal fun SubscriptionsPickerOverlay(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.tvBackKeyForwarding()
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.82f))
                 .clickable(
