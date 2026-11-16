@@ -54,7 +54,7 @@ internal fun DetailsRatingRow(
                 RatingLabel(
                     label = stringResource(
                         R.string.details_kinopoisk_rating,
-                        it.formatRating()
+                        it.formatRating(),
                     ),
                     isPrimary = false,
                     rating = it,

@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.common.player.isAksorPlayerUrl
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
@@ -22,7 +23,6 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.io.IOException
 import java.net.URI
 import javax.inject.Inject
-import su.afk.yummy.tv.core.utils.network.HttpHeaderNames
 
 internal class AksorExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
