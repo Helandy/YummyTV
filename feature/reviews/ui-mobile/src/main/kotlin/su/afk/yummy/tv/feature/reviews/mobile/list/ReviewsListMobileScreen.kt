@@ -45,7 +45,6 @@ fun ReviewsListMobileScreen(
     onEvent: (ReviewsListState.Event) -> Unit
 ) {
     val context = LocalContext.current
-    val items = state.reviews.collectAsLazyPagingItems()
     effect.collectAsEffect {
         if (it is ReviewsListState.Effect.ShowToast) {
             Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
@@ -85,11 +84,13 @@ fun ReviewsListMobileScreen(
                 state = tabsState,
                 modifier = Modifier.weight(1f),
                 key = { page -> sorts[page].name },
-            ) { _ ->
-                ReviewsListContent(state, items, onEvent)
+                beyondViewportPageCount = 1,
+            ) { page ->
+                val sortFlow = state.reviewsBySort[sorts[page]] ?: state.reviews
+                ReviewsListContent(state, sortFlow.collectAsLazyPagingItems(), onEvent)
             }
         } else {
-            ReviewsListContent(state, items, onEvent)
+            ReviewsListContent(state, state.reviews.collectAsLazyPagingItems(), onEvent)
         }
     }
 }

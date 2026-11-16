@@ -4,6 +4,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
@@ -83,13 +84,22 @@ class CommentsViewModel @AssistedInject internal constructor(
     // В ленте комментариев пользователя важнее свежие, у тайтлов — лучшие.
     private val defaultSort = CommentSort.BEST
 
-    override fun createInitialState() =
-        CommentsState.State(
+    /** Сортировки, чей кэшированный поток устарел (правки, обновление): пересоздаём при выборе вкладки. */
+    private val staleSorts = mutableSetOf<CommentSort>()
+
+    private fun createFlowsBySort() =
+        CommentSort.entries.associateWith { createCommentsFlow(it) }.toPersistentMap()
+
+    override fun createInitialState(): CommentsState.State {
+        val flows = createFlowsBySort()
+        return CommentsState.State(
             sort = defaultSort,
-            comments = createCommentsFlow(defaultSort),
+            comments = flows.getValue(defaultSort),
+            commentsBySort = flows,
             totalCount = initialTotalCount,
             hasDetailsAction = showDetailsAction && targetType.hasDetails(),
         )
+    }
 
     private var visibleComments: Map<Int, CommentUi> = emptyMap()
 
@@ -116,15 +126,28 @@ class CommentsViewModel @AssistedInject internal constructor(
             is CommentsState.Event.SortSelected -> {
                 if (event.sort != currentState.sort) {
                     analytics.eventSortSelected(target, event.sort)
+                    val current = currentState
+                    // Локальные правки живут только на активной вкладке: после их сброса кэш всех
+                    // вкладок расходится с сервером, поэтому они перезагрузятся при выборе.
+                    if (current.prependedComments.isNotEmpty() || current.commentOverlays.isNotEmpty() ||
+                        current.deletedCommentIds.isNotEmpty()
+                    ) {
+                        staleSorts.addAll(CommentSort.entries)
+                    }
+                    val selectedFlow = if (staleSorts.remove(event.sort)) {
+                        createCommentsFlow(event.sort)
+                    } else {
+                        current.commentsBySort[event.sort] ?: createCommentsFlow(event.sort)
+                    }
                     setState {
                         copy(
                             sort = event.sort,
-                            comments = createCommentsFlow(event.sort),
+                            comments = selectedFlow,
+                            commentsBySort = commentsBySort.put(event.sort, selectedFlow),
                             prependedComments = persistentListOf(),
                             commentOverlays = persistentMapOf(),
                             deletedCommentIds = persistentSetOf(),
                             error = null,
-                            isModerator = false,
                         )
                     }
                 }
@@ -190,9 +213,15 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     private fun reloadComments(forceRefresh: Boolean = false) {
         visibleComments = emptyMap()
+        // Пересоздаём только активную вкладку (соседние не перезапрашиваются разом), остальные
+        // помечаем устаревшими до выбора.
+        val activeSort = currentState.sort
+        val activeFlow = createCommentsFlow(activeSort, forceRefreshFirstPage = forceRefresh)
+        staleSorts.addAll(CommentSort.entries - activeSort)
         setState {
             copy(
-                comments = createCommentsFlow(sort, forceRefreshFirstPage = forceRefresh),
+                comments = activeFlow,
+                commentsBySort = commentsBySort.put(sort, activeFlow),
                 prependedComments = persistentListOf(),
                 commentOverlays = persistentMapOf(),
                 deletedCommentIds = persistentSetOf(),
@@ -235,15 +264,24 @@ class CommentsViewModel @AssistedInject internal constructor(
             )
         }.fold(
             onSuccess = { page ->
-                setState { copy(isModerator = isModerator || page.isModerator, error = null) }
+                // isModerator — свойство цели, а не сортировки: учитываем и предзагрузку соседней вкладки.
+                setState {
+                    copy(
+                        isModerator = isModerator || page.isModerator,
+                        error = if (sort == currentState.sort) null else error,
+                    )
+                }
                 page.comments.map { it.toCommentUi() }
             },
             onFailure = { error ->
                 analytics.eventLoadError(target, sort, error)
-                setState {
-                    copy(
-                        error = UiText.Failure(error, UiText.Res(R.string.comments_load_error)),
-                    )
+                // Ошибка соседней (предзагружаемой) вкладки не должна задевать активную.
+                if (sort == currentState.sort) {
+                    setState {
+                        copy(
+                            error = UiText.Failure(error, UiText.Res(R.string.comments_load_error)),
+                        )
+                    }
                 }
                 throw error
             },

@@ -24,6 +24,8 @@ class CommentsState {
     data class State(
         val error: UiText? = null,
         val comments: Flow<PagingData<CommentUi>> = flowOf(PagingData.empty()),
+        /** Потоки всех сортировок: соседняя вкладка подгружается заранее, а не после остановки свайпа. */
+        val commentsBySort: PersistentMap<CommentSort, Flow<PagingData<CommentUi>>> = persistentMapOf(),
         val prependedComments: ImmutableList<CommentUi> = persistentListOf(),
         val commentOverlays: PersistentMap<Int, CommentUi> = persistentMapOf(),
         val deletedCommentIds: PersistentSet<Int> = persistentSetOf(),

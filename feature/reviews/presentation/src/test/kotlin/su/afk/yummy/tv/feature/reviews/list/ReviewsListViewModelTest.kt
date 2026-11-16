@@ -108,6 +108,32 @@ class ReviewsListViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `every available sort gets its own flow and the current one is exposed as reviews`() {
+        val general = createViewModel().currentState
+        assertEquals(setOf(ReviewSort.NEW, ReviewSort.TOP), general.reviewsBySort.keys)
+        assertTrue(general.reviews === general.reviewsBySort.getValue(ReviewSort.NEW))
+
+        val anime = createViewModel(animeId = 5).currentState
+        assertEquals(ReviewSort.entries.toSet(), anime.reviewsBySort.keys)
+        assertNotSame(
+            anime.reviewsBySort.getValue(ReviewSort.NEW),
+            anime.reviewsBySort.getValue(ReviewSort.TOP),
+        )
+    }
+
+    @Test
+    fun `returning to a sort reuses its flow instead of rebuilding it`() {
+        val vm = createViewModel()
+        val newFlow = vm.currentState.reviews
+
+        vm.setEvent(Event.SortSelected(ReviewSort.TOP))
+        vm.setEvent(Event.SortSelected(ReviewSort.NEW))
+
+        assertTrue(newFlow === vm.currentState.reviews)
+        assertTrue(newFlow === vm.currentState.reviewsBySort.getValue(ReviewSort.NEW))
+    }
+
+    @Test
     fun `vote is applied optimistically and replaced by the saved reactions`() {
         val saved = ReviewReactions(likes = 9, dislikes = 0, vote = ReviewVote.LIKE)
         coEvery { repository.vote(1, ReviewVote.LIKE) } returns saved

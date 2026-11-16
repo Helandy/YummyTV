@@ -155,8 +155,10 @@ fun LibraryMobileScreen(
         }
     }
 
-    LaunchedEffect(pagerState.currentPage) {
-        val selectedTab = pagerState.currentPage.toLibraryMobileTab(tabs)
+    // Сообщаем наружу только осевшую страницу: промежуточные страницы при докрутке тапом по табу
+    // иначе возвращали бы pager назад (эхо через state.selectedTab) и вкладка зависала посередине.
+    LaunchedEffect(pagerState.settledPage) {
+        val selectedTab = pagerState.settledPage.toLibraryMobileTab(tabs)
         if (selectedTab != state.selectedTab) {
             onEvent(LibraryState.Event.TabSelected(selectedTab))
         }

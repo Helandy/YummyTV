@@ -61,10 +61,11 @@ fun rememberMobileSwipeableTabsState(
         }
     }
 
-    // Свайп/докрутка pager'а -> сообщаем наружу.
-    LaunchedEffect(pagerState.currentPage) {
-        if (pagerState.currentPage != selectedPage) {
-            onPageSelected(pagerState.currentPage)
+    // Свайп/докрутка pager'а -> сообщаем наружу, но только когда страница осела: промежуточные
+    // страницы при докрутке через несколько вкладок иначе возвращали бы pager назад.
+    LaunchedEffect(pagerState.settledPage) {
+        if (pagerState.settledPage != selectedPage) {
+            onPageSelected(pagerState.settledPage)
         }
     }
 

@@ -19,7 +19,10 @@ import su.afk.yummy.tv.domain.reviews.model.ReviewVote
 class ReviewsListState {
     @Immutable
     data class State(
+        /** Поток текущей сортировки (TV-экран); мобильный пейджер берёт свой поток из [reviewsBySort]. */
         val reviews: Flow<PagingData<AnimeReviewSummary>> = flowOf(PagingData.empty()),
+        /** Отдельный кэшируемый поток на каждую сортировку: соседняя вкладка видна во время свайпа. */
+        val reviewsBySort: PersistentMap<ReviewSort, Flow<PagingData<AnimeReviewSummary>>> = persistentMapOf(),
         val sort: ReviewSort = ReviewSort.NEW,
         val currentUserId: Int = 0,
         val reactionOverrides: PersistentMap<Int, ReviewReactions> = persistentMapOf(),

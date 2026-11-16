@@ -6,6 +6,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.plus
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -53,11 +54,20 @@ class ReviewsListViewModel @AssistedInject constructor(
         fun create(animeId: Int?): ReviewsListViewModel
     }
 
-    private var pagedSource: PagedSource<AnimeReviewSummary>? = null
-    override fun createInitialState() = ReviewsListState.State(
-        reviews = createFlow(ReviewSort.NEW),
-        isGeneralFeed = animeId == null,
-    )
+    private val sources = mutableMapOf<ReviewSort, PagedSource<AnimeReviewSummary>>()
+    private val staleSorts = mutableSetOf<ReviewSort>()
+
+    override fun createInitialState(): ReviewsListState.State {
+        val isGeneralFeed = animeId == null
+        val sorts = if (isGeneralFeed) listOf(ReviewSort.NEW, ReviewSort.TOP) else ReviewSort.entries
+        // Pager холодный: источник не грузит, пока вкладку никто не собирает.
+        val flows = sorts.associateWith { sourceFor(it).flow }.toPersistentMap()
+        return ReviewsListState.State(
+            reviews = flows.getValue(ReviewSort.NEW),
+            reviewsBySort = flows,
+            isGeneralFeed = isGeneralFeed,
+        )
+    }
 
     init {
         settingsStore.yaniUserId.onEach { setState { copy(currentUserId = it) } }
@@ -67,7 +77,9 @@ class ReviewsListViewModel @AssistedInject constructor(
             // поэтому сбрасываем накопленные оптимистичные override, чтобы они не маскировали
             // серверное состояние и не росли безгранично.
             setState { copy(reactionOverrides = persistentMapOf()) }
-            pagedSource?.invalidate()
+            // Активную вкладку перезагружаем сразу, остальные — когда их выберут.
+            staleSorts.addAll(sources.keys - currentState.sort)
+            sources[currentState.sort]?.invalidate()
         }.launchIn(viewModelScope)
     }
 
@@ -81,24 +93,28 @@ class ReviewsListViewModel @AssistedInject constructor(
                 )
             )
 
-            is ReviewsListState.Event.SortSelected -> if (event.sort != currentState.sort) setState {
-                copy(
-                    sort = event.sort,
-                    reviews = createFlow(event.sort),
-                    reactionOverrides = persistentMapOf()
-                )
+            is ReviewsListState.Event.SortSelected -> if (event.sort != currentState.sort) {
+                if (staleSorts.remove(event.sort)) sources[event.sort]?.invalidate()
+                setState {
+                    copy(
+                        sort = event.sort,
+                        reviews = reviewsBySort[event.sort] ?: sourceFor(event.sort).flow,
+                        reactionOverrides = persistentMapOf(),
+                    )
+                }
             }
 
             is ReviewsListState.Event.VoteSelected -> vote(event.review, event.vote)
         }
     }
 
-    private fun createFlow(sort: ReviewSort) =
+    private fun sourceFor(sort: ReviewSort) = sources.getOrPut(sort) {
         pagingSource(viewModelScope, itemKey = { it.id }) { limit, offset ->
             val page = animeId?.let { getAnimeReviews(it, sort, limit, offset) }
                 ?: getReviewFeed(sort, limit, offset)
             page.reviews
-        }.also { pagedSource = it }.flow
+        }
+    }
 
     private fun vote(review: AnimeReviewSummary, target: ReviewVote) {
         if (!currentState.isSignedIn) {

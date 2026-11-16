@@ -156,6 +156,46 @@ class CommentsViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `every sort has its own flow and the current one is exposed as comments`() {
+        val state = createViewModel().currentState
+
+        assertEquals(CommentSort.entries.toSet(), state.commentsBySort.keys)
+        assertTrue(state.comments === state.commentsBySort.getValue(state.sort))
+        assertNotSame(
+            state.commentsBySort.getValue(CommentSort.NEW),
+            state.commentsBySort.getValue(CommentSort.OLD),
+        )
+    }
+
+    @Test
+    fun `returning to a sort without local changes reuses its cached flow`() {
+        val vm = createViewModel()
+        val best = vm.currentState.comments
+        val newFlow = vm.currentState.commentsBySort.getValue(CommentSort.NEW)
+
+        vm.setEvent(Event.SortSelected(CommentSort.NEW))
+        assertTrue(newFlow === vm.currentState.comments)
+
+        vm.setEvent(Event.SortSelected(CommentSort.BEST))
+        assertTrue(best === vm.currentState.comments)
+    }
+
+    @Test
+    fun `refresh rebuilds only the active sort and the others are rebuilt on selection`() {
+        val vm = createViewModel()
+        val newFlow = vm.currentState.commentsBySort.getValue(CommentSort.NEW)
+        val bestFlow = vm.currentState.comments
+
+        vm.setEvent(Event.RefreshSelected)
+
+        assertNotSame(bestFlow, vm.currentState.comments)
+        assertTrue(newFlow === vm.currentState.commentsBySort.getValue(CommentSort.NEW))
+
+        vm.setEvent(Event.SortSelected(CommentSort.NEW))
+        assertNotSame(newFlow, vm.currentState.comments)
+    }
+
+    @Test
     fun `same sort changes nothing`() {
         val vm = createViewModel()
         val before = vm.currentState.comments

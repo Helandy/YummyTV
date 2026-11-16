@@ -19,6 +19,8 @@ fun MobileSwipeableTabsPager(
     verticalAlignment: Alignment.Vertical = Alignment.Top,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     pageSpacing: Dp = 0.dp,
+    /** Сколько соседних страниц держать в композиции заранее (во время свайпа они уже с контентом). */
+    beyondViewportPageCount: Int = 0,
     pageContent: @Composable (page: Int) -> Unit,
 ) {
     HorizontalPager(
@@ -28,6 +30,7 @@ fun MobileSwipeableTabsPager(
         verticalAlignment = verticalAlignment,
         contentPadding = contentPadding,
         pageSpacing = pageSpacing,
+        beyondViewportPageCount = beyondViewportPageCount,
     ) { page ->
         pageContent(page)
     }
