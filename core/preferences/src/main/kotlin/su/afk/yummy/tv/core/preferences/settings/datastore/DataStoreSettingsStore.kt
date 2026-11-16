@@ -61,6 +61,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoDownloadWifiOnlyKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoExportAutoEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.deblurEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchNextEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniAvatarUrlKey
@@ -145,6 +146,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
+            deblurEnabled = prefs[deblurEnabledKey] ?: false,
             audioFocusDisabled = prefs[audioFocusDisabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
             browserUserAgentProfile = prefs.enum(

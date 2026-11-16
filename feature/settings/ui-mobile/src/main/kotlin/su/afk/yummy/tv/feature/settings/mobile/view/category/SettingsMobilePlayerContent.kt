@@ -113,6 +113,16 @@ internal fun SettingsMobilePlayerContent(
                     onClick = { onEvent(SettingsState.Event.VolumeStabilizationToggled) },
                 )
             }
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_deblur_label),
+                hint = if (state.deblurEnabled) {
+                    stringResource(R.string.settings_deblur_enabled)
+                } else {
+                    stringResource(R.string.settings_deblur_disabled)
+                },
+                enabled = state.deblurEnabled,
+                onClick = { onEvent(SettingsState.Event.DeblurToggled) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {
             SettingsMobileToggleRow(

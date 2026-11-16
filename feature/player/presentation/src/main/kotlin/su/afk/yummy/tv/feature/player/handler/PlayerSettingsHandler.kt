@@ -32,6 +32,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     val tvPlayerVolumeKeysEnabled: Flow<Boolean> = settingsStore.tvPlayerVolumeKeysEnabled
     val advancedPlayerVolumeEnabled: Flow<Boolean> = settingsStore.advancedPlayerVolumeEnabled
     val volumeStabilizationEnabled: Flow<Boolean> = settingsStore.volumeStabilizationEnabled
+    val deblurEnabled: Flow<Boolean> = settingsStore.deblurEnabled
     val adaptiveVideoQualityEnabled: Flow<Boolean> = settingsStore.adaptiveVideoQualityEnabled
     val preferredVideoQuality: Flow<PreferredVideoQuality> = settingsStore.preferredVideoQuality
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings> = settingsStore.playerSubtitleStyle
@@ -51,6 +52,10 @@ internal class PlayerSettingsHandler @Inject constructor(
 
     suspend fun saveVolumeStabilizationEnabled(enabled: Boolean) {
         settingsStore.setVolumeStabilizationEnabled(enabled)
+    }
+
+    suspend fun saveDeblurEnabled(enabled: Boolean) {
+        settingsStore.setDeblurEnabled(enabled)
     }
 
     suspend fun savePreferredVideoQuality(quality: PreferredVideoQuality) {

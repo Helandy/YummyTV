@@ -186,6 +186,9 @@
     <string name="settings_volume_stabilization_label">Стабилизация громкости</string>
     <string name="settings_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>
     <string name="settings_volume_stabilization_disabled">Звук играет со своим исходным динамическим диапазоном</string>
+    <string name="settings_deblur_label">Deblur (резкость)</string>
+    <string name="settings_deblur_enabled">Уменьшает размытие и делает контуры чётче. Может нагружать слабые устройства</string>
+    <string name="settings_deblur_disabled">Видео играет без дополнительной резкости</string>
     <string name="settings_audio_focus_label">Отключить аудиофокус</string>
     <string name="settings_audio_focus_enabled">Плеер не реагирует на перехват фокуса другими приложениями. Включите, если воспроизведение само ставится на паузу</string>
     <string name="settings_audio_focus_disabled">Плеер ставится на паузу или приглушается, когда фокус забирают другие приложения</string>

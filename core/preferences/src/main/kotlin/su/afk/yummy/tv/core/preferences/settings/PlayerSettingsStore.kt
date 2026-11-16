@@ -63,6 +63,9 @@ interface PlayerSettingsStore {
     /** Стабилизация громкости (сжатие динамического диапазона аудио). */
     val volumeStabilizationEnabled: Flow<Boolean>
 
+    /** Видеошейдер Deblur: уменьшает размытие, делает контуры чётче. */
+    val deblurEnabled: Flow<Boolean>
+
     /** Аудиофокус плеера отключён пользователем (плеер не реагирует на перехват фокуса другими приложениями). */
     val audioFocusDisabled: Flow<Boolean>
 
@@ -121,6 +124,7 @@ interface PlayerSettingsStore {
     suspend fun clearMobilePlayerBrightness()
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
+    suspend fun setDeblurEnabled(enabled: Boolean)
     suspend fun setAudioFocusDisabled(disabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
     suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)

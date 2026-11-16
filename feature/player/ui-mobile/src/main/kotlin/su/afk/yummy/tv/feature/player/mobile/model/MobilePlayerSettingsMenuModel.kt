@@ -24,6 +24,7 @@ internal data class MobilePlayerSettingsMenuModel(
     val volumePercent: Int,
     val showStabilization: Boolean,
     val stabilizationEnabled: Boolean,
+    val deblurEnabled: Boolean,
     /** Выбранный интервал автовыключения в минутах; 0 — таймер выключен. */
     val sleepTimerMinutes: Int,
     val showDetails: Boolean,
@@ -45,6 +46,7 @@ internal class MobilePlayerSettingsMenuActions(
     val onAutoBrightnessChange: (Boolean) -> Unit,
     val onVolumeChange: (Int) -> Unit,
     val onStabilizationChange: (Boolean) -> Unit,
+    val onDeblurChange: (Boolean) -> Unit,
     val onSleepTimerSelected: (Int) -> Unit,
     val onDetails: () -> Unit,
     val onPictureInPicture: () -> Unit,

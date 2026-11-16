@@ -63,4 +63,13 @@ class PlayerSettingsHandlerTest : BaseUnitTest() {
         coVerify { store.setPlayerSubtitleStyle(style) }
         coVerify { store.setVolumeStabilizationEnabled(true) }
     }
+
+    @Test
+    fun `deblur toggle is written to the shared store`() = runTest {
+        val handler = PlayerSettingsHandler(store)
+
+        handler.saveDeblurEnabled(true)
+
+        coVerify { store.setDeblurEnabled(true) }
+    }
 }

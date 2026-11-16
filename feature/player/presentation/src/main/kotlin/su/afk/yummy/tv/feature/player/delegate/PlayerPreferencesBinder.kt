@@ -44,6 +44,7 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(tvPlayerVolumeKeysEnabled) { copy(tvPlayerVolumeKeysEnabled = it) }
             host.bind(advancedPlayerVolumeEnabled) { copy(advancedPlayerVolumeEnabled = it) }
             host.bind(volumeStabilizationEnabled) { copy(volumeStabilizationEnabled = it) }
+            host.bind(deblurEnabled) { copy(deblurEnabled = it) }
             host.bind(adaptiveVideoQualityEnabled) { copy(adaptiveQualityEnabled = it) }
             host.bind(preferredVideoQuality) {
                 copy(adaptiveCeilingHeight = it.height ?: QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT)
@@ -71,6 +72,11 @@ internal class PlayerPreferencesBinder @Inject constructor(
     fun setVolumeStabilization(host: PlayerStateHost, enabled: Boolean) {
         host.update { copy(volumeStabilizationEnabled = enabled) }
         host.scope.launch { settings.saveVolumeStabilizationEnabled(enabled) }
+    }
+
+    fun setDeblur(host: PlayerStateHost, enabled: Boolean) {
+        host.update { copy(deblurEnabled = enabled) }
+        host.scope.launch { settings.saveDeblurEnabled(enabled) }
     }
 
     /** Включение снимает ручную блокировку серии: адаптация снова управляет качеством. */

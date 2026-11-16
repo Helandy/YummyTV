@@ -131,6 +131,7 @@ class SettingsViewModel @Inject internal constructor(
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
+                        deblurEnabled = snapshot.deblurEnabled,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
@@ -428,6 +429,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.VolumeStabilizationToggled -> viewModelScope.launch {
                 settingsStore.setVolumeStabilizationEnabled(!currentState.volumeStabilizationEnabled)
+            }
+
+            SettingsState.Event.DeblurToggled -> viewModelScope.launch {
+                settingsStore.setDeblurEnabled(!currentState.deblurEnabled)
             }
 
             SettingsState.Event.AudioFocusToggled -> viewModelScope.launch {

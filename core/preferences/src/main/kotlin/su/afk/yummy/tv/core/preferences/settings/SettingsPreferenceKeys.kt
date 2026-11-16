@@ -64,6 +64,8 @@ internal object SettingsPreferenceKeys {
         floatPreferencesKey("player_playback_speed")
     val volumeStabilizationEnabledKey =
         booleanPreferencesKey("volume_stabilization_enabled")
+    val deblurEnabledKey =
+        booleanPreferencesKey("deblur_enabled")
     val audioFocusDisabledKey =
         booleanPreferencesKey("audio_focus_disabled")
     val playerBufferProfileKey = stringPreferencesKey("player_buffer_profile")

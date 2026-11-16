@@ -124,6 +124,19 @@ internal fun SettingsTvPlayerContent(
         )
     }
     SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_deblur_label),
+        hint = if (state.deblurEnabled) {
+            stringResource(R.string.settings_deblur_enabled)
+        } else {
+            stringResource(R.string.settings_deblur_disabled)
+        },
+        enabled = state.deblurEnabled,
+        onClick = {
+            onEvent(SettingsState.Event.DeblurToggled)
+        },
+    )
+    SettingsDivider()
     var audioFocusConfirmVisible by remember { mutableStateOf(false) }
     ToggleRow(
         label = stringResource(R.string.settings_audio_focus_label),

@@ -612,6 +612,9 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.VolumeStabilizationToggled ->
                 preferences.setVolumeStabilization(host, event.enabled)
 
+            is PlayerState.Event.DeblurToggled ->
+                preferences.setDeblur(host, event.enabled)
+
             is PlayerState.Event.SpeedSelected -> {
                 val speed = event.speed.coerceAtLeast(0.1f)
                 if (speed == currentState.selectedSpeed) return

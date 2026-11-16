@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
 import su.afk.yummy.tv.feature.player.common.PlayerQualitySignals
+import su.afk.yummy.tv.feature.player.common.utils.deblurVideoEffects
 import javax.inject.Inject
 
 /** Собирает ExoPlayer сервиса: трек-селектор, декодеры, источники, буфер и аудио-фокус. */
@@ -61,6 +62,11 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             .setAudioAttributes(MEDIA_AUDIO_ATTRIBUTES, !readAudioFocusDisabled())
             .setHandleAudioBecomingNoisy(true)
             .build()
+        // Конвейер эффектов Media3 создаётся только если setVideoEffects вызван до prepare(): позже он
+        // молча игнорируется. Поэтому GL-конвейер поднимаем сразу, но только при включённом Deblur —
+        // остальным пользователям обычный вывод без лишнего GL-прохода.
+        val deblurEnabled = readDeblurEnabled()
+        if (deblurEnabled) exoPlayer.setVideoEffects(context.deblurVideoEffects())
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
         exoPlayer.addAnalyticsListener(PlayerQualitySignalsListener(qualitySignals))
         exoPlayer.addAnalyticsListener(
@@ -70,7 +76,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
                 currentUriHost = { exoPlayer.currentMediaItem?.localConfiguration?.uri?.host },
             ),
         )
-        return PlayerExoPlayerBundle(exoPlayer, trackSelector)
+        return PlayerExoPlayerBundle(exoPlayer, trackSelector, videoEffectsReady = deblurEnabled)
     }
 
     /**
@@ -106,6 +112,14 @@ internal class PlayerExoPlayerFactory @Inject constructor(
         runBlocking {
             withTimeoutOrNull(BUFFER_PROFILE_READ_TIMEOUT_MS) {
                 settingsStore.audioFocusDisabled.first()
+            }
+        } ?: false
+
+    /** Читается блокирующе: эффекты должны быть заданы до prepare(), см. [create]. */
+    private fun readDeblurEnabled(): Boolean =
+        runBlocking {
+            withTimeoutOrNull(BUFFER_PROFILE_READ_TIMEOUT_MS) {
+                settingsStore.deblurEnabled.first()
             }
         } ?: false
 

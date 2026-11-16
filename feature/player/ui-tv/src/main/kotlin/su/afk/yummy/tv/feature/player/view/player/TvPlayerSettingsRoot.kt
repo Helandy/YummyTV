@@ -35,6 +35,8 @@ internal fun TvPlayerSettingsRoot(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
+    deblurEnabled: Boolean,
+    onDeblurChange: (Boolean) -> Unit,
     showAdaptiveQuality: Boolean,
     adaptiveQualityEnabled: Boolean,
     onAdaptiveQualityChange: (Boolean) -> Unit,
@@ -139,4 +141,12 @@ internal fun TvPlayerSettingsRoot(
             showChevron = false,
         )
     }
+    TvPlayerSettingsHeader(stringResource(R.string.player_settings_section_video))
+    TvPlayerSettingsMenuRow(
+        label = stringResource(R.string.player_deblur_title),
+        value = stringResource(if (deblurEnabled) R.string.player_toggle_on else R.string.player_toggle_off),
+        toggleChecked = deblurEnabled,
+        onClick = { onDeblurChange(!deblurEnabled) },
+        showChevron = false,
+    )
 }

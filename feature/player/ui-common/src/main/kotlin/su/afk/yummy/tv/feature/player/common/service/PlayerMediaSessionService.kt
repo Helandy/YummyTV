@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.common.utils.PLAYER_SERVICE_LOG_TAG
 import su.afk.yummy.tv.feature.player.common.utils.createPlayerSessionActivityIntent
+import su.afk.yummy.tv.feature.player.common.utils.deblurVideoEffects
 import javax.inject.Inject
 
 /**
@@ -44,6 +45,7 @@ class PlayerMediaSessionService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
     private var volumeStabilization: PlayerVolumeStabilization? = null
+    private var debugFrameReceiver: PlayerDebugFrameReceiver? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val stopState = PlayerServiceStopState()
 
@@ -55,7 +57,7 @@ class PlayerMediaSessionService : MediaSessionService() {
         // как startForegroundService() без startForeground() и убивает процесс.
         setForegroundServiceTimeoutMs(0)
         analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) { "Service onCreate" }
-        val (exoPlayer, trackSelector) = exoPlayerFactory.create(this)
+        val (exoPlayer, trackSelector, videoEffectsReady) = exoPlayerFactory.create(this)
         val stabilization = PlayerVolumeStabilization(analyticsTracker)
         exoPlayer.addListener(stabilization)
         exoPlayer.addListener(
@@ -67,6 +69,11 @@ class PlayerMediaSessionService : MediaSessionService() {
             initialAudioSessionId = exoPlayer.audioSessionId,
         )
         volumeStabilization = stabilization
+        debugFrameReceiver = PlayerDebugFrameReceiver.registerIfDebuggable(this, exoPlayer, settingsStore)
+        PlayerVideoDeblur(exoPlayer, videoEffectsReady, deblurVideoEffects()).start(
+            scope = serviceScope,
+            enabledFlow = settingsStore.deblurEnabled,
+        )
         // Начальное значение уже учтено при сборке плеера; дальше смена настройки действует сразу.
         settingsStore.audioFocusDisabled
             .distinctUntilChanged()
@@ -143,6 +150,8 @@ class PlayerMediaSessionService : MediaSessionService() {
             "Service onDestroy stopping=${stopState.isStopping}"
         }
         serviceScope.cancel()
+        debugFrameReceiver?.let { unregisterReceiver(it) }
+        debugFrameReceiver = null
         volumeStabilization?.release()
         volumeStabilization = null
         // mediaSession.player - это castPlayer, если он собрался, а CastPlayer.release()

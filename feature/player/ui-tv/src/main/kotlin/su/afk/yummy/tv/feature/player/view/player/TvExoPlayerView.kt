@@ -578,6 +578,7 @@ internal fun TvExoPlayerView(
             subtitleStyle = state.subtitleStyle,
             showStabilization = state.volumeStabilizationSupported,
             stabilizationEnabled = state.volumeStabilizationEnabled,
+            deblurEnabled = state.deblurEnabled,
             showAdaptiveQuality = playback.qualityLabels.size > 1,
             adaptiveQualityEnabled = playback.adaptiveQuality,
             audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
@@ -623,6 +624,7 @@ internal fun TvExoPlayerView(
             onVolumeChange = { volumeController.setPercent(it) },
             onSubtitleStyleChange = { onPlayerEvent(PlayerState.Event.SubtitleStyleChanged(it)) },
             onStabilizationChange = { onPlayerEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
+            onDeblurChange = { onPlayerEvent(PlayerState.Event.DeblurToggled(it)) },
             onAdaptiveQualityChange = { onPlayerEvent(PlayerState.Event.AdaptiveQualityToggled(it)) },
             onAudioTrackSelected = { idx ->
                 trackMenu.selectAudio(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)

@@ -89,6 +89,8 @@ class SettingsState {
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
+        /** Видеошейдер Deblur включён. */
+        val deblurEnabled: Boolean = false,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
@@ -241,6 +243,9 @@ class SettingsState {
 
         /** Пользователь переключил стабилизацию громкости (сжатие динамического диапазона). */
         data object VolumeStabilizationToggled : Event
+
+        /** Пользователь переключил видеошейдер Deblur. */
+        data object DeblurToggled : Event
 
         /** Переключить отключение аудиофокуса (включение подтверждается диалогом на экране). */
         data object AudioFocusToggled : Event

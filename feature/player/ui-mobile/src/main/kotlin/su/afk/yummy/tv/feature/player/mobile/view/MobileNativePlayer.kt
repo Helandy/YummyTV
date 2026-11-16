@@ -919,6 +919,7 @@ internal fun MobileNativePlayer(
                     volumePercent = playerVolumePercent,
                     showStabilization = state.volumeStabilizationSupported,
                     stabilizationEnabled = state.volumeStabilizationEnabled,
+                    deblurEnabled = state.deblurEnabled,
                     sleepTimerMinutes = sleepTimer.selectedMinutes,
                     showDetails = state.animeId > 0,
                     showPictureInPicture = state.pictureInPictureEnabled &&
@@ -954,6 +955,7 @@ internal fun MobileNativePlayer(
                     onAutoBrightnessChange = { gestures.setAutoBrightness(it) },
                     onVolumeChange = { volumeController.setPercent(it) },
                     onStabilizationChange = { onEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
+                    onDeblurChange = { onEvent(PlayerState.Event.DeblurToggled(it)) },
                     onSleepTimerSelected = { minutes ->
                         if (minutes > 0) sleepTimer.set(minutes) else sleepTimer.cancel()
                     },

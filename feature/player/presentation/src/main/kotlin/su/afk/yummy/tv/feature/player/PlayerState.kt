@@ -95,6 +95,7 @@ class PlayerState {
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
+        val deblurEnabled: Boolean = false,
         /** DynamicsProcessing есть только с API 28 — ниже тумблер стабилизации не показываем. */
         val volumeStabilizationSupported: Boolean = PlatformInfo.isAtLeastPie,
         val mobileVideoScale: Float = 1f,
@@ -221,6 +222,9 @@ class PlayerState {
 
         /** Пользователь включил или выключил стабилизацию громкости в боковой панели плеера. */
         data class VolumeStabilizationToggled(val enabled: Boolean) : Event
+
+        /** Пользователь включил или выключил видеошейдер Deblur в панели плеера. */
+        data class DeblurToggled(val enabled: Boolean) : Event
 
         /** Пользователь выбрал скорость воспроизведения. */
         data class SpeedSelected(val speed: Float) : Event

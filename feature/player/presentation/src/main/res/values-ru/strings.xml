@@ -172,6 +172,9 @@
     <string name="player_subtitle_edge_outline">Контур</string>
     <string name="player_subtitle_edge_shadow">Тень</string>
     <string name="player_volume_stabilization_title">Стабилизация громкости</string>
+    <string name="player_settings_section_video">Видео</string>
+    <string name="player_deblur_title">Deblur (резкость)</string>
+    <string name="player_deblur_hint">Чётче контуры</string>
     <string name="player_volume_stabilization_hint">Выравнивает громкие и тихие сцены</string>
     <string name="player_toggle_on">Вкл</string>
     <string name="player_toggle_off">Выкл</string>

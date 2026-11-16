@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.BrightnessMedium
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -171,6 +172,13 @@ internal fun MobilePlayerSettingsMenuSheet(
                         onClick = { actions.onStabilizationChange(!model.stabilizationEnabled) },
                     )
                 }
+                MobilePlayerMenuRow(
+                    icon = Icons.Filled.HighQuality,
+                    label = stringResource(R.string.player_deblur_title),
+                    subtitle = stringResource(R.string.player_deblur_hint),
+                    trailing = MobilePlayerMenuRowTrailing.Toggle(model.deblurEnabled),
+                    onClick = { actions.onDeblurChange(!model.deblurEnabled) },
+                )
             }
         }
     }

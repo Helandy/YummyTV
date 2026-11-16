@@ -50,6 +50,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitle
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerControlsTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.deblurEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedLongRemainingMinutesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedMediumRemainingMinutesKey
@@ -140,6 +141,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val volumeStabilizationEnabled: Flow<Boolean> =
         store.boolean(volumeStabilizationEnabledKey, false)
+
+    override val deblurEnabled: Flow<Boolean> =
+        store.boolean(deblurEnabledKey, false)
 
     override val audioFocusDisabled: Flow<Boolean> =
         store.boolean(audioFocusDisabledKey, false)
@@ -301,6 +305,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setVolumeStabilizationEnabled(enabled: Boolean) =
         store.setBoolean(volumeStabilizationEnabledKey, enabled)
+
+    override suspend fun setDeblurEnabled(enabled: Boolean) =
+        store.setBoolean(deblurEnabledKey, enabled)
 
     override suspend fun setAudioFocusDisabled(disabled: Boolean) =
         store.setBoolean(audioFocusDisabledKey, disabled)

@@ -186,6 +186,9 @@
     <string name="settings_volume_stabilization_label">Volume stabilization</string>
     <string name="settings_volume_stabilization_enabled">Evens out loud and quiet scenes: quiet dialogue is boosted, loud moments are tamed</string>
     <string name="settings_volume_stabilization_disabled">Audio plays with its original dynamic range</string>
+    <string name="settings_deblur_label">Deblur</string>
+    <string name="settings_deblur_enabled">Reduces blur and sharpens outlines. May load weak devices</string>
+    <string name="settings_deblur_disabled">Video plays without extra sharpening</string>
     <string name="settings_audio_focus_label">Disable audio focus</string>
     <string name="settings_audio_focus_enabled">Player ignores other apps taking audio focus. Use it if playback keeps pausing by itself</string>
     <string name="settings_audio_focus_disabled">Player pauses and ducks when other apps take audio focus</string>
