@@ -62,6 +62,7 @@ internal fun HomeDashboard(
     continueWatching: List<HomeContinueWatchingItem>,
     launchingContinueWatchingAnimeId: Int?,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
+    onContinueWatchingLongClick: (HomeContinueWatchingItem) -> Unit = {},
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     requestInitialFocus: Boolean,
     onInitialFocusHandled: () -> Unit,
@@ -309,6 +310,7 @@ internal fun HomeDashboard(
                                         items = continueWatching,
                                         launchingAnimeId = launchingContinueWatchingAnimeId,
                                         onItemSelected = onContinueWatchingSelected,
+                                        onItemLongClick = onContinueWatchingLongClick,
                                         rowFocusRequester = continueWatchingFocusRequester,
                                         registerFocusHandler = { handler ->
                                             registerRowFocusHandler(ROW_CONTINUE_WATCHING, handler)

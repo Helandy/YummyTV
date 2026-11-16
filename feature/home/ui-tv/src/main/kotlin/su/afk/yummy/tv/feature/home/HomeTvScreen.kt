@@ -40,6 +40,7 @@ import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
@@ -52,6 +53,7 @@ import su.afk.yummy.tv.feature.home.view.HomeBoostyPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomeCommunityPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomePreviewChannelPromptDialog
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
+import su.afk.yummy.tv.feature.home.view.TvContinueWatchingRemoveDialog
 import su.afk.yummy.tv.feature.home.view.TvRecommendationActionsDialog
 
 @Preview(
@@ -105,6 +107,7 @@ fun HomeTvScreen(
 ) {
     val context = LocalContext.current
     var recommendationActionItem by remember { mutableStateOf<HomeFeedItem?>(null) }
+    var continueWatchingActionEntry by remember { mutableStateOf<HomeContinueWatchingItem?>(null) }
 
     LaunchedEffect(Unit) {
         onEvent(HomeState.Event.ScreenResumed)
@@ -191,6 +194,7 @@ fun HomeTvScreen(
                     onContinueWatchingSelected = { entry ->
                         onEvent(HomeState.Event.ContinueWatchingSelected(entry))
                     },
+                    onContinueWatchingLongClick = { entry -> continueWatchingActionEntry = entry },
                     onItemSelected = onItemSelected,
                     onRecommendationLongClick = { item -> recommendationActionItem = item },
                 )
@@ -206,6 +210,17 @@ fun HomeTvScreen(
                 onEvent(HomeState.Event.RecommendationHideRequested(item.id))
             },
             onDismiss = { recommendationActionItem = null },
+        )
+    }
+
+    continueWatchingActionEntry?.let { entry ->
+        TvContinueWatchingRemoveDialog(
+            title = entry.animeTitle,
+            onRemove = {
+                continueWatchingActionEntry = null
+                onEvent(HomeState.Event.ContinueWatchingRemoveRequested(entry))
+            },
+            onDismiss = { continueWatchingActionEntry = null },
         )
     }
 

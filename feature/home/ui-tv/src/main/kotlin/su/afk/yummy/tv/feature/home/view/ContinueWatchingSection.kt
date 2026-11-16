@@ -46,6 +46,7 @@ internal fun ContinueWatchingSection(
     items: List<HomeContinueWatchingItem>,
     launchingAnimeId: Int?,
     onItemSelected: (HomeContinueWatchingItem) -> Unit,
+    onItemLongClick: (HomeContinueWatchingItem) -> Unit = {},
     rowFocusRequester: FocusRequester? = null,
     registerFocusHandler: ((suspend () -> Boolean)?) -> Unit = {},
     upFocusRequester: FocusRequester? = null,
@@ -63,6 +64,8 @@ internal fun ContinueWatchingSection(
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var currentFocusedIndex by remember { mutableIntStateOf(-1) }
+    // Размер ряда на момент длинного нажатия: если запись убрали, фокус нужно вернуть в ряд.
+    var itemsSizeBeforeLongClick by remember { mutableIntStateOf(-1) }
     val rowFocusRequesterToUse = rowFocusRequester ?: remember { FocusRequester() }
     val focusRequesters = remember(items.size) {
         List(items.size) { FocusRequester() }
@@ -116,6 +119,18 @@ internal fun ContinueWatchingSection(
         if (listState.layoutInfo.visibleItemsInfo.none { it.index == 0 }) {
             listState.scrollToItem(0)
         }
+    }
+
+    // Карточка с фокусом исчезла после удаления — вместе с ней ряд теряет фокус (Android уводит
+    // его в меню), поэтому возвращаем его на соседнюю запись.
+    LaunchedEffect(items) {
+        val sizeBefore = itemsSizeBeforeLongClick
+        if (sizeBefore < 0 || items.size >= sizeBefore) return@LaunchedEffect
+        itemsSizeBeforeLongClick = -1
+        if (items.isEmpty()) return@LaunchedEffect
+        val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+        requestItemFocus(target)
+        rememberFocusedItem(target)
     }
 
     Column {
@@ -200,6 +215,11 @@ internal fun ContinueWatchingSection(
                     onClick = {
                         rememberFocusedItem(index)
                         onItemSelected(entry)
+                    },
+                    onLongClick = {
+                        rememberFocusedItem(index)
+                        itemsSizeBeforeLongClick = items.size
+                        onItemLongClick(entry)
                     },
                     modifier = Modifier.focusRequester(focusRequesterForItem(index)),
                     leftFocusRequester = mainMenuFocusRequester.takeIf { index == 0 },

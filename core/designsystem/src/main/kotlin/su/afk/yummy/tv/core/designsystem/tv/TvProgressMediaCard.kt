@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.core.designsystem.tv
 
-import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 
 @Composable
 fun TvProgressMediaCard(
@@ -48,6 +48,7 @@ fun TvProgressMediaCard(
     progress: Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     width: Dp = 220.dp,
     thumbnailHeight: Dp = 124.dp,
     leftFocusRequester: FocusRequester? = null,
@@ -80,6 +81,7 @@ fun TvProgressMediaCard(
             }
             .tvFocusableClick(
                 onClick = onClick,
+                onLongClick = onLongClick,
                 shape = shape,
                 interactionSource = interactionSource,
                 focusedScale = focusedScale,
