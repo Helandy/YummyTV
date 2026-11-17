@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -162,11 +162,17 @@ internal fun TvPlayerEpisodeRow(
             ) { color ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // Буква перед качеством: это выбор адаптации, а не пользователя.
-                    if (adaptiveQuality) {
+                    if (adaptiveQuality || currentQualityLabel == stringResource(R.string.player_quality_auto)) {
                         Text(
                             text = stringResource(R.string.player_adaptive_quality_badge),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
+                            color = color,
+                            maxLines = 1,
+                        )
+                        Text(
+                            text = " • ",
+                            style = MaterialTheme.typography.labelLarge,
                             color = color,
                             maxLines = 1,
                         )
