@@ -29,6 +29,11 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.SettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
+import su.afk.yummy.tv.core.model.settings.TorrServerCheckResult
+import su.afk.yummy.tv.core.model.settings.TorrServerChecker
+import su.afk.yummy.tv.core.model.settings.TorrentIndexer
+import su.afk.yummy.tv.core.model.settings.TorrentIndexerCheckResult
+import su.afk.yummy.tv.core.model.settings.TorrentSettings
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -61,6 +66,7 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.SettingsState.Effect
 import su.afk.yummy.tv.feature.settings.SettingsState.Event
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
+import su.afk.yummy.tv.feature.settings.model.TorrServerCheckStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 
@@ -93,6 +99,15 @@ class SettingsViewModelTest : BaseUnitTest() {
     private val storageMode = MutableStateFlow(TokenStorageMode.entries.first())
     private val exportDestination = MutableStateFlow<VideoExportDestination?>(null)
     private val downloadRepository: VideoDownloadRepository = mockk(relaxed = true)
+    private val torrServerChecker: TorrServerChecker = mockk()
+    private val torrentSettings = MutableStateFlow(
+        TorrentSettings(
+            enabled = true,
+            torrServerUrl = "http://192.168.1.5:8090",
+            jackettEnabled = true,
+            jackettUrl = "http://192.168.1.10:9117",
+        ),
+    )
 
     @Before
     fun setUp() {
@@ -113,9 +128,15 @@ class SettingsViewModelTest : BaseUnitTest() {
         every { interfaceLanguagePreferences.selectedLanguage } returns AppInterfaceLanguage.SYSTEM
         coEvery { cacheStorageInspector.inspect() } returns CacheStorageReport(entries = emptyList(), totalBytes = 1_024L)
         coEvery { analyticsDeviceIdProvider.deviceId() } returns "abcdefgh"
+        every { settingsStore.torrentSettings } returns torrentSettings
+        coEvery { torrServerChecker.check(any()) } returns TorrServerCheckResult.Ok("MatriX.136")
+        coEvery { torrServerChecker.checkIndexer(any(), TorrentIndexer.JACRED) } returns
+            TorrentIndexerCheckResult.Unreachable
+        coEvery { torrServerChecker.checkIndexer(any(), TorrentIndexer.JACKETT) } returns
+            TorrentIndexerCheckResult.Ok
     }
 
-    private fun createViewModel() = SettingsViewModel(
+    private fun createViewModel(withTorrServerChecker: Boolean = false) = SettingsViewModel(
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         settingsStore = settingsStore,
@@ -138,7 +159,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         appLogExporter = appLogExporter,
         getAppReleaseHistory = GetAppReleaseHistoryUseCase(updateRepository),
         analyticsDeviceIdProvider = analyticsDeviceIdProvider,
-        torrServerChecker = java.util.Optional.empty(),
+        torrServerChecker = java.util.Optional.ofNullable(torrServerChecker.takeIf { withTorrServerChecker }),
         versionName = "1.0.0",
     )
 
@@ -418,5 +439,65 @@ class SettingsViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { nav.navigate(SettingsCategoryDestination(SettingsCategory.entries.first())) }
         verify(exactly = 1) { accountNavigator.getLocalAuthDest() }
         verify(exactly = 1) { nav.back() }
+    }
+
+    @Test
+    fun `connection check reports the server and every active indexer`() {
+        val vm = createViewModel(withTorrServerChecker = true)
+
+        vm.setEvent(Event.TorrServerCheckRequested)
+
+        assertEquals(
+            TorrServerCheckStatus.Done(
+                result = TorrServerCheckResult.Ok("MatriX.136"),
+                indexers = mapOf(
+                    TorrentIndexer.JACRED to TorrentIndexerCheckResult.Unreachable,
+                    TorrentIndexer.JACKETT to TorrentIndexerCheckResult.Ok,
+                ),
+            ),
+            vm.currentState.torrServerCheck,
+        )
+    }
+
+    @Test
+    fun `indexer without an address is not checked`() {
+        torrentSettings.value = torrentSettings.value.copy(jackettUrl = "")
+        val vm = createViewModel(withTorrServerChecker = true)
+
+        vm.setEvent(Event.TorrServerCheckRequested)
+
+        val status = vm.currentState.torrServerCheck as TorrServerCheckStatus.Done
+        assertEquals(setOf(TorrentIndexer.JACRED), status.indexers.keys)
+        coVerify(exactly = 0) { torrServerChecker.checkIndexer(any(), TorrentIndexer.JACKETT) }
+    }
+
+    @Test
+    fun `connection check is unavailable without a checker`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.TorrServerCheckRequested)
+
+        assertFalse(vm.currentState.torrServerCheckAvailable)
+        assertEquals(TorrServerCheckStatus.Idle, vm.currentState.torrServerCheck)
+    }
+
+    @Test
+    fun `editing an indexer resets the previous check result`() {
+        val vm = createViewModel(withTorrServerChecker = true)
+        vm.setEvent(Event.TorrServerCheckRequested)
+
+        vm.setEvent(Event.TorrentSettingsChanged(vm.currentState.torrent.copy(jackettApiKey = "new-key")))
+
+        assertEquals(TorrServerCheckStatus.Idle, vm.currentState.torrServerCheck)
+    }
+
+    @Test
+    fun `changing the sort keeps the previous check result`() {
+        val vm = createViewModel(withTorrServerChecker = true)
+        vm.setEvent(Event.TorrServerCheckRequested)
+
+        vm.setEvent(Event.TorrentSettingsChanged(vm.currentState.torrent.copy(sortReversed = true)))
+
+        assertTrue(vm.currentState.torrServerCheck is TorrServerCheckStatus.Done)
     }
 }
