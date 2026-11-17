@@ -17,7 +17,7 @@ fun Throwable.uiMessage(): String = when (this) {
     is SocketTimeoutException -> withCause(stringResource(R.string.error_msg_timeout))
     is IOException -> withCause(stringResource(R.string.error_msg_no_connection))
     // message у ResponseException — техническая строка Ktor с URL и телом ответа
-    is ResponseException -> stringResource(R.string.error_msg_http, response.status.value)
+    is ResponseException -> stringResource(R.string.error_msg_http, response.status.value, response.call.request.url.host)
     else -> message?.takeIf { it.isNotBlank() } ?: stringResource(R.string.error_msg_generic)
 }
 
