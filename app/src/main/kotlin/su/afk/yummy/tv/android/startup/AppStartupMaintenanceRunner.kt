@@ -56,10 +56,13 @@ class AppStartupMaintenanceRunner @Inject constructor(
     }
 
     private fun deleteDownloadedUpdateApk() {
+        File(context.cacheDir, UPDATE_DIR_NAME).deleteRecursively()
+        // Раньше APK лежал прямо в cacheDir.
         File(context.cacheDir, UPDATE_APK_FILE_NAME).delete()
     }
 
     private companion object {
+        const val UPDATE_DIR_NAME = "update"
         const val UPDATE_APK_FILE_NAME = "update.apk"
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Только папка с загруженным APK обновления: его открывает установщик прошивки (см. ApkInstallerImpl). -->
+    <cache-path
+        name="update"
+        path="update/" />
+</paths>

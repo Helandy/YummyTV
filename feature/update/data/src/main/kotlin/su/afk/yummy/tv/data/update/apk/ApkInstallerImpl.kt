@@ -1,16 +1,24 @@
 package su.afk.yummy.tv.data.update.apk
 
 import android.app.PendingIntent
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -26,6 +34,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 private const val TAG = "ApkInstaller"
+
+private const val APK_MIME_TYPE = "application/vnd.android.package-archive"
 
 private const val URI_GRANT_FLAGS =
     Intent.FLAG_GRANT_READ_URI_PERMISSION or
@@ -61,6 +71,14 @@ internal class ApkInstallerImpl @Inject constructor(
 
                 session.commitAndAwaitResult(sessionId)
             }
+        } catch (e: ConfirmActivityNotFoundException) {
+            // Прошивке нечем подтвердить сессию (Xiaomi HyperOS TV): отдаём APK её установщику напрямую.
+            runCatching { packageInstaller.abandonSession(sessionId) }
+            Log.w(TAG, "Подтверждение сессии открыть нечем, открываем установщик через ACTION_VIEW", e.cause)
+            if (!startLegacyInstaller(apkFile)) {
+                throw IllegalStateException(context.getString(R.string.update_install_confirmation_error))
+            }
+            awaitReturnFromInstaller()
         } catch (e: Throwable) {
             // Брошенная сессия на старых Android блокирует следующую установку.
             runCatching { packageInstaller.abandonSession(sessionId) }
@@ -126,13 +144,14 @@ internal class ApkInstallerImpl @Inject constructor(
 
                             // Intent.removeFlags появился только в API 26: на Android 7 он падал NoSuchMethodError.
                             confirmIntent.flags = (confirmIntent.flags or Intent.FLAG_ACTIVITY_NEW_TASK) and URI_GRANT_FLAGS.inv()
-                            runCatching { context.startActivity(confirmIntent) }.onFailure { e ->
+                            runCatching { startConfirmActivity(confirmIntent) }.onFailure { e ->
                                 Log.w(TAG, "Не удалось открыть подтверждение установки", e)
                                 unregisterReceiver(this)
                                 continuation.resumeWithException(
-                                    IllegalStateException(
-                                        context.getString(R.string.update_install_confirmation_error),
-                                    ),
+                                    e as? ConfirmActivityNotFoundException
+                                        ?: IllegalStateException(
+                                            context.getString(R.string.update_install_confirmation_error),
+                                        ),
                                 )
                             }
                         }
@@ -176,6 +195,78 @@ internal class ApkInstallerImpl @Inject constructor(
         }
     }
 
+    /**
+     * Открывает подтверждение сессии. Некоторые прошивки (Xiaomi HyperOS TV) указывают в нём
+     * `com.android.packageinstaller`, где такого activity нет, а установщик у них свой: тогда ищем
+     * системный обработчик того же действия. Не нашёлся — [ConfirmActivityNotFoundException].
+     */
+    private fun startConfirmActivity(confirmIntent: Intent) {
+        try {
+            context.startActivity(confirmIntent)
+        } catch (e: ActivityNotFoundException) {
+            val retryIntent = Intent(confirmIntent).setPackage(null)
+            val target = retryIntent.findSystemActivity() ?: throw ConfirmActivityNotFoundException(e)
+            Log.w(TAG, "Подтверждение установки не найдено в ${confirmIntent.`package`}, открываем ${target.packageName}")
+            try {
+                context.startActivity(retryIntent.setComponent(target))
+            } catch (retry: ActivityNotFoundException) {
+                throw ConfirmActivityNotFoundException(retry)
+            }
+        }
+    }
+
+    /** Классическая установка: установщик прошивки сам читает APK через FileProvider. */
+    private fun startLegacyInstaller(apkFile: File): Boolean = runCatching {
+        val uri = FileProvider.getUriForFile(context, UpdateApkFileProvider.authority(context.packageName), apkFile)
+        val intent = Intent(Intent.ACTION_VIEW)
+            .setDataAndType(uri, APK_MIME_TYPE)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+        val target = intent.findSystemActivity() ?: return@runCatching false
+        context.startActivity(intent.setComponent(target))
+        true
+    }.getOrElse { e ->
+        Log.w(TAG, "Не удалось открыть установщик через ACTION_VIEW", e)
+        false
+    }
+
+    /**
+     * Результата от установщика при ACTION_VIEW нет. Ждём возврата в приложение: при успешной
+     * установке процесс к этому времени уже перезапущен, значит, установку отменили.
+     */
+    private suspend fun awaitReturnFromInstaller(): Nothing {
+        withContext(Dispatchers.Main) {
+            suspendCancellableCoroutine { continuation ->
+                val lifecycle = ProcessLifecycleOwner.get().lifecycle
+                var hasLeft = false
+                val observer = object : LifecycleEventObserver {
+                    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                        when (event) {
+                            // Диалоговый установщик только ставит приложение на паузу, полноэкранный — ещё и останавливает.
+                            Lifecycle.Event.ON_PAUSE -> hasLeft = true
+                            Lifecycle.Event.ON_RESUME -> if (hasLeft) {
+                                lifecycle.removeObserver(this)
+                                if (continuation.isActive) continuation.resume(Unit)
+                            }
+
+                            else -> Unit
+                        }
+                    }
+                }
+                lifecycle.addObserver(observer)
+                continuation.invokeOnCancellation { lifecycle.removeObserver(observer) }
+            }
+        }
+        throw UpdateInstallCancelledException(context.getString(R.string.update_install_error_aborted))
+    }
+
+    /** Только предустановленные приложения: интент несёт сессию или APK, сторонним их не отдаём. */
+    private fun Intent.findSystemActivity(): ComponentName? =
+        context.packageManager.queryIntentActivities(this, PackageManager.MATCH_SYSTEM_ONLY)
+            .asSequence()
+            .mapNotNull { it.activityInfo }
+            .firstOrNull { it.packageName != context.packageName }
+            ?.let { ComponentName(it.packageName, it.name) }
+
     private fun registerReceiver(receiver: BroadcastReceiver, filter: IntentFilter) {
         // До API 33 флаг RECEIVER_NOT_EXPORTED не существует и обычный registerReceiver делает
         // приёмник доступным любому приложению; ContextCompat закрывает его собственным разрешением.
@@ -217,4 +308,7 @@ internal class ApkInstallerImpl @Inject constructor(
             base
         }
     }
+
+    /** Подтверждение сессии на прошивке открыть нечем — ни в указанном пакете, ни у системных приложений. */
+    private class ConfirmActivityNotFoundException(cause: Throwable) : Exception(cause)
 }

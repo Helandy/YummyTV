@@ -29,8 +29,10 @@ internal class ApkDownloaderImpl @Inject constructor(
 
     override suspend fun download(url: String, onProgress: suspend (Float) -> Unit): File =
         withContext(Dispatchers.IO) {
-            val apkFile = File(context.cacheDir, APK_FILE_NAME)
-            val partFile = File(context.cacheDir, PART_FILE_NAME)
+            // Отдельная папка: только её FileProvider открывает установщику прошивки (см. ApkInstallerImpl).
+            val directory = File(context.cacheDir, UPDATE_DIR_NAME).apply { mkdirs() }
+            val apkFile = File(directory, APK_FILE_NAME)
+            val partFile = File(directory, PART_FILE_NAME)
             apkFile.delete()
             partFile.delete()
 
@@ -85,6 +87,7 @@ internal class ApkDownloaderImpl @Inject constructor(
         }
 
     private companion object {
+        const val UPDATE_DIR_NAME = "update"
         const val APK_FILE_NAME = "update.apk"
         const val PART_FILE_NAME = "update.apk.part"
         const val DOWNLOAD_SOCKET_TIMEOUT_MS = 30_000L
