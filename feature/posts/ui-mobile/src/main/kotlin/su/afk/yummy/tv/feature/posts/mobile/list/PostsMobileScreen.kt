@@ -58,7 +58,6 @@ fun PostsMobileScreen(
     effect: Flow<PostsListState.Effect>,
     onEvent: (PostsListState.Event) -> Unit,
 ) {
-    val posts = state.posts.collectAsLazyPagingItems()
     val sorts = PostSort.entries
     // Страница 0 — «Все», дальше по порядку категории.
     val selectedPage = state.selectedCategory
@@ -105,8 +104,15 @@ fun PostsMobileScreen(
                 state = tabsState,
                 modifier = Modifier.weight(1f),
                 key = { page -> state.categories.getOrNull(page - 1)?.uri ?: "all" },
+                // Соседние категории прогреваются заранее, чтобы при переходе не мелькал лоадер.
+                beyondViewportPageCount = 1,
             ) { page ->
-                if (page == selectedPage) PostsList(posts, onEvent) else MobileSectionLoading()
+                // У каждой страницы своя лента: уходящая страница остаётся списком, а не спиннером.
+                val category = state.categories.getOrNull(page - 1)?.uri
+                val pagePosts = remember(category, state.sort, state.feeds) {
+                    state.feeds?.get(category, state.sort) ?: state.posts
+                }.collectAsLazyPagingItems()
+                PostsList(pagePosts, onEvent)
             }
         }
     }

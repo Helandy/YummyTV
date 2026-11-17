@@ -100,6 +100,16 @@ class PostsListViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `feeds return the same flow per category and sort`() {
+        val vm = createViewModel()
+        val feeds = checkNotNull(vm.currentState.feeds)
+
+        assertSame(feeds["news", PostSort.NEW], feeds["news", PostSort.NEW])
+        assertSame(vm.currentState.posts, feeds[null, PostSort.NEW])
+        assertNotSame(feeds["news", PostSort.NEW], feeds["news", PostSort.BEST])
+    }
+
+    @Test
     fun `selecting the current category keeps the posts flow`() {
         val vm = createViewModel()
         val before = vm.currentState.posts

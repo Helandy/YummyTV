@@ -12,11 +12,14 @@ import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.domain.posts.model.PostCategory
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.domain.posts.model.PostSummary
+import su.afk.yummy.tv.feature.posts.model.PostsFeeds
 
 class PostsListState {
     @Immutable
     data class State(
         val posts: Flow<PagingData<PostSummary>> = flowOf(PagingData.empty()),
+        /** Ленты по категориям для пейджера; `null` — страница берёт [posts] (превью и тесты экрана). */
+        val feeds: PostsFeeds? = null,
         val categories: ImmutableList<PostCategory> = persistentListOf(),
         val selectedCategory: String? = null,
         val sort: PostSort = PostSort.NEW,

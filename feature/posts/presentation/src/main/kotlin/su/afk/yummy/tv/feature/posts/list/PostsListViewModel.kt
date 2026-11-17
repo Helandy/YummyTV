@@ -1,21 +1,18 @@
 package su.afk.yummy.tv.feature.posts.list
 
-import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.posts.model.PostSort
-import su.afk.yummy.tv.domain.posts.model.PostSummary
 import su.afk.yummy.tv.domain.posts.usecase.GetPostCategoriesUseCase
 import su.afk.yummy.tv.domain.posts.usecase.GetPostsUseCase
 import su.afk.yummy.tv.feature.posts.IPostsNavigator
+import su.afk.yummy.tv.feature.posts.model.PostsFeeds
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,9 +24,14 @@ class PostsListViewModel @Inject constructor(
     private val getPostCategories: GetPostCategoriesUseCase,
     private val getPosts: GetPostsUseCase,
 ) : BaseViewModel<PostsListState.State, PostsListState.Event, PostsListState.Effect>() {
-    private val flows = mutableMapOf<Pair<String?, PostSort>, Flow<PagingData<PostSummary>>>()
+    private val postsFeeds = PostsFeeds(viewModelScope) { category, sort, limit, offset ->
+        getPosts(category, sort.apiValue, limit, offset)
+    }
 
-    override fun createInitialState() = PostsListState.State(posts = createFlow(null, PostSort.NEW))
+    override fun createInitialState() = PostsListState.State(
+        feeds = postsFeeds,
+        posts = postsFeeds[null, PostSort.NEW],
+    )
 
     init {
         loadCategories()
@@ -39,14 +41,14 @@ class PostsListViewModel @Inject constructor(
         when (event) {
             is PostsListState.Event.PostSelected -> nav.navigateDetail(navigator.details(event.postId))
             is PostsListState.Event.CategorySelected -> if (event.uri != currentState.selectedCategory) {
-                setState { copy(selectedCategory = event.uri, posts = createFlow(event.uri, sort)) }
+                setState { copy(selectedCategory = event.uri, posts = postsFeeds[event.uri, sort]) }
             }
 
             is PostsListState.Event.SortSelected -> if (event.sort != currentState.sort) {
                 setState {
                     copy(
                         sort = event.sort,
-                        posts = createFlow(selectedCategory, event.sort),
+                        posts = postsFeeds[selectedCategory, event.sort],
                     )
                 }
             }
@@ -66,15 +68,4 @@ class PostsListViewModel @Inject constructor(
             { setState { copy(categoriesLoading = false) } },
         )
     }
-
-    /**
-     * Лента на пару (категория, сортировка) создаётся один раз: `cachedIn` держит загруженные страницы,
-     * поэтому возврат в уже открытую категорию показывает список сразу, без лоадера.
-     */
-    private fun createFlow(category: String?, sort: PostSort) =
-        flows.getOrPut(category to sort) {
-            pagingFlow(viewModelScope, itemKey = { it.id }) { limit, offset ->
-                getPosts(category, sort.apiValue, limit, offset)
-            }
-        }
 }
