@@ -147,6 +147,7 @@
     <string name="player_mobile_orientation_portrait_hint">Завжди вертикальна орієнтація, навіть якщо в системі увімкнено автоповорот</string>
     <string name="player_toast_dubbing_changed">Озвучення: %1$s</string>
     <string name="player_toast_balancer_changed">Плеєр: %1$s</string>
+    <string name="player_toast_upscale_overload">Не тягне апскейл? Спробуйте вимкнути Deblur</string>
     <string name="player_side_panel_title">Налаштування плеєра</string>
     <string name="player_side_panel_open">Налаштування плеєра</string>
     <string name="player_subtitle_track_title">Доріжка субтитрів</string>

@@ -41,6 +41,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
+import su.afk.yummy.tv.feature.player.common.PlayerUpscaleOverloadEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
 import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
@@ -300,6 +301,12 @@ internal fun TvExoPlayerView(
 
     PlayerStallWatchdogEffect(player = player, onEvent = onPlayerEvent)
     PlayerDecoderCapabilityEffect(player = player, onEvent = onPlayerEvent)
+
+    PlayerUpscaleOverloadEffect(
+        player = player,
+        enabled = state.deblurEnabled,
+        onEvent = onPlayerEvent,
+    )
 
     PlayerQualityAdaptationEffect(
         player = player,
