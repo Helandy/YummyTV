@@ -8,9 +8,10 @@ import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import su.afk.yummy.tv.core.network.di.DownloadOkHttp
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 import javax.inject.Inject
 
 /**
@@ -19,21 +20,18 @@ import javax.inject.Inject
  */
 internal class MediaStoreImageSaver @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @DownloadOkHttp private val okHttpClient: OkHttpClient,
 ) : ImageSaver {
 
     override suspend fun save(url: String): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
-            val connection = URL(url).openConnection() as HttpURLConnection
-            try {
-                connection.connectTimeout = TIMEOUT_MS
-                connection.readTimeout = TIMEOUT_MS
-                check(connection.responseCode in 200..299) { "HTTP ${connection.responseCode}" }
-                val mime = connection.contentType?.substringBefore(';')?.trim()
+            okHttpClient.newCall(Request.Builder().url(url).build()).execute().use { response ->
+                check(response.isSuccessful) { "HTTP ${response.code}" }
+                val body = checkNotNull(response.body) { "Empty body" }
+                val mime = body.contentType()?.let { "${it.type}/${it.subtype}" }
                     ?.takeIf { it.startsWith("image/") } ?: DEFAULT_MIME
                 val name = "yummytv_${System.currentTimeMillis()}.${extensionOf(mime)}"
-                connection.inputStream.use { input -> write(name, mime) { input.copyTo(it) } }
-            } finally {
-                connection.disconnect()
+                body.byteStream().use { input -> write(name, mime) { input.copyTo(it) } }
             }
         }
     }
@@ -83,6 +81,5 @@ internal class MediaStoreImageSaver @Inject constructor(
     private companion object {
         const val FOLDER = "YummyTV"
         const val DEFAULT_MIME = "image/jpeg"
-        const val TIMEOUT_MS = 15_000
     }
 }
