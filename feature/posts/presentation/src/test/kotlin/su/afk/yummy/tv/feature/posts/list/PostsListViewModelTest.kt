@@ -86,6 +86,20 @@ class PostsListViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `returning to a visited category reuses its posts flow`() {
+        val vm = createViewModel()
+        val all = vm.currentState.posts
+        vm.setEvent(PostsListState.Event.CategorySelected("news"))
+        val news = vm.currentState.posts
+
+        vm.setEvent(PostsListState.Event.CategorySelected(null))
+        assertSame(all, vm.currentState.posts)
+
+        vm.setEvent(PostsListState.Event.CategorySelected("news"))
+        assertSame(news, vm.currentState.posts)
+    }
+
+    @Test
     fun `selecting the current category keeps the posts flow`() {
         val vm = createViewModel()
         val before = vm.currentState.posts

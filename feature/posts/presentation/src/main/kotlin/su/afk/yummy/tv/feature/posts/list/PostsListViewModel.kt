@@ -1,7 +1,9 @@
 package su.afk.yummy.tv.feature.posts.list
 
+import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -10,6 +12,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.posts.model.PostSort
+import su.afk.yummy.tv.domain.posts.model.PostSummary
 import su.afk.yummy.tv.domain.posts.usecase.GetPostCategoriesUseCase
 import su.afk.yummy.tv.domain.posts.usecase.GetPostsUseCase
 import su.afk.yummy.tv.feature.posts.IPostsNavigator
@@ -24,6 +27,8 @@ class PostsListViewModel @Inject constructor(
     private val getPostCategories: GetPostCategoriesUseCase,
     private val getPosts: GetPostsUseCase,
 ) : BaseViewModel<PostsListState.State, PostsListState.Event, PostsListState.Effect>() {
+    private val flows = mutableMapOf<Pair<String?, PostSort>, Flow<PagingData<PostSummary>>>()
+
     override fun createInitialState() = PostsListState.State(posts = createFlow(null, PostSort.NEW))
 
     init {
@@ -41,7 +46,7 @@ class PostsListViewModel @Inject constructor(
                 setState {
                     copy(
                         sort = event.sort,
-                        posts = createFlow(selectedCategory, event.sort)
+                        posts = createFlow(selectedCategory, event.sort),
                     )
                 }
             }
@@ -54,7 +59,7 @@ class PostsListViewModel @Inject constructor(
                 setState {
                     copy(
                         categories = loaded.toImmutableList(),
-                        categoriesLoading = false
+                        categoriesLoading = false,
                     )
                 }
             },
@@ -62,8 +67,14 @@ class PostsListViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Лента на пару (категория, сортировка) создаётся один раз: `cachedIn` держит загруженные страницы,
+     * поэтому возврат в уже открытую категорию показывает список сразу, без лоадера.
+     */
     private fun createFlow(category: String?, sort: PostSort) =
-        pagingFlow(viewModelScope, itemKey = { it.id }) { limit, offset ->
-            getPosts(category, sort.apiValue, limit, offset)
+        flows.getOrPut(category to sort) {
+            pagingFlow(viewModelScope, itemKey = { it.id }) { limit, offset ->
+                getPosts(category, sort.apiValue, limit, offset)
+            }
         }
 }
