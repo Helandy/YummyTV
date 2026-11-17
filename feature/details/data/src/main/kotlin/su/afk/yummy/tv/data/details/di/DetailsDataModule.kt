@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
+import su.afk.yummy.tv.core.network.yani.YaniMirrorFallback
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorage
@@ -28,8 +29,8 @@ object DetailsDataModule {
 
     @Provides
     @Singleton
-    fun provideYaniAnimeApi(clientProvider: YaniHttpClientProvider): YaniAnimeApi =
-        YaniAnimeApi(clientProvider)
+    fun provideYaniAnimeApi(clientProvider: YaniHttpClientProvider, fallback: YaniMirrorFallback): YaniAnimeApi =
+        YaniAnimeApi(clientProvider, fallback)
 
     @Provides
     @Singleton

@@ -10,6 +10,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import su.afk.yummy.tv.core.network.yani.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
+import su.afk.yummy.tv.core.network.yani.YaniMirrorFallback
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeVideosDto
 import su.afk.yummy.tv.data.details.dto.YaniDirectorDetailsDto
@@ -25,12 +26,18 @@ import su.afk.yummy.tv.domain.anime.model.AnimeRelationKind
 
 class YaniAnimeApi(
     private val clientProvider: YaniHttpClientProvider,
+    private val fallback: YaniMirrorFallback,
 ) {
-    suspend fun getAnimeDetails(animeId: Int): YaniAnimeDetailsDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId").body()
+    /** Детали и видео при недоступности yani читаются из собственной копии на сервере YummyTV ([YaniMirrorFallback]). */
+    suspend fun getAnimeDetails(animeId: Int): YaniAnimeDetailsDto = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/anime/$animeId").body() },
+        mirror = { fallback.mirrorGet("/yani/anime/$animeId").body() },
+    )
 
-    suspend fun getAnimeVideos(animeId: Int): YaniAnimeVideosDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/videos").body()
+    suspend fun getAnimeVideos(animeId: Int): YaniAnimeVideosDto = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/videos").body() },
+        mirror = { fallback.mirrorGet("/yani/anime/$animeId/videos").body() },
+    )
 
     suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): YaniRecommendationsDto =
         clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/recommendations") {

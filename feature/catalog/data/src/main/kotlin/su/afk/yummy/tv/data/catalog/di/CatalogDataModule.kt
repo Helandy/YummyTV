@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
+import su.afk.yummy.tv.core.network.yani.YaniMirrorFallback
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.search.SearchStorage
 import su.afk.yummy.tv.data.catalog.network.YaniSearchApi
@@ -23,8 +24,8 @@ object CatalogDataModule {
 
     @Provides
     @Singleton
-    fun provideYaniSearchApi(clientProvider: YaniHttpClientProvider): YaniSearchApi =
-        YaniSearchApi(clientProvider)
+    fun provideYaniSearchApi(clientProvider: YaniHttpClientProvider, fallback: YaniMirrorFallback): YaniSearchApi =
+        YaniSearchApi(clientProvider, fallback)
 
     @Provides
     @Singleton

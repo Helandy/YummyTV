@@ -1,21 +1,25 @@
 package su.afk.yummy.tv.data.catalog.network
 
 import io.ktor.client.call.body
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import su.afk.yummy.tv.core.network.yani.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
+import su.afk.yummy.tv.core.network.yani.YaniMirrorFallback
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchGenresResponseDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchItemDto
 import su.afk.yummy.tv.data.catalog.dto.YaniSearchResponseDto
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 
+/** Каталог yani; при недоступности yani читает собственную копию на сервере YummyTV ([YaniMirrorFallback]). */
 class YaniSearchApi(
     private val clientProvider: YaniHttpClientProvider,
+    private val fallback: YaniMirrorFallback,
 ) {
-    suspend fun search(query: String, filters: SearchFilters, limit: Int, offset: Int): List<YaniSearchItemDto> =
-        clientProvider.get().get("$YANI_BASE_URL/anime") {
+    suspend fun search(query: String, filters: SearchFilters, limit: Int, offset: Int): List<YaniSearchItemDto> {
+        val params: HttpRequestBuilder.() -> Unit = {
             query.takeIf { it.isNotBlank() }?.let { parameter("q", it) }
             filters.genres.forEach { parameter("genres", it) }
             filters.excludedGenres.forEach { parameter("exclude_genres", it) }
@@ -29,18 +33,26 @@ class YaniSearchApi(
             parameter("sort_forward", filters.sortForward)
             parameter("limit", limit)
             parameter("offset", offset)
-        }.body<YaniSearchResponseDto>().response
+        }
+        return list(params)
+    }
 
-    suspend fun getRandomAnime(): List<YaniSearchItemDto> =
-        clientProvider.get().get("$YANI_BASE_URL/anime") {
-            parameter("sort", "random")
-            parameter("limit", 1)
-            parameter("offset", 0)
-        }.body<YaniSearchResponseDto>().response
+    suspend fun getRandomAnime(): List<YaniSearchItemDto> = list {
+        parameter("sort", "random")
+        parameter("limit", 1)
+        parameter("offset", 0)
+    }
 
-    suspend fun getGenres(): YaniSearchGenresDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/genres")
-            .body<YaniSearchGenresResponseDto>()
-            .response
+    suspend fun getGenres(): YaniSearchGenresDto = fallback.call(
+        primary = {
+            clientProvider.get().get("$YANI_BASE_URL/anime/genres").body<YaniSearchGenresResponseDto>().response
+        },
+        mirror = { fallback.mirrorGet("/yani/anime/genres").body<YaniSearchGenresResponseDto>().response },
+    )
+
+    private suspend fun list(params: HttpRequestBuilder.() -> Unit): List<YaniSearchItemDto> = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/anime", params).body<YaniSearchResponseDto>().response },
+        mirror = { fallback.mirrorGet("/yani/anime", params).body<YaniSearchResponseDto>().response },
+    )
 
 }
