@@ -406,7 +406,7 @@
     <string name="settings_torrent_sort_reversed_label">Обратный порядок</string>
     <string name="settings_torrent_sort_reversed_on">Порядок перевёрнут</string>
     <string name="settings_torrent_sort_reversed_off">Обычный порядок выбранного поля</string>
-    <string name="settings_torrent_check_label">Проверить TorrServer</string>
+    <string name="settings_torrent_check_label">Проверить подключение</string>
     <string name="settings_torrent_check_checking">Проверяем соединение…</string>
     <string name="settings_torrent_check_ok">Подключено. Версия сервера: %1$s</string>
     <string name="settings_torrent_check_unreachable">Сервер не отвечает. Проверьте адрес, что он запущен и доступ к локальной сети</string>
@@ -415,4 +415,9 @@
     <string name="settings_torrent_warning_no_server">Источник торрентов не появится: не указан адрес TorrServer</string>
     <string name="settings_torrent_warning_server_unavailable">Источник торрентов не появится: TorrServer недоступен</string>
     <string name="settings_torrent_warning_no_indexer">Источник торрентов не появится: включите JacRed или Jackett (с адресом)</string>
+    <string name="settings_torrent_check_indexer_ok">%1$s: доступен</string>
+    <string name="settings_torrent_check_indexer_unreachable">%1$s: не отвечает. Сайт может быть недоступен или заблокирован в вашей сети; проверьте адрес</string>
+    <string name="settings_torrent_check_indexer_unauthorized">%1$s: API-ключ отклонён. Проверьте ключ</string>
+    <string name="settings_torrent_check_indexer_unexpected">%1$s: неожиданный ответ (HTTP %2$d). Проверьте адрес</string>
+    <string name="settings_torrent_warning_indexer_unavailable">Поиск торрентов ничего не найдёт: сайт JacRed/Jackett недоступен. Подробности — в результате проверки ниже</string>
 </resources>

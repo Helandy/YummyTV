@@ -2,6 +2,9 @@ package su.afk.yummy.tv.feature.settings
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -486,10 +489,15 @@ class SettingsViewModel @Inject internal constructor(
                 if (previous.enabled != event.settings.enabled) {
                     analytics.eventTorrentToggled(event.settings.enabled)
                 }
-                // Старый итог относился к прежнему серверу: сбрасываем его только при правке адреса или учётных данных.
+                // Старый итог относился к прежним серверу и индексаторам: сбрасываем его при правке адресов, ключа или учётных данных.
                 val serverChanged = previous.torrServerUrl != event.settings.torrServerUrl ||
                     previous.torrServerUser != event.settings.torrServerUser ||
-                    previous.torrServerPassword != event.settings.torrServerPassword
+                    previous.torrServerPassword != event.settings.torrServerPassword ||
+                    previous.jacRedEnabled != event.settings.jacRedEnabled ||
+                    previous.jacRedUrl != event.settings.jacRedUrl ||
+                    previous.jackettEnabled != event.settings.jackettEnabled ||
+                    previous.jackettUrl != event.settings.jackettUrl ||
+                    previous.jackettApiKey != event.settings.jackettApiKey
                 setState {
                     copy(
                         torrent = event.settings,
@@ -505,9 +513,17 @@ class SettingsViewModel @Inject internal constructor(
                 val checker = torrServerChecker.orElse(null) ?: return
                 if (currentState.torrServerCheck == TorrServerCheckStatus.Checking) return
                 setState { copy(torrServerCheck = TorrServerCheckStatus.Checking) }
+                val settings = currentState.torrent
                 viewModelScope.launch {
-                    val result = checker.check(currentState.torrent)
-                    setState { copy(torrServerCheck = TorrServerCheckStatus.Done(result)) }
+                    // Сервер и индексаторы независимы: опрашиваем параллельно, а итог показываем одним разом.
+                    val (result, indexers) = coroutineScope {
+                        val server = async { checker.check(settings) }
+                        val indexers = settings.activeIndexers.map { indexer ->
+                            async { indexer to checker.checkIndexer(settings, indexer) }
+                        }
+                        server.await() to indexers.awaitAll().toMap()
+                    }
+                    setState { copy(torrServerCheck = TorrServerCheckStatus.Done(result, indexers)) }
                 }
             }
 
