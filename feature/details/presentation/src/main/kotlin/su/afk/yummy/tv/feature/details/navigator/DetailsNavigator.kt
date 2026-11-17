@@ -6,6 +6,7 @@ import javax.inject.Inject
 
 class DetailsNavigator @Inject constructor() : IDetailsNavigator {
     override fun getDetailsDest(animeId: Int): NavKey = DetailsDestination(animeId)
+    override fun getRandomDetailsDest(animeId: Int): NavKey = DetailsDestination(animeId, fromRandom = true)
     override fun getFullDetailsDest(animeId: Int): NavKey = DetailsFullDestination(animeId)
     override fun getEpisodesDest(animeId: Int, pendingEpisode: String?): NavKey =
         DetailsEpisodesDestination(animeId, pendingEpisode)

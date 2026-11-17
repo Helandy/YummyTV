@@ -65,7 +65,7 @@ class DetailsNavRegistrar @Inject constructor() : ITvDetailsEntry {
             entry<DetailsDestination> { dest ->
                 val viewModel = hiltViewModel<DetailsViewModel, DetailsViewModel.Factory>(
                     key = "details-${dest.animeId}",
-                    creationCallback = { factory -> factory.create(dest.animeId) },
+                    creationCallback = { factory -> factory.create(dest.animeId, dest.fromRandom) },
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     DetailsTvScreen(state = state, effect = effect, onEvent = onEvent)

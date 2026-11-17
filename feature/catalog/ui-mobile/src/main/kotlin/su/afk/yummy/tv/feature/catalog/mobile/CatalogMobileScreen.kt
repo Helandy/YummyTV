@@ -63,7 +63,7 @@ import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileClearButton
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileFilterButton
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileFilterPanel
 import su.afk.yummy.tv.feature.catalog.mobile.view.CatalogMobileSearchHistory
-import su.afk.yummy.tv.feature.catalog.mobile.view.RandomAnimeFloatingButton
+import su.afk.yummy.tv.core.designsystem.components.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.catalog.presentation.R
 import su.afk.yummy.tv.core.designsystem.R as CoreR
@@ -119,6 +119,7 @@ fun CatalogMobileScreen(
         isScroll = false,
         floatingActionButtonEnd = {
             RandomAnimeFloatingButton(
+                description = stringResource(R.string.search_random_anime),
                 isLoading = state.isRandomAnimeLoading,
                 onClick = { onEvent(CatalogState.Event.RandomAnimeSelected) },
             )

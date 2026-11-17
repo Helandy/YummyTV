@@ -16,6 +16,9 @@ enum class DetailsButtonAction {
     REVIEWS,
     BLOGGER_VIDEOS,
     SCREENSHOTS,
+
+    /** Кубик «ещё случайный тайтл»: только на деталке, открытой из кубика каталога; в настройках порядка не участвует. */
+    RANDOM_ANIME,
     ;
 
     companion object {

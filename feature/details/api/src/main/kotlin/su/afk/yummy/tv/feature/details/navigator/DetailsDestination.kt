@@ -4,8 +4,9 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 
+/** [fromRandom] — деталка открыта из кубика каталога: на ней остаётся свой кубик «ещё случайный тайтл». */
 @Serializable
-data class DetailsDestination(val animeId: Int) : NavKey
+data class DetailsDestination(val animeId: Int, val fromRandom: Boolean = false) : NavKey
 
 @Serializable
 data class DetailsFullDestination(val animeId: Int) : NavKey

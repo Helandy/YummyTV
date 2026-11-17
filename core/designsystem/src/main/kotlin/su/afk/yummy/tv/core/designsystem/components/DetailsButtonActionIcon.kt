@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatListNumbered
@@ -36,4 +37,5 @@ fun DetailsButtonAction.icon(): ImageVector = when (this) {
     DetailsButtonAction.REVIEWS -> Icons.Filled.RateReview
     DetailsButtonAction.BLOGGER_VIDEOS -> Icons.Filled.VideoCameraFront
     DetailsButtonAction.SCREENSHOTS -> Icons.Filled.PhotoLibrary
+    DetailsButtonAction.RANDOM_ANIME -> Icons.Filled.Casino
 }

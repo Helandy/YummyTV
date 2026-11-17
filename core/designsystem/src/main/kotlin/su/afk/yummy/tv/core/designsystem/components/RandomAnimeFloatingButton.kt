@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.catalog.mobile.view
+package su.afk.yummy.tv.core.designsystem.components
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
@@ -8,20 +8,18 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
-import su.afk.yummy.tv.feature.catalog.presentation.R
 
+/** Кубик «случайное аниме» для мобильных экранов (каталог и деталка, открытая из кубика). */
 @Composable
-internal fun RandomAnimeFloatingButton(
+fun RandomAnimeFloatingButton(
+    description: String,
     isLoading: Boolean,
     onClick: () -> Unit,
 ) {
-    val description = stringResource(R.string.search_random_anime)
     FloatingActionButton(
         onClick = { if (!isLoading) onClick() },
         modifier = Modifier

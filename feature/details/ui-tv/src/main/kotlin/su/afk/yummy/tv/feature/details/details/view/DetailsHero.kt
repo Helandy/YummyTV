@@ -94,6 +94,9 @@ internal fun DetailsHero(
     onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
+    /** Кубик «ещё случайный тайтл»; `null` — деталка открыта не из кубика каталога. */
+    onRandomAnimeSelected: (() -> Unit)?,
+    isRandomAnimeLoading: Boolean,
     onGenreSelected: (Int) -> Unit,
     onStudioSelected: (id: Int, url: String?) -> Unit,
     onDirectorSelected: (Int) -> Unit,
@@ -298,6 +301,8 @@ internal fun DetailsHero(
                         onCommentsSelected = onCommentsSelected,
                         onReviewsSelected = onReviewsSelected,
                         onBloggerVideosSelected = onBloggerVideosSelected,
+                        onRandomAnimeSelected = onRandomAnimeSelected,
+                        isRandomAnimeLoading = isRandomAnimeLoading,
                         modifier = Modifier.padding(top = 8.dp),
                     )
 

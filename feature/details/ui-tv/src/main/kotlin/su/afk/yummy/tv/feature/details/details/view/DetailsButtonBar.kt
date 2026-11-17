@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -105,6 +106,8 @@ internal fun DetailsButtonBar(
     onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
+    onRandomAnimeSelected: (() -> Unit)?,
+    isRandomAnimeLoading: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val continueTarget = (videosState as? VideosUiState.Content)?.let { content ->
@@ -288,10 +291,25 @@ internal fun DetailsButtonBar(
     } else {
         emptyList()
     }
-    val availableButtons = (listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons)
+    // Кубик не входит в настраиваемый порядок: он есть только на деталке из кубика каталога и всегда последний.
+    val randomButtons = if (onRandomAnimeSelected != null) {
+        listOf(
+            ButtonData(
+                action = DetailsButtonAction.RANDOM_ANIME,
+                label = stringResource(R.string.details_random_anime),
+                icon = Icons.Filled.Casino,
+                style = ButtonStyle.Normal,
+                onClick = onRandomAnimeSelected,
+                enabled = !isRandomAnimeLoading,
+            ),
+        )
+    } else {
+        emptyList()
+    }
+    val availableButtons = (listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons + randomButtons)
         .associateBy { it.action }
-    val buttons = DetailsButtonAction.defaultOrder
-        .filterNot { it in hiddenActions }
+    val buttons = (DetailsButtonAction.defaultOrder.filterNot { it in hiddenActions } +
+        randomButtons.map { it.action })
         .mapNotNull { availableButtons[it] }
     // Главные действия — крупными пилюлями («Любимое» — одним сердечком). Во втором ряду сначала
     // пилюли с текстом («Серии», «Подписки»), затем круглые иконки с подписью при фокусе.

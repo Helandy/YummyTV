@@ -58,6 +58,9 @@ class DetailsState {
         val isSignedIn: Boolean = false,
         val subscriptions: ImmutableList<SubscriptionOption> = persistentListOf(),
         val showSubscriptionsPicker: Boolean = false,
+        /** Деталка открыта из кубика каталога — на ней показывается свой кубик. */
+        val isRandomAnimeEnabled: Boolean = false,
+        val isRandomAnimeLoading: Boolean = false,
         val isSubscriptionsLoading: Boolean = false,
         /** Гостю показана шторка «войдите, чтобы получать уведомления о новых сериях». */
         val showSubscriptionsSignInPrompt: Boolean = false,
@@ -96,6 +99,9 @@ class DetailsState {
     sealed interface Event : UiEvent {
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Кубик: заменить текущий тайтл новым случайным. */
+        data object RandomAnimeSelected : Event
 
         /** Новый поиск: сбросить цепочки тайтлов на главной и в каталоге и открыть поле поиска. */
         data object NewSearchSelected : Event

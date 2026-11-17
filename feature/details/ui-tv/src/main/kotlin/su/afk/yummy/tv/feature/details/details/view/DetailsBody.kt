@@ -90,6 +90,9 @@ internal fun DetailsBody(
     onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
+    /** Кубик «ещё случайный тайтл»; `null` — деталка открыта не из кубика каталога. */
+    onRandomAnimeSelected: (() -> Unit)?,
+    isRandomAnimeLoading: Boolean,
 ) {
     val barFocusRequester = remember { FocusRequester() }
     // Нижний ряд кнопок: вход в бар снизу. Ряд прокручивается вбок, и поиск фокуса проваливался в сам
@@ -349,6 +352,8 @@ internal fun DetailsBody(
                         onCommentsSelected = onCommentsSelected,
                         onReviewsSelected = onReviewsSelected,
                         onBloggerVideosSelected = onBloggerVideosSelected,
+                        onRandomAnimeSelected = onRandomAnimeSelected,
+                        isRandomAnimeLoading = isRandomAnimeLoading,
                         onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
                         onStudioSelected = { id, url -> onEvent(DetailsState.Event.StudioSelected(id, url)) },
                         onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },

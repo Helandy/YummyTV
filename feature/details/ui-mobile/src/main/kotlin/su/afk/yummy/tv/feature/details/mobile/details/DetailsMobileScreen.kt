@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.components.RandomAnimeFloatingButton
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
@@ -134,6 +135,19 @@ fun DetailsMobileScreen(
     BaseScreen(
         isScroll = false,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        // Деталка открыта из кубика каталога — кубик остаётся, чтобы листать случайные тайтлы дальше.
+        floatingActionButtonEnd = if (state.isRandomAnimeEnabled && details != null) {
+            {
+                RandomAnimeFloatingButton(
+                    description = stringResource(R.string.details_random_anime),
+                    isLoading = state.isRandomAnimeLoading,
+                    onClick = { onEvent(DetailsState.Event.RandomAnimeSelected) },
+                )
+            }
+        } else {
+            null
+        },
+        floatingActionButtonBottomPadding = 8.dp,
         customTopBar = {
             // Пока идёт первая загрузка, кнопку «назад» рисует сам скелетон на месте шапки: панель
             // Scaffold исчезала при появлении деталей раньше, чем гаснет скелетон, и постер прыгал вверх.

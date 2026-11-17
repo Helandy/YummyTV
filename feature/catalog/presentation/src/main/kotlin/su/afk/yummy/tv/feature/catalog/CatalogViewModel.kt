@@ -209,7 +209,7 @@ class CatalogViewModel @Inject internal constructor(
                 val anime = getRandomAnime()
                     ?: error("Random anime response is empty")
                 analytics.eventRandomAnimeOpened(anime.id)
-                nav.navigate(detailsNavigator.getDetailsDest(anime.id))
+                nav.navigate(detailsNavigator.getRandomDetailsDest(anime.id))
             } catch (error: Throwable) {
                 currentCoroutineContext().ensureActive()
                 analytics.eventRandomAnimeLoadError(error)

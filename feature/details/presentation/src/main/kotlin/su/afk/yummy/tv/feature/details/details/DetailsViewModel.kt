@@ -7,6 +7,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -30,6 +32,7 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -71,6 +74,7 @@ import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
+    @Assisted private val fromRandom: Boolean,
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
@@ -89,6 +93,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
     private val sourceStars: SourceStarsHandler,
     private val extrasHandler: DetailsExtrasHandler,
+    private val getRandomAnime: GetRandomAnimeUseCase,
     private val analytics: DetailsAnalytics,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val episodePushSettingsStore: EpisodePushSettingsStore,
@@ -96,10 +101,10 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(animeId: Int): DetailsViewModel
+        fun create(animeId: Int, fromRandom: Boolean): DetailsViewModel
     }
 
-    override fun createInitialState() = DetailsState.State()
+    override fun createInitialState() = DetailsState.State(isRandomAnimeEnabled = fromRandom)
 
     private val anime4kDubbingState = screenDataHandler.anime4kDubbing(animeId).stateIn(
         scope = viewModelScope,
@@ -211,11 +216,38 @@ class DetailsViewModel @AssistedInject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Сбой кубика уходит на экран ошибки; «Повторить» оттуда тянет следующий случайный тайтл. */
+    private var randomAnimeFailed = false
+
+    override fun onRetry() {
+        if (randomAnimeFailed) openRandomAnime()
+    }
+
+    /** Заменяет текущую деталку новой случайной, оставляя в стеке то, что было под ней (каталог). */
+    private fun openRandomAnime() {
+        if (currentState.isRandomAnimeLoading) return
+        viewModelScope.launch {
+            setState { copy(isRandomAnimeLoading = true) }
+            try {
+                val anime = getRandomAnime() ?: error("Random anime response is empty")
+                randomAnimeFailed = false
+                nav.replace(detailsNavigator.getRandomDetailsDest(anime.id))
+            } catch (error: Throwable) {
+                currentCoroutineContext().ensureActive()
+                randomAnimeFailed = true
+                throw error
+            } finally {
+                setState { copy(isRandomAnimeLoading = false) }
+            }
+        }
+    }
+
     override fun onEvent(event: DetailsState.Event) {
         when (event) {
             DetailsState.Event.BackSelected -> nav.back()
             DetailsState.Event.ShareSelected -> shareAnime()
             DetailsState.Event.NewSearchSelected -> catalogSearchOpener.openSearch()
+            DetailsState.Event.RandomAnimeSelected -> openRandomAnime()
             DetailsState.Event.RetrySelected -> {
                 analytics.eventDetailsRetry(animeId)
                 load()

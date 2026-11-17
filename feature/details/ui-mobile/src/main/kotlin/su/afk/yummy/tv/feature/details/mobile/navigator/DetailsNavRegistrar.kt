@@ -62,7 +62,7 @@ class DetailsNavRegistrar @Inject constructor() : IMobileDetailsEntry {
             entry<DetailsDestination> { dest ->
                 val viewModel = hiltViewModel<DetailsViewModel, DetailsViewModel.Factory>(
                     key = "mobile-details-${dest.animeId}",
-                    creationCallback = { factory -> factory.create(dest.animeId) },
+                    creationCallback = { factory -> factory.create(dest.animeId, dest.fromRandom) },
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     DetailsMobileScreen(state = state, effect = effect, onEvent = onEvent)

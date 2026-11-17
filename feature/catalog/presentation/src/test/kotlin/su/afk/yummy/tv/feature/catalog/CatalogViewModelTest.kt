@@ -63,6 +63,7 @@ class CatalogViewModelTest : BaseUnitTest() {
         every { searchSettings.lastSearchSnapshot } returns lastSnapshot
         coEvery { searchSettings.setLastSearchSnapshot(any()) } returns Unit
         every { detailsNavigator.getDetailsDest(any()) } returns detailsKey
+        every { detailsNavigator.getRandomDetailsDest(any()) } returns detailsKey
         coEvery { repository.getFilterOptions() } returns SearchFilterOptions()
         every { historyRepository.observe() } returns history
         coEvery { historyRepository.update(any()) } answers {
@@ -403,7 +404,7 @@ class CatalogViewModelTest : BaseUnitTest() {
 
         vm.setEvent(Event.RandomAnimeSelected)
 
-        verify(exactly = 1) { detailsNavigator.getDetailsDest(9) }
+        verify(exactly = 1) { detailsNavigator.getRandomDetailsDest(9) }
         verify(exactly = 1) { nav.navigate(detailsKey) }
         assertFalse(vm.currentState.isRandomAnimeLoading)
     }

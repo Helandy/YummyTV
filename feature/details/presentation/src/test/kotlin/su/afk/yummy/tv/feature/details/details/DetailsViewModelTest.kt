@@ -37,6 +37,9 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.catalog.model.SearchItem
+import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
+import su.afk.yummy.tv.domain.catalog.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
@@ -99,6 +102,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     private val playerNavigationHandler: DetailsPlayerNavigationHandler = mockk()
     private val sourceStars: SourceStarsSettingsStore = mockk(relaxed = true)
     private val extrasHandler: DetailsExtrasHandler = mockk()
+    private val randomAnimeRepository: SearchRepository = mockk()
     private val userRating = MutableStateFlow<Int?>(null)
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
 
@@ -140,6 +144,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         coEvery { libraryHandler.refreshAuthorizedState(any()) } returns Result.success(null)
         every { subscriptionHandler.pendingSubscriptionStates(any()) } returns emptyMap()
         every { detailsNavigator.getDetailsDest(any()) } returns navKey
+        every { detailsNavigator.getRandomDetailsDest(any()) } returns navKey
         every { detailsNavigator.getFullDetailsDest(any()) } returns navKey
         every { detailsNavigator.getRelationDest(any(), any(), any()) } returns navKey
         every { detailsNavigator.getEpisodesDest(any(), any()) } returns navKey
@@ -153,8 +158,9 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { bloggerVideosNavigator.anime(any()) } returns navKey
     }
 
-    private fun createViewModel() = DetailsViewModel(
+    private fun createViewModel(fromRandom: Boolean = false) = DetailsViewModel(
         animeId = ANIME_ID,
+        fromRandom = fromRandom,
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         nav = nav,
@@ -173,6 +179,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         playerNavigationHandler = playerNavigationHandler,
         sourceStars = SourceStarsHandler(sourceStars),
         extrasHandler = extrasHandler,
+        getRandomAnime = GetRandomAnimeUseCase(randomAnimeRepository),
         analytics = DetailsAnalytics(tracker),
         appLifecycleSettingsStore = appLifecycleSettingsStore,
         episodePushSettingsStore = episodePushSettingsStore,
@@ -195,6 +202,26 @@ class DetailsViewModelTest : BaseUnitTest() {
         subscriptionVideoId = 10,
         isSubscribed = subscribed,
     )
+
+    @Test
+    fun `random button is available only on details opened from the random button`() {
+        assertFalse(createViewModel().currentState.isRandomAnimeEnabled)
+        assertTrue(createViewModel(fromRandom = true).currentState.isRandomAnimeEnabled)
+    }
+
+    @Test
+    fun `random button replaces the current details with a new random one`() {
+        coEvery { randomAnimeRepository.getRandomAnime() } returns
+            SearchItem(id = 42, title = "Random", poster = null, rating = null, year = null)
+        val viewModel = createViewModel(fromRandom = true)
+
+        viewModel.setEvent(DetailsState.Event.RandomAnimeSelected)
+
+        verify(exactly = 1) { detailsNavigator.getRandomDetailsDest(42) }
+        verify(exactly = 1) { nav.replace(navKey) }
+        verify(exactly = 0) { nav.navigate(any()) }
+        assertFalse(viewModel.currentState.isRandomAnimeLoading)
+    }
 
     @Test
     fun `loads the details and the videos`() {

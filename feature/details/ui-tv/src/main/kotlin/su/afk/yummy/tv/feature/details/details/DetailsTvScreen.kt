@@ -148,6 +148,12 @@ fun DetailsTvScreen(
                         onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
                         onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
                         onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                        onRandomAnimeSelected = if (state.isRandomAnimeEnabled) {
+                            { onEvent(DetailsState.Event.RandomAnimeSelected) }
+                        } else {
+                            null
+                        },
+                        isRandomAnimeLoading = state.isRandomAnimeLoading,
                     )
                 }
             }
