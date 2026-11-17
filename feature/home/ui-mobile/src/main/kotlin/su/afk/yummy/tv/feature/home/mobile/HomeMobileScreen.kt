@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -51,24 +52,23 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
-import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.feature.home.HomeState
-import su.afk.yummy.tv.feature.home.utils.toSectionType
 import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.mobile.view.ContinueWatchingSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeAnnouncementDialog
+import su.afk.yummy.tv.feature.home.mobile.view.HomeBoostyPromptDialog
+import su.afk.yummy.tv.feature.home.mobile.view.HomeCommunityPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeContinueWatchingActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSearchBar
 import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSkeleton
-import su.afk.yummy.tv.feature.home.mobile.view.HomeBoostyPromptDialog
-import su.afk.yummy.tv.feature.home.mobile.view.HomeCommunityPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeQuickActionsSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
@@ -76,6 +76,7 @@ import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
 import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
+import su.afk.yummy.tv.feature.home.utils.toSectionType
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -202,6 +203,7 @@ fun HomeMobileScreen(
                                     statusUrl,
                                 ),
                                 style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }
