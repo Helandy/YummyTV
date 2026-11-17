@@ -2,7 +2,10 @@ package su.afk.yummy.tv.feature.player.common.service
 
 import android.content.Intent
 import androidx.annotation.OptIn
+import androidx.media3.cast.CastPlayer
+import androidx.media3.common.DeviceInfo
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,6 +47,10 @@ class PlayerMediaSessionService : MediaSessionService() {
     internal lateinit var castPlayerFactory: PlayerCastPlayerFactory
 
     private var mediaSession: MediaSession? = null
+    private var exoPlayer: ExoPlayer? = null
+    private var castPlayer: CastPlayer? = null
+    private var sessionPlayer: PlayerVideoOutputTracker? = null
+    private var videoDeblur: PlayerVideoDeblur? = null
     private var volumeStabilization: PlayerVolumeStabilization? = null
     private var debugFrameReceiver: PlayerDebugFrameReceiver? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -57,36 +64,34 @@ class PlayerMediaSessionService : MediaSessionService() {
         // как startForegroundService() без startForeground() и убивает процесс.
         setForegroundServiceTimeoutMs(0)
         analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) { "Service onCreate" }
-        val (exoPlayer, trackSelector, videoEffectsReady) = exoPlayerFactory.create(this)
         val stabilization = PlayerVolumeStabilization(analyticsTracker)
-        exoPlayer.addListener(stabilization)
-        exoPlayer.addListener(
-            PlayerAllohaAudioOverride(trackSelector, playbackConfig, analyticsTracker),
-        )
+        volumeStabilization = stabilization
+        val bundle = exoPlayerFactory.create(this)
+        val player = wrapForSession(bundle)
         stabilization.start(
             scope = serviceScope,
             enabledFlow = settingsStore.volumeStabilizationEnabled,
-            initialAudioSessionId = exoPlayer.audioSessionId,
+            initialAudioSessionId = bundle.exoPlayer.audioSessionId,
         )
-        volumeStabilization = stabilization
-        debugFrameReceiver = PlayerDebugFrameReceiver.registerIfDebuggable(this, exoPlayer, settingsStore)
-        PlayerVideoDeblur(exoPlayer, videoEffectsReady, deblurVideoEffects()).start(
-            scope = serviceScope,
-            enabledFlow = settingsStore.deblurEnabled,
-        )
+        debugFrameReceiver = PlayerDebugFrameReceiver.registerIfDebuggable(this, { exoPlayer }, settingsStore)
+        videoDeblur = PlayerVideoDeblur(
+            player = bundle.exoPlayer,
+            pipelineReady = bundle.videoEffectsReady,
+            effects = deblurVideoEffects(),
+            rebuildPlayer = ::rebuildPlayerWithoutEffects,
+        ).also { it.start(scope = serviceScope, enabledFlow = settingsStore.deblurEnabled) }
         // Начальное значение уже учтено при сборке плеера; дальше смена настройки действует сразу.
         settingsStore.audioFocusDisabled
             .distinctUntilChanged()
             .drop(1)
             .onEach { disabled ->
-                exoPlayer.setAudioAttributes(
+                exoPlayer?.setAudioAttributes(
                     PlayerExoPlayerFactory.MEDIA_AUDIO_ATTRIBUTES,
                     /* handleAudioFocus = */ !disabled,
                 )
             }
             .launchIn(serviceScope)
-        val castPlayer = castPlayerFactory.createOrNull(this, exoPlayer)
-        mediaSession = MediaSession.Builder(this, castPlayer ?: exoPlayer)
+        mediaSession = MediaSession.Builder(this, player)
             .setBitmapLoader(CopyingBitmapLoader(this))
             .setSessionActivity(createPlayerSessionActivityIntent())
             .setCallback(
@@ -101,6 +106,49 @@ class PlayerMediaSessionService : MediaSessionService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
         mediaSession
+
+    /** Подключает слушателей сервиса к собранному ExoPlayer и оборачивает его в плеер для сессии. */
+    private fun wrapForSession(bundle: PlayerExoPlayerBundle): PlayerVideoOutputTracker {
+        val player = bundle.exoPlayer
+        volumeStabilization?.let(player::addListener)
+        player.addListener(
+            PlayerAllohaAudioOverride(bundle.trackSelector, playbackConfig, analyticsTracker),
+        )
+        val cast = castPlayerFactory.createOrNull(this, player)
+        exoPlayer = player
+        castPlayer = cast
+        return PlayerVideoOutputTracker(cast ?: player).also { sessionPlayer = it }
+    }
+
+    /**
+     * Убирает GL-конвейер Deblur без выхода из плеера: Media3 освобождает его только вместе с плеером, поэтому
+     * ExoPlayer пересобирается без эффектов, получает очередь, позицию и выбор дорожек старого, а сессия
+     * переключается на него — экран остаётся подключён к той же сессии. Во время трансляции на Cast локального
+     * видео нет, и пересборка откладывается до следующего запуска сервиса.
+     */
+    private fun rebuildPlayerWithoutEffects() {
+        val session = mediaSession ?: return
+        val oldPlayer = exoPlayer ?: return
+        val oldSessionPlayer = sessionPlayer ?: return
+        if (castPlayer?.deviceInfo?.playbackType == DeviceInfo.PLAYBACK_TYPE_REMOTE) {
+            analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) { "Deblur off: rebuild skipped while casting" }
+            return
+        }
+        val snapshot = PlayerStateSnapshot.capture(oldPlayer)
+        val output = oldSessionPlayer.detachVideoOutput()
+        // CastPlayer.release() освобождает и обёрнутый ExoPlayer.
+        (castPlayer ?: oldPlayer).release()
+        val bundle = exoPlayerFactory.create(this, deblurEnabled = false)
+        val newSessionPlayer = wrapForSession(bundle)
+        volumeStabilization?.onAudioSessionIdChanged(bundle.exoPlayer.audioSessionId)
+        newSessionPlayer.attachVideoOutput(output)
+        snapshot.restoreTo(bundle.exoPlayer)
+        videoDeblur?.attach(bundle.exoPlayer, pipelineReady = bundle.videoEffectsReady)
+        session.setPlayer(newSessionPlayer)
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
+            "Deblur off: player rebuilt items=${snapshot.mediaItems.size} positionMs=${snapshot.positionMs}"
+        }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {

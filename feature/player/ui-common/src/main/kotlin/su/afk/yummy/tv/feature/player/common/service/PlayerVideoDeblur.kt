@@ -14,15 +14,21 @@ import kotlinx.coroutines.flow.onEach
 /**
  * Применяет видеошейдер Deblur по настройке во время воспроизведения.
  *
- * Конвейер эффектов Media3 создаётся только при включении видеорендерера, если эффекты заданы заранее. Если
- * плеер собран с Deblur ([pipelineReady]), эффекты меняются на лету. Если нет — при включении поток
- * перезапускается (stop + prepare с той же позиции): так рендерер пересоздаётся уже с конвейером.
+ * Рендерер Media3 поднимает GL-конвейер (VideoSink), если до включения рендерера получил список эффектов — даже
+ * пустой, — и освобождает его только вместе с плеером. GL-путь идёт мимо аппаратного вывода и режима картинки ТВ,
+ * поэтому без Deblur конвейера быть не должно:
+ * - при выключенном Deblur и плеере без конвейера `setVideoEffects` не вызывается вовсе;
+ * - включение на лету перезапускает поток (stop + prepare с той же позиции): рендерер получает эффекты до
+ *   включения и поднимает конвейер;
+ * - выключение после включения просит сервис пересобрать плеер ([rebuildPlayer]); новый плеер собирается без
+ *   конвейера и передаётся сюда через [attach].
  */
 @OptIn(UnstableApi::class)
 internal class PlayerVideoDeblur(
-    private val player: ExoPlayer,
+    private var player: ExoPlayer,
     private var pipelineReady: Boolean,
     private val effects: List<Effect>,
+    private val rebuildPlayer: () -> Unit,
 ) {
     fun start(scope: CoroutineScope, enabledFlow: Flow<Boolean>) {
         enabledFlow
@@ -31,11 +37,22 @@ internal class PlayerVideoDeblur(
             .launchIn(scope)
     }
 
+    /** Переключает на пересобранный плеер; [pipelineReady] — собран ли он с конвейером эффектов. */
+    fun attach(player: ExoPlayer, pipelineReady: Boolean) {
+        this.player = player
+        this.pipelineReady = pipelineReady
+    }
+
     private fun apply(enabled: Boolean) {
-        player.setVideoEffects(if (enabled) effects else emptyList())
-        if (!enabled || pipelineReady) return
-        pipelineReady = true
-        restartStream()
+        when {
+            enabled && pipelineReady -> player.setVideoEffects(effects)
+            enabled -> {
+                player.setVideoEffects(effects)
+                pipelineReady = true
+                restartStream()
+            }
+            pipelineReady -> rebuildPlayer()
+        }
     }
 
     private fun restartStream() {

@@ -31,7 +31,11 @@ internal class PlayerExoPlayerFactory @Inject constructor(
     private val analyticsTracker: AnalyticsTracker,
     private val qualitySignals: PlayerQualitySignals,
 ) {
-    fun create(context: Context): PlayerExoPlayerBundle {
+    /**
+     * @param deblurEnabled собирать ли плеер с конвейером эффектов; по умолчанию — по сохранённой настройке.
+     *   Пересборка после выключения Deblur передаёт false явно, не полагаясь на чтение DataStore.
+     */
+    fun create(context: Context, deblurEnabled: Boolean = readDeblurEnabled()): PlayerExoPlayerBundle {
         val isLowRamDevice = context.isLowRamDevice()
         val trackSelector = DefaultTrackSelector(context).apply {
             // На слабых устройствах отдаём выбор битрейта адаптивному алгоритму вместо
@@ -65,7 +69,6 @@ internal class PlayerExoPlayerFactory @Inject constructor(
         // Конвейер эффектов Media3 создаётся только если setVideoEffects вызван до prepare(): позже он
         // молча игнорируется. Поэтому GL-конвейер поднимаем сразу, но только при включённом Deblur —
         // остальным пользователям обычный вывод без лишнего GL-прохода.
-        val deblurEnabled = readDeblurEnabled()
         if (deblurEnabled) exoPlayer.setVideoEffects(context.deblurVideoEffects())
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
         exoPlayer.addAnalyticsListener(PlayerQualitySignalsListener(qualitySignals))
