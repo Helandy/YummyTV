@@ -20,9 +20,18 @@ class SiteApiConfig @Inject constructor() {
     @Volatile
     private var remoteToken: String = ""
 
-    fun apply(remoteBaseUrl: String, remoteToken: String) {
+    /** Запасной адрес API (вторая копия сервера); пусто, если не задан. Используется только запросами к копии yani. */
+    @Volatile
+    var fallbackBaseUrl: String = ""
+        private set
+
+    fun apply(remoteBaseUrl: String, remoteToken: String, remoteFallbackBaseUrl: String = "") {
         normalizeRemoteBaseUrl(remoteBaseUrl)?.let { baseUrl = it }
         this.remoteToken = remoteToken.trim()
+        fallbackBaseUrl = remoteFallbackBaseUrl.trim().trimEnd('/')
+            .takeIf { it.startsWith("https://", ignoreCase = true) && it.length > "https://".length && it.none(Char::isWhitespace) }
+            ?.takeUnless { it == baseUrl }
+            .orEmpty()
     }
 
     /** Папка статики того же сервера (`/static/`): картинки вроде декора аватарки идут с того же хоста, что и API. */

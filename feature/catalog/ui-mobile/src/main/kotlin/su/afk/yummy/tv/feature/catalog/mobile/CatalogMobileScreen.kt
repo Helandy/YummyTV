@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.locals.LocalYaniMirrorActive
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
@@ -95,6 +96,7 @@ fun CatalogMobileScreen(
     val hasActiveSearch = state.isSearchActive
     val isRowLayout = state.titleCardLayout == TitleCardLayout.ROW
     val isOffline = LocalIsOffline.current
+    val isYaniMirrorActive = LocalYaniMirrorActive.current
     val initialError = (refreshState as? LoadState.Error)
         ?.takeIf { results.itemCount == 0 }
         ?.error
@@ -129,9 +131,9 @@ fun CatalogMobileScreen(
             state = gridState,
             singleColumn = isRowLayout,
         ) {
-            if (isOffline) {
+            if (isOffline || isYaniMirrorActive) {
                 item(span = { GridItemSpan(maxLineSpan) }, contentType = "offline_banner") {
-                    OfflineBanner(isOffline = true, horizontalPadding = 0.dp)
+                    OfflineBanner(isOffline = isOffline, horizontalPadding = 0.dp)
                 }
             }
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,9 +27,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.core.designsystem.locals.LocalYaniMirrorActive
 
 /**
- * Плашка «нет сети». Встраивается в вёрстку главной (над поиском на мобилке, под
+ * Плашка «нет сети»; когда сеть есть, но yani недоступен и данные идут из копии YummyTV ([LocalYaniMirrorActive]) — информационная
+ * плашка о резервной копии. Встраивается в вёрстку главной (над поиском на мобилке, под
  * «Продолжить просмотр» на ТВ), а не рисуется оверлеем: глобальная плашка перекрывала
  * плеер и другие экраны. Появляясь, раздвигает контент, а не наезжает на него.
  */
@@ -38,8 +41,9 @@ fun OfflineBanner(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
+    val mirrorActive = LocalYaniMirrorActive.current
     AnimatedVisibility(
-        visible = isOffline,
+        visible = isOffline || mirrorActive,
         modifier = modifier,
         enter = expandVertically() + fadeIn(),
         exit = fadeOut(tween(180)) + shrinkVertically(tween(260, delayMillis = 120)),
@@ -49,8 +53,8 @@ fun OfflineBanner(
                 .fillMaxWidth()
                 .padding(horizontal = horizontalPadding, vertical = 8.dp),
             shape = RoundedCornerShape(percent = 50),
-            color = MaterialTheme.colorScheme.errorContainer,
-            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            color = if (isOffline) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = if (isOffline) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
             shadowElevation = 6.dp,
         ) {
             Row(
@@ -59,12 +63,12 @@ fun OfflineBanner(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = Icons.Filled.CloudOff,
+                    imageVector = if (isOffline) Icons.Filled.CloudOff else Icons.Filled.CloudSync,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                 )
                 Text(
-                    text = stringResource(R.string.offline_banner_message),
+                    text = stringResource(if (isOffline) R.string.offline_banner_message else R.string.yani_mirror_banner_message),
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                 )

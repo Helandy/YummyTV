@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogHost
 import su.afk.yummy.tv.core.designsystem.dialog.ConfirmDialogHost
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
+import su.afk.yummy.tv.core.designsystem.locals.LocalYaniMirrorActive
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryUserRatings
 import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
@@ -88,6 +89,7 @@ class MobileMainGraph @Inject internal constructor(
                 CompositionLocalProvider(
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalYaniMirrorActive provides state.isYaniMirrorActive,
                     LocalSeasonalDecorationsEnabled provides state.seasonalDecorationsEnabled,
                     LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,

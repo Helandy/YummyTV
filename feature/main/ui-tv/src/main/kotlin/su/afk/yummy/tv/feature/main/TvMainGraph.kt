@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
+import su.afk.yummy.tv.core.designsystem.locals.LocalYaniMirrorActive
 import su.afk.yummy.tv.core.designsystem.locals.LocalLibraryListStatuses
 import su.afk.yummy.tv.core.designsystem.locals.LocalNowMillis
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
@@ -68,6 +69,7 @@ class TvMainGraph @Inject constructor(
                 CompositionLocalProvider(
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalIsOffline provides !state.isOnline,
+                    LocalYaniMirrorActive provides state.isYaniMirrorActive,
                     LocalSeasonalDecorationsEnabled provides state.seasonalDecorationsEnabled,
                     LocalNowMillis provides appClock::nowMillis,
                     LocalLibraryListStatuses provides state.libraryListStatuses,

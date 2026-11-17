@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.details.network
 
 import io.ktor.client.call.body
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -39,29 +40,46 @@ class YaniAnimeApi(
         mirror = { fallback.mirrorGet("/yani/anime/$animeId/videos").body() },
     )
 
-    suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): YaniRecommendationsDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/recommendations") {
-            parameter("from_ai", fromAi)
-            parameter("limit", 24)
-        }.body()
+    /** Общие рекомендации (`from_ai=true`) есть в копии; персональные (`from_ai=false`) только у yani. */
+    suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): YaniRecommendationsDto {
+        val primary: suspend () -> YaniRecommendationsDto = {
+            clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/recommendations") {
+                parameter("from_ai", fromAi)
+                parameter("limit", 24)
+            }.body()
+        }
+        if (!fromAi) return primary()
+        return fallback.call(
+            primary = primary,
+            mirror = { fallback.mirrorGet("/yani/anime/$animeId/recommendations") { parameter("from_ai", true) }.body() },
+        )
+    }
 
-    suspend fun getAnimeTrailers(animeId: Int): YaniTrailersResponseDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/trailers").body()
+    suspend fun getAnimeTrailers(animeId: Int): YaniTrailersResponseDto = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/trailers").body() },
+        mirror = { fallback.mirrorGet("/yani/anime/$animeId/trailers").body() },
+    )
 
-    suspend fun getStudio(url: String): YaniStudioDetailsDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/studio/$url").body()
+    suspend fun getStudio(url: String): YaniStudioDetailsDto = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/anime/studio/$url").body() },
+        mirror = { fallback.mirrorGet("/yani/anime/studio/$url").body() },
+    )
 
-    suspend fun getDirector(id: Int): YaniDirectorDetailsDto =
-        clientProvider.get().get("$YANI_BASE_URL/director/$id").body()
+    suspend fun getDirector(id: Int): YaniDirectorDetailsDto = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/director/$id").body() },
+        mirror = { fallback.mirrorGet("/yani/director/$id").body() },
+    )
 
-    suspend fun getGenre(id: Int): YaniGenreDetailsDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime/genres/$id").body()
+    suspend fun getGenre(id: Int): YaniGenreDetailsDto = fallback.call(
+        primary = { clientProvider.get().get("$YANI_BASE_URL/anime/genres/$id").body() },
+        mirror = { fallback.mirrorGet("/yani/anime/genres/$id").body() },
+    )
 
     suspend fun getRelatedAnime(
         kind: AnimeRelationKind,
         id: Int,
-    ): YaniRelatedAnimeResponseDto =
-        clientProvider.get().get("$YANI_BASE_URL/anime") {
+    ): YaniRelatedAnimeResponseDto {
+        val params: HttpRequestBuilder.() -> Unit = {
             parameter(
                 when (kind) {
                     AnimeRelationKind.STUDIO -> "studio_ids"
@@ -74,7 +92,12 @@ class YaniAnimeApi(
             parameter("sort_forward", false)
             parameter("limit", 100)
             parameter("offset", 0)
-        }.body()
+        }
+        return fallback.call(
+            primary = { clientProvider.get().get("$YANI_BASE_URL/anime", params).body() },
+            mirror = { fallback.mirrorGet("/yani/anime", params).body() },
+        )
+    }
 
     suspend fun ignoreAnimeRecommendation(animeId: Int): YaniRecommendationMutationResponseDto =
         clientProvider.get().delete("$YANI_BASE_URL/anime/$animeId/recommend").body()

@@ -74,6 +74,18 @@ class YaniMirrorFallbackTest : BaseUnitTest() {
     }
 
     @Test
+    fun `state shows the copy while yani is down and clears when yani answers`() = runTest {
+        assertEquals(false, fallback.state.value.active)
+
+        run(primaryFails = true)
+        assertEquals(true, fallback.state.value.active)
+
+        clock += YaniMirrorFallback.OPEN_MS + 1
+        run()
+        assertEquals(false, fallback.state.value.active)
+    }
+
+    @Test
     fun `open breaker retries yani when the mirror cannot answer`() = runTest {
         run(primaryFails = true)
         run(primaryFails = true)

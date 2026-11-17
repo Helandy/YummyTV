@@ -16,6 +16,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import su.afk.yummy.tv.core.network.yani.MirrorState
+import su.afk.yummy.tv.core.network.yani.YaniMirrorFallback
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
@@ -60,6 +62,8 @@ class MainViewModelTest : BaseUnitTest() {
     private val accountMutationErrorRepository: AccountMutationErrorRepository = mockk()
     private val stringProvider: StringProvider = mockk()
     private val networkConnectivityMonitor: NetworkConnectivityMonitor = mockk()
+    private val yaniMirrorFallback: YaniMirrorFallback = mockk()
+    private val mirrorState = MutableStateFlow(MirrorState())
     private val libraryRepository: LibraryRepository = mockk()
 
     private val snapshot = MutableStateFlow(snapshot(nickname = "sandy", unread = 4))
@@ -78,6 +82,7 @@ class MainViewModelTest : BaseUnitTest() {
         coEvery { settingsStore.markOnboardingTourSeen(any()) } returns Unit
         every { accountRepository.observeSession() } returns session
         every { networkConnectivityMonitor.isOnline } returns isOnline
+        every { yaniMirrorFallback.state } returns mirrorState
         every { libraryRepository.observeAll() } returns flowOf(emptyList())
         every { accountMutationErrorRepository.events } returns mutationErrors
         every { featureToggleUpdateObserver.currentActivationId } returns 1L
@@ -102,6 +107,7 @@ class MainViewModelTest : BaseUnitTest() {
         accountMutationErrorRepository = accountMutationErrorRepository,
         stringProvider = stringProvider,
         networkConnectivityMonitor = networkConnectivityMonitor,
+        yaniMirrorFallback = yaniMirrorFallback,
         interfaceModePreferences = mockk(relaxed = true),
         observeLibraryListStatuses = ObserveLibraryListStatusesUseCase(libraryRepository),
         observeLibraryUserRatings = ObserveLibraryUserRatingsUseCase(libraryRepository),

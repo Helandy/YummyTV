@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.android.episodepush.NewEpisodePushScheduler
 import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
 import su.afk.yummy.tv.android.outbox.PendingMutationOnlineFlusher
+import su.afk.yummy.tv.android.prefetch.DetailsPrefetchScheduler
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.coroutines.TrustedAppClock
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
@@ -21,6 +22,7 @@ class BackgroundWorkStarter @Inject constructor(
     private val trustedAppClock: TrustedAppClock,
     private val homeFeedRefreshScheduler: HomeFeedRefreshScheduler,
     private val newEpisodePushScheduler: NewEpisodePushScheduler,
+    private val detailsPrefetchScheduler: DetailsPrefetchScheduler,
     private val pendingMutationSyncScheduler: AndroidPendingMutationSyncScheduler,
     private val pendingMutationOnlineFlusher: PendingMutationOnlineFlusher,
     @DefaultApplicationScope private val scope: CoroutineScope,
@@ -33,6 +35,7 @@ class BackgroundWorkStarter @Inject constructor(
             trace("App.schedulers") {
                 homeFeedRefreshScheduler.schedule()
                 newEpisodePushScheduler.scheduleLibraryPush()
+                detailsPrefetchScheduler.schedule()
                 pendingMutationSyncScheduler.schedule()
                 pendingMutationOnlineFlusher.start()
             }

@@ -29,6 +29,8 @@ class MainState {
         val isYaniAuthResolved: Boolean = false,
         val unreadNotificationsCount: Int = 0,
         val isOnline: Boolean = true,
+        /** yani недоступен, каталог и детали читаются из резервной копии YummyTV. */
+        val isYaniMirrorActive: Boolean = false,
         /** Списки пользователя по animeId — для подписи карточек тайтлов. */
         val libraryListStatuses: Map<Int, CardListStatus> = emptyMap(),
         /** Оценки пользователя по animeId — чтобы в чужих списках показывать и свою. */

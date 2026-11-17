@@ -29,6 +29,7 @@ class RemoteConfigInitializer @Inject constructor(
         siteApiConfig.apply(
             remoteBaseUrl = featureToggleProvider.getString(FeatureFlags.siteApiBaseUrl),
             remoteToken = featureToggleProvider.getString(FeatureFlags.siteApiToken),
+            remoteFallbackBaseUrl = featureToggleProvider.getString(FeatureFlags.siteApiFallbackBaseUrl),
         )
         yaniApiConfig.apply(featureToggleProvider.getString(FeatureFlags.yaniApiBaseUrl))
     }

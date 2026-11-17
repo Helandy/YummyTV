@@ -38,6 +38,15 @@ object FeatureFlags {
         defaultValue = "",
     )
 
+    /**
+     * Запасной адрес API сайта (https): вторая копия сервера на другом узле. К нему идут запросы к копии yani, если основной адрес
+     * не ответил. Пустой, не https или совпадающий с основным = запасного нет.
+     */
+    val siteApiFallbackBaseUrl = FeatureFlag.StringFlag(
+        key = "site_api_fallback_base_url",
+        defaultValue = "",
+    )
+
     /** Токен подписи запросов к сайту. Пустой или совпадающий со встроенным = остаётся встроенный. */
     val siteApiToken = FeatureFlag.StringFlag(
         key = "site_api_token",

@@ -31,6 +31,7 @@ import su.afk.yummy.tv.feature.main.presentation.R
 import su.afk.yummy.tv.feature.main.utils.MAIN_ONBOARDING_TOUR_ID
 import su.afk.yummy.tv.feature.playersetup.navigator.PlayerSetupDestination
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
+import su.afk.yummy.tv.core.network.yani.YaniMirrorFallback
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,6 +47,7 @@ class MainViewModel @Inject internal constructor(
     private val accountMutationErrorRepository: AccountMutationErrorRepository,
     private val stringProvider: StringProvider,
     private val networkConnectivityMonitor: NetworkConnectivityMonitor,
+    private val yaniMirrorFallback: YaniMirrorFallback,
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val observeLibraryListStatuses: ObserveLibraryListStatusesUseCase,
     private val observeLibraryUserRatings: ObserveLibraryUserRatingsUseCase,
@@ -85,6 +87,7 @@ class MainViewModel @Inject internal constructor(
         observeSettings()
         observeOnboarding()
         observeConnectivity()
+        observeYaniMirror()
         observeListStatuses()
         observeFeatureToggleUpdates()
         observeAccountMutationErrors()
@@ -103,6 +106,12 @@ class MainViewModel @Inject internal constructor(
     private fun observeConnectivity() {
         networkConnectivityMonitor.isOnline
             .onEach { isOnline -> setState { copy(isOnline = isOnline) } }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeYaniMirror() {
+        yaniMirrorFallback.state
+            .onEach { mirror -> setState { copy(isYaniMirrorActive = mirror.active) } }
             .launchIn(viewModelScope)
     }
 
