@@ -69,7 +69,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
         // Конвейер эффектов Media3 создаётся только если setVideoEffects вызван до prepare(): позже он
         // молча игнорируется. Поэтому GL-конвейер поднимаем сразу, но только при включённом Deblur —
         // остальным пользователям обычный вывод без лишнего GL-прохода.
-        if (deblurEnabled) exoPlayer.setVideoEffects(context.deblurVideoEffects())
+        if (deblurEnabled) exoPlayer.setVideoEffects(deblurVideoEffects())
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
         exoPlayer.addAnalyticsListener(PlayerQualitySignalsListener(qualitySignals))
         exoPlayer.addAnalyticsListener(

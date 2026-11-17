@@ -54,7 +54,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
-import su.afk.yummy.tv.feature.player.common.PlayerUpscaleOverloadEffect
+import su.afk.yummy.tv.feature.player.common.PlayerDeblurOverloadEffect
 import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
@@ -384,7 +384,7 @@ internal fun MobileNativePlayer(
     PlayerStallWatchdogEffect(player = player, onEvent = onEvent)
     PlayerDecoderCapabilityEffect(player = player, onEvent = onEvent)
 
-    PlayerUpscaleOverloadEffect(
+    PlayerDeblurOverloadEffect(
         player = player,
         enabled = state.deblurEnabled,
         onEvent = onEvent,

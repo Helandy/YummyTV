@@ -226,8 +226,8 @@ class PlayerState {
         /** Пользователь включил или выключил видеошейдер Deblur в панели плеера. */
         data class DeblurToggled(val enabled: Boolean) : Event
 
-        /** При включённом апскейле устройство массово пропускает кадры: картинка отстаёт от звука. */
-        data object UpscaleOverloaded : Event
+        /** При включённом Deblur устройство массово пропускает кадры: картинка отстаёт от звука. */
+        data object DeblurOverloaded : Event
 
         /** Пользователь выбрал скорость воспроизведения. */
         data class SpeedSelected(val speed: Float) : Event

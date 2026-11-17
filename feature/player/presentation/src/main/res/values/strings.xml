@@ -147,7 +147,7 @@
     <string name="player_mobile_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
     <string name="player_toast_dubbing_changed">Dubbing: %1$s</string>
     <string name="player_toast_balancer_changed">Player: %1$s</string>
-    <string name="player_toast_upscale_overload">Struggling with upscaling? Try turning off Deblur</string>
+    <string name="player_toast_deblur_overload">Device can\'t keep up with Deblur — try turning it off</string>
     <string name="player_side_panel_title">Player settings</string>
     <string name="player_side_panel_open">Player settings</string>
     <string name="player_subtitle_track_title">Subtitle track</string>

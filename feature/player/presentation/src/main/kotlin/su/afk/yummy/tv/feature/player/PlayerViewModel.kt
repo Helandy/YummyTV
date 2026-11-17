@@ -612,9 +612,9 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.VolumeStabilizationToggled ->
                 preferences.setVolumeStabilization(host, event.enabled)
 
-            PlayerState.Event.UpscaleOverloaded -> {
+            PlayerState.Event.DeblurOverloaded -> {
                 if (currentState.deblurEnabled) {
-                    setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_upscale_overload)))
+                    setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_deblur_overload)))
                 }
             }
 
