@@ -31,9 +31,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
+import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
 import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
@@ -41,12 +43,11 @@ import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
-import su.afk.yummy.tv.feature.player.common.PlayerDeblurOverloadEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
-import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
+import su.afk.yummy.tv.feature.player.common.PlayerVideoEnhancementOverloadEffect
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
@@ -302,9 +303,9 @@ internal fun TvExoPlayerView(
     PlayerStallWatchdogEffect(player = player, onEvent = onPlayerEvent)
     PlayerDecoderCapabilityEffect(player = player, onEvent = onPlayerEvent)
 
-    PlayerDeblurOverloadEffect(
+    PlayerVideoEnhancementOverloadEffect(
         player = player,
-        enabled = state.deblurEnabled,
+        enabled = state.videoEnhancementMode != VideoEnhancementMode.OFF,
         onEvent = onPlayerEvent,
     )
 
@@ -585,7 +586,7 @@ internal fun TvExoPlayerView(
             subtitleStyle = state.subtitleStyle,
             showStabilization = state.volumeStabilizationSupported,
             stabilizationEnabled = state.volumeStabilizationEnabled,
-            deblurEnabled = state.deblurEnabled,
+            videoEnhancementMode = state.videoEnhancementMode,
             showAdaptiveQuality = playback.qualityLabels.size > 1,
             adaptiveQualityEnabled = playback.adaptiveQuality,
             audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
@@ -631,7 +632,7 @@ internal fun TvExoPlayerView(
             onVolumeChange = { volumeController.setPercent(it) },
             onSubtitleStyleChange = { onPlayerEvent(PlayerState.Event.SubtitleStyleChanged(it)) },
             onStabilizationChange = { onPlayerEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
-            onDeblurChange = { onPlayerEvent(PlayerState.Event.DeblurToggled(it)) },
+            onVideoEnhancementModeChange = { onPlayerEvent(PlayerState.Event.VideoEnhancementModeSelected(it)) },
             onAdaptiveQualityChange = { onPlayerEvent(PlayerState.Event.AdaptiveQualityToggled(it)) },
             onAudioTrackSelected = { idx ->
                 trackMenu.selectAudio(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)

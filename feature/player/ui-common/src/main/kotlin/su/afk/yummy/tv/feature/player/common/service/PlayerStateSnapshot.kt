@@ -40,7 +40,8 @@ internal data class PlayerStateSnapshot(
             mediaItemIndex = player.currentMediaItemIndex,
             positionMs = player.currentPosition,
             playWhenReady = player.playWhenReady,
-            prepared = player.playbackState != Player.STATE_IDLE,
+            // Плеер, остановленный ошибкой, тоже был запущен: после пересборки поток стартует заново.
+            prepared = player.playbackState != Player.STATE_IDLE || player.playerError != null,
             playbackParameters = player.playbackParameters,
             repeatMode = player.repeatMode,
             shuffleModeEnabled = player.shuffleModeEnabled,

@@ -4,6 +4,8 @@ import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.media3.cast.CastPlayer
 import androidx.media3.common.DeviceInfo
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
@@ -17,11 +19,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.common.utils.PLAYER_SERVICE_LOG_TAG
 import su.afk.yummy.tv.feature.player.common.utils.createPlayerSessionActivityIntent
-import su.afk.yummy.tv.feature.player.common.utils.deblurVideoEffects
+import su.afk.yummy.tv.feature.player.common.utils.videoEffects
 import javax.inject.Inject
 
 /**
@@ -50,7 +54,7 @@ class PlayerMediaSessionService : MediaSessionService() {
     private var exoPlayer: ExoPlayer? = null
     private var castPlayer: CastPlayer? = null
     private var sessionPlayer: PlayerVideoOutputTracker? = null
-    private var videoDeblur: PlayerVideoDeblur? = null
+    private var videoEnhancement: PlayerVideoEnhancement? = null
     private var volumeStabilization: PlayerVolumeStabilization? = null
     private var debugFrameReceiver: PlayerDebugFrameReceiver? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -74,12 +78,12 @@ class PlayerMediaSessionService : MediaSessionService() {
             initialAudioSessionId = bundle.exoPlayer.audioSessionId,
         )
         debugFrameReceiver = PlayerDebugFrameReceiver.registerIfDebuggable(this, { exoPlayer }, settingsStore)
-        videoDeblur = PlayerVideoDeblur(
+        videoEnhancement = PlayerVideoEnhancement(
             player = bundle.exoPlayer,
             pipelineReady = bundle.videoEffectsReady,
-            effects = deblurVideoEffects(),
+            effectsFor = { mode -> mode.videoEffects() },
             rebuildPlayer = ::rebuildPlayerWithoutEffects,
-        ).also { it.start(scope = serviceScope, enabledFlow = settingsStore.deblurEnabled) }
+        ).also { it.start(scope = serviceScope, modeFlow = settingsStore.videoEnhancementMode) }
         // Начальное значение уже учтено при сборке плеера; дальше смена настройки действует сразу.
         settingsStore.audioFocusDisabled
             .distinctUntilChanged()
@@ -87,7 +91,8 @@ class PlayerMediaSessionService : MediaSessionService() {
             .onEach { disabled ->
                 exoPlayer?.setAudioAttributes(
                     PlayerExoPlayerFactory.MEDIA_AUDIO_ATTRIBUTES,
-                    /* handleAudioFocus = */ !disabled,
+                    /* handleAudioFocus = */
+                    !disabled,
                 )
             }
             .launchIn(serviceScope)
@@ -114,6 +119,13 @@ class PlayerMediaSessionService : MediaSessionService() {
         player.addListener(
             PlayerAllohaAudioOverride(bundle.trackSelector, playbackConfig, analyticsTracker),
         )
+        player.addListener(
+            object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    if (error.errorCode in VIDEO_EFFECT_ERROR_CODES) onVideoEnhancementFailed(error)
+                }
+            },
+        )
         val cast = castPlayerFactory.createOrNull(this, player)
         exoPlayer = player
         castPlayer = cast
@@ -121,7 +133,18 @@ class PlayerMediaSessionService : MediaSessionService() {
     }
 
     /**
-     * Убирает GL-конвейер Deblur без выхода из плеера: Media3 освобождает его только вместе с плеером, поэтому
+     * Эффект улучшения не собрался или упал на устройстве (например, GLES2 без FP16-текстур для Anime4K):
+     * режим выключается в настройках, плеер пересобирается без эффектов и продолжает с той же позиции.
+     */
+    private fun onVideoEnhancementFailed(error: PlaybackException) {
+        val mode = videoEnhancement?.mode ?: return
+        if (mode == VideoEnhancementMode.OFF) return
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG, error) { "Video enhancement $mode failed, turning it off" }
+        serviceScope.launch { settingsStore.setVideoEnhancementMode(VideoEnhancementMode.OFF) }
+    }
+
+    /**
+     * Убирает GL-конвейер улучшения видео без выхода из плеера: Media3 освобождает его только вместе с плеером, поэтому
      * ExoPlayer пересобирается без эффектов, получает очередь, позицию и выбор дорожек старого, а сессия
      * переключается на него — экран остаётся подключён к той же сессии. Во время трансляции на Cast локального
      * видео нет, и пересборка откладывается до следующего запуска сервиса.
@@ -131,22 +154,22 @@ class PlayerMediaSessionService : MediaSessionService() {
         val oldPlayer = exoPlayer ?: return
         val oldSessionPlayer = sessionPlayer ?: return
         if (castPlayer?.deviceInfo?.playbackType == DeviceInfo.PLAYBACK_TYPE_REMOTE) {
-            analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) { "Deblur off: rebuild skipped while casting" }
+            analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) { "Video enhancement off: rebuild skipped while casting" }
             return
         }
         val snapshot = PlayerStateSnapshot.capture(oldPlayer)
         val output = oldSessionPlayer.detachVideoOutput()
         // CastPlayer.release() освобождает и обёрнутый ExoPlayer.
         (castPlayer ?: oldPlayer).release()
-        val bundle = exoPlayerFactory.create(this, deblurEnabled = false)
+        val bundle = exoPlayerFactory.create(this, enhancementMode = VideoEnhancementMode.OFF)
         val newSessionPlayer = wrapForSession(bundle)
         volumeStabilization?.onAudioSessionIdChanged(bundle.exoPlayer.audioSessionId)
         newSessionPlayer.attachVideoOutput(output)
         snapshot.restoreTo(bundle.exoPlayer)
-        videoDeblur?.attach(bundle.exoPlayer, pipelineReady = bundle.videoEffectsReady)
+        videoEnhancement?.attach(bundle.exoPlayer, pipelineReady = bundle.videoEffectsReady)
         session.setPlayer(newSessionPlayer)
         analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
-            "Deblur off: player rebuilt items=${snapshot.mediaItems.size} positionMs=${snapshot.positionMs}"
+            "Video enhancement off: player rebuilt items=${snapshot.mediaItems.size} positionMs=${snapshot.positionMs}"
         }
     }
 
@@ -210,5 +233,13 @@ class PlayerMediaSessionService : MediaSessionService() {
         }
         mediaSession = null
         super.onDestroy()
+    }
+
+    private companion object {
+        /** Ошибки GL-конвейера эффектов: инициализация (шейдеры, текстуры) и обработка кадра. */
+        val VIDEO_EFFECT_ERROR_CODES = setOf(
+            PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSOR_INIT_FAILED,
+            PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED,
+        )
     }
 }

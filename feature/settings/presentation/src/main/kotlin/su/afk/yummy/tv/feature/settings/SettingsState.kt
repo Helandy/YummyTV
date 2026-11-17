@@ -8,14 +8,14 @@ import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
 import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
-import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
-import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.DetailsSectionConfig
 import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
+import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -23,8 +23,9 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
-import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.TorrentSettings
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniApplicationToken
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.mvi.UiEffect
@@ -89,8 +90,8 @@ class SettingsState {
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
-        /** Видеошейдер Deblur включён. */
-        val deblurEnabled: Boolean = false,
+        /** Улучшение картинки в плеере: выключено, резкость или Anime4K. */
+        val videoEnhancementMode: VideoEnhancementMode = VideoEnhancementMode.OFF,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
@@ -244,8 +245,8 @@ class SettingsState {
         /** Пользователь переключил стабилизацию громкости (сжатие динамического диапазона). */
         data object VolumeStabilizationToggled : Event
 
-        /** Пользователь переключил видеошейдер Deblur. */
-        data object DeblurToggled : Event
+        /** Пользователь выбрал режим улучшения видео. */
+        data class VideoEnhancementModeSelected(val mode: VideoEnhancementMode) : Event
 
         /** Переключить отключение аудиофокуса (включение подтверждается диалогом на экране). */
         data object AudioFocusToggled : Event

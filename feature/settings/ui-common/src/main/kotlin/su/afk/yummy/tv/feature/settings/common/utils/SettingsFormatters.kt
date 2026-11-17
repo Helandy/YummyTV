@@ -5,15 +5,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
-import su.afk.yummy.tv.core.model.settings.TorrentSort
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
-import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
-import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.DetailsSectionKind
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
+import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
+import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
@@ -22,7 +22,8 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
-import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
+import su.afk.yummy.tv.core.model.settings.TorrentSort
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.presentation.R
@@ -224,7 +225,7 @@ fun PreferredVideoQuality.hint(): String = stringResource(
         PreferredVideoQuality.P720,
         PreferredVideoQuality.P480,
         PreferredVideoQuality.P360,
-            -> R.string.settings_preferred_video_quality_fallback_hint
+        -> R.string.settings_preferred_video_quality_fallback_hint
     },
 )
 
@@ -438,5 +439,15 @@ fun PlayerSubtitleEdge.label(): String = stringResource(
         PlayerSubtitleEdge.NONE -> R.string.settings_subtitle_edge_none
         PlayerSubtitleEdge.OUTLINE -> R.string.settings_subtitle_edge_outline
         PlayerSubtitleEdge.SHADOW -> R.string.settings_subtitle_edge_shadow
+    },
+)
+
+/** Название режима улучшения видео. */
+@Composable
+fun VideoEnhancementMode.label(): String = stringResource(
+    when (this) {
+        VideoEnhancementMode.OFF -> R.string.settings_video_enhancement_off
+        VideoEnhancementMode.SHARPEN -> R.string.settings_video_enhancement_sharpen
+        VideoEnhancementMode.QUALITY -> R.string.settings_video_enhancement_quality
     },
 )

@@ -31,7 +31,7 @@ data class SettingsSnapshot(
     val tvPlayerVolumeKeysEnabled: Boolean,
     val advancedPlayerVolumeEnabled: Boolean,
     val volumeStabilizationEnabled: Boolean,
-    val deblurEnabled: Boolean = false,
+    val videoEnhancementMode: VideoEnhancementMode = VideoEnhancementMode.OFF,
     val audioFocusDisabled: Boolean = false,
     val playerBufferProfile: PlayerBufferProfile,
     val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,

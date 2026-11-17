@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.Icon
@@ -25,9 +26,11 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleEdge
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleStyleOptions
 import su.afk.yummy.tv.feature.player.common.icon
 import su.afk.yummy.tv.feature.player.common.label
+import su.afk.yummy.tv.feature.player.common.utils.label
 import su.afk.yummy.tv.feature.player.model.TvPlayerSettingsPage
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.isSelected
@@ -53,6 +56,8 @@ internal fun TvPlayerSettingsOptionsPage(
     onSubtitleTrackSelected: (index: Int) -> Unit,
     subtitleStyle: PlayerSubtitleStyleSettings,
     onSubtitleStyleChange: (PlayerSubtitleStyleSettings) -> Unit,
+    videoEnhancementMode: VideoEnhancementMode,
+    onVideoEnhancementModeChange: (VideoEnhancementMode) -> Unit,
     onDone: () -> Unit,
 ) {
     val title: String
@@ -132,6 +137,15 @@ internal fun TvPlayerSettingsOptionsPage(
             icons = values.map { it.icon() }
             selectedIndex = values.indexOf(subtitleStyle.edge)
             onSelect = { onSubtitleStyleChange(subtitleStyle.copy(edge = values[it])) }
+        }
+
+        TvPlayerSettingsPage.VideoEnhancement -> {
+            val values = VideoEnhancementMode.entries
+            title = stringResource(R.string.player_video_enhancement_title)
+            labels = values.map { it.label() }
+            icons = values.map { Icons.Filled.HighQuality }
+            selectedIndex = values.indexOf(videoEnhancementMode)
+            onSelect = { onVideoEnhancementModeChange(values[it]) }
         }
     }
     // Значение могло прийти не из списка (размер с шагом 1% из экрана «Настройки») — тогда

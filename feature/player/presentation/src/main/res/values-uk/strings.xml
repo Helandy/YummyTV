@@ -147,7 +147,7 @@
     <string name="player_mobile_orientation_portrait_hint">Завжди вертикальна орієнтація, навіть якщо в системі увімкнено автоповорот</string>
     <string name="player_toast_dubbing_changed">Озвучення: %1$s</string>
     <string name="player_toast_balancer_changed">Плеєр: %1$s</string>
-    <string name="player_toast_deblur_overload">Пристрій не встигає за Deblur — спробуйте вимкнути</string>
+    <string name="player_toast_video_enhancement_overload">Пристрій не встигає за покращенням відео — оберіть «Різкість» або вимкніть</string>
     <string name="player_side_panel_title">Налаштування плеєра</string>
     <string name="player_side_panel_open">Налаштування плеєра</string>
     <string name="player_subtitle_track_title">Доріжка субтитрів</string>
@@ -174,8 +174,10 @@
     <string name="player_subtitle_edge_shadow">Тінь</string>
     <string name="player_volume_stabilization_title">Стабілізація гучності</string>
     <string name="player_settings_section_video">Відео</string>
-    <string name="player_deblur_title">Deblur (різкість)</string>
-    <string name="player_deblur_hint">Чіткіші контури</string>
+    <string name="player_video_enhancement_title">Покращення відео</string>
+    <string name="player_video_enhancement_hint">Різкість — легка, Anime4K чистить лінії, але важча</string>
+    <string name="player_video_enhancement_sharpen">Різкість</string>
+    <string name="player_video_enhancement_quality">Anime4K</string>
     <string name="player_volume_stabilization_hint">Вирівнює гучні й тихі сцени</string>
     <string name="player_toggle_on">Увімк</string>
     <string name="player_toggle_off">Вимк</string>

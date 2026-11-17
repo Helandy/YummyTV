@@ -9,15 +9,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.utils.DeblurOverloadDetector
+import su.afk.yummy.tv.feature.player.utils.VideoEnhancementOverloadDetector
 
 /**
- * Следит за пропущенными кадрами при включённом Deblur и один раз шлёт
- * [PlayerState.Event.DeblurOverloaded], когда устройство не успевает: картинка отстаёт от звука.
+ * Следит за пропущенными кадрами при включённом улучшении видео и один раз шлёт
+ * [PlayerState.Event.VideoEnhancementOverloaded], когда устройство не успевает: картинка отстаёт от звука.
  * Перемотка и смена потока заново запускают прогрев детектора.
  */
 @Composable
-fun PlayerDeblurOverloadEffect(
+fun PlayerVideoEnhancementOverloadEffect(
     player: Player,
     enabled: Boolean,
     onEvent: (PlayerState.Event) -> Unit,
@@ -25,7 +25,7 @@ fun PlayerDeblurOverloadEffect(
     if (!enabled) return
     val signals = rememberPlayerQualitySignals()
     val currentOnEvent by rememberUpdatedState(onEvent)
-    val detector = remember(player) { DeblurOverloadDetector().apply { reset(nowMs()) } }
+    val detector = remember(player) { VideoEnhancementOverloadDetector().apply { reset(nowMs()) } }
 
     DisposableEffect(player, detector) {
         val listener = object : Player.Listener {
@@ -50,7 +50,7 @@ fun PlayerDeblurOverloadEffect(
             if (signal is PlayerQualitySignals.Signal.DroppedFrames &&
                 detector.onDroppedFrames(signal.count, nowMs())
             ) {
-                currentOnEvent(PlayerState.Event.DeblurOverloaded)
+                currentOnEvent(PlayerState.Event.VideoEnhancementOverloaded)
             }
         }
     }

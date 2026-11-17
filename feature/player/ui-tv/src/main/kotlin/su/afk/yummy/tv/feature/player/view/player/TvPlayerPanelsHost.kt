@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
@@ -51,8 +52,8 @@ internal fun BoxScope.TvPlayerPanelsHost(
     onVolumeChange: (Int) -> Unit,
     onSubtitleStyleChange: (PlayerSubtitleStyleSettings) -> Unit,
     onStabilizationChange: (Boolean) -> Unit,
-    deblurEnabled: Boolean,
-    onDeblurChange: (Boolean) -> Unit,
+    videoEnhancementMode: VideoEnhancementMode,
+    onVideoEnhancementModeChange: (VideoEnhancementMode) -> Unit,
     onAdaptiveQualityChange: (Boolean) -> Unit,
     onAudioTrackSelected: (index: Int) -> Unit,
     onSubtitleTrackSelected: (index: Int) -> Unit,
@@ -131,8 +132,8 @@ internal fun BoxScope.TvPlayerPanelsHost(
         showStabilization = showStabilization,
         stabilizationEnabled = stabilizationEnabled,
         onStabilizationChange = onStabilizationChange,
-        deblurEnabled = deblurEnabled,
-        onDeblurChange = onDeblurChange,
+        videoEnhancementMode = videoEnhancementMode,
+        onVideoEnhancementModeChange = onVideoEnhancementModeChange,
         showAdaptiveQuality = showAdaptiveQuality,
         adaptiveQualityEnabled = adaptiveQualityEnabled,
         onAdaptiveQualityChange = onAdaptiveQualityChange,

@@ -10,28 +10,34 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 
 /**
- * Применяет видеошейдер Deblur по настройке во время воспроизведения.
+ * Применяет режим улучшения видео (резкость или Anime4K) во время воспроизведения.
  *
  * Рендерер Media3 поднимает GL-конвейер (VideoSink), если до включения рендерера получил список эффектов — даже
  * пустой, — и освобождает его только вместе с плеером. GL-путь идёт мимо аппаратного вывода и режима картинки ТВ,
- * поэтому без Deblur конвейера быть не должно:
- * - при выключенном Deblur и плеере без конвейера `setVideoEffects` не вызывается вовсе;
+ * поэтому без улучшения конвейера быть не должно:
+ * - режим «выключено» на плеере без конвейера `setVideoEffects` не вызывает вовсе;
  * - включение на лету перезапускает поток (stop + prepare с той же позиции): рендерер получает эффекты до
  *   включения и поднимает конвейер;
+ * - смена одного режима на другой при готовом конвейере только подменяет эффекты;
  * - выключение после включения просит сервис пересобрать плеер ([rebuildPlayer]); новый плеер собирается без
  *   конвейера и передаётся сюда через [attach].
  */
 @OptIn(UnstableApi::class)
-internal class PlayerVideoDeblur(
+internal class PlayerVideoEnhancement(
     private var player: ExoPlayer,
     private var pipelineReady: Boolean,
-    private val effects: List<Effect>,
+    private val effectsFor: (VideoEnhancementMode) -> List<Effect>,
     private val rebuildPlayer: () -> Unit,
 ) {
-    fun start(scope: CoroutineScope, enabledFlow: Flow<Boolean>) {
-        enabledFlow
+    /** Режим, применённый к текущему плееру. */
+    var mode: VideoEnhancementMode = VideoEnhancementMode.OFF
+        private set
+
+    fun start(scope: CoroutineScope, modeFlow: Flow<VideoEnhancementMode>) {
+        modeFlow
             .distinctUntilChanged()
             .onEach(::apply)
             .launchIn(scope)
@@ -43,15 +49,16 @@ internal class PlayerVideoDeblur(
         this.pipelineReady = pipelineReady
     }
 
-    private fun apply(enabled: Boolean) {
+    private fun apply(mode: VideoEnhancementMode) {
+        this.mode = mode
         when {
-            enabled && pipelineReady -> player.setVideoEffects(effects)
-            enabled -> {
-                player.setVideoEffects(effects)
+            mode == VideoEnhancementMode.OFF -> if (pipelineReady) rebuildPlayer()
+            pipelineReady -> player.setVideoEffects(effectsFor(mode))
+            else -> {
+                player.setVideoEffects(effectsFor(mode))
                 pipelineReady = true
                 restartStream()
             }
-            pipelineReady -> rebuildPlayer()
         }
     }
 

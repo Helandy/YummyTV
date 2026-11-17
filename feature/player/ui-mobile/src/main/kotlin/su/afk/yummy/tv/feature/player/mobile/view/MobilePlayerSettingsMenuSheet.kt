@@ -6,14 +6,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Audiotrack
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.BrightnessMedium
+import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
+import su.afk.yummy.tv.feature.player.common.utils.label
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMenuActions
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMenuModel
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsPage
@@ -51,10 +53,10 @@ internal fun MobilePlayerSettingsMenuSheet(
     // Страницу, открытую сразу с нижней панели (скорость, качество), «назад» закрывает целиком:
     // иначе стрелка раскрывала бы главное меню, которого пользователь не открывал.
     val goBack = {
-        if (initialPage != MobilePlayerSettingsPage.Root && page == initialPage) {
-            onDismiss()
-        } else {
-            page = MobilePlayerSettingsPage.Root
+        when {
+            initialPage != MobilePlayerSettingsPage.Root && page == initialPage -> onDismiss()
+            page == MobilePlayerSettingsPage.VideoEnhancement -> page = MobilePlayerSettingsPage.Display
+            else -> page = MobilePlayerSettingsPage.Root
         }
     }
     BaseBottomSheet(onDismissRequest = onDismiss, scrollableContent = true, compactDragHandle = true) {
@@ -174,11 +176,26 @@ internal fun MobilePlayerSettingsMenuSheet(
                 }
                 MobilePlayerMenuRow(
                     icon = Icons.Filled.HighQuality,
-                    label = stringResource(R.string.player_deblur_title),
-                    subtitle = stringResource(R.string.player_deblur_hint),
-                    trailing = MobilePlayerMenuRowTrailing.Toggle(model.deblurEnabled),
-                    onClick = { actions.onDeblurChange(!model.deblurEnabled) },
+                    label = stringResource(R.string.player_video_enhancement_title),
+                    subtitle = stringResource(R.string.player_video_enhancement_hint),
+                    trailing = MobilePlayerMenuRowTrailing.Navigate(model.videoEnhancementMode.label()),
+                    onClick = { page = MobilePlayerSettingsPage.VideoEnhancement },
                 )
+            }
+
+            // Режимы взаимоисключающие: список с одной отметкой, как у масштаба.
+            MobilePlayerSettingsPage.VideoEnhancement -> Column(modifier = Modifier.fillMaxWidth()) {
+                MobilePlayerMenuPageHeader(
+                    title = stringResource(R.string.player_video_enhancement_title),
+                    onBack = goBack,
+                )
+                VideoEnhancementMode.entries.forEach { mode ->
+                    MobilePlayerMenuRow(
+                        label = mode.label(),
+                        trailing = MobilePlayerMenuRowTrailing.Choice(model.videoEnhancementMode == mode),
+                        onClick = { actions.onVideoEnhancementModeChange(mode) },
+                    )
+                }
             }
         }
     }

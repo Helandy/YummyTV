@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 
 /** Поведение и настройки плеера: воспроизведение, жесты, громкость, размер кадра. */
@@ -63,8 +64,8 @@ interface PlayerSettingsStore {
     /** Стабилизация громкости (сжатие динамического диапазона аудио). */
     val volumeStabilizationEnabled: Flow<Boolean>
 
-    /** Видеошейдер Deblur: уменьшает размытие, делает контуры чётче. */
-    val deblurEnabled: Flow<Boolean>
+    /** Улучшение картинки в плеере: выключено, резкость или Anime4K. */
+    val videoEnhancementMode: Flow<VideoEnhancementMode>
 
     /** Аудиофокус плеера отключён пользователем (плеер не реагирует на перехват фокуса другими приложениями). */
     val audioFocusDisabled: Flow<Boolean>
@@ -124,7 +125,7 @@ interface PlayerSettingsStore {
     suspend fun clearMobilePlayerBrightness()
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
-    suspend fun setDeblurEnabled(enabled: Boolean)
+    suspend fun setVideoEnhancementMode(mode: VideoEnhancementMode)
     suspend fun setAudioFocusDisabled(disabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
     suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)

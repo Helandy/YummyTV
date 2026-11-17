@@ -147,7 +147,7 @@
     <string name="player_mobile_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
     <string name="player_toast_dubbing_changed">Dubbing: %1$s</string>
     <string name="player_toast_balancer_changed">Player: %1$s</string>
-    <string name="player_toast_deblur_overload">Device can\'t keep up with Deblur — try turning it off</string>
+    <string name="player_toast_video_enhancement_overload">Device can\'t keep up with video enhancement — choose Sharpen or turn it off</string>
     <string name="player_side_panel_title">Player settings</string>
     <string name="player_side_panel_open">Player settings</string>
     <string name="player_subtitle_track_title">Subtitle track</string>
@@ -174,8 +174,10 @@
     <string name="player_subtitle_edge_shadow">Shadow</string>
     <string name="player_volume_stabilization_title">Volume stabilization</string>
     <string name="player_settings_section_video">Video</string>
-    <string name="player_deblur_title">Deblur</string>
-    <string name="player_deblur_hint">Sharpens outlines</string>
+    <string name="player_video_enhancement_title">Video enhancement</string>
+    <string name="player_video_enhancement_hint">Sharpen is light; Anime4K cleans up lines but is heavier</string>
+    <string name="player_video_enhancement_sharpen">Sharpen</string>
+    <string name="player_video_enhancement_quality">Anime4K</string>
     <string name="player_volume_stabilization_hint">Evens out loud and quiet scenes</string>
     <string name="player_toggle_on">On</string>
     <string name="player_toggle_off">Off</string>

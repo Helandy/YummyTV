@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.mobile.model
 
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 
 /** Всё, что единое меню настроек показывает: значения пунктов и доступность необязательных. */
 internal data class MobilePlayerSettingsMenuModel(
@@ -24,7 +25,7 @@ internal data class MobilePlayerSettingsMenuModel(
     val volumePercent: Int,
     val showStabilization: Boolean,
     val stabilizationEnabled: Boolean,
-    val deblurEnabled: Boolean,
+    val videoEnhancementMode: VideoEnhancementMode,
     /** Выбранный интервал автовыключения в минутах; 0 — таймер выключен. */
     val sleepTimerMinutes: Int,
     val showDetails: Boolean,
@@ -46,7 +47,7 @@ internal class MobilePlayerSettingsMenuActions(
     val onAutoBrightnessChange: (Boolean) -> Unit,
     val onVolumeChange: (Int) -> Unit,
     val onStabilizationChange: (Boolean) -> Unit,
-    val onDeblurChange: (Boolean) -> Unit,
+    val onVideoEnhancementModeChange: (VideoEnhancementMode) -> Unit,
     val onSleepTimerSelected: (Int) -> Unit,
     val onDetails: () -> Unit,
     val onPictureInPicture: () -> Unit,

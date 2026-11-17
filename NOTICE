@@ -10,3 +10,16 @@ of AI tools or coding agents from this source — must:
   1. keep this NOTICE and the LICENSE file, and
   2. credit the original project in its README or license/about section:
      "Based on YummyTV — https://github.com/Helandy/YummyTV"
+
+Third-party code
+----------------
+
+Anime4K — https://github.com/bloc97/Anime4K
+  Copyright (c) 2019-2021 bloc97. MIT License.
+  Video enhancement shaders in the player: Restore CNN S ("Anime4K" mode) and
+  Deblur DoG ("Sharpen" mode). The full MIT text ships with the shader in
+  feature/player/ui-common/src/main/assets/video-enhancement/Anime4K_Restore_CNN_S.glsl.
+
+Animeko — https://github.com/open-ani/animeko
+  GNU AGPLv3. The Media3 GlEffect adaptation of the Anime4K Restore passes
+  (Anime4kRestoreGlEffect and the restore_pass_N.frag templates) is based on it.

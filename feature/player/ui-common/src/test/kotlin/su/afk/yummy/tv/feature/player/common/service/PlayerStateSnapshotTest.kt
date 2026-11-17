@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.common.service
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionParameters
@@ -14,7 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-/** Снимок, который переносится на пересобранный плеер при выключении Deblur на лету. */
+/** Снимок, который переносится на пересобранный плеер при выключении улучшения видео на лету. */
 class PlayerStateSnapshotTest : BaseUnitTest() {
 
     private val firstItem: MediaItem = mockk()
@@ -46,6 +47,13 @@ class PlayerStateSnapshotTest : BaseUnitTest() {
         stubSource(playbackState = Player.STATE_IDLE)
 
         assertFalse(PlayerStateSnapshot.capture(source).prepared)
+    }
+
+    @Test
+    fun `player stopped by an error is captured as prepared`() {
+        stubSource(playbackState = Player.STATE_IDLE, playerError = mockk())
+
+        assertTrue(PlayerStateSnapshot.capture(source).prepared)
     }
 
     @Test
@@ -91,6 +99,7 @@ class PlayerStateSnapshotTest : BaseUnitTest() {
         playbackState: Int,
         playWhenReady: Boolean = false,
         items: List<MediaItem> = listOf(firstItem, secondItem),
+        playerError: PlaybackException? = null,
     ) {
         every { source.mediaItemCount } returns items.size
         every { source.getMediaItemAt(any()) } answers { items[firstArg()] }
@@ -98,6 +107,7 @@ class PlayerStateSnapshotTest : BaseUnitTest() {
         every { source.currentPosition } returns POSITION_MS
         every { source.playWhenReady } returns playWhenReady
         every { source.playbackState } returns playbackState
+        every { source.playerError } returns playerError
         every { source.playbackParameters } returns SPEED
         every { source.repeatMode } returns Player.REPEAT_MODE_ONE
         every { source.shuffleModeEnabled } returns true

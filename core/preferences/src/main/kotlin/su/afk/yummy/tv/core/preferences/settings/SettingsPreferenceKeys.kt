@@ -39,6 +39,7 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("player_controls_auto_hide_seconds")
 
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
+
     /** Нужно ли удерживать кнопку разблокировки экрана (иначе разблокировка по тапу). */
     val holdToConfirmEnabledKey = booleanPreferencesKey("hold_to_confirm_enabled")
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
@@ -64,8 +65,11 @@ internal object SettingsPreferenceKeys {
         floatPreferencesKey("player_playback_speed")
     val volumeStabilizationEnabledKey =
         booleanPreferencesKey("volume_stabilization_enabled")
+
+    /** Старый флаг Deblur: читается только для переноса в [videoEnhancementModeKey]. */
     val deblurEnabledKey =
         booleanPreferencesKey("deblur_enabled")
+    val videoEnhancementModeKey = stringPreferencesKey("video_enhancement_mode")
     val audioFocusDisabledKey =
         booleanPreferencesKey("audio_focus_disabled")
     val playerBufferProfileKey = stringPreferencesKey("player_buffer_profile")
@@ -101,7 +105,7 @@ internal object SettingsPreferenceKeys {
     val communityPromptFirstUseTimeMsKey =
         longPreferencesKey("community_prompt_first_use_time_ms")
     val boostyPromptDismissedKey = booleanPreferencesKey("boosty_prompt_dismissed")
-    val lastSeenAnnouncementIdKey =stringPreferencesKey("last_seen_announcement_id")
+    val lastSeenAnnouncementIdKey = stringPreferencesKey("last_seen_announcement_id")
     val notificationPermissionRequestedKey =
         booleanPreferencesKey("notification_permission_requested")
     val episodePushPromptShownKey = booleanPreferencesKey("episode_push_prompt_shown")
@@ -140,6 +144,7 @@ internal object SettingsPreferenceKeys {
     val torrServerUserKey = stringPreferencesKey("torrserver_user")
     val torrServerPasswordKey = stringPreferencesKey("torrserver_password")
     val torrentIndexerKey = stringPreferencesKey("torrent_indexer")
+
     /** Адрес JacRed (раньше — общий адрес индексатора). */
     val torrentIndexerUrlKey = stringPreferencesKey("torrent_indexer_url")
     val jacRedEnabledKey = booleanPreferencesKey("torrent_jacred_enabled")

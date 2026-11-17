@@ -10,4 +10,5 @@ internal enum class TvPlayerSettingsPage {
     SubtitleColor,
     SubtitleBackground,
     SubtitleEdge,
+    VideoEnhancement,
 }

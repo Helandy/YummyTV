@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.preferences.BuildConfig
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -29,6 +30,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlay
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.deblurEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.holdToConfirmEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
@@ -50,7 +52,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.subtitle
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerControlsTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.deblurEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoEnhancementModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedLongRemainingMinutesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedMediumRemainingMinutesKey
@@ -142,8 +144,8 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override val volumeStabilizationEnabled: Flow<Boolean> =
         store.boolean(volumeStabilizationEnabledKey, false)
 
-    override val deblurEnabled: Flow<Boolean> =
-        store.boolean(deblurEnabledKey, false)
+    override val videoEnhancementMode: Flow<VideoEnhancementMode> =
+        store.data.map { prefs -> prefs.videoEnhancementMode() }.distinctUntilChanged()
 
     override val audioFocusDisabled: Flow<Boolean> =
         store.boolean(audioFocusDisabledKey, false)
@@ -306,8 +308,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override suspend fun setVolumeStabilizationEnabled(enabled: Boolean) =
         store.setBoolean(volumeStabilizationEnabledKey, enabled)
 
-    override suspend fun setDeblurEnabled(enabled: Boolean) =
-        store.setBoolean(deblurEnabledKey, enabled)
+    override suspend fun setVideoEnhancementMode(mode: VideoEnhancementMode) =
+        store.edit { prefs ->
+            prefs[videoEnhancementModeKey] = mode.name
+            prefs.remove(deblurEnabledKey)
+        }
 
     override suspend fun setAudioFocusDisabled(disabled: Boolean) =
         store.setBoolean(audioFocusDisabledKey, disabled)

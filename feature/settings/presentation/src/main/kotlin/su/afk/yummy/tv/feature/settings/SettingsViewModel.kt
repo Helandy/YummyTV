@@ -50,8 +50,8 @@ import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestina
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
 import su.afk.yummy.tv.feature.settings.utils.movedDetailsSection
 import su.afk.yummy.tv.feature.settings.utils.movedHomeBlock
-import su.afk.yummy.tv.feature.settings.utils.toggledDetailsSection
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
+import su.afk.yummy.tv.feature.settings.utils.toggledDetailsSection
 import su.afk.yummy.tv.feature.settings.utils.toggledHomeBlock
 import java.util.Optional
 import javax.inject.Inject
@@ -134,7 +134,7 @@ class SettingsViewModel @Inject internal constructor(
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
-                        deblurEnabled = snapshot.deblurEnabled,
+                        videoEnhancementMode = snapshot.videoEnhancementMode,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
@@ -434,8 +434,8 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setVolumeStabilizationEnabled(!currentState.volumeStabilizationEnabled)
             }
 
-            SettingsState.Event.DeblurToggled -> viewModelScope.launch {
-                settingsStore.setDeblurEnabled(!currentState.deblurEnabled)
+            is SettingsState.Event.VideoEnhancementModeSelected -> viewModelScope.launch {
+                settingsStore.setVideoEnhancementMode(event.mode)
             }
 
             SettingsState.Event.AudioFocusToggled -> viewModelScope.launch {

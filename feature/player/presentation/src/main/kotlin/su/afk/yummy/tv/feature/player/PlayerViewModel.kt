@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
@@ -612,14 +613,14 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.VolumeStabilizationToggled ->
                 preferences.setVolumeStabilization(host, event.enabled)
 
-            PlayerState.Event.DeblurOverloaded -> {
-                if (currentState.deblurEnabled) {
-                    setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_deblur_overload)))
+            PlayerState.Event.VideoEnhancementOverloaded -> {
+                if (currentState.videoEnhancementMode != VideoEnhancementMode.OFF) {
+                    setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_video_enhancement_overload)))
                 }
             }
 
-            is PlayerState.Event.DeblurToggled ->
-                preferences.setDeblur(host, event.enabled)
+            is PlayerState.Event.VideoEnhancementModeSelected ->
+                preferences.setVideoEnhancementMode(host, event.mode)
 
             is PlayerState.Event.SpeedSelected -> {
                 val speed = event.speed.coerceAtLeast(0.1f)

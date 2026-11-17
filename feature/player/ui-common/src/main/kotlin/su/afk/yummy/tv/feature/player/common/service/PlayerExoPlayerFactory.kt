@@ -17,10 +17,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
 import su.afk.yummy.tv.feature.player.common.PlayerQualitySignals
-import su.afk.yummy.tv.feature.player.common.utils.deblurVideoEffects
+import su.afk.yummy.tv.feature.player.common.utils.videoEffects
 import javax.inject.Inject
 
 /** Собирает ExoPlayer сервиса: трек-селектор, декодеры, источники, буфер и аудио-фокус. */
@@ -32,10 +33,13 @@ internal class PlayerExoPlayerFactory @Inject constructor(
     private val qualitySignals: PlayerQualitySignals,
 ) {
     /**
-     * @param deblurEnabled собирать ли плеер с конвейером эффектов; по умолчанию — по сохранённой настройке.
-     *   Пересборка после выключения Deblur передаёт false явно, не полагаясь на чтение DataStore.
+     * @param enhancementMode режим улучшения видео, с которым собирается плеер; по умолчанию — по сохранённой
+     *   настройке. Пересборка после выключения передаёт [VideoEnhancementMode.OFF] явно, не полагаясь на DataStore.
      */
-    fun create(context: Context, deblurEnabled: Boolean = readDeblurEnabled()): PlayerExoPlayerBundle {
+    fun create(
+        context: Context,
+        enhancementMode: VideoEnhancementMode = readVideoEnhancementMode(),
+    ): PlayerExoPlayerBundle {
         val isLowRamDevice = context.isLowRamDevice()
         val trackSelector = DefaultTrackSelector(context).apply {
             // На слабых устройствах отдаём выбор битрейта адаптивному алгоритму вместо
@@ -65,11 +69,16 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             // ExoPlayer приглушает звук вместо паузы. Второй аргумент — handleAudioFocus.
             .setAudioAttributes(MEDIA_AUDIO_ATTRIBUTES, !readAudioFocusDisabled())
             .setHandleAudioBecomingNoisy(true)
+            // release() ждёт закрытия GL-конвейера эффектов: он отпускает поверхность вывода в своём потоке (Media3
+            // даёт ему до 500 мс, на эмуляторе до 5 с). С дефолтными 500 мс плеер, пересобранный при выключении
+            // улучшения видео, успевал подключить декодер к ещё занятой поверхности: «already connected».
+            .setReleaseTimeoutMs(if (isEmulator()) EMULATOR_RELEASE_TIMEOUT_MS else RELEASE_TIMEOUT_MS)
             .build()
         // Конвейер эффектов Media3 создаётся только если setVideoEffects вызван до prepare(): позже он
-        // молча игнорируется. Поэтому GL-конвейер поднимаем сразу, но только при включённом Deblur —
+        // молча игнорируется. Поэтому GL-конвейер поднимаем сразу, но только при включённом улучшении —
         // остальным пользователям обычный вывод без лишнего GL-прохода.
-        if (deblurEnabled) exoPlayer.setVideoEffects(deblurVideoEffects())
+        val effectsEnabled = enhancementMode != VideoEnhancementMode.OFF
+        if (effectsEnabled) exoPlayer.setVideoEffects(enhancementMode.videoEffects())
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
         exoPlayer.addAnalyticsListener(PlayerQualitySignalsListener(qualitySignals))
         exoPlayer.addAnalyticsListener(
@@ -79,7 +88,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
                 currentUriHost = { exoPlayer.currentMediaItem?.localConfiguration?.uri?.host },
             ),
         )
-        return PlayerExoPlayerBundle(exoPlayer, trackSelector, videoEffectsReady = deblurEnabled)
+        return PlayerExoPlayerBundle(exoPlayer, trackSelector, videoEffectsReady = effectsEnabled)
     }
 
     /**
@@ -88,9 +97,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
      * декодеры идут первыми; на реальных устройствах порядок остаётся системным.
      */
     private fun emulatorSoftwareFirstSelector(): MediaCodecSelector {
-        val emulator = Build.HARDWARE.equals("ranchu", ignoreCase = true) ||
-            Build.HARDWARE.equals("goldfish", ignoreCase = true)
-        if (!emulator) return MediaCodecSelector.DEFAULT
+        if (!isEmulator()) return MediaCodecSelector.DEFAULT
         return MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
             MediaCodecSelector.DEFAULT
                 .getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
@@ -119,12 +126,15 @@ internal class PlayerExoPlayerFactory @Inject constructor(
         } ?: false
 
     /** Читается блокирующе: эффекты должны быть заданы до prepare(), см. [create]. */
-    private fun readDeblurEnabled(): Boolean =
+    private fun readVideoEnhancementMode(): VideoEnhancementMode =
         runBlocking {
             withTimeoutOrNull(BUFFER_PROFILE_READ_TIMEOUT_MS) {
-                settingsStore.deblurEnabled.first()
+                settingsStore.videoEnhancementMode.first()
             }
-        } ?: false
+        } ?: VideoEnhancementMode.OFF
+
+    private fun isEmulator(): Boolean =
+        Build.HARDWARE.equals("ranchu", ignoreCase = true) || Build.HARDWARE.equals("goldfish", ignoreCase = true)
 
     private fun Context.isLowRamDevice(): Boolean =
         (getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
@@ -137,5 +147,7 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             .build()
 
         private const val BUFFER_PROFILE_READ_TIMEOUT_MS = 500L
+        private const val RELEASE_TIMEOUT_MS = 2_000L
+        private const val EMULATOR_RELEASE_TIMEOUT_MS = 6_000L
     }
 }

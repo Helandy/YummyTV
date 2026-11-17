@@ -5,9 +5,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class DeblurOverloadDetectorTest : BaseUnitTest() {
+class VideoEnhancementOverloadDetectorTest : BaseUnitTest() {
 
-    private val detector = DeblurOverloadDetector().apply { reset(0L) }
+    private val detector = VideoEnhancementOverloadDetector().apply { reset(0L) }
 
     @Test
     fun `few dropped frames do not trigger`() {

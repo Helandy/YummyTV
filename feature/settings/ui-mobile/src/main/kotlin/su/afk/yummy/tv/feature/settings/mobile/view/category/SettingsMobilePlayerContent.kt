@@ -7,6 +7,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.common.utils.detailsText
 import su.afk.yummy.tv.feature.settings.common.utils.label
@@ -113,15 +114,15 @@ internal fun SettingsMobilePlayerContent(
                     onClick = { onEvent(SettingsState.Event.VolumeStabilizationToggled) },
                 )
             }
-            SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_deblur_label),
-                hint = if (state.deblurEnabled) {
-                    stringResource(R.string.settings_deblur_enabled)
-                } else {
-                    stringResource(R.string.settings_deblur_disabled)
+            SettingsMobileSliderRow(
+                label = stringResource(R.string.settings_video_enhancement_label),
+                valueLabel = { VideoEnhancementMode.entries[it].label() },
+                value = VideoEnhancementMode.entries.indexOf(state.videoEnhancementMode).coerceAtLeast(0),
+                valueRange = 0..VideoEnhancementMode.entries.lastIndex,
+                enabled = true,
+                onValueCommitted = {
+                    onEvent(SettingsState.Event.VideoEnhancementModeSelected(VideoEnhancementMode.entries[it]))
                 },
-                enabled = state.deblurEnabled,
-                onClick = { onEvent(SettingsState.Event.DeblurToggled) },
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {

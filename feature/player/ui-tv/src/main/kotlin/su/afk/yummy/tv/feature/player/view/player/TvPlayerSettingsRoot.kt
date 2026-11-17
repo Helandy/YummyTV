@@ -9,8 +9,10 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeController
 import su.afk.yummy.tv.feature.player.common.label
+import su.afk.yummy.tv.feature.player.common.utils.label
 import su.afk.yummy.tv.feature.player.model.TvPlayerSettingsPage
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.isSelected
@@ -35,8 +37,8 @@ internal fun TvPlayerSettingsRoot(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
-    deblurEnabled: Boolean,
-    onDeblurChange: (Boolean) -> Unit,
+    videoEnhancementMode: VideoEnhancementMode,
+    onVideoEnhancementModeChange: (VideoEnhancementMode) -> Unit,
     showAdaptiveQuality: Boolean,
     adaptiveQualityEnabled: Boolean,
     onAdaptiveQualityChange: (Boolean) -> Unit,
@@ -142,11 +144,9 @@ internal fun TvPlayerSettingsRoot(
         )
     }
     TvPlayerSettingsHeader(stringResource(R.string.player_settings_section_video))
-    TvPlayerSettingsMenuRow(
-        label = stringResource(R.string.player_deblur_title),
-        value = stringResource(if (deblurEnabled) R.string.player_toggle_on else R.string.player_toggle_off),
-        toggleChecked = deblurEnabled,
-        onClick = { onDeblurChange(!deblurEnabled) },
-        showChevron = false,
+    PageRow(
+        page = TvPlayerSettingsPage.VideoEnhancement,
+        label = stringResource(R.string.player_video_enhancement_title),
+        value = videoEnhancementMode.label(),
     )
 }

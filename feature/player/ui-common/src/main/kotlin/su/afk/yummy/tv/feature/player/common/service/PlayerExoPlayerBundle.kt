@@ -5,7 +5,7 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 
 /**
  * Собранный ExoPlayer и его трек-селектор: селектор нужен слушателям для подмены дорожек.
- * [videoEffectsReady] — конвейер видеоэффектов поднят при сборке (Deblur был включён), эффекты можно
+ * [videoEffectsReady] — конвейер видеоэффектов поднят при сборке (улучшение видео было включено), эффекты можно
  * менять на лету без перезапуска потока.
  */
 internal data class PlayerExoPlayerBundle(

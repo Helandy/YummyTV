@@ -10,5 +10,8 @@ internal enum class MobilePlayerSettingsPage {
     SleepTimer,
     Resize,
     Display,
+
+    /** Выбор режима улучшения видео; открывается из [Display] и возвращает туда же. */
+    VideoEnhancement,
     CastAndPip,
 }

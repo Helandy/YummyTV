@@ -11,21 +11,22 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.common.utils.detailsText
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.DetailsButtonOrderResetRow
-import su.afk.yummy.tv.feature.settings.view.TvAudioFocusConfirmationDialog
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
 import su.afk.yummy.tv.feature.settings.view.SettingsSliderRow
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
-import su.afk.yummy.tv.feature.settings.common.utils.detailsText
-import su.afk.yummy.tv.feature.settings.common.utils.hint
-import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.videoQualitySliderEntries
+import su.afk.yummy.tv.feature.settings.view.TvAudioFocusConfirmationDialog
 
 @Composable
 internal fun SettingsTvPlayerContent(
@@ -124,17 +125,18 @@ internal fun SettingsTvPlayerContent(
         )
     }
     SettingsDivider()
-    ToggleRow(
-        label = stringResource(R.string.settings_deblur_label),
-        hint = if (state.deblurEnabled) {
-            stringResource(R.string.settings_deblur_enabled)
-        } else {
-            stringResource(R.string.settings_deblur_disabled)
+    val enhancementModes = VideoEnhancementMode.entries
+    SettingsSliderRow(
+        label = stringResource(R.string.settings_video_enhancement_label),
+        valueText = state.videoEnhancementMode.label(),
+        value = enhancementModes.indexOf(state.videoEnhancementMode).coerceAtLeast(0),
+        valueRange = 0..enhancementModes.lastIndex,
+        enabled = true,
+        onValueChange = {
+            onEvent(SettingsState.Event.VideoEnhancementModeSelected(enhancementModes[it]))
         },
-        enabled = state.deblurEnabled,
-        onClick = {
-            onEvent(SettingsState.Event.DeblurToggled)
-        },
+        modifier = Modifier
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
     var audioFocusConfirmVisible by remember { mutableStateOf(false) }

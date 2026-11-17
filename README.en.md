@@ -181,6 +181,7 @@ The built-in player is based on **Media3 / ExoPlayer** and supports:
   Zedfilm, Aniboom, Anistar, Amedia, AniLibria, AniDub, AiLiberty, Studio MIR, Sameband, AnimeVost, Animebesst, Ashdi,
   Fenix, Dream Cast, 4K);
 - playback speed, scale and zoom, and automatic opening/ending skip;
+- video quality enhancement with shaders (Anime4K);
 - previous/next episode navigation and auto-play of the next episode;
 - mobile gestures (brightness, volume, seeking, zoom) and mouse control on TV;
 - Picture-in-Picture, local file playback, and a rating suggestion after watching.

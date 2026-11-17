@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.model.TvPlayerSettingsPage
 
 /**
@@ -61,8 +62,8 @@ internal fun TvPlayerSettingsPanel(
     showStabilization: Boolean,
     stabilizationEnabled: Boolean,
     onStabilizationChange: (Boolean) -> Unit,
-    deblurEnabled: Boolean,
-    onDeblurChange: (Boolean) -> Unit,
+    videoEnhancementMode: VideoEnhancementMode,
+    onVideoEnhancementModeChange: (VideoEnhancementMode) -> Unit,
     showAdaptiveQuality: Boolean,
     adaptiveQualityEnabled: Boolean,
     onAdaptiveQualityChange: (Boolean) -> Unit,
@@ -145,8 +146,8 @@ internal fun TvPlayerSettingsPanel(
                     showStabilization = showStabilization,
                     stabilizationEnabled = stabilizationEnabled,
                     onStabilizationChange = onStabilizationChange,
-                    deblurEnabled = deblurEnabled,
-                    onDeblurChange = onDeblurChange,
+                    videoEnhancementMode = videoEnhancementMode,
+                    onVideoEnhancementModeChange = onVideoEnhancementModeChange,
                     showAdaptiveQuality = showAdaptiveQuality,
                     adaptiveQualityEnabled = adaptiveQualityEnabled,
                     onAdaptiveQualityChange = onAdaptiveQualityChange,
@@ -168,6 +169,8 @@ internal fun TvPlayerSettingsPanel(
                     onSubtitleTrackSelected = onSubtitleTrackSelected,
                     subtitleStyle = subtitleStyle,
                     onSubtitleStyleChange = onSubtitleStyleChange,
+                    videoEnhancementMode = videoEnhancementMode,
+                    onVideoEnhancementModeChange = onVideoEnhancementModeChange,
                     onDone = { page = null },
                 )
             }

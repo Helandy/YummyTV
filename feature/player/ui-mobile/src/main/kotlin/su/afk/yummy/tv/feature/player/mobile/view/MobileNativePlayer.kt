@@ -40,13 +40,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
-import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
+import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
 import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
@@ -54,12 +54,10 @@ import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
-import su.afk.yummy.tv.feature.player.common.PlayerDeblurOverloadEffect
-import su.afk.yummy.tv.feature.player.common.PlayerDecoderCapabilityEffect
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
-import su.afk.yummy.tv.feature.player.common.rememberPlayerSleepTimer
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
+import su.afk.yummy.tv.feature.player.common.PlayerVideoEnhancementOverloadEffect
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
@@ -73,6 +71,7 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSeekController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSegmentSkipper
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSkipUiState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSleepTimer
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackMenu
@@ -97,10 +96,10 @@ import su.afk.yummy.tv.feature.player.mobile.cast.MobileCastingIndicator
 import su.afk.yummy.tv.feature.player.mobile.cast.rememberMobileCastConnectionState
 import su.afk.yummy.tv.feature.player.mobile.cast.stopCasting
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerKeyAction
-import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMenuActions
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMenuModel
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsPage
+import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVerticalGestureZone
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerGestureController
@@ -115,6 +114,8 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
+import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 /** Высота горизонтальной ленты серий: карточка 16:9 шириной 150dp, подпись и отступ. */
 private val EPISODES_STRIP_HEIGHT = 128.dp
@@ -384,9 +385,9 @@ internal fun MobileNativePlayer(
     PlayerStallWatchdogEffect(player = player, onEvent = onEvent)
     PlayerDecoderCapabilityEffect(player = player, onEvent = onEvent)
 
-    PlayerDeblurOverloadEffect(
+    PlayerVideoEnhancementOverloadEffect(
         player = player,
-        enabled = state.deblurEnabled,
+        enabled = state.videoEnhancementMode != VideoEnhancementMode.OFF,
         onEvent = onEvent,
     )
 
@@ -926,7 +927,7 @@ internal fun MobileNativePlayer(
                     volumePercent = playerVolumePercent,
                     showStabilization = state.volumeStabilizationSupported,
                     stabilizationEnabled = state.volumeStabilizationEnabled,
-                    deblurEnabled = state.deblurEnabled,
+                    videoEnhancementMode = state.videoEnhancementMode,
                     sleepTimerMinutes = sleepTimer.selectedMinutes,
                     showDetails = state.animeId > 0,
                     showPictureInPicture = state.pictureInPictureEnabled &&
@@ -962,7 +963,7 @@ internal fun MobileNativePlayer(
                     onAutoBrightnessChange = { gestures.setAutoBrightness(it) },
                     onVolumeChange = { volumeController.setPercent(it) },
                     onStabilizationChange = { onEvent(PlayerState.Event.VolumeStabilizationToggled(it)) },
-                    onDeblurChange = { onEvent(PlayerState.Event.DeblurToggled(it)) },
+                    onVideoEnhancementModeChange = { onEvent(PlayerState.Event.VideoEnhancementModeSelected(it)) },
                     onSleepTimerSelected = { minutes ->
                         if (minutes > 0) sleepTimer.set(minutes) else sleepTimer.cancel()
                     },

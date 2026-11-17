@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.model.PlayerResizeSettingsScope
 import javax.inject.Inject
@@ -32,7 +33,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     val tvPlayerVolumeKeysEnabled: Flow<Boolean> = settingsStore.tvPlayerVolumeKeysEnabled
     val advancedPlayerVolumeEnabled: Flow<Boolean> = settingsStore.advancedPlayerVolumeEnabled
     val volumeStabilizationEnabled: Flow<Boolean> = settingsStore.volumeStabilizationEnabled
-    val deblurEnabled: Flow<Boolean> = settingsStore.deblurEnabled
+    val videoEnhancementMode: Flow<VideoEnhancementMode> = settingsStore.videoEnhancementMode
     val adaptiveVideoQualityEnabled: Flow<Boolean> = settingsStore.adaptiveVideoQualityEnabled
     val preferredVideoQuality: Flow<PreferredVideoQuality> = settingsStore.preferredVideoQuality
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings> = settingsStore.playerSubtitleStyle
@@ -54,8 +55,8 @@ internal class PlayerSettingsHandler @Inject constructor(
         settingsStore.setVolumeStabilizationEnabled(enabled)
     }
 
-    suspend fun saveDeblurEnabled(enabled: Boolean) {
-        settingsStore.setDeblurEnabled(enabled)
+    suspend fun saveVideoEnhancementMode(mode: VideoEnhancementMode) {
+        settingsStore.setVideoEnhancementMode(mode)
     }
 
     suspend fun savePreferredVideoQuality(quality: PreferredVideoQuality) {
