@@ -86,6 +86,16 @@ class YaniMirrorFallbackTest : BaseUnitTest() {
     }
 
     @Test
+    fun `trace tells repositories whether the answer came from the copy`() = runTest {
+        val fromYani = withMirrorTrace { run() }
+        val fromCopy = withMirrorTrace { run(primaryFails = true) }
+
+        assertEquals(false, fromYani.fromMirror)
+        assertEquals("mirror", fromCopy.value)
+        assertEquals(true, fromCopy.fromMirror)
+    }
+
+    @Test
     fun `open breaker retries yani when the mirror cannot answer`() = runTest {
         run(primaryFails = true)
         run(primaryFails = true)

@@ -36,6 +36,7 @@ interface AccountStorage {
 
     suspend fun saveRatingBuckets(cache: AccountRatingBucketsCache)
 
+    /** Инвалидирует кэш: помечает устаревшим, записи остаются запасными, пока перезагрузка не удалась. */
     suspend fun deleteRatingBuckets(animeId: Int)
 
     suspend fun getUserRating(userId: Int, animeId: Int): AccountUserRatingEntry?
@@ -57,6 +58,7 @@ interface AccountStorage {
         prunePagesCachedBefore: Long? = null,
     )
 
+    /** Инвалидирует кэш: помечает устаревшим, записи остаются запасными, пока перезагрузка не удалась. */
     suspend fun invalidateCollections()
 
     suspend fun getVideoSubscriptions(
@@ -66,6 +68,7 @@ interface AccountStorage {
 
     suspend fun saveVideoSubscriptions(cache: AccountVideoSubscriptionsCache)
 
+    /** Инвалидирует кэш: помечает устаревшим, записи остаются запасными, пока перезагрузка не удалась. */
     suspend fun deleteVideoSubscriptions(userId: Int)
 
     suspend fun getNotifications(
@@ -80,6 +83,7 @@ interface AccountStorage {
         prunePagesCachedBefore: Long? = null,
     )
 
+    /** Инвалидирует кэш: помечает устаревшим, записи остаются запасными, пока перезагрузка не удалась. */
     suspend fun deleteNotifications(userId: Int)
 
     suspend fun getUserFriends(
@@ -115,6 +119,7 @@ interface AccountStorage {
 
     suspend fun saveNotificationCounts(cache: AccountNotificationCountsCache)
 
+    /** Инвалидирует кэш: помечает устаревшим, записи остаются запасными, пока перезагрузка не удалась. */
     suspend fun deleteNotificationCounts(userId: Int)
 
     suspend fun getNotificationAnime(slug: String): AccountNotificationAnimeEntry?

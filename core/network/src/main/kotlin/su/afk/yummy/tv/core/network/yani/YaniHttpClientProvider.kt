@@ -23,6 +23,7 @@ class YaniHttpClientProvider @Inject constructor(
     private val apiConfig: YaniApiConfig,
     private val logRecordingSettings: AppLogRecordingSettings,
     private val imageFormatSupport: ImageFormatSupport,
+    private val contactTracker: YaniContactTracker,
     @IoApplicationScope private val scope: CoroutineScope,
 ) {
     private val mutex = Mutex()
@@ -35,7 +36,7 @@ class YaniHttpClientProvider @Inject constructor(
         return mutex.withLock {
             client?.let { return it }
             withContext(Dispatchers.IO) {
-                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient, scope, apiConfig, logRecordingSettings, imageFormatSupport)
+                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient, scope, apiConfig, logRecordingSettings, imageFormatSupport, contactTracker)
             }.also { client = it }
         }
     }

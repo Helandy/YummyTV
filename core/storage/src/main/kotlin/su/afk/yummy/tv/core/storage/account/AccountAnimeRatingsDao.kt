@@ -79,6 +79,10 @@ abstract class AccountAnimeRatingsDao {
         if (cache.buckets.isNotEmpty()) insertRatingBuckets(cache.buckets)
     }
 
+    /** Помечает кэш распределения оценок устаревшим, не удаляя записи: если перезагрузка не удастся, остаются прежние. */
+    @Query("UPDATE account_rating_bucket_caches SET cachedAt = 0 WHERE animeId = :animeId")
+    abstract suspend fun expireRatingBucketCache(animeId: Int)
+
     @Transaction
     open suspend fun deleteRatingBucketsCache(animeId: Int) {
         deleteRatingBucketCache(animeId)

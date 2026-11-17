@@ -17,6 +17,8 @@ import su.afk.yummy.tv.data.catalog.storage.mapper.toSearchPageCache
 import su.afk.yummy.tv.domain.catalog.model.CachedSearchPage
 import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
+import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
+import su.afk.yummy.tv.core.network.yani.withMirrorTrace
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchPage
 import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
@@ -26,6 +28,7 @@ import su.afk.yummy.tv.data.catalog.storage.mapper.toSearchPage as toStoredSearc
 private const val SEARCH_FILTER_OPTIONS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val SEARCH_RESULTS_TTL_MS = 60 * 60 * 1000L
 private const val SEARCH_RESULTS_CACHE_RETENTION_MS = 24 * 60 * 60 * 1000L
+private const val MIRROR_RESULTS_TTL_MS = 5 * 60 * 1000L
 
 class YaniSearchRepository(
     private val api: YaniSearchApi,
@@ -49,8 +52,12 @@ class YaniSearchRepository(
             isFresh = { it.isFresh(SEARCH_RESULTS_TTL_MS) },
             toDomain = { it.toStoredSearchPage() },
             fetchAndSave = {
-                val response = api.search(query, filters, limit, offset)
-                val cachedAt = System.currentTimeMillis()
+                val (response, fromMirror) = withMirrorTrace { api.search(query, filters, limit, offset) }
+                val now = System.currentTimeMillis()
+                // Страница из копии неполна (под фильтрами нет тайтлов без деталей): сохранённая страница yani не заменяется,
+                // а пустое место заполняется ненадолго, чтобы yani опросили снова.
+                if (fromMirror && searchStorage.getPage(pageKey)?.items?.isNotEmpty() == true) throw MirrorDataSkippedException()
+                val cachedAt = if (fromMirror) now - SEARCH_RESULTS_TTL_MS + MIRROR_RESULTS_TTL_MS else now
                 val cache = response.toSearchPageCache(
                     pageKey = pageKey,
                     language = language.apiCode,
@@ -59,9 +66,10 @@ class YaniSearchRepository(
                     responseSize = response.size,
                     cachedAt = cachedAt,
                 )
+                // Пока отвечает копия, старые страницы не вычищаются: если не станет и её, сохранённое — единственное, что есть.
                 searchStorage.savePage(
                     cache,
-                    prunePagesCachedBefore = cachedAt - SEARCH_RESULTS_CACHE_RETENTION_MS,
+                    prunePagesCachedBefore = if (fromMirror) 0L else now - SEARCH_RESULTS_CACHE_RETENTION_MS,
                 )
                 cache
             },

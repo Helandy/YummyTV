@@ -115,6 +115,10 @@ abstract class CollectionStorageDao {
         deleteDetailsForCollection(collectionId)
     }
 
+    /** Помечает страницы каталога коллекций устаревшими, не удаляя записи: если перезагрузка не удастся, остаются прежние. */
+    @Query("UPDATE collection_catalog_pages SET cachedAt = 0")
+    abstract suspend fun expireCatalogPages()
+
     @Transaction
     open suspend fun invalidateCatalog() {
         deleteAllCatalogItems()

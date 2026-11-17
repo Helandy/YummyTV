@@ -148,6 +148,13 @@ abstract class AccountNotificationsDao {
         }
     }
 
+    /** Помечает страницы уведомлений устаревшими, не удаляя записи: если перезагрузка не удастся, остаются прежние. */
+    @Query("UPDATE account_notification_pages SET cachedAt = 0 WHERE userId = :userId")
+    abstract suspend fun expireNotificationPages(userId: Int)
+
+    @Query("UPDATE account_notification_count_caches SET cachedAt = 0 WHERE userId = :userId")
+    abstract suspend fun expireNotificationCountCache(userId: Int)
+
     @Transaction
     open suspend fun deleteNotificationsForUser(userId: Int) {
         deleteNotificationPages(userId)

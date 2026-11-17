@@ -8,6 +8,7 @@ import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.android.image.ImageFormatAnalytics
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
+import su.afk.yummy.tv.core.network.yani.YaniContactTracker
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
@@ -26,6 +27,7 @@ class AppStartupMaintenanceRunner @Inject constructor(
     private val settingsStore: SettingsStore,
     private val legacyStreamingCachePruner: LegacyStreamingCachePruner,
     private val storageCleanupStore: StorageCleanup,
+    private val yaniContactTracker: YaniContactTracker,
     private val imageFormatSupport: ImageFormatSupport,
     private val imageFormatAnalytics: ImageFormatAnalytics,
     @DefaultApplicationScope private val scope: CoroutineScope,
@@ -50,8 +52,22 @@ class AppStartupMaintenanceRunner @Inject constructor(
             // Без одноразового флага: pruner сам отказывается работать, пока жива хоть одна
             // загрузка со старой схемой ключей, — зато подберёт их данные, как только не останется.
             runSuspendCatching { legacyStreamingCachePruner.pruneOrphanedEntries() }
-            runSuspendCatching { storageCleanupStore.purgeStaleCaches() }
+            purgeStaleCachesAfterYaniResponds()
             runSuspendCatching { reportImageFormats() }
+        }
+    }
+
+    /**
+     * Плановая чистка кэша идёт только после первого ответа yani в этом запуске. Пока yani недоступен, кэш — единственный источник
+     * данных: старше недели он или нет, удалять его нельзя (иначе при долгом сбое пользователь остаётся ни с чем). Ответы
+     * резервной копии YummyTV не считаются.
+     */
+    private fun purgeStaleCachesAfterYaniResponds() {
+        scope.launch {
+            runSuspendCatching {
+                yaniContactTracker.awaitContact()
+                storageCleanupStore.purgeStaleCaches()
+            }
         }
     }
 

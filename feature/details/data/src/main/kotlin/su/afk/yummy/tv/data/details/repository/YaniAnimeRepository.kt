@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.data.details.repository
 
+import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
+import su.afk.yummy.tv.core.network.yani.withMirrorTrace
+import su.afk.yummy.tv.data.details.utils.isMinimal
+import su.afk.yummy.tv.data.details.utils.withUserStateFrom
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -86,6 +90,7 @@ import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideos as toStoredAnim
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 5 * 60 * 1000L
+private const val MIRROR_MINIMAL_DETAILS_TTL_MS = 10 * 60 * 1000L
 private const val EXTRA_VIDEOS_TTL_MS = 5 * 60 * 1000L
 private const val EXTRA_VIDEOS_TIMEOUT_MS = 8_000L
 private const val EXTRA_VIDEOS_CACHE_NAMESPACE = "extra-videos"
@@ -318,6 +323,10 @@ class YaniAnimeRepository(
                     },
                     fetch = {
                         api.getAnimeRecommendations(animeId, fromAi).also { dto ->
+                            // Пустой ответ не заменяет сохранённые рекомендации (в документ-кэш он тоже не попадает).
+                            if (dto.response.isEmpty() && stored?.recommendations?.isNotEmpty() == true) {
+                                throw MirrorDataSkippedException()
+                            }
                             saveRecommendationsContent(
                                 animeId = animeId,
                                 languageCode = languageCode,
@@ -545,18 +554,25 @@ class YaniAnimeRepository(
         animeId: Int,
         languageCode: String,
     ): AnimeDetails {
-        val dto = api.getAnimeDetails(animeId)
-        val cachedAt = System.currentTimeMillis()
+        val (dto, fromMirror) = withMirrorTrace { api.getAnimeDetails(animeId) }
+        val now = System.currentTimeMillis()
+        // Минимальная карточка копии считается свежей недолго: скоро снова пробуем yani или копию уже с полными деталями.
+        val cache = dto.toAnimeDetailsCache(language = languageCode, cachedAt = now)
+        if (fromMirror && cache != null && cache.isMinimal()) {
+            // Копия беднее сохранённого: оставляем полную карточку (вызывающий отдаёт её как при сетевой ошибке).
+            val stored = animeStorage.getDetails(animeId, languageCode)
+            if (stored != null && !stored.isMinimal()) throw MirrorDataSkippedException()
+        }
+        val cachedAt = if (fromMirror && cache?.isMinimal() == true) now - ANIME_DETAILS_TTL_MS + MIRROR_MINIMAL_DETAILS_TTL_MS else now
         // Если удалось сохранить в кэш — возвращаем результат через тот же cache->domain
         // маппер, что и при чтении из кэша, чтобы свежая загрузка не расходилась с ним.
-        val result = dto.toAnimeDetailsCache(
-            language = languageCode,
-            cachedAt = cachedAt,
-        )?.let { cache ->
-            animeStorage.saveDetails(cache)
-            cache.toStoredAnimeDetails()
+        val result = cache?.let {
+            val toSave = it.copy(entry = it.entry.copy(cachedAt = cachedAt))
+            animeStorage.saveDetails(toSave)
+            toSave.toStoredAnimeDetails()
         } ?: dto.toAnimeDetails()
-        saveUserRatingFromDetails(dto, animeId, cachedAt)
+        // У копии нет поля `user`: оценка пользователя из неё затёрла бы сохранённую.
+        if (!fromMirror) saveUserRatingFromDetails(dto, animeId, now)
         return result
     }
 
@@ -591,15 +607,17 @@ class YaniAnimeRepository(
         val key = "$animeId:$languageCode:${settingsStore.currentUserId()}"
         val deferred = videosInFlight.computeIfAbsent(key) {
             detailsScope.async {
-                val dto = api.getAnimeVideos(animeId)
+                val (dto, fromMirror) = withMirrorTrace { api.getAnimeVideos(animeId) }
                 // Маппинг тысяч видео — вычисления, а не IO: отдаём его пулу Default.
-                val cache = withContext(Dispatchers.Default) {
+                val mapped = withContext(Dispatchers.Default) {
                     dto.response.toAnimeVideosCache(
                         animeId = animeId,
                         language = languageCode,
                         cachedAt = System.currentTimeMillis(),
                     )
                 }
+                // Копия не знает серверный прогресс и подписки: для тех же видео они остаются из сохранённого списка.
+                val cache = if (fromMirror) mapped.withUserStateFrom(animeStorage.getVideos(animeId, languageCode)) else mapped
                 animeStorage.saveVideos(cache)
                 cache
             }.also { started ->
@@ -659,6 +677,10 @@ class YaniAnimeRepository(
             language = languageCode,
             cachedAt = System.currentTimeMillis(),
         )
+        // Пустой список не заменяет сохранённые трейлеры.
+        if (cache.trailers.isEmpty() && animeStorage.getTrailers(animeId, languageCode)?.trailers?.isNotEmpty() == true) {
+            throw MirrorDataSkippedException()
+        }
         animeStorage.saveTrailers(cache)
         return cache
     }

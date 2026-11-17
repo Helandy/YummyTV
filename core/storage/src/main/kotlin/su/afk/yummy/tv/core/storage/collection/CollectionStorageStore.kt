@@ -27,7 +27,7 @@ internal class CollectionStorageStore(private val dao: CollectionStorageDao) : C
     }
 
     override suspend fun invalidateCatalog() {
-        dao.invalidateCatalog()
+        dao.expireCatalogPages()
     }
 
     override suspend fun getCatalogPage(pageKey: String): CollectionCatalogPageCache? =

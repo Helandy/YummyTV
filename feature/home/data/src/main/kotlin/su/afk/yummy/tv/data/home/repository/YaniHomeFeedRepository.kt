@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
+import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
@@ -172,6 +173,10 @@ class YaniHomeFeedRepository(
             watchSignature = watchSignature,
             cachedAt = System.currentTimeMillis(),
         )
+        // Лента не бывает пустой целиком: пустой ответ (сбой yani) не заменяет сохранённую.
+        if (cache.items.isEmpty() && homeFeedStore.getFeed(languageCode, watchSignature)?.items?.isNotEmpty() == true) {
+            throw MirrorDataSkippedException()
+        }
         homeFeedStore.saveFeed(cache)
         analyticsTracker.log(TAG) {
             val feed = cache.toStoredHomeFeed(stringProvider)

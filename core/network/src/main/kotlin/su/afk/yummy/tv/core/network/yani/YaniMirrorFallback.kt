@@ -5,6 +5,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -74,9 +75,10 @@ class YaniMirrorFallback @Inject constructor(
 
     /** Выполняет [primary] (yani), а при его недоступности — [mirror] (копия). */
     suspend fun <T> call(primary: suspend () -> T, mirror: suspend () -> T): T {
+        val trace = currentCoroutineContext()[MirrorTrace]
         if (now() < openUntil) {
             return try {
-                mirror().also(::markCopy)
+                mirror().also { markCopy(trace) }
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
@@ -90,7 +92,7 @@ class YaniMirrorFallback @Inject constructor(
         } catch (e: Exception) {
             if (!e.isYaniOutage()) throw e
             try {
-                mirror().also(::markCopy)
+                mirror().also { markCopy(trace) }
             } catch (m: CancellationException) {
                 throw m
             } catch (_: Exception) {
@@ -113,7 +115,8 @@ class YaniMirrorFallback @Inject constructor(
         throw e
     }
 
-    private fun markCopy(@Suppress("UNUSED_PARAMETER") result: Any?) {
+    private fun markCopy(trace: MirrorTrace?) {
+        trace?.fromMirror = true
         _state.value = MirrorState(active = true, copyUpdatedAtSec = lastCopyUpdatedSec)
     }
 

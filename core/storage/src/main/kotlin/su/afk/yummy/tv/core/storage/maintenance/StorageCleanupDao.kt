@@ -7,6 +7,9 @@ import androidx.room.Transaction
 /**
  * Purges stale cache rows across the whole database.
  *
+ * Строки с `cachedAt = 0` — «протухшие по команде» (после выхода, изменения списка и т.п.): они нужны как запасные данные, пока
+ * источник недоступен, и удаляются только полной очисткой ([purgeCachesOlderThan] с `Long.MAX_VALUE`), а не плановой.
+ *
  * Every cache group is cleaned in two steps: parent rows older than the retention
  * threshold are deleted by `cachedAt`, then child rows whose parent no longer exists
  * are removed as orphans. User-owned tables (library, watch_progress, video_downloads,
@@ -99,12 +102,12 @@ abstract class StorageCleanupDao {
         deleteStaleDocuments(minCachedAt)
     }
 
-    @Query("DELETE FROM document_cache WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM document_cache WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleDocuments(minCachedAt: Long)
 
     // region anime details
 
-    @Query("DELETE FROM anime_details WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM anime_details WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAnimeDetails(minCachedAt: Long)
 
     @Query(
@@ -159,7 +162,7 @@ abstract class StorageCleanupDao {
 
     // region anime videos / recommendations / trailers
 
-    @Query("DELETE FROM anime_video_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM anime_video_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAnimeVideoCaches(minCachedAt: Long)
 
     @Query(
@@ -174,7 +177,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAnimeVideos()
 
-    @Query("DELETE FROM anime_recommendation_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM anime_recommendation_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAnimeRecommendationCaches(minCachedAt: Long)
 
     @Query(
@@ -190,7 +193,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAnimeRecommendations()
 
-    @Query("DELETE FROM anime_trailer_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM anime_trailer_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAnimeTrailerCaches(minCachedAt: Long)
 
     @Query(
@@ -209,7 +212,7 @@ abstract class StorageCleanupDao {
 
     // region home / top / schedule
 
-    @Query("DELETE FROM home_feed_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM home_feed_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleHomeFeedCaches(minCachedAt: Long)
 
     @Query(
@@ -224,7 +227,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanHomeFeedItems()
 
-    @Query("DELETE FROM anime_schedule_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM anime_schedule_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAnimeScheduleCaches(minCachedAt: Long)
 
     @Query(
@@ -242,7 +245,7 @@ abstract class StorageCleanupDao {
 
     // region search
 
-    @Query("DELETE FROM search_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM search_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleSearchPages(minCachedAt: Long)
 
     @Query(
@@ -256,7 +259,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanSearchItems()
 
-    @Query("DELETE FROM search_filter_options WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM search_filter_options WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleSearchFilterOptions(minCachedAt: Long)
 
     @Query(
@@ -296,7 +299,7 @@ abstract class StorageCleanupDao {
 
     // region collections
 
-    @Query("DELETE FROM collection_details WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM collection_details WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleCollectionDetails(minCachedAt: Long)
 
     @Query(
@@ -311,7 +314,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanCollectionAnimeItems()
 
-    @Query("DELETE FROM collection_catalog_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM collection_catalog_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleCollectionCatalogPages(minCachedAt: Long)
 
     @Query(
@@ -329,7 +332,7 @@ abstract class StorageCleanupDao {
 
     // region comments
 
-    @Query("DELETE FROM comment_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM comment_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleCommentPages(minCachedAt: Long)
 
     @Query(
@@ -351,19 +354,19 @@ abstract class StorageCleanupDao {
 
     // region account
 
-    @Query("DELETE FROM account_profiles WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_profiles WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountProfiles(minCachedAt: Long)
 
-    @Query("DELETE FROM account_anime_list_states WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_anime_list_states WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountAnimeListStates(minCachedAt: Long)
 
-    @Query("DELETE FROM account_user_ratings WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_user_ratings WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountUserRatings(minCachedAt: Long)
 
-    @Query("DELETE FROM account_notification_anime WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_notification_anime WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountNotificationAnime(minCachedAt: Long)
 
-    @Query("DELETE FROM account_user_list_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_user_list_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountUserListPages(minCachedAt: Long)
 
     @Query(
@@ -379,7 +382,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountUserListItems()
 
-    @Query("DELETE FROM account_rating_bucket_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_rating_bucket_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountRatingBucketCaches(minCachedAt: Long)
 
     @Query(
@@ -393,7 +396,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountRatingBuckets()
 
-    @Query("DELETE FROM account_list_stats_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_list_stats_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountListStatsCaches(minCachedAt: Long)
 
     @Query(
@@ -407,7 +410,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountListStats()
 
-    @Query("DELETE FROM account_collection_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_collection_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountCollectionPages(minCachedAt: Long)
 
     @Query(
@@ -421,7 +424,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountCollectionItems()
 
-    @Query("DELETE FROM account_video_subscription_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_video_subscription_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountVideoSubscriptionCaches(minCachedAt: Long)
 
     @Query(
@@ -436,7 +439,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountVideoSubscriptions()
 
-    @Query("DELETE FROM account_notification_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_notification_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountNotificationPages(minCachedAt: Long)
 
     @Query(
@@ -453,7 +456,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountNotifications()
 
-    @Query("DELETE FROM account_notification_count_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_notification_count_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountNotificationCountCaches(minCachedAt: Long)
 
     @Query(
@@ -467,7 +470,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountNotificationCounts()
 
-    @Query("DELETE FROM account_user_profile_content_pages WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_user_profile_content_pages WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountUserProfileContentPages(minCachedAt: Long)
 
     @Query(
@@ -515,7 +518,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountUserPosts()
 
-    @Query("DELETE FROM account_user_stats_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_user_stats_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountUserStatsCaches(minCachedAt: Long)
 
     @Query(
@@ -566,7 +569,7 @@ abstract class StorageCleanupDao {
     )
     abstract suspend fun deleteOrphanAccountUserTypeStats()
 
-    @Query("DELETE FROM account_user_profile_summary_caches WHERE cachedAt < :minCachedAt")
+    @Query("DELETE FROM account_user_profile_summary_caches WHERE cachedAt < :minCachedAt AND (cachedAt > 0 OR :minCachedAt = 9223372036854775807)")
     abstract suspend fun deleteStaleAccountUserProfileSummaryCaches(minCachedAt: Long)
 
     @Query(

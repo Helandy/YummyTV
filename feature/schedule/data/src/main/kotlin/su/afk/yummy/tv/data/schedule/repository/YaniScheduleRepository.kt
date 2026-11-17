@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
+import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStorage
 import su.afk.yummy.tv.core.storage.schedule.isFresh
@@ -32,6 +33,10 @@ class YaniScheduleRepository(
                     language = languageCode,
                     cachedAt = System.currentTimeMillis(),
                 )
+                // Расписание не бывает пустым: пустой ответ (сбой yani или пустая копия) не заменяет сохранённое.
+                if (cache.items.isEmpty() && scheduleStore.getSchedule(languageCode)?.items?.isNotEmpty() == true) {
+                    throw MirrorDataSkippedException()
+                }
                 scheduleStore.saveSchedule(cache)
                 cache
             },

@@ -69,6 +69,10 @@ abstract class AccountCollectionsDao {
         }
     }
 
+    /** Помечает страницы коллекций пользователя устаревшими, не удаляя записи: если перезагрузка не удастся, остаются прежние. */
+    @Query("UPDATE account_collection_pages SET cachedAt = 0")
+    abstract suspend fun expireCollectionPages()
+
     @Transaction
     open suspend fun invalidateCollections() {
         deleteAllCollectionItems()

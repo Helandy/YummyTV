@@ -67,7 +67,8 @@ internal class AccountStorageStore(
     }
 
     override suspend fun deleteRatingBuckets(animeId: Int) {
-        animeRatingsDao.deleteRatingBucketsCache(animeId)
+        // Инвалидация после изменения оценки: данные остаются запасными, пока перезагрузка не удалась.
+        animeRatingsDao.expireRatingBucketCache(animeId)
     }
 
     override suspend fun getUserRating(userId: Int, animeId: Int): AccountUserRatingEntry? =
@@ -102,7 +103,7 @@ internal class AccountStorageStore(
     }
 
     override suspend fun invalidateCollections() {
-        collectionsDao.invalidateCollections()
+        collectionsDao.expireCollectionPages()
     }
 
     override suspend fun getVideoSubscriptions(
@@ -116,7 +117,7 @@ internal class AccountStorageStore(
     }
 
     override suspend fun deleteVideoSubscriptions(userId: Int) {
-        videoSubscriptionsDao.deleteVideoSubscriptionsForUser(userId)
+        videoSubscriptionsDao.expireVideoSubscriptionCaches(userId)
     }
 
     override suspend fun getNotifications(
@@ -135,7 +136,7 @@ internal class AccountStorageStore(
     }
 
     override suspend fun deleteNotifications(userId: Int) {
-        notificationsDao.deleteNotificationsForUser(userId)
+        notificationsDao.expireNotificationPages(userId)
     }
 
     override suspend fun getUserFriends(
@@ -186,8 +187,7 @@ internal class AccountStorageStore(
     }
 
     override suspend fun deleteNotificationCounts(userId: Int) {
-        notificationsDao.deleteNotificationCountCache(userId)
-        notificationsDao.deleteNotificationCounts(userId)
+        notificationsDao.expireNotificationCountCache(userId)
     }
 
     override suspend fun getNotificationAnime(slug: String): AccountNotificationAnimeEntry? =

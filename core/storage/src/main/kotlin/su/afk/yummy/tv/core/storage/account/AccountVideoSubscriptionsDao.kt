@@ -79,6 +79,10 @@ abstract class AccountVideoSubscriptionsDao {
         if (cache.items.isNotEmpty()) insertVideoSubscriptions(cache.items)
     }
 
+    /** Помечает кэш подписок устаревшим, не удаляя записи: если перезагрузка не удастся, остаются прежние. */
+    @Query("UPDATE account_video_subscription_caches SET cachedAt = 0 WHERE userId = :userId")
+    abstract suspend fun expireVideoSubscriptionCaches(userId: Int)
+
     @Transaction
     open suspend fun deleteVideoSubscriptionsForUser(userId: Int) {
         deleteVideoSubscriptionCaches(userId)

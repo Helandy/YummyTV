@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
+import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.account.AccountUserListCache
@@ -24,6 +25,8 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListItem as toStoredUserListItem
 
+/** Пустой ответ при стольких и более сохранённых записях в списках считается сбоем, а не очисткой пользователем. */
+private const val SUSPICIOUS_EMPTY_LISTS_THRESHOLD = 10
 private const val FAVORITES_LIST_ID = 4
 private val ALL_LIST_IDS = UserAnimeList.entries.map(UserAnimeList::id) + FAVORITES_LIST_ID
 
@@ -167,6 +170,12 @@ class YaniUserListsRepository(
                 language = languageCode,
                 cachedAt = cachedAt,
             )
+        }
+        // Сервер не отдаёт пустые списки пользователю, у которого они были: пустой набор поверх накопленного похож на сбой, и
+        // принимать его нельзя (иначе принудительная синхронизация библиотеки удалила бы и локальные записи).
+        if (caches.none { it.items.isNotEmpty() }) {
+            val stored = ALL_LIST_IDS.sumOf { listId -> accountStorage.getUserList(userId, listId, languageCode)?.items?.size ?: 0 }
+            if (stored >= SUSPICIOUS_EMPTY_LISTS_THRESHOLD) throw MirrorDataSkippedException()
         }
         accountStorage.saveUserLists(caches)
         return caches

@@ -37,6 +37,7 @@ fun buildYaniHttpClient(
     apiConfig: YaniApiConfig,
     logRecordingSettings: AppLogRecordingSettings,
     imageFormatSupport: ImageFormatSupport,
+    contactTracker: YaniContactTracker = YaniContactTracker(),
 ): HttpClient {
     val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, imageFormatSupport, scope)
 
@@ -92,6 +93,15 @@ fun buildYaniHttpClient(
                         // Подмена адреса после проверки хоста выше: заголовки нужны только API yani.
                         apiConfig.override?.let { request.url.host = it.host; request.url.port = it.port }
                     }
+                }
+            },
+        )
+        // Ответ yani (любой статус < 500) — признак, что он жив: плановая чистка кэша ждёт его ([YaniContactTracker]).
+        install(
+            createClientPlugin("YaniContactTracker") {
+                onResponse { response ->
+                    val host = response.call.request.url.host
+                    if (host == YANI_API_HOST || host == apiConfig.override?.host) contactTracker.onResponse(response.status.value)
                 }
             },
         )
