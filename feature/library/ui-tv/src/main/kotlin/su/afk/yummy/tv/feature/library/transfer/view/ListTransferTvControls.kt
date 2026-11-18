@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.library.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun ListTransferTvButton(
@@ -221,45 +222,89 @@ internal fun ListTransferTvToggleRow(
 
 @Composable
 internal fun ListTransferTvErrorBanner(
+    title: String?,
     message: String,
+    onRetry: (() -> Unit)?,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(12.dp)
     val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .background(colors.errorContainer, shape)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            if (title != null) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onErrorContainer,
+                )
+            }
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onErrorContainer,
+            )
+        }
+        if (onRetry != null) {
+            TvErrorBannerAction(
+                label = stringResource(CoreR.string.common_retry),
+                onClick = onRetry,
+            )
+        }
+        TvErrorBannerAction(
+            label = stringResource(R.string.library_transfer_dismiss),
+            onClick = onDismiss,
+        )
+    }
+}
+
+@Composable
+private fun TvErrorBannerAction(
+    label: String,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val colors = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(8.dp)
+
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = colors.onErrorContainer,
+        modifier = Modifier
             .clip(shape)
             .border(
                 width = 2.dp,
-                color = if (focused) colors.error else Color.Transparent,
+                color = if (focused) colors.onErrorContainer else Color.Transparent,
                 shape = shape,
             )
-            .background(colors.errorContainer, shape)
+            .background(
+                color = if (focused) {
+                    colors.onErrorContainer.copy(alpha = 0.14f)
+                } else {
+                    Color.Transparent
+                },
+                shape = shape,
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onDismiss,
+                onClick = onClick,
             )
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = colors.onErrorContainer,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            text = stringResource(R.string.library_transfer_dismiss),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = colors.onErrorContainer,
-        )
-    }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    )
 }

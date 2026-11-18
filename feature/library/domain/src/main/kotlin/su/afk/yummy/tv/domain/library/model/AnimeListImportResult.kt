@@ -7,5 +7,8 @@ data class AnimeListImportResult(
     val skippedExistingCount: Int,
     val unmatched: List<UnmatchedExternalAnime>,
     val failedCount: Int,
+    val lookupFailedCount: Int = 0,
+    val failedEntries: List<ExternalListEntry> = emptyList(),
+    val pendingScoreExternalIds: Set<Int> = emptySet(),
     val wasCancelled: Boolean = false,
 )

@@ -8,9 +8,12 @@ import io.ktor.http.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.library.model.ExportableLibraryAnime
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.domain.library.model.ResolvedExternalAnime
 
@@ -40,6 +43,26 @@ class ExternalListTransferUtilsTest : BaseUnitTest() {
     }
 
     @Test
+    fun `externalIdFor matches format strictly without cross fallback`() {
+        val shikiOnly = ExportableLibraryAnime(
+            animeId = 1,
+            title = "Shiki only",
+            list = UserAnimeList.COMPLETED,
+            isFavorite = false,
+            userRating = null,
+            typeAlias = "tv",
+            shikimoriId = 111,
+            myAnimeListId = null,
+        )
+        val malOnly = shikiOnly.copy(shikimoriId = null, myAnimeListId = 222)
+
+        assertEquals(111, shikiOnly.externalIdFor(ExternalListFormat.SHIKIMORI_JSON))
+        assertNull(shikiOnly.externalIdFor(ExternalListFormat.MAL_XML))
+        assertEquals(222, malOnly.externalIdFor(ExternalListFormat.MAL_XML))
+        assertNull(malOnly.externalIdFor(ExternalListFormat.SHIKIMORI_JSON))
+    }
+
+    @Test
     fun `resolveExportedWatchedEpisodes respects planned completed movie and local counts`() {
         assertEquals(0, resolveExportedWatchedEpisodes(UserAnimeList.COMPLETED, "tv", localWatchedCount = 0))
         assertEquals(24, resolveExportedWatchedEpisodes(UserAnimeList.COMPLETED, "tv", localWatchedCount = 24))
@@ -62,15 +85,19 @@ class ExternalListTransferUtilsTest : BaseUnitTest() {
     }
 
     @Test
-    fun `buildExportFileName formats utc date for both formats`() {
-        val epochMs = 1_778_889_600_000L // 2026-05-16T00:00:00Z
+    fun `buildExportFileName includes utc date and time to avoid duplicate download names`() {
+        val epochMs = 1_778_941_845_000L // 2026-05-16T14:30:45Z
         assertEquals(
-            "yummytv-animelist-20260516.xml",
+            "yummytv-animelist-20260516-143045.xml",
             buildExportFileName(ExternalListFormat.MAL_XML, epochMs),
         )
         assertEquals(
-            "yummytv-shikimori-animes-20260516.json",
+            "yummytv-shikimori-animes-20260516-143045.json",
             buildExportFileName(ExternalListFormat.SHIKIMORI_JSON, epochMs),
+        )
+        assertNotEquals(
+            buildExportFileName(ExternalListFormat.MAL_XML, epochMs),
+            buildExportFileName(ExternalListFormat.MAL_XML, epochMs + 1_000L),
         )
     }
 

@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.domain.library.repository
 
 import su.afk.yummy.tv.domain.library.model.ExportableLibraryAnime
+import su.afk.yummy.tv.domain.library.model.ExternalIdLookupResult
 import su.afk.yummy.tv.domain.library.model.ExternalListEntry
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.domain.library.model.ParsedExternalList
-import su.afk.yummy.tv.domain.library.model.ResolvedExternalAnime
 
 /** Контракт чтения/записи внешних файлов списка аниме и пакетного сопоставления ID с YummyAnime. */
 interface AnimeListTransferRepository {
@@ -59,11 +59,13 @@ interface AnimeListTransferRepository {
 
     /**
      * Пакетно сопоставляет внешние ID с каталогом YummyAnime (`GET /anime?shikimori_ids=...` или
-     * `mal_ids=...`) с вызовом [onBatchProgress] после каждого обработанного чанка.
+     * `mal_ids=...`) с вызовом [onBatchProgress] после каждого обработанного чанка. Если часть
+     * чанков упала после повторов, возвращает частичный результат и список неудавшихся ID; если не
+     * удалось загрузить ни одного чанка, выбрасывает [su.afk.yummy.tv.domain.library.model.AnimeListTransferStageException].
      */
     suspend fun resolveByExternalIds(
         format: ExternalListFormat,
         externalIds: List<Int>,
         onBatchProgress: suspend (processedIds: Int, totalIds: Int) -> Unit = { _, _ -> },
-    ): Map<Int, List<ResolvedExternalAnime>>
+    ): ExternalIdLookupResult
 }

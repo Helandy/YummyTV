@@ -12,6 +12,8 @@ internal fun AnimeListImportResult.toSummaryUi(): ListTransferImportSummaryUi =
         updatedCount = updatedCount,
         skippedExistingCount = skippedExistingCount,
         failedCount = failedCount,
+        lookupFailedCount = lookupFailedCount,
+        retryableCount = failedEntries.size,
         unmatched = unmatched.toImmutableList(),
         wasCancelled = wasCancelled,
     )

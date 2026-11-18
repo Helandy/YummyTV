@@ -12,8 +12,8 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val EXPORT_DATE_FORMATTER: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("yyyyMMdd", Locale.US).withZone(ZoneOffset.UTC)
+private val EXPORT_TIMESTAMP_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.US).withZone(ZoneOffset.UTC)
 
 private val SECONDARY_EDITION_MARKERS = listOf(
     "режиссерская версия",
@@ -69,15 +69,12 @@ fun List<ResolvedExternalAnime>.selectPrimaryCandidate(
     ).first()
 }
 
-/** Выбирает внешний ID тайтла под целевой формат экспорта с запасным переходом на парный ID. */
-fun ExportableLibraryAnime.externalIdFor(format: ExternalListFormat): Int? {
-    val shiki = shikimoriId?.takeIf { it > 0 }
-    val mal = myAnimeListId?.takeIf { it > 0 }
-    return when (format) {
-        ExternalListFormat.SHIKIMORI_JSON -> shiki ?: mal
-        ExternalListFormat.MAL_XML -> mal ?: shiki
+/** Возвращает внешний ID тайтла, строго соответствующий целевому формату [format] (без кросс-fallback). */
+fun ExportableLibraryAnime.externalIdFor(format: ExternalListFormat): Int? =
+    when (format) {
+        ExternalListFormat.SHIKIMORI_JSON -> shikimoriId?.takeIf { it > 0 }
+        ExternalListFormat.MAL_XML -> myAnimeListId?.takeIf { it > 0 }
     }
-}
 
 /**
  * Подбирает экспортируемое число просмотренных серий без сетевых запросов к `/anime/{id}/videos`:
@@ -103,12 +100,12 @@ fun resolveExportedWatchedEpisodes(
         -> localWatchedCount.coerceAtLeast(0)
     }
 
-/** Строит имя файла экспорта по формату и дате. */
+/** Строит имя файла экспорта по формату с UTC-штампом даты и времени (без коллизий `file (1)` на Android 10+). */
 fun buildExportFileName(format: ExternalListFormat, nowMillis: Long): String {
-    val date = EXPORT_DATE_FORMATTER.format(Instant.ofEpochMilli(nowMillis))
+    val timestamp = EXPORT_TIMESTAMP_FORMATTER.format(Instant.ofEpochMilli(nowMillis))
     return when (format) {
-        ExternalListFormat.MAL_XML -> "yummytv-animelist-$date.${format.fileExtension}"
-        ExternalListFormat.SHIKIMORI_JSON -> "yummytv-shikimori-animes-$date.${format.fileExtension}"
+        ExternalListFormat.MAL_XML -> "yummytv-animelist-$timestamp.${format.fileExtension}"
+        ExternalListFormat.SHIKIMORI_JSON -> "yummytv-shikimori-animes-$timestamp.${format.fileExtension}"
     }
 }
 

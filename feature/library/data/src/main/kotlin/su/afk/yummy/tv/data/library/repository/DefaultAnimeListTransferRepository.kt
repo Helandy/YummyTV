@@ -28,7 +28,10 @@ import su.afk.yummy.tv.data.library.network.YaniListTransferApi
 import su.afk.yummy.tv.data.library.utils.countWatchedEpisodesByAnimeId
 import su.afk.yummy.tv.data.library.utils.formatShikimoriJsonAnimeList
 import su.afk.yummy.tv.data.library.utils.parseExternalListBytes
+import su.afk.yummy.tv.domain.library.model.AnimeListTransferStage
+import su.afk.yummy.tv.domain.library.model.AnimeListTransferStageException
 import su.afk.yummy.tv.domain.library.model.ExportableLibraryAnime
+import su.afk.yummy.tv.domain.library.model.ExternalIdLookupResult
 import su.afk.yummy.tv.domain.library.model.ExternalListEntry
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.domain.library.model.ExternalListParseError
@@ -102,9 +105,14 @@ class DefaultAnimeListTransferRepository @Inject constructor(
             val resolver = context.contentResolver
             val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                 ?: throw IOException("Cannot insert export into MediaStore Downloads")
-            val output = resolver.openOutputStream(uri)
-                ?: throw IOException("Cannot open MediaStore output stream for $uri")
-            output.use { it.write(bytes) }
+            try {
+                val output = resolver.openOutputStream(uri)
+                    ?: throw IOException("Cannot open MediaStore output stream for $uri")
+                output.use { it.write(bytes) }
+            } catch (error: Throwable) {
+                runCatching { resolver.delete(uri, null, null) }
+                throw error
+            }
             "${Environment.DIRECTORY_DOWNLOADS}/$fileName"
         } else {
             val dir = context.getExternalFilesDir(null)
@@ -122,6 +130,9 @@ class DefaultAnimeListTransferRepository @Inject constructor(
             val file = File(exportDir, fileName).also {
                 it.writeText(content, Charsets.UTF_8)
             }
+            // Переиспользуем единственный FileProvider приложения из AndroidManifest.xml:
+            // исторически он зарегистрирован с authority `${applicationId}.logs` и путями из
+            // `app/src/main/res/xml/log_file_paths.xml`, где отдельно объявлен подкаталог `list_exports/`.
             FileProvider.getUriForFile(context, "${context.packageName}$SHARE_PROVIDER_SUFFIX", file)
                 .toString()
         }
@@ -130,8 +141,15 @@ class DefaultAnimeListTransferRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             val userId = currentUserId()
             if (userId > 0) {
-                return@withContext api.getAllUserLists(userId)
-                    .mapNotNull { it.toExportableLibraryAnime() }
+                val remoteItems = runSuspendCatching {
+                    fetchWithRetry { api.getAllUserLists(userId) }
+                }.getOrElse { error ->
+                    throw AnimeListTransferStageException(
+                        stage = AnimeListTransferStage.LOAD_USER_LIBRARY,
+                        cause = error,
+                    )
+                }
+                return@withContext remoteItems.mapNotNull { it.toExportableLibraryAnime() }
             }
 
             val localEntries = libraryStorage.getAll()
@@ -143,9 +161,19 @@ class DefaultAnimeListTransferRepository @Inject constructor(
             chunks.forEachIndexed { index, chunk ->
                 currentCoroutineContext().ensureActive()
                 if (index > 0) delay(BATCH_LOOKUP_DELAY_MS)
-                fetchAllPages { limit, offset ->
-                    api.lookupByAnimeIds(ids = chunk, limit = limit, offset = offset)
-                }.forEach { dto ->
+                val dtos = runSuspendCatching {
+                    fetchAllPages { limit, offset ->
+                        api.lookupByAnimeIds(ids = chunk, limit = limit, offset = offset)
+                    }
+                }.getOrElse { error ->
+                    throw AnimeListTransferStageException(
+                        stage = AnimeListTransferStage.ENRICH_GUEST_LIBRARY,
+                        cause = error,
+                        completedBatches = index,
+                        totalBatches = chunks.size,
+                    )
+                }
+                dtos.forEach { dto ->
                     val id = dto.animeId?.takeIf { it > 0 } ?: return@forEach
                     lookupByAnimeId.putIfAbsent(id, dto)
                 }
@@ -190,39 +218,63 @@ class DefaultAnimeListTransferRepository @Inject constructor(
         format: ExternalListFormat,
         externalIds: List<Int>,
         onBatchProgress: suspend (processedIds: Int, totalIds: Int) -> Unit,
-    ): Map<Int, List<ResolvedExternalAnime>> = withContext(Dispatchers.IO) {
+    ): ExternalIdLookupResult = withContext(Dispatchers.IO) {
         val uniqueIds = externalIds.filter { it > 0 }.distinct()
-        if (uniqueIds.isEmpty()) return@withContext emptyMap()
+        if (uniqueIds.isEmpty()) {
+            return@withContext ExternalIdLookupResult(resolvedByExternalId = emptyMap())
+        }
 
         val requestedSet = uniqueIds.toHashSet()
         val result = linkedMapOf<Int, MutableList<ResolvedExternalAnime>>()
+        val failedIds = linkedSetOf<Int>()
+        var succeededBatches = 0
+        var firstBatchError: Throwable? = null
         var processed = 0
         val chunks = uniqueIds.chunked(LOOKUP_BATCH_SIZE)
 
         chunks.forEachIndexed { index, chunk ->
             currentCoroutineContext().ensureActive()
             if (index > 0) delay(BATCH_LOOKUP_DELAY_MS)
-            val matchedDtos = fetchAllPages { limit, offset ->
-                when (format) {
-                    ExternalListFormat.SHIKIMORI_JSON ->
-                        api.lookupByShikimoriIds(ids = chunk, limit = limit, offset = offset)
-                    ExternalListFormat.MAL_XML ->
-                        api.lookupByMalIds(ids = chunk, limit = limit, offset = offset)
+            runSuspendCatching {
+                fetchAllPages { limit, offset ->
+                    when (format) {
+                        ExternalListFormat.SHIKIMORI_JSON ->
+                            api.lookupByShikimoriIds(ids = chunk, limit = limit, offset = offset)
+                        ExternalListFormat.MAL_XML ->
+                            api.lookupByMalIds(ids = chunk, limit = limit, offset = offset)
+                    }
                 }
-            }
-            matchedDtos.forEach { dto ->
-                val externalId = dto.matchedRequestedId(format, requestedSet) ?: return@forEach
-                val resolved = dto.toResolvedExternalAnime(externalId) ?: return@forEach
-                val bucket = result.getOrPut(externalId) { mutableListOf() }
-                if (bucket.none { it.animeId == resolved.animeId }) {
-                    bucket += resolved
+            }.onSuccess { matchedDtos ->
+                succeededBatches++
+                matchedDtos.forEach { dto ->
+                    val externalId = dto.matchedRequestedId(format, requestedSet) ?: return@forEach
+                    val resolved = dto.toResolvedExternalAnime(externalId) ?: return@forEach
+                    val bucket = result.getOrPut(externalId) { mutableListOf() }
+                    if (bucket.none { it.animeId == resolved.animeId }) {
+                        bucket += resolved
+                    }
                 }
+            }.onFailure { error ->
+                if (firstBatchError == null) firstBatchError = error
+                failedIds += chunk
             }
             processed += chunk.size
             onBatchProgress(processed, uniqueIds.size)
         }
 
-        result
+        if (succeededBatches == 0 && firstBatchError != null) {
+            throw AnimeListTransferStageException(
+                stage = AnimeListTransferStage.RESOLVE_EXTERNAL_IDS,
+                cause = firstBatchError,
+                completedBatches = 0,
+                totalBatches = chunks.size,
+            )
+        }
+
+        ExternalIdLookupResult(
+            resolvedByExternalId = result,
+            failedExternalIds = failedIds,
+        )
     }
 
     private suspend fun fetchAllPages(
@@ -269,6 +321,8 @@ class DefaultAnimeListTransferRepository @Inject constructor(
         const val SYNTHETIC_WATCHED_DURATION_MS = 24 * 60 * 1_000L
 
         const val SHARE_EXPORT_DIR = "list_exports"
+
+        /** Общий `FileProvider` приложения (см. `AndroidManifest.xml` и `res/xml/log_file_paths.xml`). */
         const val SHARE_PROVIDER_SUFFIX = ".logs"
         const val IO_BUFFER_SIZE = 8 * 1024
 
@@ -288,15 +342,13 @@ class DefaultAnimeListTransferRepository @Inject constructor(
             return output.toByteArray()
         }
 
+        /**
+         * Сопоставляет запись каталога строго по ID выбранного [format] без кросс-fallback:
+         * иначе `shikimori_id` чужого тайтла мог бы совпасть с запрошенным `mal_id` и наоборот.
+         */
         fun YaniTransferLookupAnimeDto.matchedRequestedId(
             format: ExternalListFormat,
             requestedIds: Set<Int>,
-        ): Int? {
-            val primary = externalIdFor(format)
-            if (primary != null && primary in requestedIds) return primary
-            val shiki = remoteIds?.shikimoriId?.takeIf { it > 0 && it in requestedIds }
-            val mal = remoteIds?.myAnimeListId?.takeIf { it > 0 && it in requestedIds }
-            return shiki ?: mal
-        }
+        ): Int? = externalIdFor(format)?.takeIf { it in requestedIds }
     }
 }

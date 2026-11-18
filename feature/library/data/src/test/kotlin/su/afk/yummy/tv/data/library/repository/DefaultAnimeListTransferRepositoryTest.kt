@@ -8,6 +8,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.common.coroutines.AppClock
@@ -26,7 +28,10 @@ import su.afk.yummy.tv.data.library.dto.YaniTransferUserListDto
 import su.afk.yummy.tv.data.library.dto.YaniTransferUserStateDto
 import su.afk.yummy.tv.data.library.network.YaniListTransferApi
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.library.model.AnimeListTransferStage
+import su.afk.yummy.tv.domain.library.model.AnimeListTransferStageException
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
+import java.io.IOException
 
 class DefaultAnimeListTransferRepositoryTest : BaseUnitTest() {
 
@@ -60,30 +65,99 @@ class DefaultAnimeListTransferRepositoryTest : BaseUnitTest() {
         val firstChunk = (1..50).toList()
         val secondChunk = (51..60).toList()
 
-        // First page returns 100 items (triggering offset=100 pagination).
         val firstPage = (1..50).flatMap { extId ->
             listOf(
-                lookupDto(animeId = extId * 10, malId = extId, title = "Title $extId"),
-                lookupDto(animeId = extId * 10 + 1, malId = extId, title = "Title $extId (режиссёрская версия)"),
+                lookupDto(animeId = extId * 10, shikiId = extId, malId = extId, title = "Title $extId"),
+                lookupDto(
+                    animeId = extId * 10 + 1,
+                    shikiId = extId,
+                    malId = extId,
+                    title = "Title $extId (режиссёрская версия)",
+                ),
             )
         }
         coEvery { api.lookupByMalIds(firstChunk, limit = 100, offset = 0) } returns firstPage
         coEvery { api.lookupByMalIds(firstChunk, limit = 100, offset = 100) } returns emptyList()
         coEvery { api.lookupByMalIds(secondChunk, limit = 100, offset = 0) } returns listOf(
-            lookupDto(animeId = 510, malId = 51, title = "Title 51"),
+            lookupDto(animeId = 510, shikiId = 51, malId = 51, title = "Title 51"),
         )
 
         val progressUpdates = mutableListOf<Pair<Int, Int>>()
-        val resolved = createRepository().resolveByExternalIds(
+        val lookup = createRepository().resolveByExternalIds(
             format = ExternalListFormat.MAL_XML,
             externalIds = requestedIds,
             onBatchProgress = { done, total -> progressUpdates += done to total },
         )
 
         assertEquals(listOf(50 to 60, 60 to 60), progressUpdates)
-        assertEquals(51, resolved.size)
-        assertEquals(listOf(10, 11), resolved.getValue(1).map { it.animeId })
-        assertEquals(listOf(510), resolved.getValue(51).map { it.animeId })
+        assertTrue(lookup.failedExternalIds.isEmpty())
+        assertEquals(51, lookup.resolvedByExternalId.size)
+        assertEquals(listOf(10, 11), lookup.resolvedByExternalId.getValue(1).map { it.animeId })
+        assertEquals(listOf(510), lookup.resolvedByExternalId.getValue(51).map { it.animeId })
+    }
+
+    @Test
+    fun `resolveByExternalIds matches strictly by selected format ID without cross fallback`() = runTest {
+        coEvery { api.lookupByMalIds(listOf(100, 200), limit = 100, offset = 0) } returns listOf(
+            // Unrelated title whose shikimoriId happens to collide with requested mal_id=100.
+            lookupDto(animeId = 1, shikiId = 100, malId = 999, title = "Wrong by shiki collision"),
+            // Unrelated title missing malId whose shikimoriId collides with requested mal_id=200.
+            lookupDto(animeId = 2, shikiId = 200, malId = null, title = "Wrong without mal id"),
+            // True MAL match for mal_id=100 even though shikimoriId differs.
+            lookupDto(animeId = 3, shikiId = 777, malId = 100, title = "Exact MAL match"),
+        )
+
+        val malLookup = createRepository().resolveByExternalIds(
+            format = ExternalListFormat.MAL_XML,
+            externalIds = listOf(100, 200),
+        )
+        assertEquals(setOf(100), malLookup.resolvedByExternalId.keys)
+        assertEquals(listOf(3), malLookup.resolvedByExternalId.getValue(100).map { it.animeId })
+
+        coEvery { api.lookupByShikimoriIds(listOf(300, 400), limit = 100, offset = 0) } returns listOf(
+            // Unrelated title whose myAnimeListId collides with requested shikimori_id=300.
+            lookupDto(animeId = 4, shikiId = 888, malId = 300, title = "Wrong by mal collision"),
+            lookupDto(animeId = 5, shikiId = null, malId = 400, title = "Wrong without shiki id"),
+            lookupDto(animeId = 6, shikiId = 300, malId = 555, title = "Exact Shiki match"),
+        )
+
+        val shikiLookup = createRepository().resolveByExternalIds(
+            format = ExternalListFormat.SHIKIMORI_JSON,
+            externalIds = listOf(300, 400),
+        )
+        assertEquals(setOf(300), shikiLookup.resolvedByExternalId.keys)
+        assertEquals(listOf(6), shikiLookup.resolvedByExternalId.getValue(300).map { it.animeId })
+    }
+
+    @Test
+    fun `resolveByExternalIds keeps partial batches on mid-run failure and throws when all fail`() = runTest {
+        val firstChunk = (1..50).toList()
+        val secondChunk = (51..55).toList()
+        coEvery { api.lookupByMalIds(firstChunk, limit = 100, offset = 0) } returns listOf(
+            lookupDto(animeId = 10, shikiId = 1, malId = 1, title = "Resolved"),
+        )
+        coEvery { api.lookupByMalIds(secondChunk, limit = 100, offset = 0) } throws
+            IllegalStateException("chunk failure")
+
+        val partial = createRepository().resolveByExternalIds(
+            format = ExternalListFormat.MAL_XML,
+            externalIds = firstChunk + secondChunk,
+        )
+        assertEquals(listOf(10), partial.resolvedByExternalId.getValue(1).map { it.animeId })
+        assertEquals(secondChunk.toSet(), partial.failedExternalIds)
+
+        coEvery { api.lookupByMalIds(listOf(99), limit = 100, offset = 0) } throws IOException("offline")
+        try {
+            createRepository().resolveByExternalIds(
+                format = ExternalListFormat.MAL_XML,
+                externalIds = listOf(99),
+            )
+            fail("Expected AnimeListTransferStageException")
+        } catch (error: AnimeListTransferStageException) {
+            assertEquals(AnimeListTransferStage.RESOLVE_EXTERNAL_IDS, error.stage)
+            assertEquals(0, error.completedBatches)
+            assertEquals(1, error.totalBatches)
+        }
     }
 
     @Test
@@ -115,13 +189,42 @@ class DefaultAnimeListTransferRepositoryTest : BaseUnitTest() {
             LibraryEntry(animeId = 8, title = "Guest Anime", listId = UserAnimeList.PLANNED.id, userRating = 8),
         )
         coEvery { api.lookupByAnimeIds(listOf(8), limit = 100, offset = 0) } returns listOf(
-            lookupDto(animeId = 8, malId = 800, title = "Guest Anime"),
+            lookupDto(animeId = 8, shikiId = 800, malId = 800, title = "Guest Anime"),
         )
 
         val guestItems = createRepository().loadExportableLibrary()
         assertEquals(1, guestItems.size)
         assertEquals(800, guestItems.single().myAnimeListId)
         assertEquals(8, guestItems.single().userRating)
+    }
+
+    @Test
+    fun `loadExportableLibrary wraps signed-in and mid-batch guest errors with stage details`() = runTest {
+        coEvery { api.getAllUserLists(42) } throws IllegalStateException("server down")
+        try {
+            createRepository().loadExportableLibrary()
+            fail("Expected LOAD_USER_LIBRARY stage exception")
+        } catch (error: AnimeListTransferStageException) {
+            assertEquals(AnimeListTransferStage.LOAD_USER_LIBRARY, error.stage)
+        }
+
+        every { settingsStore.yaniUserId } returns flowOf(0)
+        val guestEntries = (1..55).map { id ->
+            LibraryEntry(animeId = id, title = "Anime $id", listId = UserAnimeList.WATCHING.id)
+        }
+        coEvery { libraryStorage.getAll() } returns guestEntries
+        coEvery { api.lookupByAnimeIds((1..50).toList(), limit = 100, offset = 0) } returns emptyList()
+        coEvery { api.lookupByAnimeIds((51..55).toList(), limit = 100, offset = 0) } throws
+            IllegalStateException("batch 2 failed")
+
+        try {
+            createRepository().loadExportableLibrary()
+            fail("Expected ENRICH_GUEST_LIBRARY stage exception")
+        } catch (error: AnimeListTransferStageException) {
+            assertEquals(AnimeListTransferStage.ENRICH_GUEST_LIBRARY, error.stage)
+            assertEquals(1, error.completedBatches)
+            assertEquals(2, error.totalBatches)
+        }
     }
 
     @Test
@@ -156,10 +259,15 @@ class DefaultAnimeListTransferRepositoryTest : BaseUnitTest() {
         }
     }
 
-    private fun lookupDto(animeId: Int, malId: Int, title: String) = YaniTransferLookupAnimeDto(
+    private fun lookupDto(
+        animeId: Int,
+        shikiId: Int?,
+        malId: Int?,
+        title: String,
+    ) = YaniTransferLookupAnimeDto(
         animeId = animeId,
         title = title,
         type = YaniTransferTypeDto(name = "Сериал", shortName = "ТВ", alias = "tv"),
-        remoteIds = YaniTransferRemoteIdsDto(shikimoriId = malId, myAnimeListId = malId),
+        remoteIds = YaniTransferRemoteIdsDto(shikimoriId = shikiId, myAnimeListId = malId),
     )
 }

@@ -21,7 +21,9 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import su.afk.yummy.tv.domain.library.model.AnimeListImportOptions
+import su.afk.yummy.tv.domain.library.model.AnimeListImportPhase
 import su.afk.yummy.tv.domain.library.model.ExportableLibraryAnime
+import su.afk.yummy.tv.domain.library.model.ExternalIdLookupResult
 import su.afk.yummy.tv.domain.library.model.ExternalListEntry
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.domain.library.model.ImportConflictPolicy
@@ -66,9 +68,11 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
                 ExternalListEntry(103, "Missing", UserAnimeList.PLANNED, score = null, watchedEpisodes = 0),
             ),
         )
-        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns mapOf(
-            101 to listOf(ResolvedExternalAnime(101, animeId = 1, title = "Existing")),
-            102 to listOf(ResolvedExternalAnime(102, animeId = 2, title = "Fav Only")),
+        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns ExternalIdLookupResult(
+            resolvedByExternalId = mapOf(
+                101 to listOf(ResolvedExternalAnime(101, animeId = 1, title = "Existing")),
+                102 to listOf(ResolvedExternalAnime(102, animeId = 2, title = "Fav Only")),
+            ),
         )
         coEvery { transferRepository.loadExportableLibrary() } returns listOf(
             ExportableLibraryAnime(1, "Existing", UserAnimeList.PLANNED, false, 7, "tv", 101, 101),
@@ -125,24 +129,29 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
     }
 
     @Test
-    fun `overwrite mutates only changed status or rating deltas`() = runTest {
+    fun `overwrite mutates only changed deltas and score 0 keeps existing rating`() = runTest {
         val parsed = ParsedExternalList(
             format = ExternalListFormat.SHIKIMORI_JSON,
             entries = listOf(
                 ExternalListEntry(201, "Unchanged", UserAnimeList.COMPLETED, score = 10, watchedEpisodes = 24),
                 ExternalListEntry(202, "Rating Only", UserAnimeList.COMPLETED, score = 9, watchedEpisodes = 12),
                 ExternalListEntry(203, "Status Only", UserAnimeList.DROPPED, score = 6, watchedEpisodes = 3),
+                ExternalListEntry(204, "Unrated Zero", UserAnimeList.COMPLETED, score = 0, watchedEpisodes = 12),
             ),
         )
-        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns mapOf(
-            201 to listOf(ResolvedExternalAnime(201, animeId = 11, title = "Unchanged")),
-            202 to listOf(ResolvedExternalAnime(202, animeId = 12, title = "Rating Only")),
-            203 to listOf(ResolvedExternalAnime(203, animeId = 13, title = "Status Only")),
+        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns ExternalIdLookupResult(
+            resolvedByExternalId = mapOf(
+                201 to listOf(ResolvedExternalAnime(201, animeId = 11, title = "Unchanged")),
+                202 to listOf(ResolvedExternalAnime(202, animeId = 12, title = "Rating Only")),
+                203 to listOf(ResolvedExternalAnime(203, animeId = 13, title = "Status Only")),
+                204 to listOf(ResolvedExternalAnime(204, animeId = 14, title = "Unrated Zero")),
+            ),
         )
         coEvery { transferRepository.loadExportableLibrary() } returns listOf(
             ExportableLibraryAnime(11, "Unchanged", UserAnimeList.COMPLETED, false, 10, "tv", 201, 201),
             ExportableLibraryAnime(12, "Rating Only", UserAnimeList.COMPLETED, false, 7, "tv", 202, 202),
             ExportableLibraryAnime(13, "Status Only", UserAnimeList.WATCHING, false, 6, "tv", 203, 203),
+            ExportableLibraryAnime(14, "Unrated Zero", UserAnimeList.COMPLETED, false, 8, "tv", 204, 204),
         )
 
         val result = createUseCase()(
@@ -157,7 +166,7 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
 
         assertEquals(0, result.addedCount)
         assertEquals(2, result.updatedCount)
-        assertEquals(1, result.skippedExistingCount)
+        assertEquals(2, result.skippedExistingCount)
 
         coVerify(exactly = 0) { userListsRepository.setAnimeList(11, any()) }
         coVerify(exactly = 0) { animeExtrasRepository.setRating(11, any()) }
@@ -165,9 +174,41 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
         coVerify(exactly = 1) { animeExtrasRepository.setRating(12, 9) }
         coVerify(exactly = 1) { userListsRepository.setAnimeList(13, UserAnimeList.DROPPED) }
         coVerify(exactly = 0) { animeExtrasRepository.setRating(13, any()) }
-        // Completed titles never get synthetic local episode rows, while Dropped does.
+        coVerify(exactly = 0) { animeExtrasRepository.setRating(14, any()) }
         coVerify(exactly = 0) { transferRepository.markEpisodesWatchedLocally(12, any(), any(), any()) }
         coVerify(exactly = 1) { transferRepository.markEpisodesWatchedLocally(13, "Status Only", "", 3) }
+    }
+
+    @Test
+    fun `lookup batch failures preserve partial import and record retryable entries`() = runTest {
+        val okEntry = ExternalListEntry(501, "Ok", UserAnimeList.WATCHING, score = 8, watchedEpisodes = 0)
+        val lookupFailEntry = ExternalListEntry(502, "Batch Failed", UserAnimeList.PLANNED, score = null, watchedEpisodes = 0)
+        val scoreFailEntry = ExternalListEntry(503, "Score Failed", UserAnimeList.COMPLETED, score = 9, watchedEpisodes = 0)
+
+        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns ExternalIdLookupResult(
+            resolvedByExternalId = mapOf(
+                501 to listOf(ResolvedExternalAnime(501, animeId = 51, title = "Ok")),
+                503 to listOf(ResolvedExternalAnime(503, animeId = 53, title = "Score Failed")),
+            ),
+            failedExternalIds = setOf(502),
+        )
+        coEvery { animeExtrasRepository.setRating(53, 9) } throws IllegalStateException("rating rejected")
+
+        val result = createUseCase()(
+            parsed = ParsedExternalList(
+                format = ExternalListFormat.MAL_XML,
+                entries = listOf(okEntry, lookupFailEntry, scoreFailEntry),
+            ),
+            options = AnimeListImportOptions(conflictPolicy = ImportConflictPolicy.SKIP_EXISTING),
+            mutationDelayMs = 0L,
+        )
+
+        assertEquals(2, result.addedCount)
+        assertEquals(2, result.failedCount)
+        assertEquals(1, result.lookupFailedCount)
+        assertTrue(result.unmatched.isEmpty())
+        assertEquals(listOf(502, 503), result.failedEntries.map { it.externalId })
+        assertEquals(setOf(503), result.pendingScoreExternalIds)
     }
 
     @Test
@@ -178,8 +219,10 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
                 ExternalListEntry(301, "Rate Limited", UserAnimeList.PLANNED, score = null, watchedEpisodes = 0),
             ),
         )
-        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns mapOf(
-            301 to listOf(ResolvedExternalAnime(301, animeId = 31, title = "Rate Limited")),
+        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns ExternalIdLookupResult(
+            resolvedByExternalId = mapOf(
+                301 to listOf(ResolvedExternalAnime(301, animeId = 31, title = "Rate Limited")),
+            ),
         )
         var attempts = 0
         coEvery { userListsRepository.setAnimeList(31, UserAnimeList.PLANNED) } answers {
@@ -214,9 +257,11 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
                 ExternalListEntry(402, "Second", UserAnimeList.PLANNED, score = null, watchedEpisodes = 0),
             ),
         )
-        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns mapOf(
-            401 to listOf(ResolvedExternalAnime(401, animeId = 41, title = "First")),
-            402 to listOf(ResolvedExternalAnime(402, animeId = 42, title = "Second")),
+        coEvery { transferRepository.resolveByExternalIds(any(), any(), any()) } returns ExternalIdLookupResult(
+            resolvedByExternalId = mapOf(
+                401 to listOf(ResolvedExternalAnime(401, animeId = 41, title = "First")),
+                402 to listOf(ResolvedExternalAnime(402, animeId = 42, title = "Second")),
+            ),
         )
 
         var appliedItems = 0
@@ -226,7 +271,7 @@ class ImportAnimeListUseCaseTest : BaseUnitTest() {
             mutationDelayMs = 0L,
             isCancelled = { appliedItems >= 1 },
             onProgress = { progress ->
-                if (progress.phase == su.afk.yummy.tv.domain.library.model.AnimeListImportPhase.APPLYING_CHANGES) {
+                if (progress.phase == AnimeListImportPhase.APPLYING_CHANGES) {
                     appliedItems = progress.processed
                 }
             },

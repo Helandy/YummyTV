@@ -106,4 +106,13 @@
     <string name="library_transfer_error_import_failed">Не удалось завершить импорт списка</string>
     <string name="library_transfer_error_export_failed">Не удалось экспортировать список</string>
     <string name="library_transfer_error_save_failed">Не удалось сохранить файл экспорта</string>
+    <string name="library_transfer_error_stage_resolve">Не удалось сопоставить ID с каталогом YummyAnime (пакетов: %1$d)</string>
+    <string name="library_transfer_error_stage_load_library">Не удалось загрузить текущий список библиотеки YummyAnime</string>
+    <string name="library_transfer_error_stage_guest_ids">Не удалось загрузить внешние ID для экспорта (пакеты: %1$d / %2$d)</string>
+    <string name="library_transfer_import_stats_lookup_failed">Не удалось сопоставить из-за ошибки сети: %1$d</string>
+    <string name="library_transfer_retry_failed">Повторить неудавшиеся (%1$d)</string>
+    <string name="library_transfer_exit_import_title">Прервать импорт?</string>
+    <string name="library_transfer_exit_import_message">При выходе с экрана обработка оставшихся тайтлов остановится. Уже сохранённые записи останутся в библиотеке — позже импорт можно запустить повторно.</string>
+    <string name="library_transfer_exit_import_continue">Продолжить</string>
+    <string name="library_transfer_exit_import_confirm">Прервать и выйти</string>
 </resources>

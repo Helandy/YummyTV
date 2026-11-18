@@ -196,6 +196,20 @@ internal fun ListTransferTvImportSection(
                 item(key = "import_summary") {
                     TvImportResultBlock(summary = summary)
                 }
+                if (summary.retryableCount > 0) {
+                    item(key = "retry_failed") {
+                        ListTransferTvButton(
+                            label = stringResource(
+                                R.string.library_transfer_retry_failed,
+                                summary.retryableCount,
+                            ),
+                            enabled = !state.isBusy,
+                            onClick = {
+                                onEvent(ListTransferState.Event.RetryFailedImportClicked)
+                            },
+                        )
+                    }
+                }
                 if (summary.unmatched.isNotEmpty()) {
                     item(key = "unmatched_toggle") {
                         ListTransferTvButton(
@@ -395,11 +409,21 @@ private fun TvImportResultBlock(summary: ListTransferImportSummaryUi) {
                 color = colors.onSurfaceVariant,
             )
         }
-        if (summary.failedCount > 0) {
+        if (summary.lookupFailedCount > 0) {
+            Text(
+                text = stringResource(
+                    R.string.library_transfer_import_stats_lookup_failed,
+                    summary.lookupFailedCount,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.error,
+            )
+        }
+        if (summary.mutationFailedCount > 0) {
             Text(
                 text = stringResource(
                     R.string.library_transfer_import_stats_failed,
-                    summary.failedCount,
+                    summary.mutationFailedCount,
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.error,

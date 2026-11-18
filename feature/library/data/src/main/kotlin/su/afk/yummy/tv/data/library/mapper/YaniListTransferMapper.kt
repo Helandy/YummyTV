@@ -45,14 +45,12 @@ internal fun LibraryEntry.toExportableLibraryAnime(
         myAnimeListId = lookup?.remoteIds?.myAnimeListId?.takeIf { it > 0 },
     )
 
-internal fun YaniTransferLookupAnimeDto.externalIdFor(format: ExternalListFormat): Int? {
-    val shiki = remoteIds?.shikimoriId?.takeIf { it > 0 }
-    val mal = remoteIds?.myAnimeListId?.takeIf { it > 0 }
-    return when (format) {
-        ExternalListFormat.SHIKIMORI_JSON -> shiki ?: mal
-        ExternalListFormat.MAL_XML -> mal ?: shiki
+/** Возвращает внешний ID из ответа каталога строго для выбранного [format], без кросс-fallback. */
+internal fun YaniTransferLookupAnimeDto.externalIdFor(format: ExternalListFormat): Int? =
+    when (format) {
+        ExternalListFormat.SHIKIMORI_JSON -> remoteIds?.shikimoriId?.takeIf { it > 0 }
+        ExternalListFormat.MAL_XML -> remoteIds?.myAnimeListId?.takeIf { it > 0 }
     }
-}
 
 internal fun YaniTransferLookupAnimeDto.toResolvedExternalAnime(
     externalId: Int,

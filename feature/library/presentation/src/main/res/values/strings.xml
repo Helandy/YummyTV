@@ -106,4 +106,13 @@
     <string name="library_transfer_error_import_failed">Could not finish importing the list</string>
     <string name="library_transfer_error_export_failed">Could not export the list</string>
     <string name="library_transfer_error_save_failed">Could not save the exported file</string>
+    <string name="library_transfer_error_stage_resolve">Could not match external IDs with the YummyAnime catalog (batches: %1$d)</string>
+    <string name="library_transfer_error_stage_load_library">Could not load your YummyAnime library list</string>
+    <string name="library_transfer_error_stage_guest_ids">Could not load external IDs for export (batches: %1$d / %2$d)</string>
+    <string name="library_transfer_import_stats_lookup_failed">Could not match due to network error: %1$d</string>
+    <string name="library_transfer_retry_failed">Retry failed (%1$d)</string>
+    <string name="library_transfer_exit_import_title">Stop import?</string>
+    <string name="library_transfer_exit_import_message">Leaving this screen will stop importing the remaining titles. Entries already saved will stay in your library, and you can run import again later to finish.</string>
+    <string name="library_transfer_exit_import_continue">Continue import</string>
+    <string name="library_transfer_exit_import_confirm">Stop and leave</string>
 </resources>

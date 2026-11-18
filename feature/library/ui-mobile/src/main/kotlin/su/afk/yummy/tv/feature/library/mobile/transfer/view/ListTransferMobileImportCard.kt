@@ -146,7 +146,9 @@ internal fun ListTransferMobileImportCard(
         state.importSummary?.let { summary ->
             ImportSummaryBlock(
                 summary = summary,
+                isBusy = state.isBusy,
                 showUnmatched = state.showUnmatchedDetails,
+                onRetryFailed = { onEvent(ListTransferState.Event.RetryFailedImportClicked) },
                 onToggleUnmatched = { onEvent(ListTransferState.Event.ToggleUnmatchedDetails) },
             )
         }
@@ -278,7 +280,9 @@ private fun ImportProgressBlock(
 @Composable
 private fun ImportSummaryBlock(
     summary: ListTransferImportSummaryUi,
+    isBusy: Boolean,
     showUnmatched: Boolean,
+    onRetryFailed: () -> Unit,
     onToggleUnmatched: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
@@ -324,15 +328,41 @@ private fun ImportSummaryBlock(
                     color = colors.onSurfaceVariant,
                 )
             }
-            if (summary.failedCount > 0) {
+            if (summary.lookupFailedCount > 0) {
                 Text(
                     text = stringResource(
-                        R.string.library_transfer_import_stats_failed,
-                        summary.failedCount,
+                        R.string.library_transfer_import_stats_lookup_failed,
+                        summary.lookupFailedCount,
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.error,
                 )
+            }
+            if (summary.mutationFailedCount > 0) {
+                Text(
+                    text = stringResource(
+                        R.string.library_transfer_import_stats_failed,
+                        summary.mutationFailedCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.error,
+                )
+            }
+            if (summary.retryableCount > 0) {
+                OutlinedButton(
+                    onClick = onRetryFailed,
+                    enabled = !isBusy,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.library_transfer_retry_failed,
+                            summary.retryableCount,
+                        ),
+                    )
+                }
             }
             if (summary.unmatched.isNotEmpty()) {
                 TextButton(onClick = onToggleUnmatched) {

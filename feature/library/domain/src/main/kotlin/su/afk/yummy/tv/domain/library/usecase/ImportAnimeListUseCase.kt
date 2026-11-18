@@ -15,6 +15,7 @@ import su.afk.yummy.tv.domain.library.model.AnimeListImportPhase
 import su.afk.yummy.tv.domain.library.model.AnimeListImportProgress
 import su.afk.yummy.tv.domain.library.model.AnimeListImportResult
 import su.afk.yummy.tv.domain.library.model.ExportableLibraryAnime
+import su.afk.yummy.tv.domain.library.model.ExternalListEntry
 import su.afk.yummy.tv.domain.library.model.ImportConflictPolicy
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.ParsedExternalList
@@ -32,6 +33,8 @@ import javax.inject.Inject
  * Импортирует разобранный список аниме (Shikimori / MyAnimeList) в библиотеку пользователя:
  * пакетно сопоставляет внешние ID с каталогом yani, вычисляет дельту относительно текущего списка
  * и последовательно применяет изменения с троттлингом и повторами при HTTP 429 / 5xx.
+ *
+ * Оценка `0` во внешних файлах нормализуется в `null` и не снимает существующую оценку на сервере.
  */
 class ImportAnimeListUseCase @Inject constructor(
     private val transferRepository: AnimeListTransferRepository,
@@ -44,6 +47,7 @@ class ImportAnimeListUseCase @Inject constructor(
         parsed: ParsedExternalList,
         options: AnimeListImportOptions,
         mutationDelayMs: Long = DEFAULT_MUTATION_DELAY_MS,
+        pendingScoreExternalIds: Set<Int> = emptySet(),
         isCancelled: () -> Boolean = { false },
         onProgress: suspend (AnimeListImportProgress) -> Unit = {},
     ): AnimeListImportResult {
@@ -66,7 +70,7 @@ class ImportAnimeListUseCase @Inject constructor(
                 total = externalIds.size,
             ),
         )
-        val resolvedByExternalId = transferRepository.resolveByExternalIds(
+        val lookupResult = transferRepository.resolveByExternalIds(
             format = parsed.format,
             externalIds = externalIds,
         ) { processedIds, totalIds ->
@@ -78,6 +82,8 @@ class ImportAnimeListUseCase @Inject constructor(
                 ),
             )
         }
+        val resolvedByExternalId = lookupResult.resolvedByExternalId
+        val lookupFailedIds = lookupResult.failedExternalIds
 
         if (isCancelled()) {
             return emptyCancelledResult()
@@ -118,7 +124,10 @@ class ImportAnimeListUseCase @Inject constructor(
         var updatedCount = 0
         var skippedExistingCount = 0
         var failedCount = 0
+        var lookupFailedCount = 0
         val unmatched = mutableListOf<UnmatchedExternalAnime>()
+        val failedEntries = mutableListOf<ExternalListEntry>()
+        val nextPendingScoreIds = linkedSetOf<Int>()
         var hasSentRemoteMutation = false
 
         onProgress(
@@ -138,8 +147,19 @@ class ImportAnimeListUseCase @Inject constructor(
                     skippedExistingCount = skippedExistingCount,
                     unmatched = unmatched,
                     failedCount = failedCount,
+                    lookupFailedCount = lookupFailedCount,
+                    failedEntries = failedEntries,
+                    pendingScoreExternalIds = nextPendingScoreIds,
                     wasCancelled = true,
                 )
+            }
+
+            if (entry.externalId in lookupFailedIds) {
+                failedCount++
+                lookupFailedCount++
+                failedEntries += entry
+                onProgress(applyingProgress(index + 1, entries.size))
+                continue
             }
 
             val candidate = resolvedByExternalId[entry.externalId]
@@ -159,19 +179,23 @@ class ImportAnimeListUseCase @Inject constructor(
             val currentList = currentListByAnimeId[animeId]
             val currentRating = currentRatingByAnimeId[animeId]
             val wasInList = currentList != null
+            val retryScoreOnly = wasInList &&
+                options.conflictPolicy == ImportConflictPolicy.SKIP_EXISTING &&
+                entry.externalId in pendingScoreExternalIds
 
-            if (wasInList && options.conflictPolicy == ImportConflictPolicy.SKIP_EXISTING) {
+            if (wasInList && options.conflictPolicy == ImportConflictPolicy.SKIP_EXISTING && !retryScoreOnly) {
                 skippedExistingCount++
                 onProgress(applyingProgress(index + 1, entries.size))
                 continue
             }
 
-            val needListUpdate = currentList != entry.list
+            val effectiveList = if (retryScoreOnly) checkNotNull(currentList) else entry.list
+            val needListUpdate = !retryScoreOnly && currentList != effectiveList
             val targetScore = if (options.importScores) entry.score.normalizedExternalScore() else null
             val needScoreUpdate = targetScore != null && currentRating != targetScore
             val shouldMarkLocalEpisodes = options.importWatchedEpisodesLocally &&
                 entry.watchedEpisodes > 0 &&
-                entry.list.supportsLocalEpisodeImport()
+                effectiveList.supportsLocalEpisodeImport()
 
             if (!needListUpdate && !needScoreUpdate) {
                 if (shouldMarkLocalEpisodes) {
@@ -192,7 +216,7 @@ class ImportAnimeListUseCase @Inject constructor(
                     }
                     hasSentRemoteMutation = true
                     val listApplied = executeWithRetry(isCancelled) {
-                        userListsRepository.setAnimeList(animeId, entry.list)
+                        userListsRepository.setAnimeList(animeId, effectiveList)
                     }
                     if (!listApplied) {
                         if (isCancelled()) {
@@ -202,10 +226,14 @@ class ImportAnimeListUseCase @Inject constructor(
                                 skippedExistingCount = skippedExistingCount,
                                 unmatched = unmatched,
                                 failedCount = failedCount,
+                                lookupFailedCount = lookupFailedCount,
+                                failedEntries = failedEntries,
+                                pendingScoreExternalIds = nextPendingScoreIds,
                                 wasCancelled = true,
                             )
                         }
                         failedCount++
+                        failedEntries += entry
                         onProgress(applyingProgress(index + 1, entries.size))
                         continue
                     }
@@ -221,7 +249,32 @@ class ImportAnimeListUseCase @Inject constructor(
                     }
                     if (scoreApplied) {
                         appliedRating = targetScore
-                    } else if (!isCancelled()) {
+                    } else if (isCancelled()) {
+                        if (needListUpdate) {
+                            val now = clock.nowMillis()
+                            val updatedItem = buildMergedLibraryItem(
+                                candidate = candidate,
+                                previous = localByAnimeId[animeId],
+                                list = effectiveList,
+                                isFavorite = favoriteByAnimeId[animeId] == true,
+                                userRating = appliedRating,
+                                now = now,
+                            )
+                            libraryRepository.add(updatedItem)
+                            if (wasInList) updatedCount++ else addedCount++
+                        }
+                        return AnimeListImportResult(
+                            addedCount = addedCount,
+                            updatedCount = updatedCount,
+                            skippedExistingCount = skippedExistingCount,
+                            unmatched = unmatched,
+                            failedCount = failedCount,
+                            lookupFailedCount = lookupFailedCount,
+                            failedEntries = failedEntries,
+                            pendingScoreExternalIds = nextPendingScoreIds,
+                            wasCancelled = true,
+                        )
+                    } else {
                         ratingFailed = true
                     }
                 }
@@ -229,18 +282,26 @@ class ImportAnimeListUseCase @Inject constructor(
                 appliedRating = targetScore
             }
 
+            if (ratingFailed && !needListUpdate) {
+                failedCount++
+                failedEntries += entry
+                nextPendingScoreIds += entry.externalId
+                onProgress(applyingProgress(index + 1, entries.size))
+                continue
+            }
+
             val now = clock.nowMillis()
             val updatedItem = buildMergedLibraryItem(
                 candidate = candidate,
                 previous = localByAnimeId[animeId],
-                list = entry.list,
+                list = effectiveList,
                 isFavorite = favoriteByAnimeId[animeId] == true,
                 userRating = appliedRating,
                 now = now,
             )
             libraryRepository.add(updatedItem)
             localByAnimeId[animeId] = updatedItem
-            currentListByAnimeId[animeId] = entry.list
+            currentListByAnimeId[animeId] = effectiveList
             currentRatingByAnimeId[animeId] = appliedRating
             knownAnimeIds += animeId
 
@@ -249,7 +310,11 @@ class ImportAnimeListUseCase @Inject constructor(
             }
 
             if (wasInList) updatedCount++ else addedCount++
-            if (ratingFailed) failedCount++
+            if (ratingFailed) {
+                failedCount++
+                failedEntries += entry
+                nextPendingScoreIds += entry.externalId
+            }
             onProgress(applyingProgress(index + 1, entries.size))
         }
 
@@ -263,6 +328,9 @@ class ImportAnimeListUseCase @Inject constructor(
             skippedExistingCount = skippedExistingCount,
             unmatched = unmatched,
             failedCount = failedCount,
+            lookupFailedCount = lookupFailedCount,
+            failedEntries = failedEntries,
+            pendingScoreExternalIds = nextPendingScoreIds,
             wasCancelled = false,
         )
     }

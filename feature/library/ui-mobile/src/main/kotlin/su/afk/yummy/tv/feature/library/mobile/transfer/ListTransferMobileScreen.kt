@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.library.mobile.transfer
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,10 +9,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,6 +28,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.domain.library.model.UnmatchedExternalAnime
@@ -37,6 +41,7 @@ import su.afk.yummy.tv.feature.library.model.ListTransferPreviewUi
 import su.afk.yummy.tv.feature.library.model.ListTransferStatusCountUi
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.transfer.ListTransferState
+import su.afk.yummy.tv.feature.library.utils.KeepTransferScreenOnEffect
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -92,8 +97,38 @@ fun ListTransferMobileScreen(
     onEvent: (ListTransferState.Event) -> Unit,
 ) {
     ListTransferMobileEffects(effect = effect, onEvent = onEvent)
+    KeepTransferScreenOnEffect(keepScreenOn = state.keepScreenOn)
+    BackHandler(enabled = state.isImporting) {
+        onEvent(ListTransferState.Event.BackClicked)
+    }
+
+    if (state.showExitImportDialog) {
+        AlertDialog(
+            onDismissRequest = { onEvent(ListTransferState.Event.DismissExitImportDialog) },
+            title = { Text(stringResource(R.string.library_transfer_exit_import_title)) },
+            text = { Text(stringResource(R.string.library_transfer_exit_import_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = { onEvent(ListTransferState.Event.ConfirmExitImportClicked) },
+                ) {
+                    Text(
+                        text = stringResource(R.string.library_transfer_exit_import_confirm),
+                        color = YummySemanticColors.Destructive,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { onEvent(ListTransferState.Event.DismissExitImportDialog) },
+                ) {
+                    Text(stringResource(R.string.library_transfer_exit_import_continue))
+                }
+            },
+        )
+    }
 
     val title = stringResource(R.string.library_transfer_title)
+    val errorContextText = state.errorContext?.asString()
     val errorText = state.errorMessage?.asString()
 
     BaseScreen(
@@ -142,7 +177,13 @@ fun ListTransferMobileScreen(
             if (errorText != null) {
                 item(key = "error") {
                     ListTransferMobileErrorBanner(
+                        title = errorContextText?.takeIf { it != errorText },
                         message = errorText,
+                        onRetry = if (state.canRetry && !state.isBusy) {
+                            { onEvent(ListTransferState.Event.RetryLastActionClicked) }
+                        } else {
+                            null
+                        },
                         onDismiss = { onEvent(ListTransferState.Event.DismissError) },
                     )
                 }

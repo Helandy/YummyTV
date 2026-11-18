@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.library.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun ListTransferMobileSectionCard(
@@ -160,7 +161,9 @@ internal fun ListTransferMobileSwitchRow(
 
 @Composable
 internal fun ListTransferMobileErrorBanner(
+    title: String?,
     message: String,
+    onRetry: (() -> Unit)?,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -170,24 +173,47 @@ internal fun ListTransferMobileErrorBanner(
         color = colors.errorContainer,
         modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 14.dp, top = 8.dp, end = 6.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(start = 14.dp, top = 10.dp, end = 8.dp, bottom = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            if (title != null) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onErrorContainer,
+                    modifier = Modifier.padding(end = 6.dp),
+                )
+            }
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = colors.onErrorContainer,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.padding(end = 6.dp),
             )
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = stringResource(R.string.library_transfer_dismiss),
-                    color = colors.onErrorContainer,
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (onRetry != null) {
+                    TextButton(onClick = onRetry) {
+                        Text(
+                            text = stringResource(CoreR.string.common_retry),
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onErrorContainer,
+                        )
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = stringResource(R.string.library_transfer_dismiss),
+                        color = colors.onErrorContainer,
+                    )
+                }
             }
         }
     }

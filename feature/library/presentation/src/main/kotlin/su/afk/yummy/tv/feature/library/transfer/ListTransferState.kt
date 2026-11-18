@@ -26,18 +26,27 @@ interface ListTransferState {
         val importOptions: AnimeListImportOptions = AnimeListImportOptions(),
         val isImporting: Boolean = false,
         val isCancelRequested: Boolean = false,
+        val showExitImportDialog: Boolean = false,
         val importProgress: AnimeListImportProgress? = null,
         val importSummary: ListTransferImportSummaryUi? = null,
         val showUnmatchedDetails: Boolean = false,
+        val errorContext: UiText? = null,
         val errorMessage: UiText? = null,
+        val canRetry: Boolean = false,
     ) : UiState {
         val isBusy: Boolean
             get() = isParsingFile || isImporting || isExporting
+
+        val keepScreenOn: Boolean
+            get() = isImporting || isExporting
     }
 
     sealed interface Event : UiEvent {
         data object BackClicked : Event
+        data object DismissExitImportDialog : Event
+        data object ConfirmExitImportClicked : Event
         data object DismissError : Event
+        data object RetryLastActionClicked : Event
 
         data object PickImportFileClicked : Event
         data object ImportPickerUnavailable : Event
@@ -46,6 +55,7 @@ interface ListTransferState {
         data class ImportScoresChanged(val enabled: Boolean) : Event
         data class ImportWatchedEpisodesChanged(val enabled: Boolean) : Event
         data object StartImportClicked : Event
+        data object RetryFailedImportClicked : Event
         data object CancelImportClicked : Event
         data object ToggleUnmatchedDetails : Event
 

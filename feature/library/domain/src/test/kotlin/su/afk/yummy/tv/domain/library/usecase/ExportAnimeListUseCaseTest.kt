@@ -33,77 +33,79 @@ class ExportAnimeListUseCaseTest : BaseUnitTest() {
     }
 
     @Test
-    fun `exports library items counts skipped entries and attaches local watched counts`() = runTest {
-        val capturedEntries = slot<List<ExternalListEntry>>()
-        every {
-            repository.formatExternalList(
-                format = ExternalListFormat.MAL_XML,
-                userName = "helandy",
-                entries = capture(capturedEntries),
+    fun `exports library items counts skipped entries without cross fallback and attaches local watched counts`() =
+        runTest {
+            val capturedEntries = slot<List<ExternalListEntry>>()
+            every {
+                repository.formatExternalList(
+                    format = ExternalListFormat.MAL_XML,
+                    userName = "helandy",
+                    entries = capture(capturedEntries),
+                )
+            } returns "<xml/>"
+
+            coEvery { repository.loadExportableLibrary() } returns listOf(
+                ExportableLibraryAnime(
+                    animeId = 1,
+                    title = "Frieren",
+                    list = UserAnimeList.WATCHING,
+                    isFavorite = true,
+                    userRating = 10,
+                    typeAlias = "tv",
+                    shikimoriId = 52991,
+                    myAnimeListId = 52991,
+                ),
+                ExportableLibraryAnime(
+                    animeId = 2,
+                    title = "Your Name",
+                    list = UserAnimeList.COMPLETED,
+                    isFavorite = false,
+                    userRating = 9,
+                    typeAlias = "movie",
+                    shikimoriId = null,
+                    myAnimeListId = 32281,
+                ),
+                ExportableLibraryAnime(
+                    animeId = 3,
+                    title = "Favorite only",
+                    list = null,
+                    isFavorite = true,
+                    userRating = null,
+                    typeAlias = "tv",
+                    shikimoriId = 999,
+                    myAnimeListId = 999,
+                ),
+                ExportableLibraryAnime(
+                    animeId = 4,
+                    title = "Shiki ID only without MAL ID",
+                    list = UserAnimeList.PLANNED,
+                    isFavorite = false,
+                    userRating = null,
+                    typeAlias = "ona",
+                    shikimoriId = 77777,
+                    myAnimeListId = null,
+                ),
             )
-        } returns "<xml/>"
 
-        coEvery { repository.loadExportableLibrary() } returns listOf(
-            ExportableLibraryAnime(
-                animeId = 1,
-                title = "Frieren",
-                list = UserAnimeList.WATCHING,
-                isFavorite = true,
-                userRating = 10,
-                typeAlias = "tv",
-                shikimoriId = 52991,
-                myAnimeListId = 52991,
-            ),
-            ExportableLibraryAnime(
-                animeId = 2,
-                title = "Your Name",
-                list = UserAnimeList.COMPLETED,
-                isFavorite = false,
-                userRating = 9,
-                typeAlias = "movie",
-                shikimoriId = 32281,
-                myAnimeListId = null, // cross-fallback to shikimoriId
-            ),
-            ExportableLibraryAnime(
-                animeId = 3,
-                title = "Favorite only",
-                list = null,
-                isFavorite = true,
-                userRating = null,
-                typeAlias = "tv",
-                shikimoriId = 999,
-                myAnimeListId = 999,
-            ),
-            ExportableLibraryAnime(
-                animeId = 4,
-                title = "Unlinked donghua",
-                list = UserAnimeList.PLANNED,
-                isFavorite = false,
-                userRating = null,
-                typeAlias = "ona",
-                shikimoriId = null,
-                myAnimeListId = null,
-            ),
-        )
+            val result = ExportAnimeListUseCase(repository, clock)(ExternalListFormat.MAL_XML)
 
-        val result = ExportAnimeListUseCase(repository, clock)(ExternalListFormat.MAL_XML)
+            assertEquals(2, result.exportedCount)
+            assertEquals(1, result.skippedFavoriteOnlyCount)
+            assertEquals(1, result.skippedWithoutExternalIdCount)
+            assertEquals("application/xml", result.format.mimeType)
+            assertEquals("yummytv-animelist-20260516-000000.xml", result.suggestedFileName)
 
-        assertEquals(2, result.exportedCount)
-        assertEquals(1, result.skippedFavoriteOnlyCount)
-        assertEquals(1, result.skippedWithoutExternalIdCount)
-        assertEquals("application/xml", result.format.mimeType)
+            val entries = capturedEntries.captured
+            assertEquals(2, entries.size)
+            assertEquals(52991, entries[0].externalId)
+            assertEquals(12, entries[0].watchedEpisodes)
+            assertEquals(10, entries[0].score)
+            assertEquals("TV", entries[0].seriesType)
 
-        val entries = capturedEntries.captured
-        assertEquals(2, entries.size)
-        assertEquals(52991, entries[0].externalId)
-        assertEquals(12, entries[0].watchedEpisodes)
-        assertEquals(10, entries[0].score)
-        assertEquals("TV", entries[0].seriesType)
-
-        assertEquals(32281, entries[1].externalId)
-        assertEquals(1, entries[1].watchedEpisodes)
-        assertEquals("Movie", entries[1].seriesType)
-    }
+            assertEquals(32281, entries[1].externalId)
+            assertEquals(1, entries[1].watchedEpisodes)
+            assertEquals("Movie", entries[1].seriesType)
+        }
 
     @Test
     fun `throws EmptyExportListException when nothing can be exported`() = runTest {
