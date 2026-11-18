@@ -147,6 +147,7 @@
     <string name="player_mobile_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
     <string name="player_toast_dubbing_changed">Dubbing: %1$s</string>
     <string name="player_toast_balancer_changed">Player: %1$s</string>
+    <string name="player_toast_quality_fallback">The stream is unstable, switching to %1$s</string>
     <string name="player_toast_decoder_may_struggle">This device may not handle this video smoothly — choose a lower quality or another source</string>
     <string name="player_toast_video_enhancement_overload">Device can\'t keep up with video enhancement — it was turned off</string>
     <string name="player_side_panel_title">Player settings</string>

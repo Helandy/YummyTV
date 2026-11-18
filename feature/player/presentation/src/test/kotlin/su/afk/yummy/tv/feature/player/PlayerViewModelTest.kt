@@ -79,6 +79,7 @@ class PlayerViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { strings.get(any<Int>()) } returns "stream error"
+        every { strings.get(any<Int>(), *anyVararg()) } returns "fallback toast"
         coEvery { finalEpisodeActionHandler.resolve(any()) } returns finalAction
         coEvery { artworkHandler.resolve(any()) } returns null
         coEvery { sourceStreamHandler.loadSourceGraph(any(), any(), any(), any(), any(), any()) } returns
@@ -90,6 +91,16 @@ class PlayerViewModelTest : BaseUnitTest() {
         coEvery {
             sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns PlayerStreamLoadResult.State(state = streamState, consumedDestinationResume = false)
+    }
+
+    /** Поток с одним качеством: при ошибке снижать нечего, сразу показывается экран ошибки. */
+    private fun useSingleQualityStream() {
+        coEvery {
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns PlayerStreamLoadResult.State(
+            state = streamState.copy(selectedQuality = "480p", streamQualityMap = linkedMapOf("480p" to STREAM_URL)),
+            consumedDestinationResume = false,
+        )
     }
 
     private fun createViewModel(dest: PlayerDestination = dest()) = PlayerViewModel(
@@ -254,7 +265,35 @@ class PlayerViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `playback error steps down to the next lower quality once before showing the error`() = runTest {
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(PlayerState.Event.PlaybackError(message = "boom", positionMs = 5_000L))
+
+        assertNull(vm.currentState.playerError)
+        assertEquals(1, vm.currentState.retryKey)
+        assertEquals("fallback toast", (effects.single() as PlayerState.Effect.ShowToast).message)
+
+        vm.setEvent(PlayerState.Event.PlaybackError(message = "boom", positionMs = 5_000L))
+
+        assertEquals("friendly error", vm.currentState.playerError)
+    }
+
+    @Test
+    fun `playback error while offline does not step down the quality`() {
+        val vm = createViewModel()
+        offline.value = true
+
+        vm.setEvent(PlayerState.Event.PlaybackError(message = "boom"))
+
+        assertEquals("friendly error", vm.currentState.playerError)
+        assertEquals(0, vm.currentState.retryKey)
+    }
+
+    @Test
     fun `unhandled playback error stops the stream and shows the message`() {
+        useSingleQualityStream()
         val vm = createViewModel()
 
         vm.setEvent(PlayerState.Event.PlaybackError(message = "boom", positionMs = 5_000L))
@@ -381,6 +420,7 @@ class PlayerViewModelTest : BaseUnitTest() {
 
     @Test
     fun `network returning after a playback error retries the stream once`() {
+        useSingleQualityStream()
         val vm = createViewModel()
         offline.value = true
         vm.setEvent(PlayerState.Event.PlaybackError(message = "boom"))

@@ -69,6 +69,7 @@ import su.afk.yummy.tv.feature.player.utils.artworkSource
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
+import su.afk.yummy.tv.feature.player.utils.lowerQualityLabel
 import su.afk.yummy.tv.feature.player.utils.preferredQualityForLabel
 import su.afk.yummy.tv.feature.player.utils.qualityHeight
 import su.afk.yummy.tv.feature.player.utils.streamQualities
@@ -396,6 +397,21 @@ class PlayerViewModel @AssistedInject internal constructor(
                         errorCode = event.errorCode,
                     )
                 }
+                val fallbackQuality = qualityFallbackTarget()
+                if (fallbackQuality != null) {
+                    // Ретраи исчерпаны, а качеством ниже поток может пойти: пробуем его сами,
+                    // иначе при обычной (не декодерной) ошибке видео просто недоступно.
+                    // Метка «качество выбрано вручную» из ChangeQualityAfterError здесь нужна:
+                    // адаптация не должна тут же вернуть качество, на котором поток упал.
+                    setState { copy(qualityFallbackEpisode = activeEpisode(currentState)) }
+                    setEffect(
+                        PlayerState.Effect.ShowToast(
+                            strings.get(R.string.player_toast_quality_fallback, fallbackQuality),
+                        ),
+                    )
+                    onEvent(PlayerState.Event.ChangeQualityAfterError(fallbackQuality, errorPositionMs))
+                    return
+                }
                 setState {
                     copy(
                         streamUrl = null,
@@ -416,6 +432,9 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             PlayerState.Event.PlaybackReady -> {
                 sourceBehaviors.forEach { it.onPlaybackReady() }
+                if (currentState.qualityFallbackEpisode != null) {
+                    setState { copy(qualityFallbackEpisode = null) }
+                }
                 if (currentState.isPlaybackRecovering && sourceBehaviors.none { it.isRecovering }) {
                     (activeSourceBehavior() ?: defaultSource).onPlaybackRecovered()
                     setState { copy(isPlaybackRecovering = false) }
@@ -718,6 +737,17 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
         }
+    }
+
+    /**
+     * Качество ниже текущего, на которое стоит перейти после ошибки воспроизведения, или `null`:
+     * нет качества ниже, оффлайн/нет сети, либо в этой серии такой шаг уже был.
+     */
+    private fun qualityFallbackTarget(): String? {
+        val state = currentState
+        if (state.isOfflinePlayback || state.qualityFallbackEpisode == activeEpisode(state)) return null
+        if (connectivity.isOffline.value) return null
+        return lowerQualityLabel(streamQualities(state).keys, activeQuality(state))
     }
 
     /** Поведение, которое принимает решения по ошибкам и ретраям текущего источника. */

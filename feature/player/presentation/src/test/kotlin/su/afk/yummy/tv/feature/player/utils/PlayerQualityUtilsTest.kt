@@ -43,4 +43,17 @@ class PlayerQualityUtilsTest : BaseUnitTest() {
         assertEquals(PreferredVideoQuality.P360, preferredQualityForLabel("240p"))
         assertNull(preferredQualityForLabel("auto"))
     }
+
+    @Test
+    fun `lower label is the nearest quality below the active one`() {
+        assertEquals("720p", lowerQualityLabel(labels, "1080p"))
+        assertEquals("360p", lowerQualityLabel(labels, "480p"))
+    }
+
+    @Test
+    fun `lower label is null for the lowest or non numeric quality`() {
+        assertNull(lowerQualityLabel(labels, "360p"))
+        assertNull(lowerQualityLabel(listOf("auto"), "auto"))
+        assertNull(lowerQualityLabel(labels, null))
+    }
 }
