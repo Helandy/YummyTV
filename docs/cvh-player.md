@@ -36,8 +36,8 @@ iframe-URL балансера:
 
 | Файл                                                      | Назначение                                                         |
 |-----------------------------------------------------------|--------------------------------------------------------------------|
-| `data/.../extractor/cvh/CvhExtractor.kt`                  | Запросы к API, выбор элемента плейлиста, лестница качеств          |
-| `data/.../extractor/cvh/CvhPlaylistItem.kt`               | Элемент плейлиста и `selectCvhItem`                                |
+| `source/cvh/data/.../CvhExtractor.kt`                     | Запросы к API, выбор элемента плейлиста, лестница качеств          |
+| `source/cvh/data/.../CvhPlaylistItem.kt`                  | Элемент плейлиста и `selectCvhItem`                                |
 | `core/common/.../utils/player/PlayerCdnHostUtils.kt`      | `withCdnHost`, `isOkCdnUrl`, `isIpv4Host`                          |
 | `core/utils/.../network/BrowserUserAgent.kt`              | `BrowserUserAgentProvider`: UA из настроек, профиль по умолчанию   |
 | `core/model/.../settings/BrowserUserAgentProfile.kt`      | Закрытый список проверенных UA                                     |

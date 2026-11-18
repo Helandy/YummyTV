@@ -128,6 +128,22 @@ dependencies {
     findProject(":source:amedia:data")?.let { implementation(it) }
     // Необязательный источник «AniLibria»: нет каталога source/anilibria, нет и зависимости.
     findProject(":source:anilibria:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «Kodik»: нет каталога source/kodik, нет и зависимости.
+    findProject(":source:kodik:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «Alloha»: нет каталога source/alloha, нет и зависимости.
+    findProject(":source:alloha:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «CVH»: нет каталога source/cvh, нет и зависимости.
+    findProject(":source:cvh:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «VK Видео»: нет каталога source/vk, нет и зависимости.
+    findProject(":source:vk:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «Rutube»: нет каталога source/rutube, нет и зависимости.
+    findProject(":source:rutube:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «Sibnet»: нет каталога source/sibnet, нет и зависимости.
+    findProject(":source:sibnet:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «Aksor»: нет каталога source/aksor, нет и зависимости.
+    findProject(":source:aksor:data")?.let { implementation(it) }
+    // Необязательный экстрактор балансера «Zedfilm»: нет каталога source/zedfilm, нет и зависимости.
+    findProject(":source:zedfilm:data")?.let { implementation(it) }
     // Необязательный источник «Tenrai» (пометки филлер/рекап): нет каталога external/tenrai, нет и зависимости.
     findProject(":external:tenrai")?.let { implementation(it) }
     implementation(project(":core:analytics"))
@@ -202,6 +218,7 @@ dependencies {
     implementation(project(":feature:player:ui-mobile"))
     implementation(project(":feature:player:ui-tv"))
     implementation(project(":feature:player:data"))
+    implementation(project(":feature:player:extractor"))
     implementation(project(":feature:schedule:api"))
     implementation(project(":feature:schedule:ui-mobile"))
     implementation(project(":feature:schedule:ui-tv"))

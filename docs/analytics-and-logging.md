@@ -130,7 +130,7 @@ KDoc функции: в файл логов, который пользовате
 | `PlayerViewModel`    | `PlayerAnalytics`                                                              |
 | `PlayerMediaSession` | `PlayerServiceUtils.kt` (`PLAYER_SERVICE_LOG_TAG`, сервис медиа-сессии)         |
 | `PlayerLoudness`     | `PlayerLoudnessNormalizer`                                                     |
-| `PlayerExtractor`    | `PlayerExtractorLog` (`extractor/common/`), [other-extractors.md](other-extractors.md) |
+| `PlayerExtractor`    | `PlayerExtractorLog` (`feature/player/extractor`), [other-extractors.md](other-extractors.md) |
 | `AllohaExtractor`    | [alloha-player.md](alloha-player.md)                                           |
 | `CvhExtractor`       | [cvh-player.md](cvh-player.md)                                                 |
 

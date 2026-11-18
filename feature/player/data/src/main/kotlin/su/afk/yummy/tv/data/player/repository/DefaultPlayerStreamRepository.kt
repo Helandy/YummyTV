@@ -4,7 +4,7 @@ package su.afk.yummy.tv.data.player.repository
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
-import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
+import su.afk.yummy.tv.feature.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.core.common.player.ResolveProgress

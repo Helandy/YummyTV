@@ -10,12 +10,17 @@
 feature/player/
   api              PlayerDestination (NavKey, FullscreenDestination), PLAYER_CONTENT_KEY
   domain           PlayerStreamResolveResult, репозитории, use case'ы
-  data             экстракторы (extractor/*), DefaultPlayerStreamRepository
+  data             DefaultPlayerStreamRepository, мост `source://` (ExtraSourceExtractor)
+  extractor        контракт PlayerStreamExtractor, PlayerHttpClient и общие помощники экстракторов
   presentation     PlayerViewModel, PlayerState, handler/, behavior/, delegate/
   ui-common        сервис медиа-сессии, Compose-эффекты, общие для ТВ и мобилки
   ui-tv            PlayerTvScreen, ТВ-контролы
   ui-mobile        PlayerMobileScreen, PiP, Cast-кнопка
 ```
+
+Экстракторы балансеров лежат в необязательных модулях `source/<балансер>/data` (kodik, alloha, cvh, vk,
+rutube, sibnet, aksor, zedfilm) и подключаются через `Set<PlayerStreamExtractor>`; см.
+[other-extractors.md](other-extractors.md).
 
 Принцип: ExoPlayer живёт не в Activity и не в ViewModel, а в **сервисе**
 (`PlayerMediaSessionService`). UI подключается к нему через `MediaController`. ViewModel про

@@ -126,6 +126,7 @@ include(":feature:catalog:android")
 
 include(":feature:player:domain")
 include(":feature:player:data")
+include(":feature:player:extractor")
 include(":feature:player:presentation")
 include(":feature:player:ui-common")
 include(":feature:player:ui-tv")
@@ -309,6 +310,40 @@ if (sourceEnabled("amedia") && sourceEnabled("availability")) {
 if (sourceEnabled("anilibria") && sourceEnabled("availability")) {
     include(":source:anilibria:domain")
     include(":source:anilibria:data")
+}
+
+// Экстракторы iframe-балансеров yani (контракт и общая часть — :feature:player:extractor).
+// Нет каталога или false — ссылка такого балансера получает PlayerStreamResolveResult.Unsupported.
+if (sourceEnabled("kodik")) {
+    include(":source:kodik:data")
+}
+
+if (sourceEnabled("alloha")) {
+    include(":source:alloha:data")
+}
+
+if (sourceEnabled("cvh")) {
+    include(":source:cvh:data")
+}
+
+if (sourceEnabled("vk")) {
+    include(":source:vk:data")
+}
+
+if (sourceEnabled("rutube")) {
+    include(":source:rutube:data")
+}
+
+if (sourceEnabled("sibnet")) {
+    include(":source:sibnet:data")
+}
+
+if (sourceEnabled("aksor")) {
+    include(":source:aksor:data")
+}
+
+if (sourceEnabled("zedfilm")) {
+    include(":source:zedfilm:data")
 }
 
 // Внешние сервисы не-видео (external/*): yummytv.external.<имя> в gradle.properties. Нет каталога или false — модуль не подключается.

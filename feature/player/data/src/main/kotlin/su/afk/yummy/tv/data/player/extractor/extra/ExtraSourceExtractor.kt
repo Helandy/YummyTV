@@ -3,7 +3,7 @@ package su.afk.yummy.tv.data.player.extractor.extra
 
 import android.content.Context
 import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
-import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
+import su.afk.yummy.tv.feature.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.repository.ExtraStreamRepository

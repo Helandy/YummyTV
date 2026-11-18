@@ -5,7 +5,8 @@
 [cvh-player.md](cvh-player.md) (подписанные mp4 и переезд узла). Здесь — общая схема и остальные:
 Kodik, VK, Rutube, Sibnet, Aksor, Zedfilm.
 
-Код: `feature/player/data/.../extractor/`. Определение балансера по URL —
+Код: контракт и общая часть — `feature/player/extractor`; каждый балансер — отдельный модуль
+`source/<имя>/data` (`.../source/<имя>/data/extractor/`). Определение балансера по URL —
 `core/common/.../utils/player/PlayerUrlUtils.kt`.
 
 ## Общая схема
@@ -51,7 +52,7 @@ DefaultPlayerStreamRepository.resolve(request)
 `playerDisplayOrderPriority()` задаёт порядок показа в выборе плеера: CVH (0), Kodik (1), остальные
 (2).
 
-### Общие утилиты (`extractor/common/`)
+### Общие утилиты (`feature/player/extractor/.../common/`)
 
 - `PlayerHttpClient.fetchText` / `fetchJson` — GET с `throwOnFailure`.
 - `orderQualityMap(raw, keys, keyAliases)` — упорядочивает качества по `STANDARD_QUALITY_KEYS`
@@ -180,8 +181,13 @@ HLS. Нет Auto-качества: у каждого качества свой �
 
 - Определение по URL: `isXxxPlayerUrl()` и `isSupportedPlayerUrl()` в `PlayerUrlUtils.kt`;
   порядок показа — `playerDisplayOrderPriority()`.
-- Реализации: `@Binds @IntoSet` в `PlayerDataModule` (`feature/player/data/.../di/`), потребитель —
-  `Set<PlayerStreamExtractor>` в `DefaultPlayerStreamRepository`.
+- Реализации: `@Binds @IntoSet` в `<Имя>Module` каждого модуля `source/<имя>/data`, потребитель —
+  `Set<PlayerStreamExtractor>` в `DefaultPlayerStreamRepository`; пустой набор объявлен `@Multibinds` в
+  `feature/player/extractor`.
+- Опциональность: `yummytv.source.<имя>=false` в `gradle.properties` (или удалить каталог `source/<имя>`) —
+  модуль не подключается, ссылка этого балансера даёт `PlayerStreamResolveResult.Unsupported`. Мастер-выключатель
+  `yummytv.source.enabled=false` выключает и экстракторы. Имена: `kodik`, `alloha`, `cvh`, `vk`, `rutube`,
+  `sibnet`, `aksor`, `zedfilm`.
 - Ошибки пишутся через `analyticsTracker.logExtractorFailure(source, url, step, throwable)`.
 - Карта качеств — `LinkedHashMap`; общие помощники `orderQualityMap` и `withAutoQualityLabel` в
-  `extractor/common/QualityMap.kt`.
+  `feature/player/extractor/.../common/QualityMap.kt`.

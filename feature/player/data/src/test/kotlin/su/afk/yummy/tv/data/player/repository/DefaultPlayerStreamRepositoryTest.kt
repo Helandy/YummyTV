@@ -6,7 +6,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
-import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
+import su.afk.yummy.tv.feature.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 
