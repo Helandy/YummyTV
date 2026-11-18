@@ -320,7 +320,7 @@ class PlayerState {
 
     sealed interface Effect : UiEffect {
         /** Короткое сообщение поверх плеера, например о смене озвучки или балансера. */
-        data class ShowToast(val message: String) : Effect
+        data class ShowToast(val message: String, val long: Boolean = false) : Effect
 
         /** Кнопка «следующая серия», а в активной озвучке её нет — объяснить и предложить другой источник. */
         data class ShowNextEpisodeUnavailable(val info: PlayerNextEpisodeUnavailable) : Effect

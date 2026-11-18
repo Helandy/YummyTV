@@ -620,7 +620,13 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             PlayerState.Event.VideoEnhancementOverloaded -> {
                 if (currentState.videoEnhancementMode != VideoEnhancementMode.OFF) {
-                    setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_video_enhancement_overload)))
+                    setEffect(
+                        PlayerState.Effect.ShowToast(
+                            message = strings.get(R.string.player_toast_video_enhancement_overload),
+                            long = true,
+                        ),
+                    )
+                    preferences.setVideoEnhancementMode(host, VideoEnhancementMode.OFF)
                 }
             }
 

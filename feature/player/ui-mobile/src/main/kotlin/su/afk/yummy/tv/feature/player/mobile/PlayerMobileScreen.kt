@@ -89,16 +89,20 @@ fun PlayerMobileScreen(
     var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
     var showErrorQualitySheet by rememberSaveable { mutableStateOf(false) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
+    var sourceToastLong by remember { mutableStateOf(false) }
     var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
     effect.collectAsEffect { eff ->
         when (eff) {
-            is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+            is PlayerState.Effect.ShowToast -> {
+                sourceToastLong = eff.long
+                sourceToastText = eff.message
+            }
             is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
         }
     }
     LaunchedEffect(sourceToastText) {
         if (sourceToastText != null) {
-            delay(SOURCE_TOAST_DURATION_MS)
+            delay(if (sourceToastLong) SOURCE_TOAST_LONG_DURATION_MS else SOURCE_TOAST_DURATION_MS)
             sourceToastText = null
         }
     }
@@ -308,6 +312,7 @@ fun PlayerMobileScreen(
 }
 
 private const val SOURCE_TOAST_DURATION_MS = 2_000L
+private const val SOURCE_TOAST_LONG_DURATION_MS = 7_000L
 
 /** Доля высоты видео, когда под ним раскрыт список серий (список — остальная 1/3). */
 

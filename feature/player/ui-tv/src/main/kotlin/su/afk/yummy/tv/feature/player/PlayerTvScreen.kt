@@ -47,6 +47,7 @@ import su.afk.yummy.tv.feature.player.view.TvPlayerBackgroundExitEffect
 import su.afk.yummy.tv.feature.player.view.TvStreamErrorOverlay
 import su.afk.yummy.tv.feature.player.view.TvStreamLoadingView
 import su.afk.yummy.tv.feature.player.view.player.TV_PLAYER_INLINE_TOAST_DURATION
+import su.afk.yummy.tv.feature.player.view.player.TV_PLAYER_INLINE_TOAST_LONG_DURATION
 import su.afk.yummy.tv.feature.player.view.player.TvDubbingSelectionPanel
 import su.afk.yummy.tv.feature.player.view.player.TvExoPlayerView
 import su.afk.yummy.tv.feature.player.view.player.TvPlayerInlineToast
@@ -100,16 +101,20 @@ fun PlayerTvScreen(
     var backToastText by remember { mutableStateOf<String?>(null) }
     var backToastJob by remember { mutableStateOf<Job?>(null) }
     var sourceToastText by remember { mutableStateOf<String?>(null) }
+    var sourceToastLong by remember { mutableStateOf(false) }
     var nextEpisodeUnavailable by remember { mutableStateOf<PlayerNextEpisodeUnavailable?>(null) }
     effect.collectAsEffect { eff ->
         when (eff) {
-            is PlayerState.Effect.ShowToast -> sourceToastText = eff.message
+            is PlayerState.Effect.ShowToast -> {
+                sourceToastLong = eff.long
+                sourceToastText = eff.message
+            }
             is PlayerState.Effect.ShowNextEpisodeUnavailable -> nextEpisodeUnavailable = eff.info
         }
     }
     LaunchedEffect(sourceToastText) {
         if (sourceToastText != null) {
-            delay(TV_PLAYER_INLINE_TOAST_DURATION)
+            delay(if (sourceToastLong) TV_PLAYER_INLINE_TOAST_LONG_DURATION else TV_PLAYER_INLINE_TOAST_DURATION)
             sourceToastText = null
         }
     }

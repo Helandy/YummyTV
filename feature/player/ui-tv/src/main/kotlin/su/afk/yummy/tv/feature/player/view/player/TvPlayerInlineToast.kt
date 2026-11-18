@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.seconds
 
 internal val TV_PLAYER_INLINE_TOAST_DURATION = 2.seconds
+internal val TV_PLAYER_INLINE_TOAST_LONG_DURATION = 7.seconds
 
 @Composable
 internal fun TvPlayerInlineToast(
