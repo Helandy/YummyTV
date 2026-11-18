@@ -3,4 +3,7 @@
     <cache-path
         name="logs"
         path="logs/export/" />
+    <cache-path
+        name="list_exports"
+        path="list_exports/" />
 </paths>

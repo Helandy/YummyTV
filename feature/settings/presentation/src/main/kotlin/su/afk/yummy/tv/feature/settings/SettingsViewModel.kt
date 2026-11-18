@@ -40,6 +40,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinatio
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SetVideoDownloadWifiOnlyUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
+import su.afk.yummy.tv.feature.library.ILibraryNavigator
 import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.model.TorrServerCheckStatus
@@ -71,6 +72,7 @@ class SettingsViewModel @Inject internal constructor(
     private val tvIntegration: ITvIntegration,
     private val nav: INavigationManager,
     private val accountNavigator: IAccountNavigator,
+    private val libraryNavigator: ILibraryNavigator,
     private val analytics: SettingsAnalytics,
     private val observeVideoExportDestination: ObserveVideoExportDestinationUseCase,
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
@@ -624,6 +626,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.LoginOnTvSelected -> {
                 nav.navigate(accountNavigator.getLocalAuthDest())
+            }
+
+            SettingsState.Event.ListTransferSelected -> {
+                nav.navigate(libraryNavigator.getListTransferDest())
             }
 
             SettingsState.Event.VideoExportDirectorySelected -> {

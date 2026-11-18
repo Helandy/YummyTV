@@ -270,7 +270,7 @@ fun cacheStorageFolderLabel(id: String): String = when (id) {
     "image_cache" -> stringResource(R.string.settings_cache_storage_folder_images)
     "player_streaming_cache" -> stringResource(R.string.settings_cache_storage_folder_player)
     "video_download_cache" -> stringResource(R.string.settings_cache_storage_folder_downloads)
-    "video_exports" -> stringResource(R.string.settings_cache_storage_folder_exports)
+    "video_exports", "list_exports" -> stringResource(R.string.settings_cache_storage_folder_exports)
     else -> if (id.startsWith("yummy_cache.db")) {
         stringResource(R.string.settings_cache_storage_folder_database)
     } else {

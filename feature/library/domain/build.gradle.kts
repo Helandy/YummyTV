@@ -17,4 +17,5 @@ dependencies {
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
+    testImplementation(libs.ktor.client.core)
 }

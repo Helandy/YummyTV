@@ -19,7 +19,7 @@
     <string name="settings_category_subtitles">Субтитри</string>
     <string name="settings_mobile_category_subtitles_hint">Розмір, положення, колір і фон</string>
     <string name="settings_category_storage">Сховище</string>
-    <string name="settings_mobile_category_storage_hint">Кеш прев’ю, експорт відео, розмір кешу</string>
+    <string name="settings_mobile_category_storage_hint">Кеш, експорт відео, імпорт та експорт списку</string>
     <string name="settings_category_api">API</string>
     <string name="settings_mobile_category_api_hint">Токен застосунку yani</string>
     <string name="settings_mobile_section_devices">Пристрої</string>
@@ -421,4 +421,7 @@
     <string name="settings_torrent_check_indexer_unauthorized">%1$s: API-ключ відхилено. Перевірте ключ</string>
     <string name="settings_torrent_check_indexer_unexpected">%1$s: несподівана відповідь (HTTP %2$d). Перевірте адресу</string>
     <string name="settings_torrent_warning_indexer_unavailable">Пошук торентів нічого не знайде: сайт JacRed/Jackett недоступний. Подробиці — у результаті перевірки нижче</string>
+    <string name="settings_section_anime_list">Список аніме</string>
+    <string name="settings_list_transfer_title">Імпорт та експорт списку</string>
+    <string name="settings_list_transfer_hint">Перенесення файлів списків Shikimori та MyAnimeList</string>
 </resources>

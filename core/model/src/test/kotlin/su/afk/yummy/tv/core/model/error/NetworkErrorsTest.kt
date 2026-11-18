@@ -2,11 +2,15 @@ package su.afk.yummy.tv.core.model.error
 
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.serialization.SerializationException
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -38,5 +42,25 @@ class NetworkErrorsTest : BaseUnitTest() {
             assertFalse("$code", responseError(HttpStatusCode.fromValue(code)).isRetryableMutationFailure())
         }
         assertFalse(IllegalStateException("bug").isRetryableMutationFailure())
+    }
+
+    @Test
+    fun `isTooManyRequests and retryAfterMillisOrNull extract and clamp Retry-After`() {
+        val response = mockk<HttpResponse> {
+            every { status } returns HttpStatusCode.TooManyRequests
+            every { headers } returns Headers.build { append(HttpHeaders.RetryAfter, "12") }
+        }
+        val ktorError = ResponseException(response, "cached")
+        assertTrue(ktorError.isTooManyRequests())
+        assertEquals(12_000L, ktorError.retryAfterMillisOrNull())
+
+        val hugeRetryResponse = mockk<HttpResponse> {
+            every { status } returns HttpStatusCode.TooManyRequests
+            every { headers } returns Headers.build { append(HttpHeaders.RetryAfter, "300") }
+        }
+        assertEquals(60_000L, ResponseException(hugeRetryResponse, "cached").retryAfterMillisOrNull())
+
+        assertFalse(responseError(HttpStatusCode.InternalServerError).isTooManyRequests())
+        assertNull(IOException("offline").retryAfterMillisOrNull())
     }
 }
