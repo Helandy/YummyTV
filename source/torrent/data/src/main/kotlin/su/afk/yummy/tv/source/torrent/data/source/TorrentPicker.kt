@@ -6,6 +6,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.core.common.player.reportResolveStep
 import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogCenter
@@ -14,6 +16,7 @@ import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogState
 import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogStat
 import su.afk.yummy.tv.core.designsystem.dialog.ChoiceDialogTone
 import su.afk.yummy.tv.core.preferences.settings.TorrentSettingsStore
+import su.afk.yummy.tv.source.torrent.data.utils.logSummary
 import su.afk.yummy.tv.source.torrent.data.utils.pinServerTorrentsFirst
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentContent
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentMetadataUnavailableException
@@ -41,6 +44,7 @@ internal class TorrentPicker @Inject constructor(
     private val settingsStore: TorrentSettingsStore,
     private val selections: TorrentSelectionHolder,
     private val decoders: VideoDecoderSupport,
+    private val analyticsTracker: AnalyticsTracker,
 ) {
 
     /**
@@ -75,6 +79,9 @@ internal class TorrentPicker @Inject constructor(
                 // Играющая сейчас раздача и всё, что уже лежит в TorrServer, — в начале списка.
                 val currentHash = selections.torrentFor(target.animeId)?.infoHash
                 results = found.pinServerTorrentsFirst(currentHash, knownHashes)
+                analyticsTracker.log(LOG_TAG) {
+                    "Pick search done found=${found.size} known=${knownHashes.size} queries=${target.queries.size}"
+                }
                 if (results.isEmpty()) {
                     ChoiceDialogState.Message(messages.nothingFound)
                 } else {
@@ -83,6 +90,7 @@ internal class TorrentPicker @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                analyticsTracker.log(LOG_TAG) { "Pick search failed ${e.logSummary()}" }
                 ChoiceDialogState.Message(messages.searchFailed, retryText = messages.retry)
             }
         }
@@ -144,8 +152,10 @@ internal class TorrentPicker @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: TorrentMetadataUnavailableException) {
+                analyticsTracker.log(LOG_TAG) { "Torrent files: no metadata/peers" }
                 ChoiceDialogState.Message(messages.noPeers, retryText = messages.retry)
             } catch (e: Exception) {
+                analyticsTracker.log(LOG_TAG) { "Torrent files failed ${e.logSummary()}" }
                 ChoiceDialogState.Message(messages.serverFailed, retryText = messages.retry)
             }
         }
@@ -180,6 +190,7 @@ internal class TorrentPicker @Inject constructor(
 
     private companion object {
         const val GOOD_SEEDERS = 10
+        const val LOG_TAG = PersistedLogTags.TORRENT
 
         /** Маркеры исхода шага: повторить / пользователь ничего не выбрал. */
         val RETRY = Any()

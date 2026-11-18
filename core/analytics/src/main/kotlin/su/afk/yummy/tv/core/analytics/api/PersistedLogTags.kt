@@ -16,8 +16,10 @@ object PersistedLogTags {
     const val PLAYER_EXTRACTOR = "PlayerExtractor"
     const val ALLOHA_EXTRACTOR = "AllohaExtractor"
     const val CVH_EXTRACTOR = "CvhExtractor"
+    const val TORRENT = "Torrent"
 
     val persisted: Set<String> = setOf(
+        TORRENT,
         PLAYER_BUFFERING,
         PLAYER_VIEW_MODEL,
         PLAYER_MEDIA_SESSION,

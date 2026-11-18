@@ -543,6 +543,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 if (event.auto && !adaptiveQualityActive(currentState)) return
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
+                analytics.debugLog {
+                    "Quality selected ${activeQuality(currentState)} -> ${event.quality} auto=${event.auto} " +
+                        "positionMs=$position"
+                }
                 allohaSource.onQualitySelected(event.quality)
                 setState {
                     copy(

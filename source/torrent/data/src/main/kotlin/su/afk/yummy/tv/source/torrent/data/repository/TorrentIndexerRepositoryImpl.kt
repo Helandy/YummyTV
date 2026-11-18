@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.source.torrent.data.repository
 
+import android.os.SystemClock
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
@@ -12,6 +13,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.model.settings.TorrentIndexer
 import su.afk.yummy.tv.core.model.settings.TorrentSettings
 import su.afk.yummy.tv.core.network.di.TorrentHttpClient
@@ -20,6 +23,7 @@ import su.afk.yummy.tv.source.torrent.data.dto.JacRedTorrentDto
 import su.afk.yummy.tv.source.torrent.data.dto.JackettResponseDto
 import su.afk.yummy.tv.source.torrent.data.mapper.toDomain
 import su.afk.yummy.tv.source.torrent.data.mapper.toJacRedDomain
+import su.afk.yummy.tv.source.torrent.data.utils.logSummary
 import su.afk.yummy.tv.source.torrent.data.utils.normalizeBaseUrl
 import su.afk.yummy.tv.source.torrent.data.utils.torrentJson
 import su.afk.yummy.tv.source.torrent.domain.model.TorrentResult
@@ -31,19 +35,44 @@ import javax.inject.Inject
 internal class TorrentIndexerRepositoryImpl @Inject constructor(
     @TorrentHttpClient private val client: HttpClient,
     private val settingsStore: TorrentSettingsStore,
+    private val analyticsTracker: AnalyticsTracker,
 ) : TorrentIndexerRepository {
 
     override suspend fun search(query: String): List<TorrentResult> {
         val settings = settingsStore.torrentSettings.first()
         val indexers = settings.activeIndexers
-        if (indexers.isEmpty()) return emptyList()
+        if (indexers.isEmpty()) {
+            analyticsTracker.log(LOG_TAG) { "Search skipped, no active indexer: ${settings.logSummary()}" }
+            return emptyList()
+        }
         // Включённые индексаторы опрашиваем параллельно; если часть упала, отдаём то, что нашли у остальных.
         val outcomes = coroutineScope {
-            indexers.map { indexer -> async { runCatching { search(indexer, settings, query) } } }.awaitAll()
+            indexers.map { indexer -> async { timedSearch(indexer, settings, query) } }.awaitAll()
         }
         outcomes.firstNotNullOfOrNull { it.exceptionOrNull() as? CancellationException }?.let { throw it }
         if (outcomes.all { it.isFailure }) throw outcomes.last().exceptionOrNull()!!
         return outcomes.flatMap { it.getOrDefault(emptyList()) }
+    }
+
+    /** Поиск одним индексатором с записью в лог исхода и времени: без этого сбой индексатора никак не виден. */
+    private suspend fun timedSearch(
+        indexer: TorrentIndexer,
+        settings: TorrentSettings,
+        query: String,
+    ): Result<List<TorrentResult>> {
+        val startedAt = SystemClock.elapsedRealtime()
+        return runCatching { search(indexer, settings, query) }
+            .onSuccess { found ->
+                analyticsTracker.log(LOG_TAG) {
+                    "Search $indexer ok results=${found.size} queryLength=${query.length} " +
+                        "tookMs=${SystemClock.elapsedRealtime() - startedAt}"
+                }
+            }
+            .onFailure { error ->
+                analyticsTracker.log(LOG_TAG) {
+                    "Search $indexer failed ${error.logSummary()} tookMs=${SystemClock.elapsedRealtime() - startedAt}"
+                }
+            }
     }
 
     private suspend fun search(indexer: TorrentIndexer, settings: TorrentSettings, query: String): List<TorrentResult> =
@@ -69,6 +98,8 @@ internal class TorrentIndexerRepositoryImpl @Inject constructor(
         }
 
     private companion object {
+        const val LOG_TAG = PersistedLogTags.TORRENT
+
         /** Jackett без кэша опрашивает все свои индексаторы: первый поиск идёт до 15–20 с, общий профиль API (15 с) мал. */
         const val SEARCH_TIMEOUT_MS = 120_000L
     }

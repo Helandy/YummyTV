@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.feature.player.common.utils.PLAYER_SERVICE_LOG_TAG
 import su.afk.yummy.tv.feature.player.common.utils.createPlayerSessionActivityIntent
+import su.afk.yummy.tv.feature.player.common.utils.isOutputSurfaceChangeFailure
 import su.afk.yummy.tv.feature.player.common.utils.videoEffects
 import javax.inject.Inject
 
@@ -123,6 +124,7 @@ class PlayerMediaSessionService : MediaSessionService() {
             object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
                     if (error.errorCode in VIDEO_EFFECT_ERROR_CODES) onVideoEnhancementFailed(error)
+                    if (error.isOutputSurfaceChangeFailure()) onOutputSurfaceChangeFailed(error)
                 }
             },
         )
@@ -141,6 +143,17 @@ class PlayerMediaSessionService : MediaSessionService() {
         if (mode == VideoEnhancementMode.OFF) return
         analyticsTracker.log(PLAYER_SERVICE_LOG_TAG, error) { "Video enhancement $mode failed, turning it off" }
         serviceScope.launch { settingsStore.setVideoEnhancementMode(VideoEnhancementMode.OFF) }
+    }
+
+    /**
+     * Декодер устройства не принял смену выходной поверхности при смене потока (адаптивное качество меняет
+     * поток на лету). Адаптивное качество выключается, чтобы ретрай плеера не повторял тот же сбой.
+     */
+    private fun onOutputSurfaceChangeFailed(error: PlaybackException) {
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG, error) {
+            "Output surface change rejected by the decoder, turning adaptive quality off"
+        }
+        serviceScope.launch { settingsStore.setAdaptiveVideoQualityEnabled(false) }
     }
 
     /**
