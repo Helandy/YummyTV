@@ -117,6 +117,7 @@ internal fun SettingsMobilePlayerContent(
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_video_enhancement_label),
                 valueLabel = { VideoEnhancementMode.entries[it].label() },
+                hint = stringResource(R.string.settings_video_enhancement_hint),
                 value = VideoEnhancementMode.entries.indexOf(state.videoEnhancementMode).coerceAtLeast(0),
                 valueRange = 0..VideoEnhancementMode.entries.lastIndex,
                 enabled = true,

@@ -178,6 +178,7 @@
     <string name="player_video_enhancement_hint">Резкость — лёгкая, Anime4K чистит линии, но тяжелее</string>
     <string name="player_video_enhancement_sharpen">Резкость</string>
     <string name="player_video_enhancement_quality">Anime4K</string>
+    <string name="player_video_enhancement_picture_mode_hint">Резкость и Anime4K обрабатывают кадр на видеокарте: настройки изображения телевизора (режим картинки, яркость, цвет) при этом не действуют</string>
     <string name="player_volume_stabilization_hint">Выравнивает громкие и тихие сцены</string>
     <string name="player_toggle_on">Вкл</string>
     <string name="player_toggle_off">Выкл</string>

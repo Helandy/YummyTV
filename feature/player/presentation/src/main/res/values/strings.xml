@@ -178,6 +178,7 @@
     <string name="player_video_enhancement_hint">Sharpen is light; Anime4K cleans up lines but is heavier</string>
     <string name="player_video_enhancement_sharpen">Sharpen</string>
     <string name="player_video_enhancement_quality">Anime4K</string>
+    <string name="player_video_enhancement_picture_mode_hint">Sharpen and Anime4K process frames on the GPU: the TV picture settings (picture mode, brightness, color) don\'t apply while they are on</string>
     <string name="player_volume_stabilization_hint">Evens out loud and quiet scenes</string>
     <string name="player_toggle_on">On</string>
     <string name="player_toggle_off">Off</string>

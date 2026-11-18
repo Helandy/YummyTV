@@ -29,10 +29,10 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.settings.common.utils.color
 import su.afk.yummy.tv.feature.settings.common.utils.highlightNumbers
 import su.afk.yummy.tv.feature.settings.common.utils.label
+import kotlin.math.roundToInt
 
 /**
  * Строка настройки с непрерывным числовым значением: фокус + стрелки влево/вправо меняют value.
@@ -48,6 +48,8 @@ internal fun SettingsSliderRow(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     stepSize: Int = 1,
+    /** Пояснение под названием; без него строка остаётся только с названием и значением. */
+    hint: String? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -102,6 +104,13 @@ internal fun SettingsSliderRow(
             )
             Text(
                 text = valueText.highlightNumbers(MaterialTheme.colorScheme.primary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (hint != null) {
+            Text(
+                text = hint,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

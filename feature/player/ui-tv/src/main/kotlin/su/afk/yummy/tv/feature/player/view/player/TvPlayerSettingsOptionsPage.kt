@@ -29,7 +29,6 @@ import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleStyleOptions
 import su.afk.yummy.tv.feature.player.common.icon
 import su.afk.yummy.tv.feature.player.common.label
-import su.afk.yummy.tv.feature.player.common.utils.icon as videoEnhancementIcon
 import su.afk.yummy.tv.feature.player.common.utils.label
 import su.afk.yummy.tv.feature.player.model.TvPlayerSettingsPage
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -38,6 +37,7 @@ import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.tvIcon
 import su.afk.yummy.tv.feature.player.utils.tvLabel
 import su.afk.yummy.tv.feature.player.utils.tvPlayerScaleOptions
+import su.afk.yummy.tv.feature.player.common.utils.icon as videoEnhancementIcon
 
 /** Подменю: заголовок со стрелкой назад и список вариантов, текущий отмечен галочкой. */
 @Composable
@@ -64,6 +64,7 @@ internal fun TvPlayerSettingsOptionsPage(
     val labels: List<String>
     var swatches: List<Color>? = null
     var icons: List<ImageVector>? = null
+    var hint: String? = null
     val selectedIndex: Int
     val onSelect: (Int) -> Unit
     when (page) {
@@ -142,6 +143,7 @@ internal fun TvPlayerSettingsOptionsPage(
         TvPlayerSettingsPage.VideoEnhancement -> {
             val values = VideoEnhancementMode.entries
             title = stringResource(R.string.player_video_enhancement_title)
+            hint = stringResource(R.string.player_video_enhancement_picture_mode_hint)
             labels = values.map { it.label() }
             icons = values.map { it.videoEnhancementIcon() }
             selectedIndex = values.indexOf(videoEnhancementMode)
@@ -164,6 +166,7 @@ internal fun TvPlayerSettingsOptionsPage(
         )
         TvPlayerSettingsTitle(title)
     }
+    hint?.let { TvPlayerSettingsHint(it) }
     labels.forEachIndexed { index, label ->
         PlayerSelectionItem(
             label = label,

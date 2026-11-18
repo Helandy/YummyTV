@@ -28,3 +28,14 @@ internal fun TvPlayerSettingsHeader(title: String) {
         modifier = Modifier.padding(start = 4.dp, top = 12.dp, bottom = 2.dp),
     )
 }
+
+/** Пояснение под заголовком подменю. Цвет задан явно: на ТВ голый Text без LocalContentColor рисуется чёрным. */
+@Composable
+internal fun TvPlayerSettingsHint(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = Color.White.copy(alpha = 0.62f),
+        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
+    )
+}

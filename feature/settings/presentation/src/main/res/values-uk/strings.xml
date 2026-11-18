@@ -190,6 +190,7 @@
     <string name="settings_video_enhancement_off">Вимк</string>
     <string name="settings_video_enhancement_sharpen">Різкість</string>
     <string name="settings_video_enhancement_quality">Anime4K</string>
+    <string name="settings_video_enhancement_hint">Різкість і Anime4K обробляють кадр на відеокарті: налаштування зображення телевізора (режим картинки, яскравість, колір) при цьому не діють</string>
     <string name="settings_audio_focus_label">Вимкнути аудіофокус</string>
     <string name="settings_audio_focus_enabled">Плеєр не реагує на перехоплення фокусу іншими застосунками. Увімкніть, якщо відтворення саме ставиться на паузу</string>
     <string name="settings_audio_focus_disabled">Плеєр ставиться на паузу або приглушується, коли фокус забирають інші застосунки</string>

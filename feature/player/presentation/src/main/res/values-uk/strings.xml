@@ -178,6 +178,7 @@
     <string name="player_video_enhancement_hint">Різкість — легка, Anime4K чистить лінії, але важча</string>
     <string name="player_video_enhancement_sharpen">Різкість</string>
     <string name="player_video_enhancement_quality">Anime4K</string>
+    <string name="player_video_enhancement_picture_mode_hint">Різкість і Anime4K обробляють кадр на відеокарті: налаштування зображення телевізора (режим картинки, яскравість, колір) при цьому не діють</string>
     <string name="player_volume_stabilization_hint">Вирівнює гучні й тихі сцени</string>
     <string name="player_toggle_on">Увімк</string>
     <string name="player_toggle_off">Вимк</string>

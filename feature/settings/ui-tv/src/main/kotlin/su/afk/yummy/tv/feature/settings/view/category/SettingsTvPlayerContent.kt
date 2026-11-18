@@ -129,6 +129,7 @@ internal fun SettingsTvPlayerContent(
     SettingsSliderRow(
         label = stringResource(R.string.settings_video_enhancement_label),
         valueText = state.videoEnhancementMode.label(),
+        hint = stringResource(R.string.settings_video_enhancement_hint),
         value = enhancementModes.indexOf(state.videoEnhancementMode).coerceAtLeast(0),
         valueRange = 0..enhancementModes.lastIndex,
         enabled = true,

@@ -36,6 +36,8 @@ internal fun SettingsMobileSliderRow(
     onValueCommitted: (Int) -> Unit,
     modifier: Modifier = Modifier,
     stepSize: Int = 1,
+    /** Пояснение под значением; без него строка остаётся только с названием и значением. */
+    hint: String? = null,
 ) {
     var dragValue by remember(value) { mutableStateOf<Int?>(null) }
     val shownValue = dragValue ?: value
@@ -60,6 +62,13 @@ internal fun SettingsMobileSliderRow(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (hint != null) {
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Slider(
             value = shownValue.toFloat(),

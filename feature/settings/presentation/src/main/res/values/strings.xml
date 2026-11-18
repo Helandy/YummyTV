@@ -190,6 +190,7 @@
     <string name="settings_video_enhancement_off">Off</string>
     <string name="settings_video_enhancement_sharpen">Sharpen</string>
     <string name="settings_video_enhancement_quality">Anime4K</string>
+    <string name="settings_video_enhancement_hint">Sharpen and Anime4K process frames on the GPU: the TV picture settings (picture mode, brightness, color) don\'t apply while they are on</string>
     <string name="settings_audio_focus_label">Disable audio focus</string>
     <string name="settings_audio_focus_enabled">Player ignores other apps taking audio focus. Use it if playback keeps pausing by itself</string>
     <string name="settings_audio_focus_disabled">Player pauses and ducks when other apps take audio focus</string>
