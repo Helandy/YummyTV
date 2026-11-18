@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
+import su.afk.yummy.tv.feature.player.common.utils.icon
 import su.afk.yummy.tv.feature.player.common.utils.label
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMenuActions
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMenuModel
@@ -191,6 +192,7 @@ internal fun MobilePlayerSettingsMenuSheet(
                 )
                 VideoEnhancementMode.entries.forEach { mode ->
                     MobilePlayerMenuRow(
+                        icon = mode.icon(),
                         label = mode.label(),
                         trailing = MobilePlayerMenuRowTrailing.Choice(model.videoEnhancementMode == mode),
                         onClick = { actions.onVideoEnhancementModeChange(mode) },

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.Icon
@@ -30,6 +29,7 @@ import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleStyleOptions
 import su.afk.yummy.tv.feature.player.common.icon
 import su.afk.yummy.tv.feature.player.common.label
+import su.afk.yummy.tv.feature.player.common.utils.icon as videoEnhancementIcon
 import su.afk.yummy.tv.feature.player.common.utils.label
 import su.afk.yummy.tv.feature.player.model.TvPlayerSettingsPage
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -143,7 +143,7 @@ internal fun TvPlayerSettingsOptionsPage(
             val values = VideoEnhancementMode.entries
             title = stringResource(R.string.player_video_enhancement_title)
             labels = values.map { it.label() }
-            icons = values.map { Icons.Filled.HighQuality }
+            icons = values.map { it.videoEnhancementIcon() }
             selectedIndex = values.indexOf(videoEnhancementMode)
             onSelect = { onVideoEnhancementModeChange(values[it]) }
         }

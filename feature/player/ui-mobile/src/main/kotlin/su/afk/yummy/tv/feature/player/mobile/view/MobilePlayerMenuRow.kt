@@ -116,7 +116,16 @@ internal fun MobilePlayerMenuRow(
             }
 
             is MobilePlayerMenuRowTrailing.Toggle -> Switch(checked = trailing.checked, onCheckedChange = null)
-            is MobilePlayerMenuRowTrailing.Choice, MobilePlayerMenuRowTrailing.None -> Unit
+            // Иконка занимает левую колонку, поэтому отметку выбора ставим справа.
+            is MobilePlayerMenuRowTrailing.Choice -> if (icon != null && trailing.selected) {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+
+            MobilePlayerMenuRowTrailing.None -> Unit
         }
     }
 }

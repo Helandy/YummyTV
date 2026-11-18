@@ -6,10 +6,12 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transformLatest
 import su.afk.yummy.tv.core.model.settings.VideoEnhancementMode
 
 /**
@@ -37,7 +39,15 @@ internal class PlayerVideoEnhancement(
         private set
 
     fun start(scope: CoroutineScope, modeFlow: Flow<VideoEnhancementMode>) {
+        var first = true
         modeFlow
+            .distinctUntilChanged()
+            // Пауза перед применением: пока пользователь листает режимы, плеер не пересобирается; быстрая
+            // серия A→B→A не меняет ничего. Первое значение (сохранённый режим) применяется сразу.
+            .transformLatest { value ->
+                if (first) first = false else delay(APPLY_DEBOUNCE_MS)
+                emit(value)
+            }
             .distinctUntilChanged()
             .onEach(::apply)
             .launchIn(scope)
@@ -70,5 +80,10 @@ internal class PlayerVideoEnhancement(
         player.seekTo(position)
         player.prepare()
         player.playWhenReady = playWhenReady
+    }
+
+    private companion object {
+        /** Сколько режим должен простоять без изменений, прежде чем его применят. */
+        const val APPLY_DEBOUNCE_MS = 1_500L
     }
 }
