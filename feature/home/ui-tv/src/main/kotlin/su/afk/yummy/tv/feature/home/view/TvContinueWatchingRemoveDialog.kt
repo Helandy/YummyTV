@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -63,11 +66,13 @@ internal fun TvContinueWatchingRemoveDialog(
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TvRetryButton(
                         text = stringResource(CoreR.string.common_cancel),
+                        icon = Icons.Filled.Close,
                         onClick = onDismiss,
                         modifier = Modifier.focusRequester(dismissFocusRequester),
                     )
                     TvRetryButton(
                         text = stringResource(R.string.home_tv_continue_watching_remove),
+                        icon = Icons.Filled.RemoveCircleOutline,
                         onClick = onRemove,
                     )
                 }

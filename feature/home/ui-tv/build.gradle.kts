@@ -26,4 +26,5 @@ dependencies {
     implementation(libs.bundles.coil.full)
     implementation(libs.bundles.media3.player)
     implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
 }

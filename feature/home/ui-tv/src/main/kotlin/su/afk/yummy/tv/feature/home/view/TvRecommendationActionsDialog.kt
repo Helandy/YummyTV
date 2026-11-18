@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -66,11 +69,13 @@ internal fun TvRecommendationActionsDialog(
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TvRetryButton(
                         text = stringResource(CoreR.string.common_cancel),
+                        icon = Icons.Filled.Close,
                         onClick = onDismiss,
                         modifier = Modifier.focusRequester(dismissFocusRequester),
                     )
                     TvRetryButton(
                         text = stringResource(R.string.home_tv_recommendation_hide),
+                        icon = Icons.Filled.VisibilityOff,
                         onClick = onHide,
                     )
                 }
