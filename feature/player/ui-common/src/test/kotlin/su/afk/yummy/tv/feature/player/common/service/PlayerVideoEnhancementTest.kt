@@ -67,7 +67,7 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
     fun `enabling on the fly sets effects and restarts the stream at the same position`() {
         createEnhancement(pipelineReady = false)
 
-        mode.value = VideoEnhancementMode.SHARPEN
+        changeMode(VideoEnhancementMode.SHARPEN)
 
         verifyOrder {
             player.setVideoEffects(sharpenEffects)
@@ -84,7 +84,7 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
         every { player.playbackState } returns Player.STATE_IDLE
         createEnhancement(pipelineReady = false)
 
-        mode.value = VideoEnhancementMode.QUALITY
+        changeMode(VideoEnhancementMode.QUALITY)
 
         verify { player.setVideoEffects(qualityEffects) }
         verify(exactly = 0) { player.stop() }
@@ -94,9 +94,9 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
     @Test
     fun `switching between modes only replaces the effects`() {
         createEnhancement(pipelineReady = false)
-        mode.value = VideoEnhancementMode.SHARPEN
+        changeMode(VideoEnhancementMode.SHARPEN)
 
-        mode.value = VideoEnhancementMode.QUALITY
+        changeMode(VideoEnhancementMode.QUALITY)
 
         verify { player.setVideoEffects(qualityEffects) }
         verify(exactly = 1) { player.stop() }
@@ -106,9 +106,9 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
     @Test
     fun `turning off after enabling asks for a rebuild instead of clearing effects`() {
         createEnhancement(pipelineReady = false)
-        mode.value = VideoEnhancementMode.SHARPEN
+        changeMode(VideoEnhancementMode.SHARPEN)
 
-        mode.value = VideoEnhancementMode.OFF
+        changeMode(VideoEnhancementMode.OFF)
 
         assertEquals(1, rebuildRequests)
         verify(exactly = 0) { player.setVideoEffects(emptyList()) }
@@ -119,7 +119,7 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
         mode.value = VideoEnhancementMode.QUALITY
         createEnhancement(pipelineReady = true)
 
-        mode.value = VideoEnhancementMode.OFF
+        changeMode(VideoEnhancementMode.OFF)
 
         assertEquals(1, rebuildRequests)
     }
@@ -128,7 +128,7 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
     fun `current mode follows the setting`() {
         val enhancement = createEnhancement(pipelineReady = false)
 
-        mode.value = VideoEnhancementMode.QUALITY
+        changeMode(VideoEnhancementMode.QUALITY)
 
         assertEquals(VideoEnhancementMode.QUALITY, enhancement.mode)
     }
@@ -138,11 +138,11 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
         val rebuilt: ExoPlayer = mockk(relaxed = true)
         stubPlaying(rebuilt)
         val enhancement = createEnhancement(pipelineReady = false)
-        mode.value = VideoEnhancementMode.SHARPEN
-        mode.value = VideoEnhancementMode.OFF
+        changeMode(VideoEnhancementMode.SHARPEN)
+        changeMode(VideoEnhancementMode.OFF)
         enhancement.attach(rebuilt, pipelineReady = false)
 
-        mode.value = VideoEnhancementMode.QUALITY
+        changeMode(VideoEnhancementMode.QUALITY)
 
         verify { rebuilt.setVideoEffects(qualityEffects) }
         verify { rebuilt.stop() }
@@ -163,6 +163,13 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
         rebuildPlayer = { rebuildRequests++ },
     ).also { it.start(scope, mode) }
 
+    /** Меняет режим и проматывает паузу перед применением (debounce в [PlayerVideoEnhancement]). */
+    private fun changeMode(value: VideoEnhancementMode) {
+        mode.value = value
+        testScheduler.advanceTimeBy(APPLY_DEBOUNCE_MS + 1)
+        testScheduler.runCurrent()
+    }
+
     private fun stubPlaying(target: ExoPlayer) {
         every { target.playbackState } returns Player.STATE_READY
         every { target.currentMediaItem } returns mockk<MediaItem>()
@@ -172,5 +179,6 @@ class PlayerVideoEnhancementTest : BaseUnitTest() {
 
     private companion object {
         const val POSITION_MS = 49_331L
+        const val APPLY_DEBOUNCE_MS = 1_500L
     }
 }

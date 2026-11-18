@@ -128,7 +128,7 @@ class HttpClientGuardTest : BaseUnitTest() {
                 reason = "Moon: CDN принимает только набор UA + client hints страницы плеера Mikai",
             ),
             Allowed(
-                pathSuffix = "feature/player/data/src/main/kotlin/su/afk/yummy/tv/data/player/extractor/alloha/AllohaExtractor.kt",
+                pathSuffix = "source/alloha/data/src/main/kotlin/su/afk/yummy/tv/source/alloha/data/extractor/AllohaExtractor.kt",
                 rule = "браузерный UA (Mozilla/5.0)",
                 reason = "Alloha: запасной UA, только если не читается UA системного WebView",
             ),
