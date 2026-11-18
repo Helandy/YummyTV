@@ -71,13 +71,38 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
     }
 
     @Test
-    fun `long buffering after a seek steps down but short one does not`() {
+    fun `long buffering after a seek on a weak network steps down but short one does not`() {
+        policy.onBandwidth(2_000_000L)
         policy.onStallStarted(0L, afterSeek = true)
 
         assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 4_000L))
         assertEquals(
             QualityAdaptationDecision.Switch("720p", isDowngrade = true),
             decide("1080p", now = 5_000L),
+        )
+    }
+
+    @Test
+    fun `seek buffering without a bandwidth estimate waits like a regular stall`() {
+        policy.onStallStarted(0L, afterSeek = true)
+
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 7_000L))
+        assertEquals(
+            QualityAdaptationDecision.Switch("720p", isDowngrade = true),
+            decide("1080p", now = 8_000L),
+        )
+    }
+
+    @Test
+    fun `seek buffering on a healthy network keeps the quality for longer`() {
+        policy.onBandwidth(50_000_000L)
+        policy.onStallStarted(0L, afterSeek = true)
+
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 10_000L))
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 14_000L))
+        assertEquals(
+            QualityAdaptationDecision.Switch("720p", isDowngrade = true),
+            decide("1080p", now = 15_000L),
         )
     }
 

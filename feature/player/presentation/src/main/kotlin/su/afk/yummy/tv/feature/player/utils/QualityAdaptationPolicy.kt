@@ -38,6 +38,9 @@ class QualityAdaptationPolicy(
     private var stallStartedAtMs: Long? = null
     private var stallLimitMs = LONG_STALL_MS
 
+    /** Текущая остановка — буферизация после перемотки: её срок зависит от оценки полосы, см. [evaluate]. */
+    private var stallAfterSeek = false
+
     /**
      * Начало остановки буфера (не перемотка). [startup] — серия ещё ни разу не начинала играть:
      * такая остановка в счётчик повторных не идёт, но затянувшийся старт понижает качество
@@ -48,6 +51,7 @@ class QualityAdaptationPolicy(
     fun onStallStarted(nowMs: Long, startup: Boolean = false, afterSeek: Boolean = false) {
         if (!startup && !afterSeek) stallTimesMs.addLast(nowMs)
         stallStartedAtMs = nowMs
+        stallAfterSeek = afterSeek && !startup
         stallLimitMs = when {
             startup -> LONG_STARTUP_MS
             // Замена item при смене качества тоже даёт «перемотку»: новому потоку остаётся его
@@ -62,6 +66,7 @@ class QualityAdaptationPolicy(
     /** Остановка закончилась: воспроизведение возобновилось или остановлено. */
     fun onStallEnded() {
         stallStartedAtMs = null
+        stallAfterSeek = false
     }
 
     /** Отчёт декодера: [count] кадров пропущено с прошлого отчёта. */
@@ -91,6 +96,7 @@ class QualityAdaptationPolicy(
         if (stallStartedAtMs != null) {
             stallStartedAtMs = nowMs
             stallLimitMs = LONG_AFTER_SWITCH_MS
+            stallAfterSeek = false
         }
     }
 
@@ -118,7 +124,7 @@ class QualityAdaptationPolicy(
         val deviceStruggles = droppedFrames.sumOf { it.second } >= DEVICE_DROPPED_FRAMES_LIMIT
         // Одна затянувшаяся остановка — тот же сигнал, что и две короткие: второго захода в
         // буферизацию на очень медленной сети можно не дождаться.
-        val longStall = stallStartedAtMs?.let { nowMs - it >= stallLimitMs } == true
+        val longStall = stallStartedAtMs?.let { nowMs - it >= effectiveStallLimitMs(currentHeight) } == true
         val networkStruggles = stallTimesMs.size >= NETWORK_STALLS_LIMIT || longStall
         if (deviceStruggles || networkStruggles) {
             val lower = levels.filter { it.second < currentHeight }.maxByOrNull { it.second }
@@ -140,6 +146,20 @@ class QualityAdaptationPolicy(
         val higher = upTarget ?: return QualityAdaptationDecision.Keep
         val label = levels.first { it.second == higher }.first
         return QualityAdaptationDecision.Switch(label, isDowngrade = false)
+    }
+
+    /**
+     * Срок затянувшейся остановки. После перемотки (в т.ч. пропуска опенинга) буфер пуст и часто
+     * открывается новое соединение: задержка там не про полосу. Если оценка полосы тянет текущее
+     * качество, ждём дольше; плохая оценка — прежний короткий срок; оценки нет — как обычная остановка.
+     */
+    private fun effectiveStallLimitMs(currentHeight: Int): Long {
+        if (!stallAfterSeek || stallLimitMs != LONG_SEEK_STALL_MS) return stallLimitMs
+        return when {
+            lastBandwidthBps <= 0L -> LONG_STALL_MS
+            lastBandwidthBps >= nominalBitrateBps(currentHeight) * UP_BANDWIDTH_FACTOR -> LONG_SEEK_STALL_HEALTHY_MS
+            else -> LONG_SEEK_STALL_MS
+        }
     }
 
     /**
@@ -180,6 +200,9 @@ class QualityAdaptationPolicy(
 
         /** Буферизация после перемотки дольше этого срока: нужный кусок сеть не тянет. */
         const val LONG_SEEK_STALL_MS = 5_000L
+
+        /** То же, но оценка полосы тянет текущее качество: задержка — это открытие соединения, а не сеть. */
+        const val LONG_SEEK_STALL_HEALTHY_MS = 10_000L
 
         /** Старт воспроизведения дольше этого срока — лучшее качество сети не по силам. */
         const val LONG_STARTUP_MS = 15_000L
