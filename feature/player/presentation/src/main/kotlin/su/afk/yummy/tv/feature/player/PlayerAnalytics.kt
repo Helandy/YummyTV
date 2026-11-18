@@ -319,6 +319,21 @@ internal class PlayerAnalytics @Inject constructor(
     }
 
     /**
+     * Плеер сам перешёл на качество ниже после ошибки воспроизведения (выбор не пользователя).
+     *
+     * Параметры: anime_id, quality (новое), from_quality.
+     */
+    fun eventQualityAutoFallback(animeId: Int, fromQuality: String?, quality: String) {
+        tracker.track(
+            EVENT_QUALITY_AUTO_FALLBACK,
+            playerParams(animeId) + analyticsParamsOf(
+                PARAM_QUALITY to quality,
+                PARAM_FROM_QUALITY to fromQuality,
+            ),
+        )
+    }
+
+    /**
      * Плееру не удалось получить playable stream URL из выбранного источника.
      *
      * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing, reason,
@@ -559,6 +574,7 @@ internal class PlayerAnalytics @Inject constructor(
         const val EVENT_PLAYER_ERROR = "player_error"
         const val EVENT_DECODER_ERROR = "player_decoder_error"
         const val EVENT_DECODER_QUALITY_CHANGED = "player_decoder_quality_changed"
+        const val EVENT_QUALITY_AUTO_FALLBACK = "player_quality_auto_fallback"
         const val EVENT_SKIP_SEGMENT_SELECTED = "player_skip_segment_selected"
         const val EVENT_SPEED_SELECTED = "player_speed_selected"
         const val EVENT_STREAM_STARTED = "player_stream_started"

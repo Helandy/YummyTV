@@ -274,6 +274,8 @@ class PlayerViewModelTest : BaseUnitTest() {
         assertNull(vm.currentState.playerError)
         assertEquals(1, vm.currentState.retryKey)
         assertEquals("fallback toast", (effects.single() as PlayerState.Effect.ShowToast).message)
+        verify(exactly = 1) { analytics.eventQualityAutoFallback(any(), "720p", "480p") }
+        verify(exactly = 0) { analytics.eventDecoderQualityChanged(any(), any(), any()) }
 
         vm.setEvent(PlayerState.Event.PlaybackError(message = "boom", positionMs = 5_000L))
 

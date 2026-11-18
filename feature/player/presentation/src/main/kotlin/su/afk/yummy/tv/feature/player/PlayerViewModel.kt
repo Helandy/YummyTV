@@ -409,7 +409,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                             strings.get(R.string.player_toast_quality_fallback, fallbackQuality),
                         ),
                     )
-                    onEvent(PlayerState.Event.ChangeQualityAfterError(fallbackQuality, errorPositionMs))
+                    analytics.eventQualityAutoFallback(
+                        animeId = currentState.animeId,
+                        fromQuality = activeQuality(currentState),
+                        quality = fallbackQuality,
+                    )
+                    reloadWithQuality(fallbackQuality, errorPositionMs)
                     return
                 }
                 setState {
@@ -588,23 +593,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     fromQuality = activeQuality(currentState),
                     quality = event.quality,
                 )
-                val position = event.currentPosMs.coerceAtLeast(0L)
-                allohaSource.onQualitySelected(event.quality)
-                defaultSource.reset()
-                setState {
-                    copy(
-                        selectedQuality = event.quality,
-                        resumeFromMs = position,
-                        playbackPositionMs = position,
-                        manualQualityEpisode = activeEpisode(currentState),
-                        retryKey = retryKey + 1,
-                    )
-                }
-                loadStream(
-                    refreshSourcesOnFailure = true,
-                    selectedQualityOverride = event.quality,
-                    forceRefresh = true,
-                )
+                reloadWithQuality(event.quality, event.currentPosMs)
             }
 
             is PlayerState.Event.AllohaAudioTrackSelected ->
@@ -917,6 +906,27 @@ class PlayerViewModel @AssistedInject internal constructor(
      * [PlayerStreamLoadResult.RefreshSources]. Смена балансера или озвучки использует уже
      * загруженный граф источников.
      */
+    /** Перезагружает поток на качестве [quality] с позиции [positionMs] (после ошибки воспроизведения). */
+    private fun reloadWithQuality(quality: String, positionMs: Long) {
+        val position = positionMs.coerceAtLeast(0L)
+        allohaSource.onQualitySelected(quality)
+        defaultSource.reset()
+        setState {
+            copy(
+                selectedQuality = quality,
+                resumeFromMs = position,
+                playbackPositionMs = position,
+                manualQualityEpisode = activeEpisode(currentState),
+                retryKey = retryKey + 1,
+            )
+        }
+        loadStream(
+            refreshSourcesOnFailure = true,
+            selectedQualityOverride = quality,
+            forceRefresh = true,
+        )
+    }
+
     private fun applySourceSelection(
         state: PlayerState.State?,
         sourceScopeChanged: Boolean = false,
@@ -929,7 +939,8 @@ class PlayerViewModel @AssistedInject internal constructor(
             return
         }
         resetSourceBehaviors()
-        setState { sourceStreamHandler.preparingStreamLoad(state, resumeMode) }
+        // Новый источник/озвучка — снова можно один раз автоматически снизить качество при ошибке.
+        setState { sourceStreamHandler.preparingStreamLoad(state, resumeMode).copy(qualityFallbackEpisode = null) }
         if (sourceScopeChanged) {
             displaySettings.observeActive(host)
         }
