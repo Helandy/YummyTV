@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.components.YummyPlayerLoadingIndicator
 
 @Composable
 fun PlayerBlackBackdrop(modifier: Modifier = Modifier) {
@@ -24,6 +24,6 @@ fun PlayerBufferingIndicator(
     modifier: Modifier = Modifier,
 ) {
     if (visible) {
-        YummyLoadingIndicator(color = Color.White, modifier = modifier, strokeWidth = 2.dp)
+        YummyPlayerLoadingIndicator(modifier = modifier, size = 44.dp)
     }
 }

@@ -586,11 +586,6 @@ internal fun MobileNativePlayer(
             modifier = Modifier.fillMaxSize(),
         )
 
-        PlayerBufferingIndicator(
-            visible = isBuffering || showRecoveryIndicator,
-            modifier = Modifier.align(Alignment.Center),
-        )
-
         MobilePlayerGestureLayer(
             enabled = !isInPictureInPictureMode && !tutorialBlocksPlayback,
             locked = locked,
@@ -645,6 +640,12 @@ internal fun MobileNativePlayer(
                 modifier = Modifier.align(Alignment.Center),
             )
         }
+
+        // Поверх жестов и кнопок: иначе тёмная подложка play/pause гасит индикатор.
+        PlayerBufferingIndicator(
+            visible = isBuffering || showRecoveryIndicator,
+            modifier = Modifier.align(Alignment.Center),
+        )
 
         MobilePlayerOverlay(
             modifier = Modifier.align(Alignment.BottomCenter),

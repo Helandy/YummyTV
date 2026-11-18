@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.components.YummyPlayerLoadingIndicator
 import su.afk.yummy.tv.feature.player.common.PlayerResolveLogView
 import su.afk.yummy.tv.feature.player.model.PlayerResolveLogEntry
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -42,7 +41,7 @@ internal fun TvStreamLoadingView(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                YummyLoadingIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                YummyPlayerLoadingIndicator(size = 24.dp)
                 Spacer(Modifier.width(10.dp))
                 Text(
                     text = stringResource(messageRes),

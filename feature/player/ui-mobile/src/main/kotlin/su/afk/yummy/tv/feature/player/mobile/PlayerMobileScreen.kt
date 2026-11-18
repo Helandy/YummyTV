@@ -37,7 +37,7 @@ import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.components.YummyPlayerLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -245,7 +245,7 @@ fun PlayerMobileScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        YummyLoadingIndicator(color = Color.White, strokeWidth = 2.dp)
+                        YummyPlayerLoadingIndicator(size = 32.dp)
                         Text(stringResource(state.resolveStatus.loadingTextRes()), color = Color.White)
                     }
                     if (state.showResolveLog) {
