@@ -62,6 +62,8 @@
 - [password-manager-autofill.md](password-manager-autofill.md) — сохранение пароля в менеджере
   паролей.
 - [subscriptions.md](subscriptions.md) — подписки на озвучку: контракт yani API, ключи, два экрана.
+- [anime-list-transfer.md](anime-list-transfer.md) — импорт и экспорт списка аниме (Shikimori /
+  MyAnimeList): форматы XML и JSON, пакетный поиск ID, троттлинг мутаций.
 
 ## Сборка, выпуск и окружение
 

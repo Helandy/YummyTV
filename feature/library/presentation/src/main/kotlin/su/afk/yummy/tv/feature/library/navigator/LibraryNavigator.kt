@@ -6,4 +6,5 @@ import javax.inject.Inject
 
 class LibraryNavigator @Inject constructor() : ILibraryNavigator {
     override fun getLibraryDest(): NavKey = LibraryDestination
+    override fun getListTransferDest(): NavKey = LibraryListTransferDestination
 }

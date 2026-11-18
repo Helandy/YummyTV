@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":feature:player:domain"))
     implementation(project(":feature:watching:domain"))
 
+    implementation(libs.androidx.activity)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.bundles.compose.presentation)
     implementation(libs.coil.core)

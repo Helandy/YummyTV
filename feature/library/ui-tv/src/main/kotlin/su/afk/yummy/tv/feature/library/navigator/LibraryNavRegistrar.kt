@@ -12,6 +12,9 @@ import su.afk.yummy.tv.feature.library.LibraryViewModel
 import su.afk.yummy.tv.feature.library.history.LibraryHistoryViewModel
 import su.afk.yummy.tv.feature.library.navigator.LibraryDestination
 import su.afk.yummy.tv.feature.library.navigator.LibraryHistoryDestination
+import su.afk.yummy.tv.feature.library.navigator.LibraryListTransferDestination
+import su.afk.yummy.tv.feature.library.transfer.ListTransferTvScreen
+import su.afk.yummy.tv.feature.library.transfer.ListTransferViewModel
 import javax.inject.Inject
 
 class LibraryNavRegistrar @Inject constructor() : ITvLibraryEntry {
@@ -28,6 +31,12 @@ class LibraryNavRegistrar @Inject constructor() : ITvLibraryEntry {
                 val viewModel = hiltViewModel<LibraryHistoryViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     LibraryHistoryTvScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<LibraryListTransferDestination> { _ ->
+                val viewModel = hiltViewModel<ListTransferViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    ListTransferTvScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
         }

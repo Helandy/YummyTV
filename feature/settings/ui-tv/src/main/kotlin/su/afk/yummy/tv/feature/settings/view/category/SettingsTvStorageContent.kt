@@ -12,6 +12,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.label
+import su.afk.yummy.tv.feature.settings.common.utils.toPreviewCacheSizeText
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.AboutRow
@@ -19,9 +22,6 @@ import su.afk.yummy.tv.feature.settings.view.CacheStorageTvDialog
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
 import su.afk.yummy.tv.feature.settings.view.SettingsSliderRow
-import su.afk.yummy.tv.feature.settings.common.utils.hint
-import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.toPreviewCacheSizeText
 
 @Composable
 internal fun SettingsTvStorageContent(
@@ -62,6 +62,14 @@ internal fun SettingsTvStorageContent(
         label = stringResource(R.string.settings_clear_cache_title),
         hint = stringResource(R.string.settings_clear_cache_hint),
         onClick = { onEvent(SettingsState.Event.ClearCacheRequested) },
+    )
+    SettingsDivider()
+    SettingsSectionTitle(text = stringResource(R.string.settings_section_anime_list))
+    AboutRow(
+        label = stringResource(R.string.settings_list_transfer_title),
+        hint = stringResource(R.string.settings_list_transfer_hint),
+        onClick = { onEvent(SettingsState.Event.ListTransferSelected) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     if (showCacheStorageDialog) {
         CacheStorageTvDialog(

@@ -19,7 +19,7 @@
     <string name="settings_category_subtitles">Subtitles</string>
     <string name="settings_mobile_category_subtitles_hint">Size, position, color and background</string>
     <string name="settings_category_storage">Storage</string>
-    <string name="settings_mobile_category_storage_hint">Preview cache, video export, cache size</string>
+    <string name="settings_mobile_category_storage_hint">Cache, video export, anime list import &amp; export</string>
     <string name="settings_category_api">API</string>
     <string name="settings_mobile_category_api_hint">Yani application token</string>
     <string name="settings_mobile_section_devices">Devices</string>
@@ -424,4 +424,7 @@ Search indexer: https://jac-red.ru or Jackett: https://github.com/jackett/jacket
     <string name="settings_torrent_check_indexer_unauthorized">%1$s: API key rejected. Check the key</string>
     <string name="settings_torrent_check_indexer_unexpected">%1$s: unexpected response (HTTP %2$d). Check the address</string>
     <string name="settings_torrent_warning_indexer_unavailable">Torrent search will find nothing: the JacRed/Jackett site is unavailable. See the check result below</string>
+    <string name="settings_section_anime_list">Anime list</string>
+    <string name="settings_list_transfer_title">Import &amp; export list</string>
+    <string name="settings_list_transfer_hint">Transfer list files for Shikimori and MyAnimeList</string>
 </resources>

@@ -6,7 +6,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import su.afk.yummy.tv.core.common.coroutines.AppClock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -15,6 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.analytics.api.AnalyticsDeviceIdProvider
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
@@ -39,20 +39,20 @@ import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguagePreferences
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.logging.AppLogExporter
-import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
-import su.afk.yummy.tv.core.utils.system.ImageCacheCleaner
 import su.afk.yummy.tv.core.utils.system.CacheStorageReport
+import su.afk.yummy.tv.core.utils.system.ImageCacheCleaner
 import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
 import su.afk.yummy.tv.domain.update.repository.UpdateRepository
 import su.afk.yummy.tv.domain.update.usecase.GetAppReleaseHistoryUseCase
@@ -63,6 +63,8 @@ import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinatio
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SetVideoDownloadWifiOnlyUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
+import su.afk.yummy.tv.feature.library.ILibraryNavigator
+import su.afk.yummy.tv.feature.library.navigator.LibraryListTransferDestination
 import su.afk.yummy.tv.feature.settings.SettingsState.Effect
 import su.afk.yummy.tv.feature.settings.SettingsState.Event
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
@@ -84,6 +86,7 @@ class SettingsViewModelTest : BaseUnitTest() {
     private val tvIntegration: ITvIntegration = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk(relaxed = true)
+    private val libraryNavigator: ILibraryNavigator = mockk(relaxed = true)
     private val analytics: SettingsAnalytics = mockk(relaxed = true)
     private val exportRepository: VideoDownloadExportRepository = mockk(relaxed = true)
     private val cacheStorageInspector: CacheStorageInspector = mockk()
@@ -140,7 +143,9 @@ class SettingsViewModelTest : BaseUnitTest() {
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         settingsStore = settingsStore,
-        appClock = object : AppClock { override fun nowMillis() = 0L },
+        appClock = object : AppClock {
+            override fun nowMillis() = 0L
+        },
         episodePushSettingsStore = episodePushSettingsStore,
         appLifecycleSettingsStore = appLifecycleSettingsStore,
         yaniAuthPreferences = yaniAuthPreferences,
@@ -149,6 +154,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         tvIntegration = tvIntegration,
         nav = nav,
         accountNavigator = accountNavigator,
+        libraryNavigator = libraryNavigator,
         analytics = analytics,
         observeVideoExportDestination = ObserveVideoExportDestinationUseCase(exportRepository),
         selectVideoExportDestination = SelectVideoExportDestinationUseCase(exportRepository),
@@ -430,14 +436,17 @@ class SettingsViewModelTest : BaseUnitTest() {
 
     @Test
     fun `navigation events open their destinations`() {
+        every { libraryNavigator.getListTransferDest() } returns LibraryListTransferDestination
         val vm = createViewModel()
 
         vm.setEvent(Event.CategorySelected(SettingsCategory.entries.first()))
         vm.setEvent(Event.LoginOnTvSelected)
+        vm.setEvent(Event.ListTransferSelected)
         vm.setEvent(Event.BackSelected)
 
         verify(exactly = 1) { nav.navigate(SettingsCategoryDestination(SettingsCategory.entries.first())) }
         verify(exactly = 1) { accountNavigator.getLocalAuthDest() }
+        verify(exactly = 1) { nav.navigate(LibraryListTransferDestination) }
         verify(exactly = 1) { nav.back() }
     }
 

@@ -4,4 +4,5 @@ import androidx.navigation3.runtime.NavKey
 
 interface ILibraryNavigator {
     fun getLibraryDest(): NavKey
+    fun getListTransferDest(): NavKey
 }

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Общие пути единственного FileProvider приложения (${applicationId}.logs):
+     используется для отправки диагностических логов и временных файлов экспорта списка аниме. -->
 <paths>
     <cache-path
         name="logs"
         path="logs/export/" />
+    <cache-path
+        name="list_exports"
+        path="list_exports/" />
 </paths>

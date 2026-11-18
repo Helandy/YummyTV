@@ -350,6 +350,9 @@ class SettingsState {
         /** Передача сессии на ТВ по локальной сети. */
         data object LoginOnTvSelected : Event
 
+        /** Пользователь открыл экран импорта и экспорта списка аниме (Shikimori / MyAnimeList). */
+        data object ListTransferSelected : Event
+
         data object VideoExportDirectorySelected : Event
 
         /** Пользователь переключил автоматическую выгрузку серии после скачивания. */
