@@ -10,23 +10,28 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlin.time.Duration.Companion.seconds
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.toastIcon
+import kotlin.time.Duration.Companion.milliseconds
 
-internal val MOBILE_PLAYER_SEEK_TOAST_DURATION = 2.seconds
+internal val MOBILE_PLAYER_SEEK_TOAST_DURATION = 800.milliseconds
 
 /**
- * Подсветка половины экрана при двойном тапе (как у YouTube): серая «капля» с иконкой и суммарным
+ * Подсветка ~30% ширины экрана при двойном тапе (как у YouTube): серая «капля» у края с иконкой и суммарным
  * смещением («+10 сек»). Ничего не перехватывает - жесты работают под ней.
  */
 @Composable
@@ -43,7 +48,7 @@ internal fun MobilePlayerSeekRipple(
             exit = fadeOut(),
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(0.5f)
+                .fillMaxWidth(0.3f)
                 .align(if (backward) Alignment.CenterStart else Alignment.CenterEnd),
         ) {
             Box(
@@ -52,11 +57,7 @@ internal fun MobilePlayerSeekRipple(
                     .fillMaxSize()
                     .background(
                         Color.White.copy(alpha = 0.18f),
-                        if (backward) {
-                            RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50)
-                        } else {
-                            RoundedCornerShape(topStartPercent = 50, bottomStartPercent = 50)
-                        },
+                        SeekDropShape(backward),
                     ),
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -74,5 +75,24 @@ internal fun MobilePlayerSeekRipple(
                 }
             }
         }
+    }
+}
+
+/** Капля: ровный край у границы экрана, выпуклая дуга в сторону центра. */
+private class SeekDropShape(private val backward: Boolean) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val w = size.width
+        val h = size.height
+        val path = Path().apply {
+            if (backward) {
+                moveTo(0f, 0f)
+                cubicTo(w * 1.25f, h * 0.12f, w * 1.25f, h * 0.88f, 0f, h)
+            } else {
+                moveTo(w, 0f)
+                cubicTo(-w * 0.25f, h * 0.12f, -w * 0.25f, h * 0.88f, w, h)
+            }
+            close()
+        }
+        return Outline.Generic(path)
     }
 }
