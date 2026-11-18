@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import su.afk.yummy.tv.feature.player.common.PlayerDiagnosticsOverlay
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
@@ -460,6 +462,16 @@ internal fun TvExoPlayerView(
             style = state.subtitleStyle,
             modifier = Modifier.fillMaxSize(),
         )
+
+        if (state.showResolveLog) {
+            PlayerDiagnosticsOverlay(
+                player = player,
+                fontSize = 15.sp,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 8.dp, top = 96.dp, end = 8.dp),
+            )
+        }
 
         TvPlayerPointerOverlay(
             enabled = !panels.isAnyOpen && !prompts.anyVisible && !recoveryHintVisible,

@@ -24,7 +24,13 @@ class PlayerQualitySignals @Inject constructor() {
         mutableEvents.tryEmit(Signal.DroppedFrames(count))
     }
 
+    /** Последняя оценка полосы, бит/с: для диагностического оверлея, подписавшегося после события. */
+    @Volatile
+    var lastBandwidthBps: Long = 0L
+        private set
+
     fun emitBandwidth(bitsPerSecond: Long) {
+        lastBandwidthBps = bitsPerSecond
         mutableEvents.tryEmit(Signal.Bandwidth(bitsPerSecond))
     }
 

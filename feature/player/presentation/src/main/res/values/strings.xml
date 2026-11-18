@@ -247,4 +247,7 @@
     <string name="player_speed_slower">Slower</string>
     <string name="player_speed_faster">Faster</string>
     <string name="player_menu_cast_pip">PiP and Cast</string>
+    <string name="player_diag_buffer">Buffer: %1$ss ahead, total %2$ss, %3$s, play=%4$s</string>
+    <string name="player_diag_video">Video: %1$dx%2$d, %3$s Mbps %4$s, dropped %5$d, net %6$s Mbps</string>
+    <string name="player_diag_system">Device: %1$s, Android %2$s (API %3$d), RAM %4$d/%5$d MB, %6$s</string>
 </resources>

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
+import su.afk.yummy.tv.feature.player.common.PlayerDiagnosticsOverlay
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateDpAsState
@@ -585,6 +586,15 @@ internal fun MobileNativePlayer(
             style = state.subtitleStyle,
             modifier = Modifier.fillMaxSize(),
         )
+
+        if (state.showResolveLog) {
+            PlayerDiagnosticsOverlay(
+                player = player,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 8.dp, top = 96.dp, end = 8.dp),
+            )
+        }
 
         MobilePlayerGestureLayer(
             enabled = !isInPictureInPictureMode && !tutorialBlocksPlayback,

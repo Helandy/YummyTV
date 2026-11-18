@@ -247,4 +247,7 @@
     <string name="player_speed_slower">Медленнее</string>
     <string name="player_speed_faster">Быстрее</string>
     <string name="player_menu_cast_pip">PiP и Cast</string>
+    <string name="player_diag_buffer">Буфер: %1$s с вперёд, всего %2$s с, %3$s, play=%4$s</string>
+    <string name="player_diag_video">Видео: %1$dx%2$d, %3$s Мбит/с %4$s, пропущено %5$d, сеть %6$s Мбит/с</string>
+    <string name="player_diag_system">Устройство: %1$s, Android %2$s (API %3$d), RAM %4$d/%5$d МБ, %6$s</string>
 </resources>
