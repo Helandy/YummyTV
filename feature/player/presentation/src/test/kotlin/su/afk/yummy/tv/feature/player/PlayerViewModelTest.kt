@@ -603,6 +603,18 @@ class PlayerViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `decoder struggle warning is shown only once per player screen`() = runTest {
+        every { strings.get(R.string.player_toast_decoder_may_struggle) } returns "weak decoder"
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(PlayerState.Event.DecoderMayStruggle)
+        vm.setEvent(PlayerState.Event.DecoderMayStruggle)
+
+        assertEquals("weak decoder", (effects.single() as PlayerState.Effect.ShowToast).message)
+    }
+
+    @Test
     fun `episode end without the episode here asks with the same dialog`() = runTest {
         val vm = createViewModel()
         val effects = collectEmissions(vm.effect)

@@ -147,6 +147,7 @@
     <string name="player_mobile_orientation_portrait_hint">Всегда вертикальная ориентация, даже если в системе включён автоповорот</string>
     <string name="player_toast_dubbing_changed">Озвучка: %1$s</string>
     <string name="player_toast_balancer_changed">Плеер: %1$s</string>
+    <string name="player_toast_decoder_may_struggle">Устройство может не тянуть это видео — выберите качество пониже или другой источник</string>
     <string name="player_toast_video_enhancement_overload">Устройство не успевает за улучшением видео — выберите «Резкость» или выключите</string>
     <string name="player_side_panel_title">Настройки плеера</string>
     <string name="player_side_panel_open">Настройки плеера</string>

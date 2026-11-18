@@ -115,6 +115,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var activeDest: PlayerDestination = dest
 
     private var pendingDestinationResumeMs: Long? = dest.resumeFromMs.takeIf { it > 0L }
+    private var decoderStruggleWarned = false
     private var sourceGraphJob: Job? = null
     private var extractionJob: Job? = null
     private var finalEpisodeActionJob: Job? = null
@@ -621,6 +622,13 @@ class PlayerViewModel @AssistedInject internal constructor(
                 if (currentState.videoEnhancementMode != VideoEnhancementMode.OFF) {
                     setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_video_enhancement_overload)))
                 }
+            }
+
+            PlayerState.Event.DecoderMayStruggle -> {
+                // Одно предупреждение на экран плеера: смена серии/качества не должна повторять его.
+                if (decoderStruggleWarned) return
+                decoderStruggleWarned = true
+                setEffect(PlayerState.Effect.ShowToast(strings.get(R.string.player_toast_decoder_may_struggle)))
             }
 
             is PlayerState.Event.VideoEnhancementModeSelected ->

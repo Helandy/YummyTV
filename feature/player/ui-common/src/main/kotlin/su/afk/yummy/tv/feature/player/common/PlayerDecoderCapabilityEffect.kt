@@ -31,14 +31,20 @@ fun PlayerDecoderCapabilityEffect(
     DisposableEffect(player) {
         var watchdog: Job? = null
 
+        var exceedsOnly = false
+
         fun cancel() {
             watchdog?.cancel()
             watchdog = null
+            exceedsOnly = false
         }
 
         fun evaluate(tracks: Tracks) {
             cancel()
             val format = tracks.unsupportedSelectedVideoFormat() ?: return
+            // Декодер есть, но формат за его пределами (программный AV1 1080p): первый кадр может показаться,
+            // а потом зависание и артефакты - ошибки не будет, поэтому предупреждаем вместо ошибки.
+            exceedsOnly = tracks.isSelectedVideoSupportedWhenExceeding()
             watchdog = scope.launch {
                 delay(FIRST_FRAME_GRACE_MS)
                 currentOnEvent(
@@ -56,7 +62,11 @@ fun PlayerDecoderCapabilityEffect(
         val listener = object : Player.Listener {
             override fun onTracksChanged(tracks: Tracks) = evaluate(tracks)
 
-            override fun onRenderedFirstFrame() = cancel()
+            override fun onRenderedFirstFrame() {
+                val warn = exceedsOnly
+                cancel()
+                if (warn) currentOnEvent(PlayerState.Event.DecoderMayStruggle)
+            }
         }
         player.addListener(listener)
         evaluate(player.currentTracks)
@@ -78,6 +88,21 @@ private fun Tracks.unsupportedSelectedVideoFormat(): Format? {
         }
     }
     return null
+}
+
+/** Выбранный видеопоток играет только с допуском «за пределами возможностей» (есть декодер, но слабый). */
+private fun Tracks.isSelectedVideoSupportedWhenExceeding(): Boolean {
+    for (group in groups) {
+        if (group.type != C.TRACK_TYPE_VIDEO || !group.isSelected) continue
+        for (index in 0 until group.length) {
+            if (group.isTrackSelected(index) && !group.isTrackSupported(index, false) &&
+                group.isTrackSupported(index, true)
+            ) {
+                return true
+            }
+        }
+    }
+    return false
 }
 
 private const val FIRST_FRAME_GRACE_MS = 3_000L
