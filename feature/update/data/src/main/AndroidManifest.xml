@@ -22,7 +22,12 @@
             android:name=".apk.UpdateApkFileProvider"
             android:authorities="${applicationId}.update"
             android:exported="false"
-            android:grantUriPermissions="true" />
+            android:grantUriPermissions="true">
+            <!-- Нужен статическому FileProvider.getUriForFile: путь из конструктора подкласса он не видит. -->
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_apk_file_paths" />
+        </provider>
     </application>
 
 </manifest>
