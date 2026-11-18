@@ -21,10 +21,20 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
         target: QualityAdaptationPolicy = policy,
         available: List<String> = levels,
     ) {
-        target.onBandwidth(bps)
         var t = from
         while (t <= to) {
+            target.onBandwidth(bps)
             target.evaluate(current, available, 30_000L, t)
+            t += 5_000L
+        }
+    }
+
+    /** Одна оценка и дальше тишина: полный буфер почти не качает, оценка протухает. */
+    private fun staleNetwork(bps: Long, current: String, from: Long, to: Long) {
+        policy.onBandwidth(bps)
+        var t = from
+        while (t <= to) {
+            policy.evaluate(current, levels, 30_000L, t)
             t += 5_000L
         }
     }
@@ -98,11 +108,11 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
         policy.onBandwidth(50_000_000L)
         policy.onStallStarted(0L, afterSeek = true)
 
-        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 10_000L))
-        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 14_000L))
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 6_000L))
+        assertEquals(QualityAdaptationDecision.Keep, decide("1080p", now = 9_000L))
         assertEquals(
             QualityAdaptationDecision.Switch("720p", isDowngrade = true),
-            decide("1080p", now = 15_000L),
+            decide("1080p", now = 10_000L),
         )
     }
 
@@ -178,9 +188,9 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
         assertEquals(QualityAdaptationDecision.Switch("720p", isDowngrade = true), down)
 
         policy.onQualityChanged(6_000L)
-        goodNetwork("720p", from = 7_000L, to = 200_000L)
+        goodNetwork("720p", from = 7_000L, to = 150_000L)
 
-        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 200_000L))
+        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 150_000L))
     }
 
     @Test
@@ -296,14 +306,69 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
     }
 
     @Test
-    fun `a later low estimate blocks the upgrade until a better one arrives`() {
+    fun `fresh low estimates keep blocking the upgrade`() {
         policy.onQualityChanged(0L)
-        policy.onBandwidth(50_000_000L)
-        network(50_000_000L, "720p", from = 5_000L, to = 40_000L)
-        policy.onBandwidth(3_000_000L)
+        network(50_000_000L, "720p", from = 5_000L, to = 10_000L)
+        network(3_000_000L, "720p", from = 15_000L, to = 200_000L)
 
-        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 100_000L))
         assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 200_000L))
+    }
+
+    @Test
+    fun `stale low estimate with a full buffer probes one level up`() {
+        policy.onQualityChanged(0L)
+        staleNetwork(1_000_000L, "480p", from = 5_000L, to = 19_000L)
+
+        // Оценка протухла (15 с), буфер полный, 20 с без остановок: пробуем ступень выше, не максимум.
+        assertEquals(
+            QualityAdaptationDecision.Switch("720p", isDowngrade = false),
+            decide("480p", now = 24_000L),
+        )
+    }
+
+    @Test
+    fun `probe needs a big buffer`() {
+        policy.onQualityChanged(0L)
+        staleNetwork(1_000_000L, "480p", from = 5_000L, to = 19_000L)
+
+        assertEquals(QualityAdaptationDecision.Keep, decide("480p", now = 60_000L, buffered = 15_000L))
+    }
+
+    @Test
+    fun `repeated failures from the same height lengthen its ban`() {
+        policy.onStallStarted(0L)
+        decide("1080p", now = 10_000L) // падение по сети: бан 30 с
+        policy.onQualityChanged(10_000L)
+        policy.onStallEnded()
+        policy.onStallStarted(100_000L)
+        decide("1080p", now = 110_000L) // второе падение: бан 60 с
+        policy.onQualityChanged(110_000L)
+        policy.onStallEnded()
+
+        goodNetwork("720p", from = 115_000L, to = 165_000L)
+        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 165_000L))
+
+        goodNetwork("720p", from = 170_000L, to = 180_000L)
+        assertEquals(
+            QualityAdaptationDecision.Switch("1080p", isDowngrade = false),
+            decide("720p", now = 180_000L),
+        )
+    }
+
+    @Test
+    fun `device limit expires`() {
+        policy.onDroppedFrames(40, nowMs = 5_000L)
+        decide("1080p", now = 6_000L)
+        policy.onQualityChanged(6_000L)
+
+        goodNetwork("720p", from = 7_000L, to = 150_000L)
+        assertEquals(QualityAdaptationDecision.Keep, decide("720p", now = 150_000L))
+
+        goodNetwork("720p", from = 155_000L, to = 200_000L)
+        assertEquals(
+            QualityAdaptationDecision.Switch("1080p", isDowngrade = false),
+            decide("720p", now = 200_000L),
+        )
     }
 
     @Test
