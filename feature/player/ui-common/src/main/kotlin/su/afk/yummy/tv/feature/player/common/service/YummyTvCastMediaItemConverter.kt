@@ -6,6 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.cast.MediaQueueItem
+import su.afk.yummy.tv.feature.player.utils.syntheticMasterTopVariantUrl
 
 /**
  * Часть балансеров (например ok.ru CDN) отдаёт прямые видео-URL без расширения в пути - только
@@ -34,8 +35,12 @@ class YummyTvCastMediaItemConverter : MediaItemConverter {
         delegate.toMediaItem(mediaQueueItem)
 
     override fun toMediaQueueItem(mediaItem: MediaItem): MediaQueueItem {
+        // Ресивер не откроет `data:`-URI синтетического master: отдаём ему лучшую реальную ссылку.
+        val topVariant = mediaItem.localConfiguration?.uri?.toString()?.syntheticMasterTopVariantUrl()
         val hasMimeType = mediaItem.localConfiguration?.mimeType != null
-        val itemForCast = if (hasMimeType) {
+        val itemForCast = if (topVariant != null) {
+            mediaItem.buildUpon().setUri(topVariant).setMimeType(MimeTypes.APPLICATION_M3U8).build()
+        } else if (hasMimeType) {
             mediaItem
         } else {
             mediaItem.buildUpon().setMimeType(MimeTypes.VIDEO_MP4).build()

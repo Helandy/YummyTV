@@ -57,6 +57,13 @@ data class PlayerPlaybackUiState(
     val adaptiveLimitBest: Boolean,
     /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
     val playbackUrl: String,
+    /**
+     * Играет синтетический master (адаптивный режим): ExoPlayer сам выбирает вариант, но не выше этой высоты.
+     * Меняется без пересоздания потока; `null` — обычный поток одного качества.
+     */
+    val videoHeightCap: Int?,
+    /** Качество выбрано вручную: вариант master закреплён на [videoHeightCap], а не ограничен им сверху. */
+    val videoHeightPinned: Boolean,
     /** Балансер для заголовка «X вернул ошибку»; null, если ошибка не от балансера (офлайн, нет имени). */
     val errorBalancerLabel: String?,
     val canChangePlayer: Boolean,

@@ -59,7 +59,7 @@ fun PlayerMediaItemEffect(
     val currentPlayback by rememberUpdatedState(playback)
     val currentShouldPlay by rememberUpdatedState(shouldPlay)
 
-    LaunchedEffect(player, playbackKey, mediaItemKey, playback.activeIframeUrl) {
+    LaunchedEffect(player, playbackKey, mediaItemKey, playback.activeIframeUrl, playback.videoHeightCap, playback.videoHeightPinned) {
         val activePlayer = player ?: return@LaunchedEffect
         mediaItemUpdater.update(
             player = activePlayer,

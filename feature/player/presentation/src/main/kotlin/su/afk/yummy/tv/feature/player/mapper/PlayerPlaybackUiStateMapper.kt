@@ -22,6 +22,8 @@ import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activeQuality
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import su.afk.yummy.tv.feature.player.utils.buildSyntheticHlsMasterUrl
+import su.afk.yummy.tv.feature.player.utils.qualityHeight
 import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
@@ -75,6 +77,11 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     }
     val url = streamUrl.orEmpty()
     val qualities = streamQualities(this)
+    // Источник с отдельным HLS-плейлистом на качество: общий master вместо пересоздания потока при каждой
+    // смене качества (адаптивной и ручной). Только по реальной карте качеств источника.
+    val syntheticMaster = streamQualityMap
+        ?.takeIf { !isOfflinePlayback && !isLocalFile }
+        ?.let(::buildSyntheticHlsMasterUrl)
     val activeQuality = activeQuality(this)
     // Имена для показа: без общего префикса «Плеер», как во всех списках и кнопках UI.
     val balancerNames = availableBalancerIndices.map { index ->
@@ -150,7 +157,9 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         adaptiveCeilingHeight = adaptiveCeilingHeight,
         adaptiveLimitLabel = adaptiveLimitLabel(qualities.keys, adaptiveCeilingHeight),
         adaptiveLimitBest = adaptiveCeilingHeight >= QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
-        playbackUrl = activeQuality?.let(qualities::get) ?: url,
+        playbackUrl = syntheticMaster ?: activeQuality?.let(qualities::get) ?: url,
+        videoHeightCap = activeQuality?.qualityHeight()?.takeIf { syntheticMaster != null },
+        videoHeightPinned = syntheticMaster != null && !adaptiveQualityActive(this),
         errorBalancerLabel = activeBalancerName(this).removePrefix(playerNamePrefix).withoutPlayerPrefix()
             .withExtraSourceName(activeIframeUrl(this))
             .takeIf { it.isNotBlank() && !isOfflinePlayback && !isConnectionError },

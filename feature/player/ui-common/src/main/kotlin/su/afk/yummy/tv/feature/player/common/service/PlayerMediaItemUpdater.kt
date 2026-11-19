@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.player.common.service
 import androidx.media3.common.Player
 import su.afk.yummy.tv.domain.player.utils.maxVideoHeightOrNull
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
+import su.afk.yummy.tv.feature.player.utils.isSyntheticMasterUrl
 
 enum class PlayerAudioTrackPolicy {
     Default,
@@ -35,11 +36,16 @@ data class PlayerMediaItemConfig(
     val subtitleLanguage: String? = null,
     val subtitleLabel: String? = null,
     val silentReconnectEnabled: Boolean = false,
+    /** Потолок высоты для синтетического master (адаптивный режим); `null` — берётся из ссылки. */
+    val videoHeightCap: Int? = null,
+    /** Ручной выбор качества в синтетическом master: играть именно этот вариант. */
+    val videoHeightPinned: Boolean = false,
 )
 
 class PlayerMediaItemUpdater {
     private var playbackKey: String? = null
     private var mediaItemKey: String? = null
+    private var defaultForceHighestBitrate: Boolean? = null
 
     fun update(
         player: Player,
@@ -72,7 +78,8 @@ class PlayerMediaItemUpdater {
             isLocalFile = config.isLocalFile,
             silentReconnectEnabled = config.silentReconnectEnabled,
         )
-        player.applyVideoHeightCap(config.url.maxVideoHeightOrNull())
+        player.applyVideoHeightCap(config.videoHeightCap ?: config.url.maxVideoHeightOrNull(), config.videoHeightPinned)
+        applyAdaptiveBitrate(player, adaptive = config.url.isSyntheticMasterUrl())
         val resume = config.playbackPositionMs.takeIf { it > 0L } ?: config.resumeFromMs
         val currentUri = player.currentMediaItem?.localConfiguration?.uri?.toString()
         if (currentUri != config.url || playbackKey != config.playbackKey) {
@@ -89,12 +96,29 @@ class PlayerMediaItemUpdater {
             mediaItemKey = config.mediaItemKey
         }
     }
+
+    /**
+     * Синтетический master отдаёт выбор варианта ExoPlayer: принудительный максимум битрейта (по умолчанию
+     * на обычных устройствах) выключаем. Для остальных потоков возвращаем исходное значение плеера.
+     */
+    private fun applyAdaptiveBitrate(player: Player, adaptive: Boolean) {
+        val current = player.trackSelectionParameters
+        val default = defaultForceHighestBitrate
+            ?: current.forceHighestSupportedBitrate.also { defaultForceHighestBitrate = it }
+        val target = if (adaptive) false else default
+        if (current.forceHighestSupportedBitrate == target) return
+        player.trackSelectionParameters = current.buildUpon().setForceHighestSupportedBitrate(target).build()
+    }
 }
 
 /** Потолок высоты из ссылки (`withMaxVideoHeight`); без него возвращает лимит по умолчанию, чтобы он не перешёл на следующий поток. */
-private fun Player.applyVideoHeightCap(height: Int?) {
+private fun Player.applyVideoHeightCap(height: Int?, pinned: Boolean = false) {
     val current = trackSelectionParameters
     val maxHeight = height ?: Int.MAX_VALUE
-    if (current.maxVideoHeight == maxHeight) return
-    trackSelectionParameters = current.buildUpon().setMaxVideoSize(Int.MAX_VALUE, maxHeight).build()
+    val minHeight = if (pinned && height != null) height else 0
+    if (current.maxVideoHeight == maxHeight && current.minVideoHeight == minHeight) return
+    trackSelectionParameters = current.buildUpon()
+        .setMaxVideoSize(Int.MAX_VALUE, maxHeight)
+        .setMinVideoSize(0, minHeight)
+        .build()
 }
