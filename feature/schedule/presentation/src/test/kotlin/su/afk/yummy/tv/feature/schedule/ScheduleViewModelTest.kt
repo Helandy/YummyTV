@@ -199,15 +199,23 @@ class ScheduleViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `library filter narrows schedule without extra network calls and restores on toggle off`() {
+    fun `library filter narrows schedule to watching, planned, and favorites without extra network calls`() {
         libraryFlow.value = listOf(
-            LibraryItem(animeId = 2, title = "watched", listId = 0),
+            LibraryItem(animeId = 2, title = "watching", listId = 0),
             LibraryItem(animeId = 3, title = "fav", listId = FAVORITE_ONLY_LIBRARY_LIST_ID, isFavorite = true),
+            LibraryItem(animeId = 4, title = "planned", listId = 1),
+            LibraryItem(animeId = 5, title = "completed", listId = 2),
+            LibraryItem(animeId = 6, title = "dropped", listId = 3),
+            LibraryItem(animeId = 7, title = "postponed", listId = 5),
         )
         givenSchedule(
             day(animeId = 1, epochSeconds = DAY_1),
+            day(animeId = 5, epochSeconds = DAY_1 + 60L),
+            day(animeId = 6, epochSeconds = DAY_1 + 120L),
+            day(animeId = 7, epochSeconds = DAY_1 + 180L),
             day(animeId = 2, epochSeconds = DAY_2),
             day(animeId = 3, epochSeconds = DAY_2 + 60L),
+            day(animeId = 4, epochSeconds = DAY_2 + 120L),
         )
         val vm = createViewModel()
         assertEquals(2, vm.currentState.tvSchedule.dayGroups.size)
@@ -217,7 +225,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
         assertTrue(vm.currentState.onlyInLibrary)
         assertEquals(1, vm.currentState.tvSchedule.dayGroups.size)
         assertEquals(
-            listOf(2, 3),
+            listOf(2, 3, 4),
             vm.currentState.tvSchedule.selectedGroup?.items?.map { it.item.animeId },
         )
 

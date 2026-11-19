@@ -4,6 +4,12 @@ import su.afk.yummy.tv.core.model.anime.CardListStatus
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 
+/** Статусы библиотеки, за выходом новых серий которых пользователь активно следит. */
+val ACTIVE_LIBRARY_LIST_STATUSES: Set<CardListStatus> = setOf(
+    CardListStatus.WATCHING,
+    CardListStatus.PLANNED,
+)
+
 /** Статус карточки по id списка; `null` для «только избранное» и неизвестных списков. */
 fun listIdToCardListStatus(listId: Int): CardListStatus? =
     when (UserAnimeList.entries.firstOrNull { it.id == listId }) {
@@ -31,10 +37,20 @@ fun List<LibraryItem>.toUserRatings(): Map<Int, Int> = buildMap {
     }
 }
 
-/** Множество `animeId` тайтлов, добавленных в любой пользовательский список или в избранное. */
-fun List<LibraryItem>.toLibraryAnimeIds(): Set<Int> = buildSet {
+/**
+ * Множество `animeId` тайтлов из указанных пользовательских списков [statuses] и,
+ * при [includeFavorites] = `true`, из избранного.
+ *
+ * По умолчанию учитываются только [ACTIVE_LIBRARY_LIST_STATUSES] («Смотрю» и «Запланировано»)
+ * и избранное, чтобы брошенные, отложенные и завершённые тайтлы не попадали в фильтр расписания.
+ */
+fun List<LibraryItem>.toLibraryAnimeIds(
+    statuses: Set<CardListStatus> = ACTIVE_LIBRARY_LIST_STATUSES,
+    includeFavorites: Boolean = true,
+): Set<Int> = buildSet {
     for (item in this@toLibraryAnimeIds) {
-        if (item.isFavorite || listIdToCardListStatus(item.listId) != null) {
+        val status = listIdToCardListStatus(item.listId)
+        if ((includeFavorites && item.isFavorite) || (status != null && status in statuses)) {
             add(item.animeId)
         }
     }
