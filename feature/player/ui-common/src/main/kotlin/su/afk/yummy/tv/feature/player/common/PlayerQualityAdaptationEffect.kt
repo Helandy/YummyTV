@@ -31,6 +31,8 @@ fun PlayerQualityAdaptationEffect(
     qualities: List<String>,
     activeQuality: String?,
     ceilingHeight: Int,
+    /** Играет синтетический master: сеть ведёт ABR плеера, политика держит потолок только по дропу кадров. */
+    deviceOnly: Boolean = false,
     onEvent: (PlayerState.Event) -> Unit,
 ) {
     if (!enabled || qualities.size < 2) return
@@ -38,7 +40,7 @@ fun PlayerQualityAdaptationEffect(
     val currentOnEvent by rememberUpdatedState(onEvent)
     val currentQuality by rememberUpdatedState(activeQuality)
     val currentQualities by rememberUpdatedState(qualities)
-    val policy = remember(qualities, ceilingHeight) { QualityAdaptationPolicy(ceilingHeight) }
+    val policy = remember(qualities, ceilingHeight, deviceOnly) { QualityAdaptationPolicy(ceilingHeight, deviceOnly) }
 
     // Любая смена качества (наша или ручная) обнуляет накопленные факты и открывает cooldown.
     LaunchedEffect(policy, activeQuality) { policy.onQualityChanged(nowMs()) }

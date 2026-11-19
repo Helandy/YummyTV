@@ -399,6 +399,7 @@ internal fun MobileNativePlayer(
         qualities = ui.qualityLabels,
         activeQuality = ui.activeQuality,
         ceilingHeight = ui.adaptiveCeilingHeight,
+        deviceOnly = ui.videoHeightCap != null,
         onEvent = onEvent,
     )
 

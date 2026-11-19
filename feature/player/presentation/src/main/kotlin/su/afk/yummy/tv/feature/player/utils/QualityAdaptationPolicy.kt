@@ -20,6 +20,12 @@ sealed interface QualityAdaptationDecision {
 class QualityAdaptationPolicy(
     /** Верхняя граница: выше этой высоты не поднимаемся (по умолчанию — до 4K, если сеть и декодер тянут). */
     private val ceilingHeight: Int = DEFAULT_CEILING_HEIGHT,
+    /**
+     * Играет синтетический master: вариант по сети выбирает ABR плеера, а политика держит только потолок
+     * по возможностям устройства. Остановки и оценка полосы потолок не трогают (иначе он держал бы качество
+     * ниже, чем уже готов играть ABR), а после истечения лимита устройства потолок возвращается сразу.
+     */
+    private val deviceOnly: Boolean = false,
 ) {
     private val stallTimesMs = ArrayDeque<Long>()
     private val droppedFrames = ArrayDeque<Pair<Long, Int>>()
@@ -134,6 +140,8 @@ class QualityAdaptationPolicy(
             networkStrikes.remove(currentHeight)
         }
 
+        if (deviceOnly) return evaluateDeviceOnly(currentHeight, levels, nowMs)
+
         // С какого тика последняя оценка полосы покрывает с запасом хотя бы одну ступень выше.
         val upTarget = upgradeTarget(currentHeight, available, nowMs)
         goodBandwidthSinceMs = if (upTarget != null) goodBandwidthSinceMs ?: nowMs else null
@@ -166,6 +174,28 @@ class QualityAdaptationPolicy(
             ?: return QualityAdaptationDecision.Keep
         val label = levels.first { it.second == higher }.first
         return QualityAdaptationDecision.Switch(label, isDowngrade = false)
+    }
+
+    /** Режим [deviceOnly]: понижаем только по дропу кадров, возвращаем потолок после истечения лимита устройства. */
+    private fun evaluateDeviceOnly(
+        currentHeight: Int,
+        levels: List<Pair<String, Int>>,
+        nowMs: Long,
+    ): QualityAdaptationDecision {
+        if (droppedFrames.sumOf { it.second } >= DEVICE_DROPPED_FRAMES_LIMIT) {
+            val lower = levels.filter { it.second < currentHeight }.maxByOrNull { it.second }
+                ?: return QualityAdaptationDecision.Keep
+            deviceLimitHeight = minOf(activeDeviceLimit(nowMs) ?: currentHeight, currentHeight)
+            deviceLimitUntilMs = nowMs + DEVICE_LIMIT_MS
+            return QualityAdaptationDecision.Switch(lower.first, isDowngrade = true)
+        }
+        if (deviceLimitHeight == null || activeDeviceLimit(nowMs) != null) return QualityAdaptationDecision.Keep
+        if (nowMs - lastSwitchAtMs < MIN_SWITCH_INTERVAL_MS || droppedFrames.isNotEmpty()) {
+            return QualityAdaptationDecision.Keep
+        }
+        val higher = levels.filter { it.second in (currentHeight + 1)..ceilingHeight }.maxByOrNull { it.second }
+            ?: return QualityAdaptationDecision.Keep
+        return QualityAdaptationDecision.Switch(higher.first, isDowngrade = false)
     }
 
     /**

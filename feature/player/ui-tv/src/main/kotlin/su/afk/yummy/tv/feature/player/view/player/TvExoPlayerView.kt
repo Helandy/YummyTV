@@ -318,6 +318,7 @@ internal fun TvExoPlayerView(
         qualities = playback.qualityLabels,
         activeQuality = playback.activeQuality,
         ceilingHeight = playback.adaptiveCeilingHeight,
+        deviceOnly = playback.videoHeightCap != null,
         onEvent = onPlayerEvent,
     )
 

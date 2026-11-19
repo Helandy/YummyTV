@@ -371,6 +371,63 @@ class QualityAdaptationPolicyTest : BaseUnitTest() {
         )
     }
 
+    private val deviceOnly = QualityAdaptationPolicy(deviceOnly = true)
+
+    @Test
+    fun `master mode ignores stalls and leaves the network to the player`() {
+        deviceOnly.onStallStarted(1_000L)
+        deviceOnly.onStallStarted(2_000L)
+        deviceOnly.onStallStarted(3_000L)
+
+        assertEquals(
+            QualityAdaptationDecision.Keep,
+            deviceOnly.evaluate("1080p", levels, 30_000L, 40_000L),
+        )
+    }
+
+    @Test
+    fun `master mode steps down on dropped frames`() {
+        deviceOnly.onDroppedFrames(40, nowMs = 5_000L)
+
+        assertEquals(
+            QualityAdaptationDecision.Switch("720p", isDowngrade = true),
+            deviceOnly.evaluate("1080p", levels, 30_000L, 6_000L),
+        )
+    }
+
+    @Test
+    fun `master mode keeps the lowered ceiling while the device limit lasts`() {
+        deviceOnly.onDroppedFrames(40, nowMs = 5_000L)
+        deviceOnly.evaluate("1080p", levels, 30_000L, 6_000L)
+        deviceOnly.onQualityChanged(6_000L)
+
+        assertEquals(
+            QualityAdaptationDecision.Keep,
+            deviceOnly.evaluate("720p", levels, 30_000L, 120_000L),
+        )
+    }
+
+    @Test
+    fun `master mode returns the ceiling at once after the device limit expires`() {
+        deviceOnly.onDroppedFrames(40, nowMs = 5_000L)
+        deviceOnly.evaluate("1080p", levels, 30_000L, 6_000L)
+        deviceOnly.onQualityChanged(6_000L)
+
+        // Лимит устройства 3 минуты: без ожидания полосы и буфера потолок возвращается к максимуму.
+        assertEquals(
+            QualityAdaptationDecision.Switch("1080p", isDowngrade = false),
+            deviceOnly.evaluate("720p", levels, 0L, 190_000L),
+        )
+    }
+
+    @Test
+    fun `master mode does not climb on its own when nothing lowered the ceiling`() {
+        assertEquals(
+            QualityAdaptationDecision.Keep,
+            deviceOnly.evaluate("480p", levels, 30_000L, 100_000L),
+        )
+    }
+
     @Test
     fun `single quality source is never switched`() {
         policy.onStallStarted(1_000L)
