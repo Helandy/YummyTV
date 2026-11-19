@@ -7,8 +7,10 @@ import kotlinx.collections.immutable.toImmutableMap
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
+import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.core.common.player.withoutPlayerPrefix
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.settings.VideoDownloadPreset
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 
@@ -16,6 +18,28 @@ internal fun AnimeVideo.toDownloadStatusKey(): String =
     listOf(id.toString(), iframeUrl).joinToString("|")
 
 internal fun AnimeVideo.toDownloadDubbingName(): String = dubbing.ifBlank { player }
+
+/** Подпись источника для шторки качества: «Озвучка • Плеер». */
+internal fun AnimeVideo.toDownloadPresetLabel(): String =
+    listOf(toDownloadDubbingName(), player.playerDisplayName().ifBlank { player })
+        .filter { it.isNotBlank() }
+        .joinToString(" • ")
+
+/**
+ * Видео серии, подходящее под [preset] по озвучке и плееру. Источник, который уже качается или
+ * резолвится, не берётся: тогда пользователь должен увидеть обычный выбор со статусами.
+ */
+internal fun List<AnimeVideo>.findPresetVideo(
+    preset: VideoDownloadPreset,
+    statuses: Map<String, EpisodesState.EpisodeDownloadUiState>,
+    resolvingKeys: Set<String>,
+): AnimeVideo? = firstOrNull { video ->
+    val key = video.toDownloadStatusKey()
+    video.toDownloadDubbingName() == preset.dubbing &&
+        video.player == preset.player &&
+        key !in resolvingKeys &&
+        statuses[key]?.status?.isActive != true
+}
 
 /**
  * Плееры озвучки для подписи в шторке скачивания — в том же порядке и виде, что в шторке

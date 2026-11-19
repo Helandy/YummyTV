@@ -249,7 +249,9 @@ fun EpisodesMobileScreen(
     state.pendingDownloadBalancerSelection?.let { selection ->
         EpisodeDownloadBalancerSheet(
             selection = selection,
-            onSelected = { onEvent(EpisodesState.Event.DownloadBalancerSelected(it)) },
+            onSelected = { video, rememberAsPreset ->
+                onEvent(EpisodesState.Event.DownloadBalancerSelected(video, rememberAsPreset))
+            },
             onDismiss = { onEvent(EpisodesState.Event.DownloadBalancerPickerDismissed) },
         )
     }
@@ -262,6 +264,7 @@ fun EpisodesMobileScreen(
                     onEvent(EpisodesState.Event.DownloadQualitySelected(option))
                 }
             },
+            onPresetChange = { onEvent(EpisodesState.Event.DownloadPresetResetSelected) },
             onDismiss = { onEvent(EpisodesState.Event.DownloadQualityPickerDismissed) },
         )
     }

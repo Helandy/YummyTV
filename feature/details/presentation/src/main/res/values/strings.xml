@@ -145,6 +145,10 @@
     <string name="details_mobile_download_quality_title">Download quality</string>
     <string name="details_mobile_download_quality_prompt">Choose quality</string>
     <string name="details_mobile_download_quality_empty">No qualities available</string>
+    <string name="details_mobile_download_preset_remember">Remember dubbing and player</string>
+    <string name="details_mobile_download_preset_remember_hint">Next time only the quality will be asked</string>
+    <string name="details_mobile_download_preset_label">Preset: %1$s</string>
+    <string name="details_mobile_download_preset_change">Change</string>
             <string name="details_episodes_count_short">%1$d ep.</string>
     <string name="details_count_thousands">%1$sK</string>
     <string name="details_count_millions">%1$sM</string>

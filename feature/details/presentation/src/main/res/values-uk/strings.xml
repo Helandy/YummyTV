@@ -157,6 +157,10 @@
     <string name="details_mobile_download_quality_title">Якість завантаження</string>
     <string name="details_mobile_download_quality_prompt">Виберіть якість</string>
     <string name="details_mobile_download_quality_empty">Немає доступних якостей</string>
+    <string name="details_mobile_download_preset_remember">Запам\'ятати озвучення та плеєр</string>
+    <string name="details_mobile_download_preset_remember_hint">Наступного разу запитаємо лише якість</string>
+    <string name="details_mobile_download_preset_label">Пресет: %1$s</string>
+    <string name="details_mobile_download_preset_change">Змінити</string>
             <string name="details_episodes_count_short">%1$d сер.</string>
     <string name="details_count_thousands">%1$sтис.</string>
     <string name="details_count_millions">%1$sмлн</string>

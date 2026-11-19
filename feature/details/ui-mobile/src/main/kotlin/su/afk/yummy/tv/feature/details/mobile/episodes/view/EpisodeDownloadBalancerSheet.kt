@@ -4,7 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
@@ -22,9 +25,11 @@ import su.afk.yummy.tv.feature.details.presentation.R
 @OptIn(ExperimentalMaterial3Api::class)
 internal fun EpisodeDownloadBalancerSheet(
     selection: EpisodesState.EpisodeDownloadBalancerSelection,
-    onSelected: (AnimeVideo) -> Unit,
+    /** Выбранный плеер и состояние галки «запомнить». */
+    onSelected: (video: AnimeVideo, rememberAsPreset: Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var rememberAsPreset by remember { mutableStateOf(false) }
     BaseBottomSheet(
         onDismissRequest = onDismiss,
         titleContent = {
@@ -44,7 +49,11 @@ internal fun EpisodeDownloadBalancerSheet(
                 fillMaxSize = false,
             )
         } else {
-            val items = remember(selection.options) {
+            EpisodeDownloadPresetToggle(
+                checked = rememberAsPreset,
+                onCheckedChange = { rememberAsPreset = it },
+            )
+            val items = remember(selection.options, rememberAsPreset) {
                 selection.options.mapIndexed { index, option ->
                     MobilePickerItem(
                         key = "${option.video.id}|${option.video.iframeUrl}|$index",
@@ -56,7 +65,7 @@ internal fun EpisodeDownloadBalancerSheet(
                         enabled = !option.resolving && !option.status.blocksNewDownload(),
                         accentTitle = true,
                         trailing = { EpisodeDownloadStatusIcon(option.status, option.resolving) },
-                        onClick = { onSelected(option.video) },
+                        onClick = { onSelected(option.video, rememberAsPreset) },
                     )
                 }
             }

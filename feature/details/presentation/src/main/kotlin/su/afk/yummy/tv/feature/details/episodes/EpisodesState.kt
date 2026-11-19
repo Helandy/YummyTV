@@ -140,6 +140,8 @@ class EpisodesState {
         val videoId: Int,
         val episode: String,
         val options: ImmutableList<EpisodeDownloadQualityOption>,
+        /** «Озвучка • Плеер», если источник взят из пресета; `null` — выбран вручную. */
+        val presetLabel: String? = null,
     )
 
     data class EpisodeDownloadQualityOption(
@@ -226,7 +228,14 @@ class EpisodesState {
         data object DownloadDubbingPickerDismissed : Event
 
         /** Пользователь выбрал балансер для скачивания. */
-        data class DownloadBalancerSelected(val video: AnimeVideo) : Event
+        data class DownloadBalancerSelected(
+            val video: AnimeVideo,
+            /** Запомнить озвучку и плеер как пресет, чтобы не выбирать их в следующий раз. */
+            val rememberAsPreset: Boolean = false,
+        ) : Event
+
+        /** Пользователь сбросил пресет в шторке качества и хочет выбрать источник заново. */
+        data object DownloadPresetResetSelected : Event
 
         /** Пользователь закрыл выбор балансера для скачивания. */
         data object DownloadBalancerPickerDismissed : Event
