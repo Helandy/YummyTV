@@ -52,7 +52,7 @@ internal fun BloggerVideosFilters(
     showFilters: Boolean,
     onFiltersDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    sortTransition: MobileTabTransition? = null,
+    sortTransition: (() -> MobileTabTransition)? = null,
 ) {
     val selectedCategory = state.categories.firstOrNull { it.id == state.selectedCategory }
     val selectedBlogger = state.bloggers.firstOrNull { it.id == state.selectedBloggerId }

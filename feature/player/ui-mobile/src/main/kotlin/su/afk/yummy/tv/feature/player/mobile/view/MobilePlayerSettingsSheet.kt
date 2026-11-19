@@ -112,7 +112,7 @@ internal fun MobilePlayerSettingsSheet(
                         }
                     },
                     compact = isLandscape,
-                    transition = trackPagerState.asMobileTabTransition(),
+                    transition = trackPagerState::asMobileTabTransition,
                     modifier = tabsModifier,
                 )
             }

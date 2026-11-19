@@ -134,7 +134,7 @@ fun UserProfileMobileScreen(
                         showBack = headerState.collapseFraction > 0.95f,
                         onBack = onBack,
                         onSelected = { tab -> tabsState.selectPage(tabs.indexOf(tab)) },
-                        transition = tabsState.tabTransition,
+                        transition = tabsState::tabTransition,
                     )
                 },
             ) {

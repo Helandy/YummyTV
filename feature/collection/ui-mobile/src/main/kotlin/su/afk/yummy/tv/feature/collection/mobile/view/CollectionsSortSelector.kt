@@ -16,7 +16,7 @@ internal fun CollectionsSortSelector(
     selectedSort: CollectionSort,
     onSortSelected: (CollectionSort) -> Unit,
     modifier: Modifier = Modifier,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     val sorts = CollectionSort.entries
     MobileTextTabs(

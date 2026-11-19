@@ -160,10 +160,10 @@ fun LibraryMobileScreen(
         ) {
             LibraryMobileTabs(
                 tabs = tabs,
-                selectedTab = tabsState.currentPage.toLibraryMobileTab(tabs),
+                selectedTab = state.selectedTab,
                 tabCounts = tabCounts,
                 onSelected = { tab -> tabsState.selectPage(tab.toLibraryMobilePage(tabs)) },
-                transition = tabsState.tabTransition,
+                transition = tabsState::tabTransition,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 12.dp, end = 16.dp),

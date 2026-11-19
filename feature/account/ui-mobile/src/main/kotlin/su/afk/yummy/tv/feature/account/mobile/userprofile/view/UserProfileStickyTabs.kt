@@ -35,7 +35,7 @@ internal fun UserProfileStickyTabs(
     showBack: Boolean,
     onBack: () -> Unit,
     onSelected: (UserProfileState.Tab) -> Unit,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     Row(
         modifier = Modifier

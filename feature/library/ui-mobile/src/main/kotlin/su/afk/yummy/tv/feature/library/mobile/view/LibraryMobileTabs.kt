@@ -17,7 +17,7 @@ internal fun LibraryMobileTabs(
     tabCounts: Map<LibraryTab, Int?>,
     onSelected: (LibraryTab) -> Unit,
     modifier: Modifier = Modifier,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileChipTabs(
         tabs = tabs.map { tab ->

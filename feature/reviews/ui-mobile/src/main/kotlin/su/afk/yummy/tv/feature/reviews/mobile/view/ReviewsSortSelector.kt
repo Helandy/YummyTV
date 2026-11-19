@@ -19,7 +19,7 @@ internal fun ReviewsSortSelector(
     selectedSort: ReviewSort,
     onSortSelected: (ReviewSort) -> Unit,
     modifier: Modifier = Modifier,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileTextTabs(
         titles = sorts.map { stringResource(it.labelRes()) },

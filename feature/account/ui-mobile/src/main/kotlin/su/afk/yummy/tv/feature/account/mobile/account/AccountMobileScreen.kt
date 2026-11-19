@@ -384,7 +384,7 @@ fun AccountMobileScreen(
                         selected = state.selectedTab,
                         unreadCount = state.unreadNotificationCount,
                         onSelected = { tab -> tabsState.selectPage(accountTabs.indexOf(tab)) },
-                        transition = tabsState.tabTransition,
+                        transition = tabsState::tabTransition,
                     )
                 }
                 // Ошибку открытия уведомления показываем тостом, а не блоком с «Повторить».

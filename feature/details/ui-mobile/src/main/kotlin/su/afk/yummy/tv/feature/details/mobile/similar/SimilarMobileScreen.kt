@@ -80,7 +80,7 @@ fun SimilarMobileScreen(
             SimilarSourceTabs(
                 fromAi = state.fromAi,
                 onSourceSelected = { fromAi -> tabsState.selectPage(fromAi.toSimilarSourcePage()) },
-                transition = tabsState.tabTransition,
+                transition = tabsState::tabTransition,
             )
 
             MobileSimilarRecommendationVisibilityButton(

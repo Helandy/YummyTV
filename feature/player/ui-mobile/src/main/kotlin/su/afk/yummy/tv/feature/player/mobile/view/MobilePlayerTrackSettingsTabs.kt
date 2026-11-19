@@ -2,9 +2,7 @@ package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -12,6 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileSegmentedTabs
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabColorText
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 
@@ -23,7 +22,7 @@ internal fun MobilePlayerTrackSettingsTabs(
     onTabSelected: (MobilePlayerTrackSettingsTab) -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileSegmentedTabs(
         tabCount = tabs.size,
@@ -32,10 +31,10 @@ internal fun MobilePlayerTrackSettingsTabs(
         modifier = modifier,
         transition = transition,
         equalWeight = !compact,
-    ) { index, _ ->
-        Text(
+    ) { index, _, contentColor ->
+        MobileTabColorText(
             text = labelFor(tabs[index]),
-            color = LocalContentColor.current,
+            color = contentColor,
             style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,

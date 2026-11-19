@@ -89,7 +89,7 @@ fun PostsMobileScreen(
                         onSelected = tabsState::selectPage,
                         modifier = Modifier.weight(1f),
                         scrollable = true,
-                        transition = tabsState.tabTransition,
+                        transition = tabsState::tabTransition,
                     )
                     MobileSortDropdown(
                         items = sorts,

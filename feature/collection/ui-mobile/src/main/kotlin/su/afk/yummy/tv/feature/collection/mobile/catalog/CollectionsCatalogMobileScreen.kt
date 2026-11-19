@@ -116,7 +116,7 @@ fun CollectionsCatalogMobileScreen(
             CollectionsSortSelector(
                 selectedSort = state.sort,
                 onSortSelected = { tabsState.selectPage(sorts.indexOf(it)) },
-                transition = tabsState.tabTransition,
+                transition = tabsState::tabTransition,
             )
         },
         isLoading = refreshState is LoadState.Loading && pagingItems.itemCount == 0,

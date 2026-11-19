@@ -15,7 +15,7 @@ internal fun SimilarSourceTabs(
     fromAi: Boolean,
     onSourceSelected: (fromAi: Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileTextTabs(
         titles = listOf(

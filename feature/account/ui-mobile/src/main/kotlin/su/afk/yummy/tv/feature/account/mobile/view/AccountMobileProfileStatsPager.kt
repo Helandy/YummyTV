@@ -2,16 +2,13 @@
 
 package su.afk.yummy.tv.feature.account.mobile.view
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
@@ -22,7 +19,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -94,6 +93,7 @@ internal fun AccountMobileProfileStatsPager(
     }
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
+    val pageCount = pages.size
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -111,30 +111,44 @@ internal fun AccountMobileProfileStatsPager(
         if (isStatsLoading && stats == null) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
-        if (pages.size > 1) {
-            val statsTransition = pagerState.asMobileTabTransition()
+        if (pageCount > 1) {
             val activeColor = MaterialTheme.colorScheme.primary
             val inactiveColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(DOT_HEIGHT),
             ) {
-                pages.forEachIndexed { index, _ ->
+                val statsTransition = pagerState.asMobileTabTransition()
+                val inactiveWidthPx = INACTIVE_DOT_WIDTH.toPx()
+                val widthDeltaPx = ACTIVE_DOT_WIDTH.toPx() - inactiveWidthPx
+                val spacingPx = DOT_SPACING.toPx()
+                val dotHeightPx = size.height
+                val cornerRadius = CornerRadius(dotHeightPx / 2f)
+
+                var totalWidthPx = spacingPx * (pageCount - 1)
+                for (index in 0 until pageCount) {
+                    totalWidthPx += inactiveWidthPx + widthDeltaPx * statsTransition.selectionFraction(index)
+                }
+
+                var left = (size.width - totalWidthPx) / 2f
+                for (index in 0 until pageCount) {
                     val fraction = statsTransition.selectionFraction(index)
-                    val widthDp = INACTIVE_DOT_WIDTH_DP + (ACTIVE_DOT_WIDTH_DP - INACTIVE_DOT_WIDTH_DP) * fraction
-                    Box(
-                        modifier = Modifier
-                            .size(widthDp.dp, DOT_HEIGHT)
-                            .clip(CircleShape)
-                            .background(lerp(inactiveColor, activeColor, fraction)),
+                    val dotWidthPx = inactiveWidthPx + widthDeltaPx * fraction
+                    drawRoundRect(
+                        color = lerp(inactiveColor, activeColor, fraction),
+                        topLeft = Offset(left, 0f),
+                        size = Size(dotWidthPx, dotHeightPx),
+                        cornerRadius = cornerRadius,
                     )
+                    left += dotWidthPx + spacingPx
                 }
             }
         }
     }
 }
 
-private const val INACTIVE_DOT_WIDTH_DP = 7f
-private const val ACTIVE_DOT_WIDTH_DP = 22f
+private val INACTIVE_DOT_WIDTH = 7.dp
+private val ACTIVE_DOT_WIDTH = 22.dp
 private val DOT_HEIGHT = 7.dp
+private val DOT_SPACING = 6.dp

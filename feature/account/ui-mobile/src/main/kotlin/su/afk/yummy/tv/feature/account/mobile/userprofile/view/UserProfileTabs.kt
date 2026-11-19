@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Badge
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileScrollableTabs
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabColorText
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.label
@@ -30,7 +30,7 @@ internal fun UserProfileTabs(
     selected: UserProfileState.Tab,
     profile: UserProfileSummary?,
     onSelected: (UserProfileState.Tab) -> Unit,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileScrollableTabs(
         tabCount = tabs.size,
@@ -42,7 +42,7 @@ internal fun UserProfileTabs(
         transition = transition,
         edgePadding = 8.dp,
         showDivider = true,
-    ) { index, _ ->
+    ) { index, contentColor ->
         val tab = tabs[index]
         val count = tab.contentCount(profile)
         Row(
@@ -50,9 +50,9 @@ internal fun UserProfileTabs(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(
+            MobileTabColorText(
                 text = tab.label(),
-                color = LocalContentColor.current,
+                color = contentColor,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
