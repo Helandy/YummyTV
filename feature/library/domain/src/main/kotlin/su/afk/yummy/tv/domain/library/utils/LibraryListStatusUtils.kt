@@ -30,3 +30,12 @@ fun List<LibraryItem>.toUserRatings(): Map<Int, Int> = buildMap {
         put(item.animeId, rating)
     }
 }
+
+/** Множество `animeId` тайтлов, добавленных в любой пользовательский список или в избранное. */
+fun List<LibraryItem>.toLibraryAnimeIds(): Set<Int> = buildSet {
+    for (item in this@toLibraryAnimeIds) {
+        if (item.isFavorite || listIdToCardListStatus(item.listId) != null) {
+            add(item.animeId)
+        }
+    }
+}
