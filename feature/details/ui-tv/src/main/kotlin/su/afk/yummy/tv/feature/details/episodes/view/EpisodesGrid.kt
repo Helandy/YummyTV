@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.Alignment
-import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchFilter
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -44,11 +43,12 @@ import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.TvTopAnchoredFocusInset
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.focus.tvGridHeaderBringIntoView
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
@@ -58,6 +58,7 @@ import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeRange
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchFilter
 import su.afk.yummy.tv.feature.details.episodes.utils.rangeIndexForEpisodeIndex
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
@@ -83,12 +84,6 @@ internal fun EpisodesGrid(
 ) {
     val episodeKeys = remember(episodeGroups) { episodeGroups.map { it.episode } }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
-    val initialGridIndex = if (lastFocusedIndex == 0 && episodeRanges.isNotEmpty()) {
-        0
-    } else {
-        (lastFocusedIndex + 1).coerceAtLeast(0)
-    }
-    val gridState = rememberLazyGridState(initialFirstVisibleItemIndex = initialGridIndex)
     val gridFocusRequester = remember { FocusRequester() }
     val focusRequesters = remember(episodeKeys) { List(episodeGroups.size) { FocusRequester() } }
     val scope = rememberCoroutineScope()
@@ -96,34 +91,6 @@ internal fun EpisodesGrid(
     var isRestoringFocus by remember { mutableStateOf(false) }
     val selectedRangeIndex = remember(episodeRanges, lastFocusedIndex) {
         episodeRanges.rangeIndexForEpisodeIndex(lastFocusedIndex)
-    }
-
-    fun requestEpisodeFocus(index: Int, scrollToEpisode: Boolean = true, scrollToHeader: Boolean = false) {
-        if (episodeGroups.isEmpty()) return
-        val target = index.coerceIn(0, episodeGroups.lastIndex)
-        lastFocusedIndex = target
-        isRestoringFocus = true
-        scope.launch {
-            try {
-                val gridIndex = target + 1
-                if (scrollToEpisode) {
-                    gridState.scrollToItem(if (scrollToHeader) 0 else gridIndex)
-                    withTimeoutOrNull(500L) {
-                        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex } }
-                            .first { it }
-                    }
-                }
-                focusRequesters.getOrNull(target)?.let { requestFocusUntilTimeout(it) }
-            } finally {
-                isRestoringFocus = false
-            }
-        }
-    }
-
-    LaunchedEffect(restoreFocusRequest) {
-        if (restoreFocusRequest > 0) {
-            requestEpisodeFocus(lastFocusedIndex, scrollToEpisode = false)
-        }
     }
 
     // Панель имеет смысл только когда у тайтла вообще есть данные серий из API
@@ -152,9 +119,56 @@ internal fun EpisodesGrid(
                 (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
                     (EpisodeCardMinWidth.value + horizontalSpacing.value)).toInt()
                     .coerceAtLeast(1)
+            // Для любой серии первого ряда стартуем с шапки (index 0): так сразу видны заголовок,
+            // фильтр и чипы диапазонов, а при возврате из плеера на первый ряд нет скачка 1 → 0.
+            // Для серий ниже первого ряда стартуем сразу с нужной карточки (lastFocusedIndex + 1).
+            val initialGridIndex = if (lastFocusedIndex < gridColumnCount) {
+                0
+            } else {
+                (lastFocusedIndex + 1).coerceAtLeast(0)
+            }
+            val gridState = rememberLazyGridState(initialFirstVisibleItemIndex = initialGridIndex)
             // Верхний отступ уже дала панель описания
             val gridTopPadding = if (showEpisodeInfoPanel) 8.dp else TvScreenPadding.Vertical
             val gridStartExtent = rememberTvGridStartExtent(gridTopPadding, TvCardSpacing.Vertical)
+
+            fun requestEpisodeFocus(index: Int, scrollToEpisode: Boolean = true) {
+                if (episodeGroups.isEmpty()) return
+                val target = index.coerceIn(0, episodeGroups.lastIndex)
+                lastFocusedIndex = target
+                isRestoringFocus = true
+                scope.launch {
+                    try {
+                        val gridIndex = target + 1
+                        if (scrollToEpisode) {
+                            val scrollTarget = if (target < gridColumnCount) 0 else gridIndex
+                            val isAtHeader = gridState.firstVisibleItemIndex == 0 &&
+                                gridState.firstVisibleItemScrollOffset == 0
+                            val isTargetVisible = gridState.layoutInfo.visibleItemsInfo.any {
+                                it.index == gridIndex
+                            }
+                            val shouldScroll = if (scrollTarget == 0) !isAtHeader else !isTargetVisible
+                            if (shouldScroll) {
+                                gridState.scrollToItem(scrollTarget)
+                                withTimeoutOrNull(500L) {
+                                    snapshotFlow {
+                                        gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex }
+                                    }.first { it }
+                                }
+                            }
+                        }
+                        focusRequesters.getOrNull(target)?.let { requestFocusUntilTimeout(it) }
+                    } finally {
+                        isRestoringFocus = false
+                    }
+                }
+            }
+
+            LaunchedEffect(restoreFocusRequest) {
+                if (restoreFocusRequest > 0) {
+                    requestEpisodeFocus(lastFocusedIndex, scrollToEpisode = false)
+                }
+            }
 
             CompositionLocalProvider(
                 LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
@@ -195,6 +209,7 @@ internal fun EpisodesGrid(
                     item(span = { GridItemSpan(maxLineSpan) }, contentType = { "header" }) {
                         Column(
                             modifier = gridStartExtent.measure
+                                .tvGridHeaderBringIntoView()
                                 .fillMaxWidth()
                                 .padding(bottom = 2.dp),
                         ) {
@@ -228,7 +243,6 @@ internal fun EpisodesGrid(
                                         requestEpisodeFocus(
                                             index = range.startIndex,
                                             scrollToEpisode = true,
-                                            scrollToHeader = range.startIndex < gridColumnCount,
                                         )
                                     },
                                     modifier = Modifier

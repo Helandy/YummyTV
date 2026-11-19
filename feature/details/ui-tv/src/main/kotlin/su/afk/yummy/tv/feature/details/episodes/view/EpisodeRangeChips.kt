@@ -23,7 +23,7 @@ import su.afk.yummy.tv.core.designsystem.focus.TvCenteredCarouselBringIntoViewSp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeRange
-import su.afk.yummy.tv.feature.details.episodes.utils.tvChipLabel
+import su.afk.yummy.tv.feature.details.episodes.utils.chipLabel
 
 /** Горизонтальная полоса чипов диапазонов (`1–50`, `51–100`, …) для длинных тайтлов на ТВ. */
 @OptIn(ExperimentalFoundationApi::class)
@@ -35,8 +35,18 @@ internal fun EpisodeRangeChips(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    val chipFocusRequesters = remember(ranges) { List(ranges.size) { FocusRequester() } }
-    val activeChipFocusRequester = chipFocusRequesters.getOrNull(selectedRangeIndex) ?: FocusRequester.Default
+    val requesterCache = remember { HashMap<Int, FocusRequester>() }
+    val chipFocusRequesters = remember(ranges) {
+        val activeKeys = ranges.mapTo(HashSet(ranges.size)) { it.startIndex }
+        requesterCache.keys.retainAll(activeKeys)
+        activeKeys.forEach { startIndex ->
+            requesterCache.getOrPut(startIndex) { FocusRequester() }
+        }
+        requesterCache.toMap()
+    }
+    val activeChipFocusRequester = ranges.getOrNull(selectedRangeIndex)
+        ?.let { chipFocusRequesters[it.startIndex] }
+        ?: FocusRequester.Default
     var rowHasFocus by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedRangeIndex, ranges.size) {
@@ -59,10 +69,12 @@ internal fun EpisodeRangeChips(
         ) {
             itemsIndexed(ranges, key = { _, range -> range.startIndex }) { index, range ->
                 TvChip(
-                    label = range.tvChipLabel(),
+                    label = range.chipLabel(),
                     selected = index == selectedRangeIndex,
                     onClick = { onRangeSelected(range) },
-                    modifier = Modifier.focusRequester(chipFocusRequesters[index]),
+                    modifier = Modifier.focusRequester(
+                        chipFocusRequesters.getValue(range.startIndex),
+                    ),
                 )
             }
         }
