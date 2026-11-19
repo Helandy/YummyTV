@@ -137,6 +137,7 @@ class SettingsViewModel @Inject internal constructor(
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
                         videoEnhancementMode = snapshot.videoEnhancementMode,
+                        keepVideoEnhancementOnFrameDrops = snapshot.keepVideoEnhancementOnFrameDrops,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
@@ -430,6 +431,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.AdaptiveVideoQualityToggled -> viewModelScope.launch {
                 settingsStore.setAdaptiveVideoQualityEnabled(!currentState.adaptiveVideoQualityEnabled)
+            }
+
+            SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled -> viewModelScope.launch {
+                settingsStore.setKeepVideoEnhancementOnFrameDrops(!currentState.keepVideoEnhancementOnFrameDrops)
             }
 
             SettingsState.Event.VolumeStabilizationToggled -> viewModelScope.launch {

@@ -34,6 +34,8 @@ internal class PlayerSettingsHandler @Inject constructor(
     val advancedPlayerVolumeEnabled: Flow<Boolean> = settingsStore.advancedPlayerVolumeEnabled
     val volumeStabilizationEnabled: Flow<Boolean> = settingsStore.volumeStabilizationEnabled
     val videoEnhancementMode: Flow<VideoEnhancementMode> = settingsStore.videoEnhancementMode
+    val keepVideoEnhancementOnFrameDrops: Flow<Boolean> =
+        settingsStore.keepVideoEnhancementOnFrameDrops
     val adaptiveVideoQualityEnabled: Flow<Boolean> = settingsStore.adaptiveVideoQualityEnabled
     val preferredVideoQuality: Flow<PreferredVideoQuality> = settingsStore.preferredVideoQuality
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings> = settingsStore.playerSubtitleStyle

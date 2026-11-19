@@ -140,6 +140,13 @@ internal fun SettingsTvPlayerContent(
             .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_keep_video_enhancement_on_drops_title),
+        hint = stringResource(R.string.settings_keep_video_enhancement_on_drops_hint),
+        enabled = state.keepVideoEnhancementOnFrameDrops,
+        onClick = { onEvent(SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled) },
+    )
+    SettingsDivider()
     var audioFocusConfirmVisible by remember { mutableStateOf(false) }
     ToggleRow(
         label = stringResource(R.string.settings_audio_focus_label),

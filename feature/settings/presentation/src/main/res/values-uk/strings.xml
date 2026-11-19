@@ -191,6 +191,8 @@
     <string name="settings_video_enhancement_sharpen">Різкість</string>
     <string name="settings_video_enhancement_quality">Anime4K</string>
     <string name="settings_video_enhancement_hint">Різкість і Anime4K обробляють кадр на GPU: налаштування зображення телевізора (режим картинки, яскравість, колір) при цьому не діють</string>
+    <string name="settings_keep_video_enhancement_on_drops_title">Не вимикати покращення при дропі кадрів</string>
+    <string name="settings_keep_video_enhancement_on_drops_hint">Покращення відео лишається ввімкненим, навіть якщо пропускаються кадри. Автоматичного вимкнення не буде</string>
     <string name="settings_audio_focus_label">Вимкнути аудіофокус</string>
     <string name="settings_audio_focus_enabled">Плеєр не реагує на перехоплення фокусу іншими застосунками. Увімкніть, якщо відтворення саме ставиться на паузу</string>
     <string name="settings_audio_focus_disabled">Плеєр ставиться на паузу або приглушується, коли фокус забирають інші застосунки</string>

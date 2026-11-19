@@ -25,6 +25,10 @@ internal object SettingsPreferenceKeys {
     val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
     val adaptiveVideoQualityEnabledKey =
         booleanPreferencesKey("adaptive_video_quality_enabled")
+
+    /** Улучшение видео не отключается автоматически из-за дропа кадров. */
+    val keepVideoEnhancementOnFrameDropsKey =
+        booleanPreferencesKey("keep_video_enhancement_on_frame_drops")
     val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     val betaUpdatesEnabledKey = booleanPreferencesKey("beta_updates_enabled")
     val appLogRecordingEnabledKey = booleanPreferencesKey("app_log_recording_enabled")

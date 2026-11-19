@@ -36,6 +36,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserU
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsSectionsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.holdToConfirmEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBlocksKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.keepVideoEnhancementOnFrameDropsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
@@ -146,6 +147,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             videoEnhancementMode = prefs.videoEnhancementMode(),
+            keepVideoEnhancementOnFrameDrops = prefs[keepVideoEnhancementOnFrameDropsKey] ?: false,
             audioFocusDisabled = prefs[audioFocusDisabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
             browserUserAgentProfile = prefs.enum(

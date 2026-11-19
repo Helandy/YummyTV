@@ -388,7 +388,8 @@ internal fun MobileNativePlayer(
 
     PlayerVideoEnhancementOverloadEffect(
         player = player,
-        enabled = state.videoEnhancementMode != VideoEnhancementMode.OFF,
+        enabled = state.videoEnhancementMode != VideoEnhancementMode.OFF &&
+            !state.keepVideoEnhancementOnFrameDrops,
         onEvent = onEvent,
     )
 

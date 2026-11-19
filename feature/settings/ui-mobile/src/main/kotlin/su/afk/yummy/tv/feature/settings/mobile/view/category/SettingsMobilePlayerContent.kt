@@ -125,6 +125,12 @@ internal fun SettingsMobilePlayerContent(
                     onEvent(SettingsState.Event.VideoEnhancementModeSelected(VideoEnhancementMode.entries[it]))
                 },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_keep_video_enhancement_on_drops_title),
+                hint = stringResource(R.string.settings_keep_video_enhancement_on_drops_hint),
+                enabled = state.keepVideoEnhancementOnFrameDrops,
+                onClick = { onEvent(SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {
             SettingsMobileToggleRow(

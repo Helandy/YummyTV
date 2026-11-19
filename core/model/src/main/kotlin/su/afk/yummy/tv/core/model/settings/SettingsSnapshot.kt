@@ -32,6 +32,7 @@ data class SettingsSnapshot(
     val advancedPlayerVolumeEnabled: Boolean,
     val volumeStabilizationEnabled: Boolean,
     val videoEnhancementMode: VideoEnhancementMode = VideoEnhancementMode.OFF,
+    val keepVideoEnhancementOnFrameDrops: Boolean = false,
     val audioFocusDisabled: Boolean = false,
     val playerBufferProfile: PlayerBufferProfile,
     val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,

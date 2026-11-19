@@ -92,6 +92,7 @@ class SettingsState {
         val volumeStabilizationEnabled: Boolean = false,
         /** Улучшение картинки в плеере: выключено, резкость или Anime4K. */
         val videoEnhancementMode: VideoEnhancementMode = VideoEnhancementMode.OFF,
+        val keepVideoEnhancementOnFrameDrops: Boolean = false,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
@@ -187,6 +188,9 @@ class SettingsState {
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
 
         data object AdaptiveVideoQualityToggled : Event
+
+        /** Улучшение видео не отключается автоматически при дропе кадров. */
+        data object KeepVideoEnhancementOnFrameDropsToggled : Event
 
         /** Пользователь выбрал размер буфера плеера. */
         data class PlayerBufferProfileSelected(val profile: PlayerBufferProfile) : Event

@@ -46,6 +46,7 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(advancedPlayerVolumeEnabled) { copy(advancedPlayerVolumeEnabled = it) }
             host.bind(volumeStabilizationEnabled) { copy(volumeStabilizationEnabled = it) }
             host.bind(videoEnhancementMode) { copy(videoEnhancementMode = it) }
+            host.bind(keepVideoEnhancementOnFrameDrops) { copy(keepVideoEnhancementOnFrameDrops = it) }
             host.bind(adaptiveVideoQualityEnabled) { copy(adaptiveQualityEnabled = it) }
             host.bind(preferredVideoQuality) {
                 copy(adaptiveCeilingHeight = it.height ?: QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT)
