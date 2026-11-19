@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -27,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -41,6 +46,7 @@ import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
+import su.afk.yummy.tv.feature.details.episodes.utils.rangeIndexForEpisodeIndex
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.representativeVideo
@@ -51,6 +57,7 @@ import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadQuali
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadedActionSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDubbingDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeMobileCard
+import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeRangeMobileChips
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeWatchFilterAction
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodesMobileSkeleton
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -72,6 +79,13 @@ fun EpisodesMobileScreen(
     onEvent: (EpisodesState.Event) -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val episodesListState = rememberLazyListState()
+    val selectedRangeIndex by remember(state.episodeRanges, episodesListState) {
+        derivedStateOf {
+            state.episodeRanges.rangeIndexForEpisodeIndex(episodesListState.firstVisibleItemIndex)
+        }
+    }
     val notificationPermissionGate = rememberNotificationPermissionGate()
     effect.collectAsEffect { event ->
         when (event) {
@@ -90,7 +104,10 @@ fun EpisodesMobileScreen(
                     if (state.videosState is VideosUiState.Content) {
                         EpisodeWatchFilterAction(
                             selected = state.watchFilter,
-                            onSelected = { onEvent(EpisodesState.Event.WatchFilterSelected(it)) },
+                            onSelected = { filter ->
+                                scope.launch { episodesListState.scrollToItem(0) }
+                                onEvent(EpisodesState.Event.WatchFilterSelected(filter))
+                            },
                         )
                     }
                 },
@@ -111,6 +128,16 @@ fun EpisodesMobileScreen(
                 return@MobileStateContent
             }
             Column(modifier = Modifier.mobileContentMaxWidth().stateChangeFade(episodesFade)) {
+                if (state.episodeRanges.isNotEmpty()) {
+                    EpisodeRangeMobileChips(
+                        ranges = state.episodeRanges,
+                        selectedRangeIndex = selectedRangeIndex,
+                        onRangeSelected = { range ->
+                            scope.launch { episodesListState.scrollToItem(range.startIndex) }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
                 if (state.visibleEpisodeGroups.isEmpty()) {
                     Text(
                         text = stringResource(R.string.details_episodes_filter_empty),
@@ -123,6 +150,7 @@ fun EpisodesMobileScreen(
                     )
                 }
                 LazyColumn(
+                    state = episodesListState,
                     modifier = Modifier
                         .weight(1f)
                         .navigationBarsPadding(),
