@@ -66,6 +66,7 @@ import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadPrepareRe
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchLaterHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
 import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeGroups
+import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeRanges
 import su.afk.yummy.tv.feature.details.episodes.utils.filterEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.isActive
 import su.afk.yummy.tv.feature.details.episodes.utils.resolveDownloadStatuses
@@ -598,8 +599,13 @@ class EpisodesViewModel @AssistedInject internal constructor(
         setState { copy(watchProgress = buildWatchProgressIndex(serverVideos)).withVisibleGroups() }
     }
 
-    private fun EpisodesState.State.withVisibleGroups(): EpisodesState.State =
-        copy(visibleEpisodeGroups = filterEpisodeGroups(episodeGroups, watchProgress, watchFilter))
+    private fun EpisodesState.State.withVisibleGroups(): EpisodesState.State {
+        val visible = filterEpisodeGroups(episodeGroups, watchProgress, watchFilter)
+        return copy(
+            visibleEpisodeGroups = visible,
+            episodeRanges = buildEpisodeRanges(visible),
+        )
+    }
 
     private fun buildWatchProgressIndex(
         videos: List<AnimeVideo>,
