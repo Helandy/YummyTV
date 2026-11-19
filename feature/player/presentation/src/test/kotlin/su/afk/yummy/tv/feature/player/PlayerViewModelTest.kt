@@ -103,6 +103,25 @@ class PlayerViewModelTest : BaseUnitTest() {
         )
     }
 
+    /** Поток Kodik: у каждого качества свой HLS-плейлист, значит играет синтетический master. */
+    private fun useKodikStream(selected: String) {
+        val qualities = linkedMapOf(
+            "480p" to "https://cdn.test/v/480.mp4:hls:manifest.m3u8",
+            "720p" to "https://cdn.test/v/720.mp4:hls:manifest.m3u8",
+            "1080p" to "https://cdn.test/v/1080.mp4:hls:manifest.m3u8",
+        )
+        coEvery {
+            sourceStreamHandler.resolveStream(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns PlayerStreamLoadResult.State(
+            state = streamState.copy(
+                streamUrl = qualities.getValue(selected),
+                selectedQuality = selected,
+                streamQualityMap = qualities,
+            ),
+            consumedDestinationResume = false,
+        )
+    }
+
     private fun createViewModel(dest: PlayerDestination = dest()) = PlayerViewModel(
         dest = dest,
         errorHandler = errorHandler,
@@ -493,6 +512,46 @@ class PlayerViewModelTest : BaseUnitTest() {
         assertEquals("1080p", vm.currentState.selectedQuality)
         assertEquals(12_000L, vm.currentState.resumeFromMs)
         verify(exactly = 1) { allohaSource.onQualitySelected("1080p") }
+    }
+
+    @Test
+    fun `raising the adaptive limit lifts the master ceiling at once`() {
+        useKodikStream(selected = "480p")
+        val vm = createViewModel()
+
+        vm.setEvent(PlayerState.Event.AdaptiveQualityLimitBestSelected)
+
+        assertEquals("1080p", vm.currentState.selectedQuality)
+    }
+
+    @Test
+    fun `raising the limit to a middle step lifts the ceiling only that far`() {
+        useKodikStream(selected = "480p")
+        val vm = createViewModel()
+
+        vm.setEvent(PlayerState.Event.AdaptiveQualityLimitSelected("720p", currentPosMs = 5_000L))
+
+        assertEquals("720p", vm.currentState.selectedQuality)
+    }
+
+    @Test
+    fun `raising the limit does nothing after a manual quality choice`() {
+        useKodikStream(selected = "720p")
+        val vm = createViewModel()
+        vm.setEvent(PlayerState.Event.QualitySelected("480p", currentPosMs = 1_000L, auto = false))
+
+        vm.setEvent(PlayerState.Event.AdaptiveQualityLimitBestSelected)
+
+        assertEquals("480p", vm.currentState.selectedQuality)
+    }
+
+    @Test
+    fun `raising the limit does not touch a source without a master`() {
+        val vm = createViewModel()
+
+        vm.setEvent(PlayerState.Event.AdaptiveQualityLimitBestSelected)
+
+        assertEquals("720p", vm.currentState.selectedQuality)
     }
 
     @Test
