@@ -12,14 +12,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeRange
-import su.afk.yummy.tv.feature.details.mobile.episodes.utils.mobileChipLabel
+import su.afk.yummy.tv.feature.details.episodes.utils.chipLabel
 
 /** Горизонтальная полоса чипов диапазонов (`1–50`, `51–100`, …) для длинных тайтлов. */
 @Composable
 internal fun EpisodeRangeMobileChips(
     ranges: List<EpisodeRange>,
     selectedRangeIndex: Int,
-    onRangeSelected: (EpisodeRange) -> Unit,
+    onRangeSelected: (index: Int, range: EpisodeRange) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -39,8 +39,8 @@ internal fun EpisodeRangeMobileChips(
         itemsIndexed(ranges, key = { _, range -> range.startIndex }) { index, range ->
             FilterChip(
                 selected = index == selectedRangeIndex,
-                onClick = { onRangeSelected(range) },
-                label = { Text(text = range.mobileChipLabel(), maxLines = 1) },
+                onClick = { onRangeSelected(index, range) },
+                label = { Text(text = range.chipLabel(), maxLines = 1) },
             )
         }
     }
