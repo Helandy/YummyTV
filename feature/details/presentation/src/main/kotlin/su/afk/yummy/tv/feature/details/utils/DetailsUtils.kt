@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.utils
 import su.afk.yummy.tv.core.common.anime.isOngoingAnimeStatus
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
+import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimePoster
@@ -88,7 +89,8 @@ private fun List<PlayerVideoSource>.selectNextEpisodeAfter(
 private fun List<PlayerVideoSource>.findProgressVideo(
     entry: AnimeWatchProgress,
 ): PlayerVideoSource? =
-    firstOrNull { entry.videoId > 0 && it.id == entry.videoId }
+    firstOrNull { entry.episodeUrl.isExtraSourceUrl() && it.iframeUrl == entry.episodeUrl }
+        ?: firstOrNull { entry.videoId > 0 && it.id == entry.videoId }
         ?: firstOrNull { entry.episodeUrl.isNotBlank() && it.iframeUrl == entry.episodeUrl }
         ?: firstOrNull {
             !entry.episode.isPlaceholderEpisode() &&

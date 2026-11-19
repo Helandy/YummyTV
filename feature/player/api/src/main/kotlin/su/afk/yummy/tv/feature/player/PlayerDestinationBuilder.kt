@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.player
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.episode.isPlaceholderEpisode
+import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.common.player.isSupportedPlayerUrl
 
@@ -48,7 +49,10 @@ fun List<PlayerVideoSource>.selectContinueWatchingVideo(
     playerName: String,
     dubbing: String,
 ): PlayerVideoSource? {
-    val exact = firstOrNull { videoId > 0 && it.id == videoId }
+    // У extra-source в прогрессе мог остаться чужой id (например, старого Kodik-видео этой серии),
+    // поэтому для `source://` сначала ищем по URL, а не по id.
+    val exact = firstOrNull { episodeUrl.isExtraSourceUrl() && it.iframeUrl == episodeUrl }
+        ?: firstOrNull { videoId > 0 && it.id == videoId }
         ?: firstOrNull { episodeUrl.isNotBlank() && it.iframeUrl == episodeUrl }
         ?: firstOrNull {
             !episode.isPlaceholderEpisode() &&
