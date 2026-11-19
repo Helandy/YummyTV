@@ -93,6 +93,7 @@ fun EpisodesTvScreen(
             state = state.videosState,
             animeId = state.animeId,
             episodeGroups = state.visibleEpisodeGroups,
+            episodeRanges = state.episodeRanges,
             watchFilter = state.watchFilter,
             onWatchFilterSelected = { onEvent(EpisodesState.Event.WatchFilterSelected(it)) },
             bestDubbing = state.bestDubbing,

@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.common.episode.episodeGroupKey
 import su.afk.yummy.tv.core.common.player.isKodikPlayerUrl
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
@@ -56,6 +57,8 @@ import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeRange
+import su.afk.yummy.tv.feature.details.episodes.utils.rangeIndexForEpisodeIndex
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -66,6 +69,7 @@ import su.afk.yummy.tv.feature.details.utils.isAlloha
 internal fun EpisodesGrid(
     animeId: Int,
     episodeGroups: List<EpisodesState.EpisodeGroup>,
+    episodeRanges: List<EpisodeRange>,
     bestDubbing: String,
     watchProgress: DetailsWatchProgressIndex,
     restoreFocusRequest: Int,
@@ -79,15 +83,22 @@ internal fun EpisodesGrid(
 ) {
     val episodeKeys = remember(episodeGroups) { episodeGroups.map { it.episode } }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
-    val gridState =
-        rememberLazyGridState(initialFirstVisibleItemIndex = (lastFocusedIndex + 1).coerceAtLeast(0))
+    val initialGridIndex = if (lastFocusedIndex == 0 && episodeRanges.isNotEmpty()) {
+        0
+    } else {
+        (lastFocusedIndex + 1).coerceAtLeast(0)
+    }
+    val gridState = rememberLazyGridState(initialFirstVisibleItemIndex = initialGridIndex)
     val gridFocusRequester = remember { FocusRequester() }
     val focusRequesters = remember(episodeKeys) { List(episodeGroups.size) { FocusRequester() } }
     val scope = rememberCoroutineScope()
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
+    val selectedRangeIndex = remember(episodeRanges, lastFocusedIndex) {
+        episodeRanges.rangeIndexForEpisodeIndex(lastFocusedIndex)
+    }
 
-    fun requestEpisodeFocus(index: Int, scrollToEpisode: Boolean = true) {
+    fun requestEpisodeFocus(index: Int, scrollToEpisode: Boolean = true, scrollToHeader: Boolean = false) {
         if (episodeGroups.isEmpty()) return
         val target = index.coerceIn(0, episodeGroups.lastIndex)
         lastFocusedIndex = target
@@ -96,11 +107,13 @@ internal fun EpisodesGrid(
             try {
                 val gridIndex = target + 1
                 if (scrollToEpisode) {
-                    gridState.scrollToItem(gridIndex)
-                    snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex } }
-                        .first { it }
+                    gridState.scrollToItem(if (scrollToHeader) 0 else gridIndex)
+                    withTimeoutOrNull(500L) {
+                        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex } }
+                            .first { it }
+                    }
                 }
-                requestFocusUntilTimeout(focusRequesters[target])
+                focusRequesters.getOrNull(target)?.let { requestFocusUntilTimeout(it) }
             } finally {
                 isRestoringFocus = false
             }
@@ -202,8 +215,25 @@ internal fun EpisodesGrid(
                                     selected = watchFilter,
                                     onSelected = { filter ->
                                         lastFocusedIndex = 0
+                                        scope.launch { gridState.scrollToItem(0) }
                                         onWatchFilterSelected(filter)
                                     },
+                                )
+                            }
+                            if (episodeRanges.isNotEmpty()) {
+                                EpisodeRangeChips(
+                                    ranges = episodeRanges,
+                                    selectedRangeIndex = selectedRangeIndex,
+                                    onRangeSelected = { range ->
+                                        requestEpisodeFocus(
+                                            index = range.startIndex,
+                                            scrollToEpisode = true,
+                                            scrollToHeader = range.startIndex < gridColumnCount,
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 12.dp),
                                 )
                             }
                             if (episodeGroups.isEmpty()) {
