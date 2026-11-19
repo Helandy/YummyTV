@@ -1,19 +1,21 @@
 package su.afk.yummy.tv.feature.schedule
 
-import su.afk.yummy.tv.core.common.coroutines.AppClock
 import androidx.navigation3.runtime.NavKey
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.common.coroutines.AppClock
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.ErrorItem
@@ -21,6 +23,10 @@ import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.domain.library.model.FAVORITE_ONLY_LIBRARY_LIST_ID
+import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.domain.library.repository.LibraryRepository
+import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryAnimeIdsUseCase
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleItem
 import su.afk.yummy.tv.domain.schedule.repository.AnimeScheduleRepository
@@ -34,6 +40,8 @@ class ScheduleViewModelTest : BaseUnitTest() {
     private val tracker: AnalyticsTracker = mockk(relaxed = true)
     private val nav: INavigationManager = mockk(relaxed = true)
     private lateinit var repository: AnimeScheduleRepository
+    private lateinit var libraryRepository: LibraryRepository
+    private lateinit var libraryFlow: MutableStateFlow<List<LibraryItem>>
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val appClock: AppClock = mockk()
 
@@ -42,7 +50,11 @@ class ScheduleViewModelTest : BaseUnitTest() {
         with(errorHandler) {
             every { parse(any(), any(), any(), any()) } returns ErrorItem(title = "title", message = "parsed message")
         }
-        repository = mockk<AnimeScheduleRepository>()
+        repository = mockk()
+        libraryFlow = MutableStateFlow(emptyList())
+        libraryRepository = mockk {
+            every { observeAll() } returns libraryFlow
+        }
         every { appClock.nowMillis() } returns 1_700_000_000_000L
         with(detailsNavigator) {
             every { getDetailsDest(any()) } answers { DetailsKey(firstArg()) }
@@ -53,6 +65,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
         errorHandler = errorHandler,
         retryStorage = retryStorage,
         getSchedule = GetAnimeScheduleUseCase(repository),
+        observeLibraryAnimeIds = ObserveLibraryAnimeIdsUseCase(libraryRepository),
         nav = nav,
         detailsNavigator = detailsNavigator,
         analytics = ScheduleAnalytics(tracker),
@@ -185,12 +198,79 @@ class ScheduleViewModelTest : BaseUnitTest() {
         assertEquals(1, createViewModel().currentState.tvSchedule.dayGroups.size)
     }
 
+    @Test
+    fun `library filter narrows schedule without extra network calls and restores on toggle off`() {
+        libraryFlow.value = listOf(
+            LibraryItem(animeId = 2, title = "watched", listId = 0),
+            LibraryItem(animeId = 3, title = "fav", listId = FAVORITE_ONLY_LIBRARY_LIST_ID, isFavorite = true),
+        )
+        givenSchedule(
+            day(animeId = 1, epochSeconds = DAY_1),
+            day(animeId = 2, epochSeconds = DAY_2),
+            day(animeId = 3, epochSeconds = DAY_2 + 60L),
+        )
+        val vm = createViewModel()
+        assertEquals(2, vm.currentState.tvSchedule.dayGroups.size)
+
+        vm.setEvent(ScheduleState.Event.InLibraryFilterToggled)
+
+        assertTrue(vm.currentState.onlyInLibrary)
+        assertEquals(1, vm.currentState.tvSchedule.dayGroups.size)
+        assertEquals(
+            listOf(2, 3),
+            vm.currentState.tvSchedule.selectedGroup?.items?.map { it.item.animeId },
+        )
+
+        vm.setEvent(ScheduleState.Event.InLibraryFilterToggled)
+
+        assertFalse(vm.currentState.onlyInLibrary)
+        assertEquals(2, vm.currentState.tvSchedule.dayGroups.size)
+        coVerify(exactly = 1) { repository.getSchedule() }
+    }
+
+    @Test
+    fun `active library filter reacts to local library updates`() {
+        givenSchedule(
+            day(animeId = 10, epochSeconds = DAY_1),
+            day(animeId = 20, epochSeconds = DAY_2),
+        )
+        val vm = createViewModel()
+        vm.setEvent(ScheduleState.Event.InLibraryFilterToggled)
+        assertTrue(vm.currentState.tvSchedule.dayGroups.isEmpty())
+
+        libraryFlow.value = listOf(LibraryItem(animeId = 20, title = "new ongoing", listId = 0))
+
+        assertEquals(1, vm.currentState.tvSchedule.dayGroups.size)
+        assertEquals(
+            listOf(20),
+            vm.currentState.tvSchedule.selectedGroup?.items?.map { it.item.animeId },
+        )
+    }
+
+    @Test
+    fun `refresh preserves active library filter`() {
+        libraryFlow.value = listOf(LibraryItem(animeId = 2, title = "mine", listId = 0))
+        coEvery { repository.getSchedule() } returns
+            listOf(day(animeId = 1, epochSeconds = DAY_1)) andThen
+            listOf(day(animeId = 1, epochSeconds = DAY_1), day(animeId = 2, epochSeconds = DAY_2))
+        val vm = createViewModel()
+        vm.setEvent(ScheduleState.Event.InLibraryFilterToggled)
+        assertTrue(vm.currentState.tvSchedule.dayGroups.isEmpty())
+
+        vm.setEvent(ScheduleState.Event.RefreshRequested)
+
+        assertTrue(vm.currentState.onlyInLibrary)
+        assertEquals(1, vm.currentState.tvSchedule.dayGroups.size)
+        assertEquals(2, vm.currentState.tvSchedule.selectedGroup?.items?.single()?.item?.animeId)
+    }
+
     private companion object {
         const val NOW = 1_700_000_000L
         const val DAY_1 = 1_900_000_000L
         const val DAY_2 = DAY_1 + 3 * 86_400L
 
         fun day(
+            animeId: Int = 1,
             epochSeconds: Long = DAY_1,
             previousEpochSeconds: Long? = null,
             airedEpisodes: Int? = 3,
@@ -198,8 +278,8 @@ class ScheduleViewModelTest : BaseUnitTest() {
             title = "day",
             items = listOf(
                 AnimeScheduleItem(
-                    animeId = 1,
-                    title = "anime",
+                    animeId = animeId,
+                    title = "anime $animeId",
                     poster = null,
                     nextDateEpochSeconds = epochSeconds,
                     previousDateEpochSeconds = previousEpochSeconds,

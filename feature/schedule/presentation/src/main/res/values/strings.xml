@@ -14,4 +14,7 @@
     <string name="schedule_less_than_minute">less than a minute</string>
     <string name="schedule_loading">Loading schedule</string>
     <string name="schedule_empty">Schedule is empty</string>
+    <string name="schedule_filter_in_library">In library</string>
+    <string name="schedule_filter_in_library_empty">No upcoming episodes for titles in your library</string>
+    <string name="schedule_filter_show_all">Show all</string>
 </resources>

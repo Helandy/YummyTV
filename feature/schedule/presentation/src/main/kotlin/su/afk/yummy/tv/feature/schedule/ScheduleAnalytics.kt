@@ -34,6 +34,15 @@ internal class ScheduleAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь переключил фильтр «В библиотеке».
+     *
+     * Параметры: enabled.
+     */
+    fun eventLibraryFilterToggled(enabled: Boolean) {
+        tracker.track(EVENT_LIBRARY_FILTER_TOGGLED, analyticsParamsOf(PARAM_ENABLED to enabled))
+    }
+
+    /**
      * Пользователь повторил загрузку расписания.
      */
     fun eventRetry() {
@@ -51,14 +60,15 @@ internal class ScheduleAnalytics @Inject constructor(
         )
     }
 
-
     internal companion object {
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_EPOCH_DAY = "epoch_day"
+        private const val PARAM_ENABLED = "enabled"
 
         const val EVENT_SCREEN_OPENED = "schedule_screen"
         const val EVENT_ANIME_SELECTED = "schedule_anime_selected"
         const val EVENT_DATE_SELECTED = "schedule_date_selected"
+        const val EVENT_LIBRARY_FILTER_TOGGLED = "schedule_library_filter_toggled"
         const val EVENT_RETRY = "schedule_retry"
         const val EVENT_LOAD_ERROR = "schedule_load_error"
     }
