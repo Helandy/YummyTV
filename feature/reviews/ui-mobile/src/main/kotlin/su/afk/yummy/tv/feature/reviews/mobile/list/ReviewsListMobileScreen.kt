@@ -76,6 +76,7 @@ fun ReviewsListMobileScreen(
                 selectedSort = state.sort,
                 onSortSelected = { sort -> tabsState.selectPage(sorts.indexOf(sort)) },
                 modifier = Modifier.fillMaxWidth(),
+                transition = if (sorts.size > 1) tabsState.tabTransition else null,
             )
         }
 

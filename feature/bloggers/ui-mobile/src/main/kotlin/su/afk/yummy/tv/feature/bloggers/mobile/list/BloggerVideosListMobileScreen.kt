@@ -117,6 +117,7 @@ fun BloggerVideosListMobileScreen(
                     },
                     showFilters = showFilters,
                     onFiltersDismiss = { showFilters = false },
+                    sortTransition = tabsState.tabTransition,
                 )
                 MobileSwipeableTabsPager(
                     state = tabsState,

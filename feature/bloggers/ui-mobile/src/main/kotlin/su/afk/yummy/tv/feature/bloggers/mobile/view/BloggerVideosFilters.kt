@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTextTabs
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
@@ -51,6 +52,7 @@ internal fun BloggerVideosFilters(
     showFilters: Boolean,
     onFiltersDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    sortTransition: MobileTabTransition? = null,
 ) {
     val selectedCategory = state.categories.firstOrNull { it.id == state.selectedCategory }
     val selectedBlogger = state.bloggers.firstOrNull { it.id == state.selectedBloggerId }
@@ -64,6 +66,7 @@ internal fun BloggerVideosFilters(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surface),
+            transition = sortTransition,
         )
 
         if (activeFilters.isNotEmpty()) {

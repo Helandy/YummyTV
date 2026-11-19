@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.schedule.mobile.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,9 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,10 +19,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.schedule.model.ScheduleDayUi
+
+private const val INACTIVE_CONTAINER_ALPHA = 0.06f
+private const val INACTIVE_BADGE_ALPHA = 0.22f
+private const val ACTIVE_BADGE_ALPHA = 0.18f
 
 @Composable
 internal fun ScheduleMobileDateChip(
@@ -30,26 +36,35 @@ internal fun ScheduleMobileDateChip(
     selected: Boolean,
     onSelected: () -> Unit,
     modifier: Modifier = Modifier,
+    selectionFraction: Float = if (selected) 1f else 0f,
 ) {
+    val fraction = selectionFraction.coerceIn(0f, 1f)
     val shape = RoundedCornerShape(10.dp)
-    val background = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
-    }
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val inactiveOverlay = MaterialTheme.colorScheme.onSurface.copy(
+        alpha = INACTIVE_CONTAINER_ALPHA * (1f - fraction),
+    )
+    val contentColor = lerp(
+        MaterialTheme.colorScheme.onSurfaceVariant,
+        MaterialTheme.colorScheme.onPrimary,
+        fraction,
+    )
+    val badgeColor = lerp(
+        MaterialTheme.colorScheme.primary.copy(alpha = INACTIVE_BADGE_ALPHA),
+        MaterialTheme.colorScheme.onPrimary.copy(alpha = ACTIVE_BADGE_ALPHA),
+        fraction,
+    )
 
     Box(
         modifier = modifier
             .width(78.dp)
             .height(72.dp)
             .clip(shape)
-            .background(background, shape)
-            .clickable(onClick = onSelected)
+            .background(inactiveOverlay, shape)
+            .selectable(
+                selected = selected,
+                role = Role.Tab,
+                onClick = onSelected,
+            )
             .padding(8.dp),
     ) {
         Column(
@@ -73,13 +88,7 @@ internal fun ScheduleMobileDateChip(
                         .height(22.dp)
                         .widthIn(min = 22.dp)
                         .clip(RoundedCornerShape(11.dp))
-                        .background(
-                            color = if (selected) {
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f)
-                            } else {
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
-                            },
-                        )
+                        .background(color = badgeColor)
                         .padding(horizontal = 5.dp),
                     contentAlignment = Alignment.Center,
                 ) {

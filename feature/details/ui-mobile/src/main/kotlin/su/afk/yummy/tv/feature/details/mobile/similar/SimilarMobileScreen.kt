@@ -5,12 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -18,9 +14,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
@@ -43,37 +40,26 @@ private fun SimilarMobileScreenDefaultPreview() = ScreenPreviewTheme {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun SimilarMobileScreen(
-
     state: SimilarState.State,
     effect: Flow<SimilarState.Effect>,
     onEvent: (SimilarState.Event) -> Unit,
-
-    ) {
+) {
     val context = LocalContext.current
-    val pagerState = rememberPagerState(
-        initialPage = state.fromAi.toSimilarSourcePage(),
-        pageCount = { SIMILAR_SOURCE_PAGE_COUNT },
+    val tabsState = rememberMobileSwipeableTabsState(
+        selectedPage = state.fromAi.toSimilarSourcePage(),
+        pageCount = SIMILAR_SOURCE_PAGE_COUNT,
+        onPageSelected = { page ->
+            val selectedFromAi = page.toSimilarSourceFromAi()
+            if (selectedFromAi != state.fromAi) {
+                onEvent(SimilarState.Event.SourceSelected(selectedFromAi))
+            }
+        },
     )
-    val coroutineScope = rememberCoroutineScope()
 
     effect.collectAsEffect { event ->
         when (event) {
             is SimilarState.Effect.ShowToast ->
                 Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    LaunchedEffect(state.fromAi) {
-        val targetPage = state.fromAi.toSimilarSourcePage()
-        if (pagerState.currentPage != targetPage) {
-            pagerState.animateScrollToPage(targetPage)
-        }
-    }
-
-    LaunchedEffect(pagerState.currentPage) {
-        val selectedFromAi = pagerState.currentPage.toSimilarSourceFromAi()
-        if (selectedFromAi != state.fromAi) {
-            onEvent(SimilarState.Event.SourceSelected(selectedFromAi))
         }
     }
 
@@ -92,15 +78,9 @@ fun SimilarMobileScreen(
                 .navigationBarsPadding(),
         ) {
             SimilarSourceTabs(
-                fromAi = pagerState.currentPage.toSimilarSourceFromAi(),
-                onSourceSelected = { fromAi ->
-                    val targetPage = fromAi.toSimilarSourcePage()
-                    if (pagerState.currentPage != targetPage) {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(targetPage)
-                        }
-                    }
-                },
+                fromAi = state.fromAi,
+                onSourceSelected = { fromAi -> tabsState.selectPage(fromAi.toSimilarSourcePage()) },
+                transition = tabsState.tabTransition,
             )
 
             MobileSimilarRecommendationVisibilityButton(
@@ -112,8 +92,8 @@ fun SimilarMobileScreen(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
 
-            HorizontalPager(
-                state = pagerState,
+            MobileSwipeableTabsPager(
+                state = tabsState,
                 key = { page -> page },
                 modifier = Modifier.weight(1f),
             ) { page ->

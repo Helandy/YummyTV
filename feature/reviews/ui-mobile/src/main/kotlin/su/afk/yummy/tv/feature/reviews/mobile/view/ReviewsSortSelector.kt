@@ -3,12 +3,11 @@ package su.afk.yummy.tv.feature.reviews.mobile.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTextTabs
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
@@ -20,6 +19,7 @@ internal fun ReviewsSortSelector(
     selectedSort: ReviewSort,
     onSortSelected: (ReviewSort) -> Unit,
     modifier: Modifier = Modifier,
+    transition: MobileTabTransition? = null,
 ) {
     MobileTextTabs(
         titles = sorts.map { stringResource(it.labelRes()) },
@@ -28,6 +28,7 @@ internal fun ReviewsSortSelector(
         modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface),
+        transition = transition,
     )
 }
 
