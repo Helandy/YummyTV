@@ -125,28 +125,6 @@ internal fun SettingsTvPlayerContent(
         )
     }
     SettingsDivider()
-    val enhancementModes = VideoEnhancementMode.entries
-    SettingsSliderRow(
-        label = stringResource(R.string.settings_video_enhancement_label),
-        valueText = state.videoEnhancementMode.label(),
-        hint = stringResource(R.string.settings_video_enhancement_hint),
-        value = enhancementModes.indexOf(state.videoEnhancementMode).coerceAtLeast(0),
-        valueRange = 0..enhancementModes.lastIndex,
-        enabled = true,
-        onValueChange = {
-            onEvent(SettingsState.Event.VideoEnhancementModeSelected(enhancementModes[it]))
-        },
-        modifier = Modifier
-            .restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    SettingsDivider()
-    ToggleRow(
-        label = stringResource(R.string.settings_keep_video_enhancement_on_drops_title),
-        hint = stringResource(R.string.settings_keep_video_enhancement_on_drops_hint),
-        enabled = state.keepVideoEnhancementOnFrameDrops,
-        onClick = { onEvent(SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled) },
-    )
-    SettingsDivider()
     var audioFocusConfirmVisible by remember { mutableStateOf(false) }
     ToggleRow(
         label = stringResource(R.string.settings_audio_focus_label),
@@ -173,6 +151,29 @@ internal fun SettingsTvPlayerContent(
             onDismiss = { audioFocusConfirmVisible = false },
         )
     }
+    SettingsBlockGap()
+    SettingsSectionTitle(text = stringResource(R.string.settings_section_video))
+    val enhancementModes = VideoEnhancementMode.entries
+    SettingsSliderRow(
+        label = stringResource(R.string.settings_video_enhancement_label),
+        valueText = state.videoEnhancementMode.label(),
+        hint = stringResource(R.string.settings_video_enhancement_hint),
+        value = enhancementModes.indexOf(state.videoEnhancementMode).coerceAtLeast(0),
+        valueRange = 0..enhancementModes.lastIndex,
+        enabled = true,
+        onValueChange = {
+            onEvent(SettingsState.Event.VideoEnhancementModeSelected(enhancementModes[it]))
+        },
+        modifier = Modifier
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_keep_video_enhancement_on_drops_title),
+        hint = stringResource(R.string.settings_keep_video_enhancement_on_drops_hint),
+        enabled = state.keepVideoEnhancementOnFrameDrops,
+        onClick = { onEvent(SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled) },
+    )
     if (state.tvPlayerControlsTutorialDismissed) {
         SettingsBlockGap()
         SettingsSectionTitle(text = stringResource(R.string.settings_mobile_section_player_advanced))

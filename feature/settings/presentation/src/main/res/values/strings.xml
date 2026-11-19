@@ -317,6 +317,7 @@
     <string name="settings_library_tab_postponed">Postponed</string>
     <string name="settings_library_tab_dropped">Dropped</string>
     <string name="settings_tv_section_sound">Sound</string>
+    <string name="settings_section_video">Video</string>
     <string name="settings_tab_interface">Interface</string>
     <string name="settings_tab_search">Search</string>
     <string name="settings_tab_top_title_year">Title year</string>

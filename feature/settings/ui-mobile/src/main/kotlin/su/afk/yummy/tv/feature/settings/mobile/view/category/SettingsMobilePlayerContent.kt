@@ -114,6 +114,8 @@ internal fun SettingsMobilePlayerContent(
                     onClick = { onEvent(SettingsState.Event.VolumeStabilizationToggled) },
                 )
             }
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_section_video)) {
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_video_enhancement_label),
                 valueLabel = { VideoEnhancementMode.entries[it].label() },

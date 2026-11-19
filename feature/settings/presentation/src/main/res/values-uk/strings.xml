@@ -314,6 +314,7 @@
     <string name="settings_library_tab_postponed">Відкладено</string>
     <string name="settings_library_tab_dropped">Кинуто</string>
     <string name="settings_tv_section_sound">Звук</string>
+    <string name="settings_section_video">Відео</string>
     <string name="settings_tab_interface">Інтерфейс</string>
     <string name="settings_tab_search">Пошук</string>
     <string name="settings_tab_top_title_year">Рік у тайтлів</string>
