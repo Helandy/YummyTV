@@ -68,6 +68,79 @@ class EpisodeRangeUtilsTest {
         assertEquals(2, ranges.rangeIndexForEpisodeIndex(500))
     }
 
+    @Test
+    fun `finds range index on boundaries and single-episode uneven tail with chunkSize 2`() {
+        val ranges = buildEpisodeRanges(groups(1..5), chunkSize = 2)
+
+        assertEquals(0, ranges.rangeIndexForEpisodeIndex(-1))
+        assertEquals(0, ranges.rangeIndexForEpisodeIndex(0))
+        assertEquals(0, ranges.rangeIndexForEpisodeIndex(1))
+        assertEquals(1, ranges.rangeIndexForEpisodeIndex(2))
+        assertEquals(1, ranges.rangeIndexForEpisodeIndex(3))
+        assertEquals(2, ranges.rangeIndexForEpisodeIndex(4))
+        assertEquals(2, ranges.rangeIndexForEpisodeIndex(10))
+    }
+
+    @Test
+    fun `selects trailing single-episode range when list is scrolled to bottom`() {
+        // 101 серия: диапазоны [0..49], [50..99], [100..100]; у нижней границы firstVisibleItemIndex ~ 93.
+        val ranges = buildEpisodeRanges(groups(1..101))
+
+        assertEquals(
+            2,
+            ranges.resolveVisibleRangeIndex(
+                firstVisibleItemIndex = 93,
+                canScrollForward = false,
+                canScrollBackward = true,
+            ),
+        )
+        assertEquals(
+            1,
+            ranges.resolveVisibleRangeIndex(
+                firstVisibleItemIndex = 92,
+                canScrollForward = true,
+                canScrollBackward = true,
+            ),
+        )
+    }
+
+    @Test
+    fun `honors pinned range until cleared and handles non-scrollable viewport`() {
+        val ranges = buildEpisodeRanges(groups(1..101))
+
+        assertEquals(-1, emptyList<EpisodeRange>().resolveVisibleRangeIndex(0, canScrollForward = false))
+
+        // На высоком экране прыжок на 51–100 тоже может упереться в конец списка — должен гореть нажатый чип.
+        assertEquals(
+            1,
+            ranges.resolveVisibleRangeIndex(
+                firstVisibleItemIndex = 49,
+                canScrollForward = false,
+                canScrollBackward = true,
+                pinnedRangeIndex = 1,
+            ),
+        )
+        // Невалидный pinnedRangeIndex игнорируется и откатывается к положению скролла.
+        assertEquals(
+            2,
+            ranges.resolveVisibleRangeIndex(
+                firstVisibleItemIndex = 93,
+                canScrollForward = false,
+                canScrollBackward = true,
+                pinnedRangeIndex = 99,
+            ),
+        )
+        // Если весь список поместился без прокрутки, по умолчанию активен первый диапазон.
+        assertEquals(
+            0,
+            ranges.resolveVisibleRangeIndex(
+                firstVisibleItemIndex = 0,
+                canScrollForward = false,
+                canScrollBackward = false,
+            ),
+        )
+    }
+
     private fun groups(range: IntRange): List<EpisodeGroup> =
         range.map { n -> group(n.toString()) }
 
