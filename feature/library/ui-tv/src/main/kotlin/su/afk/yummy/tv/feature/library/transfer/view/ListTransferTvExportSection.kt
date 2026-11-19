@@ -1,12 +1,16 @@
 package su.afk.yummy.tv.feature.library.transfer.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SaveAlt
@@ -37,8 +41,9 @@ internal fun ListTransferTvExportSection(
     Column(
         modifier = modifier
             .background(colors.surfaceContainerLow, RoundedCornerShape(16.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(16.dp)
+            .focusGroup(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = stringResource(R.string.library_transfer_section_export),
@@ -46,53 +51,77 @@ internal fun ListTransferTvExportSection(
             fontWeight = FontWeight.Bold,
             color = colors.onBackground,
         )
-        Text(
-            text = stringResource(R.string.library_transfer_export_description),
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurfaceVariant,
-        )
-        Text(
-            text = stringResource(R.string.library_transfer_export_format_label),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = colors.primary,
-            modifier = Modifier.padding(top = 4.dp),
-        )
 
-        ExternalListFormat.entries.forEach { format ->
-            ListTransferTvRadioRow(
-                label = format.label(),
-                hint = format.hint(),
-                selected = state.exportFormat == format,
-                enabled = !state.isBusy,
-                onClick = { onEvent(ListTransferState.Event.ExportFormatSelected(format)) },
-            )
-        }
-
-        if (state.isExporting) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.padding(vertical = 6.dp),
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+        // На стандартном ТВ-экране (960×540dp) радиокнопки, кнопка сохранения и итог экспорта
+        // не помещаются в обычную Column — без прокрутки нижняя кнопка схлопывалась по высоте.
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false),
+            contentPadding = PaddingValues(vertical = 2.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item(key = "export_description") {
                 Text(
-                    text = stringResource(R.string.library_transfer_exporting),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = stringResource(R.string.library_transfer_export_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
                 )
             }
-        } else {
-            ListTransferTvButton(
-                label = stringResource(R.string.library_transfer_export_save),
-                icon = Icons.Outlined.SaveAlt,
-                enabled = !state.isBusy,
-                primary = true,
-                onClick = { onEvent(ListTransferState.Event.ExportSaveClicked) },
-            )
-        }
 
-        state.exportSummary?.let { summary ->
-            TvExportResultBlock(summary = summary)
+            item(key = "export_format_label") {
+                Text(
+                    text = stringResource(R.string.library_transfer_export_format_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.primary,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+
+            items(ExternalListFormat.entries, key = { "export_format_${it.name}" }) { format ->
+                ListTransferTvRadioRow(
+                    label = format.label(),
+                    hint = format.hint(),
+                    selected = state.exportFormat == format,
+                    enabled = !state.isBusy,
+                    onClick = { onEvent(ListTransferState.Event.ExportFormatSelected(format)) },
+                )
+            }
+
+            item(key = "export_action") {
+                if (state.isExporting) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                        Text(
+                            text = stringResource(R.string.library_transfer_exporting),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                } else {
+                    ListTransferTvButton(
+                        label = stringResource(R.string.library_transfer_export_save),
+                        icon = Icons.Outlined.SaveAlt,
+                        enabled = !state.isBusy,
+                        primary = true,
+                        onClick = { onEvent(ListTransferState.Event.ExportSaveClicked) },
+                    )
+                }
+            }
+
+            val summary = state.exportSummary
+            if (summary != null) {
+                item(key = "export_summary") {
+                    TvExportResultBlock(summary = summary)
+                }
+            }
         }
     }
 }

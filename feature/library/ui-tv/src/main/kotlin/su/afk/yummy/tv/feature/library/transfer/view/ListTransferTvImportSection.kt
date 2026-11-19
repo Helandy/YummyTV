@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.library.transfer.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -61,8 +62,9 @@ internal fun ListTransferTvImportSection(
     Column(
         modifier = modifier
             .background(colors.surfaceContainerLow, RoundedCornerShape(16.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(16.dp)
+            .focusGroup(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = stringResource(R.string.library_transfer_section_import),
@@ -70,17 +72,22 @@ internal fun ListTransferTvImportSection(
             fontWeight = FontWeight.Bold,
             color = colors.onBackground,
         )
-        Text(
-            text = stringResource(R.string.library_transfer_import_description),
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurfaceVariant,
-        )
 
         LazyColumn(
-            modifier = Modifier.weight(1f, fill = false),
-            contentPadding = PaddingValues(vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false),
+            contentPadding = PaddingValues(vertical = 2.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            item(key = "import_description") {
+                Text(
+                    text = stringResource(R.string.library_transfer_import_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                )
+            }
+
             item(key = "pick_file") {
                 ListTransferTvButton(
                     label = stringResource(
