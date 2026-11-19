@@ -53,6 +53,26 @@ class PlayerSyntheticMasterUtilsTest : BaseUnitTest() {
     }
 
     @Test
+    fun `ailiberty sameband and studiomir per quality playlists are supported`() {
+        val ailiberty = linkedMapOf(
+            "480p" to "https://ailiberty.top/video/playlists/eyJpdiI6.m3u8?expires=1&signature=a",
+            "720p" to "https://ailiberty.top/video/playlists/eyJpdiI7.m3u8?expires=1&signature=b",
+        )
+        val sameband = linkedMapOf(
+            "480p" to "https://sameband.studio/v/anime/BUBBLE/BUBBLE_RUS_2/index.m3u8",
+            "1080p" to "https://sameband.studio/v/anime/BUBBLE/BUBBLE_RUS_0/index.m3u8",
+        )
+        val studiomir = linkedMapOf(
+            "720p" to "https://hokage-alt.studiomir.club/animes/vids/encoded/107/1/hls/720/5a5f_720.m3u8",
+            "1080p" to "https://hokage-alt.studiomir.club/animes/vids/encoded/107/1/hls/1080/5a5f_1080.m3u8",
+        )
+
+        listOf(ailiberty, sameband, studiomir).forEach { qualities ->
+            assertTrue(buildSyntheticHlsMasterUrl(qualities)!!.isSyntheticMasterUrl())
+        }
+    }
+
+    @Test
     fun `a single quality does not need a master`() {
         assertNull(buildSyntheticHlsMasterUrl(kodik(720)))
     }
