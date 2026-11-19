@@ -23,6 +23,8 @@ private val PER_QUALITY_HLS_PATTERNS = listOf(
     Regex("""ailiberty\.top/video/playlists/[^/?#]+\.m3u8"""),
     // Sameband: sameband.studio/v/anime/<тайтл>/<файл>_<n>/index.m3u8
     Regex("""sameband\.studio/v/anime/[^?#]+/index\.m3u8"""),
+    // Anistar: sf2.an-media.org/video/<hash>/<качество>.mp4/index.m3u8 (Referer зеркала общий на все качества)
+    Regex("""an-media\.org/video/[0-9a-f]+/\d+\.mp4/index\.m3u8"""),
     // StudioMir: …/animes/vids/encoded/<тайтл>/<серия>/hls/<качество>/<hash>_<качество>.m3u8
     Regex("""studiomir\.club/animes/vids/encoded/\d+/\d+/hls/\d+/[0-9a-f]+_\d+\.m3u8"""),
 )
@@ -34,7 +36,7 @@ fun String.isSyntheticMasterUrl(): Boolean = startsWith(SYNTHETIC_MASTER_URI_PRE
  * Собирает из ссылок по качествам один HLS master (`data:`-URI), чтобы ExoPlayer переключал варианты
  * сам: общий буфер, смена на границе сегмента без перезапуска потока и свежая оценка полосы на каждом
  * сегменте. Подходит источникам, где каждое качество — отдельный media-плейлист с одинаковой сеткой
- * сегментов (Kodik, AniLibria, AiLiberty, Sameband, StudioMir); остальным — `null`.
+ * сегментов (Kodik, AniLibria, AiLiberty, Sameband, StudioMir, Anistar); остальным — `null`.
  *
  * BANDWIDTH — номинальный битрейт ступени ([QualityAdaptationPolicy.nominalBitrateBps]): реального в
  * манифестах нет. RESOLUTION обязателен: без него не работает ограничение по высоте.

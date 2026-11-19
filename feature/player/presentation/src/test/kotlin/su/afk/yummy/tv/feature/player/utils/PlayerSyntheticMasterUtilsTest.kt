@@ -73,6 +73,16 @@ class PlayerSyntheticMasterUtilsTest : BaseUnitTest() {
     }
 
     @Test
+    fun `anistar per quality playlists are supported`() {
+        val anistar = linkedMapOf(
+            "360p" to "https://sf2.an-media.org/video/343d9aa1f90fa19228d189a1d92d19b7/360.mp4/index.m3u8",
+            "720p" to "https://sf2.an-media.org/video/343d9aa1f90fa19228d189a1d92d19b7/720.mp4/index.m3u8",
+        )
+
+        assertTrue(buildSyntheticHlsMasterUrl(anistar)!!.isSyntheticMasterUrl())
+    }
+
+    @Test
     fun `a single quality does not need a master`() {
         assertNull(buildSyntheticHlsMasterUrl(kodik(720)))
     }

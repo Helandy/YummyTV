@@ -18,7 +18,8 @@
 - [tv-focus.md](tv-focus.md) — фокус и скролл на ТВ: гриды, возврат фокуса, потеря фокуса в меню.
 - [insets-and-sheets.md](insets-and-sheets.md) — нижние инсеты, `BaseScreen`, высота и отступы
   шторок.
-- [image-loading-and-memory.md](image-loading-and-memory.md) — Coil, качество постеров, Paging, ключи
+- [image-loading-and-memory.md](image-loading-and-memory.md) — Coil, качество постеров, Paging,
+  ключи
   lazy-списков, коллекции в состоянии.
 
 ## Данные и API
@@ -27,13 +28,15 @@
   расписание.
 - [network-and-auth.md](network-and-auth.md) — HTTP-клиенты, токен и режимы хранения, ошибки,
   `network_security_config`.
-- [own-backend.md](own-backend.md) — свой сервер вместо моего: API не прокси; контракт ручек TMDB (серии),
+- [own-backend.md](own-backend.md) — свой сервер вместо моего: API не прокси; контракт ручек TMDB
+  (серии),
   `availability` (озвучки) и static (постеры), настройка в `local.properties`.
 - [storage-and-cache.md](storage-and-cache.md) — Room, DataStore, offline-first и TTL, очистка,
   очередь мутаций.
 - [watch-progress.md](watch-progress.md) — путь прогресса просмотра: локальная запись, отправка на
   сервер, Watch Next, запуск с другого устройства.
-- [new-episodes.md](new-episodes.md) — «новые серии из ваших списков»: формула, блок на главной, пуши.
+- [new-episodes.md](new-episodes.md) — «новые серии из ваших списков»: формула, блок на главной,
+  пуши.
 
 ## Плеер
 
@@ -43,16 +46,19 @@
   Kodik, VK, Rutube, Sibnet, Aksor, Zedfilm.
 - [alloha-player.md](alloha-player.md) — Alloha: сессия по HTTP (Borth + bnsi), loopback-прокси,
   ротация, лестница отказа. Открывать при любой правке `source/alloha/data`.
-- [alloha-session-investigation.md](alloha-session-investigation.md) — Alloha: журнал расследования блока
+- [alloha-session-investigation.md](alloha-session-investigation.md) — Alloha: журнал расследования
+  блока
   `session_blocked` (что пробовали, из каких репозиториев, что помогло)
 - [cvh-player.md](cvh-player.md) — CVH: подписанные ссылки okcdn, переезд на резервный узел,
   User-Agent, Cast.
 - [player-buffering.md](player-buffering.md) — буфер `DefaultLoadControl`, различия Kodik, CVH и
   Alloha, диагностика остановок.
-- [task/synthetic-hls-master.md](task/synthetic-hls-master.md) — общий HLS master для Kodik и
-  AniLibria: что сделано и что осталось (приставка, другие источники, тест, упрощение политики).
+- [task/all-players-synthetic-master.md](task/all-players-synthetic-master.md) — статус перевода
+  всех
+  плееров на общий HLS master: переведено, можно перевести, нельзя.
 - [video-download.md](video-download.md) — офлайн-загрузки: воркер, стратегии, ключи кэша, экспорт.
-- [offline.md](offline.md) — поведение без сети и при нестабильной связи: что работает, что нет, как проверять.
+- [offline.md](offline.md) — поведение без сети и при нестабильной связи: что работает, что нет, как
+  проверять.
 - [continue-watching.md](continue-watching.md) — правила карточек «Продолжить просмотр».
 
 ## Аккаунт
@@ -71,7 +77,8 @@
 
 - [release-and-ci.md](release-and-ci.md) — типы сборки, CI, выпуск на GitHub, самообновление.
 - [beta-updates.md](beta-updates.md) — бета-канал: нумерация версий, публикация, выбор релиза.
-- [varioqub-config.md](varioqub-config.md) — все ключи удалённого конфига Varioqub и когда они применяются.
+- [varioqub-config.md](varioqub-config.md) — все ключи удалённого конфига Varioqub и когда они
+  применяются.
 - [baseline-profile.md](baseline-profile.md) — генерация и проверка baseline profile, бенчмарки.
 - [startup-metrics.md](startup-metrics.md) — замер холодного старта у пользователей.
 - [analytics-and-logging.md](analytics-and-logging.md) — события, ошибки, файл логов, что нельзя
