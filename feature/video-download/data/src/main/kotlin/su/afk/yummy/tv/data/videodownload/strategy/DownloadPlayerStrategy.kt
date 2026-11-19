@@ -42,6 +42,6 @@ internal interface DownloadPlayerStrategy {
     val downloadBytesPerSecond: Long? get() = DEFAULT_DOWNLOAD_BYTES_PER_SECOND
 
     companion object {
-        const val DEFAULT_DOWNLOAD_BYTES_PER_SECOND = 3L * 1024 * 1024
+        const val DEFAULT_DOWNLOAD_BYTES_PER_SECOND = 10L * 1024 * 1024
     }
 }
