@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.designsystem.mobile.tabs
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -17,8 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onPlaced
@@ -48,6 +51,7 @@ import kotlin.math.ceil
  * Если две вкладки соседствуют по горизонтали или вертикали, подсветка плавно перетекает
  * из одной плитки в другую (вместе с оттенком акцента); для несоседних плиток и переноса
  * строки используется мягкое перекрёстное затухание без диагонального пролёта.
+ * Прогресс [transition] читается только в фазе отрисовки — без покадровой рекомпозиции.
  */
 @Composable
 fun <K> MobileChipTabs(
@@ -55,12 +59,15 @@ fun <K> MobileChipTabs(
     selectedKey: K,
     onSelected: (K) -> Unit,
     modifier: Modifier = Modifier,
-    transition: MobileTabTransition? = null,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     val columns = chipTabColumns(tabs.size)
     val rows = tabs.chunked(columns)
     val selectedIndex = tabs.indexOfFirst { it.key == selectedKey }.coerceAtLeast(0)
-    val resolvedTransition = transition ?: rememberAnimatedTabTransition(selectedIndex, tabs.size)
+    val transitionProvider = transition ?: rememberAnimatedTabTransition(selectedIndex, tabs.size)
+    val activeIndex by remember(transitionProvider) {
+        derivedStateOf { transitionProvider().activeIndex }
+    }
     val rowOffsets = remember(rows.size) {
         mutableStateListOf<Offset>().apply { repeat(rows.size) { add(Offset.Zero) } }
     }
@@ -78,14 +85,13 @@ fun <K> MobileChipTabs(
                 .padding(4.dp)
                 .drawBehind {
                     if (tabs.isEmpty()) return@drawBehind
-                    val resolvedBounds = List(tabs.size) { index ->
-                        val local = itemBoundsInRow.getOrNull(index) ?: return@List null
-                        val rowOffset = rowOffsets.getOrNull(index / columns) ?: Offset.Zero
-                        local.translate(rowOffset)
-                    }
                     drawFluidPillIndicator(
-                        bounds = resolvedBounds,
-                        transition = resolvedTransition,
+                        boundsAt = { index ->
+                            itemBoundsInRow.getOrNull(index)?.translate(
+                                rowOffsets.getOrNull(index / columns) ?: Offset.Zero,
+                            )
+                        },
+                        transition = transitionProvider(),
                         cornerRadius = CornerRadius(CHIP_CORNER_RADIUS.toPx()),
                         colorForIndex = { index ->
                             tabs.getOrNull(index)?.color?.copy(alpha = SELECTED_CHIP_ALPHA) ?: Color.Transparent
@@ -109,10 +115,13 @@ fun <K> MobileChipTabs(
                 ) {
                     row.forEachIndexed { columnIndex, tab ->
                         val tabIndex = rowIndex * columns + columnIndex
+                        val selectionFraction = remember(transitionProvider, tabIndex) {
+                            { transitionProvider().selectionFraction(tabIndex) }
+                        }
                         MobileChipTabItem(
                             tab = tab,
-                            selected = tabIndex == resolvedTransition.activeIndex,
-                            selectionFraction = resolvedTransition.selectionFraction(tabIndex),
+                            selected = tabIndex == activeIndex,
+                            selectionFraction = selectionFraction,
                             onClick = { onSelected(tab.key) },
                             modifier = Modifier
                                 .weight(1f)
@@ -151,16 +160,17 @@ private val CHIP_CORNER_RADIUS = 6.dp
 private fun <K> MobileChipTabItem(
     tab: MobileChipTab<K>,
     selected: Boolean,
-    selectionFraction: Float,
+    selectionFraction: () -> Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val contentColor = lerp(
-        MaterialTheme.colorScheme.onSurfaceVariant,
-        MaterialTheme.colorScheme.onSurface,
-        selectionFraction,
-    )
+    val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val selectedColor = MaterialTheme.colorScheme.onSurface
+    val contentColor = remember(selectionFraction, unselectedColor, selectedColor) {
+        ColorProducer { lerp(unselectedColor, selectedColor, selectionFraction()) }
+    }
     val chipShape = RoundedCornerShape(CHIP_CORNER_RADIUS)
+
     Column(
         modifier = modifier
             .clip(chipShape)
@@ -186,26 +196,35 @@ private fun <K> MobileChipTabItem(
                 )
             }
             tab.count?.let { count ->
-                val badgeAlpha = lerpFloat(UNSELECTED_BADGE_ALPHA, SELECTED_BADGE_ALPHA, selectionFraction)
-                Surface(
-                    shape = RoundedCornerShape(percent = 50),
-                    color = tab.color.copy(alpha = badgeAlpha),
-                    contentColor = contentColor,
+                Box(
+                    modifier = Modifier
+                        .heightIn(min = 18.dp)
+                        .widthIn(min = 20.dp)
+                        .drawBehind {
+                            val badgeAlpha = lerpFloat(
+                                UNSELECTED_BADGE_ALPHA,
+                                SELECTED_BADGE_ALPHA,
+                                selectionFraction(),
+                            )
+                            drawRoundRect(
+                                color = tab.color.copy(alpha = badgeAlpha),
+                                cornerRadius = CornerRadius(size.height / 2f),
+                            )
+                        }
+                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(
+                    MobileTabColorText(
                         text = count.toString(),
+                        color = contentColor,
                         style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
-                        modifier = Modifier
-                            .heightIn(min = 18.dp)
-                            .widthIn(min = 20.dp)
-                            .padding(horizontal = 5.dp, vertical = 1.dp),
                     )
                 }
             }
         }
-        Text(
+        MobileTabColorText(
             text = tab.title,
             color = contentColor,
             style = MaterialTheme.typography.labelMedium,

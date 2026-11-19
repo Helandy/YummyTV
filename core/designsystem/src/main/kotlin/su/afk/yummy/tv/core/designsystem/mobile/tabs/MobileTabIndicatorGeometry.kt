@@ -20,8 +20,28 @@ import kotlin.math.pow
 /** Степень опережения/догоняния краёв при перетекании между соседними плитками. */
 private const val FLUID_STRETCH_EXPONENT = 1.6f
 
+/** Горизонтальный отрезок элемента внутри контейнера `LazyRow` в координатах холста. */
+internal data class HorizontalSpan(
+    val start: Float,
+    val end: Float,
+) {
+    val width: Float get() = (end - start).coerceAtLeast(0f)
+
+    /** Доля ширины элемента, видимая в окне `[viewportStart, viewportEnd]` (`0f..1f`). */
+    fun visibilityFraction(
+        viewportStart: Float,
+        viewportEnd: Float,
+    ): Float {
+        val w = width
+        if (w <= 0f || viewportEnd <= viewportStart) return 0f
+        val visibleStart = maxOf(start, viewportStart)
+        val visibleEnd = minOf(end, viewportEnd)
+        return ((visibleEnd - visibleStart).coerceAtLeast(0f) / w).coerceIn(0f, 1f)
+    }
+}
+
 /** Возвращает `true`, если вкладки [fromIndex] и [toIndex] стоят рядом в одном ряду. */
-fun areAdjacentRowTabs(fromIndex: Int, toIndex: Int): Boolean =
+internal fun areAdjacentRowTabs(fromIndex: Int, toIndex: Int): Boolean =
     fromIndex >= 0 && toIndex >= 0 && abs(fromIndex - toIndex) == 1
 
 /**
@@ -31,7 +51,7 @@ fun areAdjacentRowTabs(fromIndex: Int, toIndex: Int): Boolean =
  * Переход с конца одной строки в начало следующей (например, `3 -> 4` при `columns = 4`)
  * соседством не считается, чтобы индикатор не пересекал по диагонали чужие плитки.
  */
-fun areAdjacentGridTabs(
+internal fun areAdjacentGridTabs(
     fromIndex: Int,
     toIndex: Int,
     columns: Int,
@@ -49,7 +69,7 @@ fun areAdjacentGridTabs(
  * Формула симметрична по времени и направлению (`0 -> 1` при `t` совпадает с `1 -> 0` при `1 - t`),
  * включая RTL-раскладку и разворот жеста на полпути.
  */
-fun interpolateFluidSpan(
+internal fun interpolateFluidSpan(
     fromStart: Float,
     fromEnd: Float,
     toStart: Float,
@@ -80,7 +100,7 @@ fun interpolateFluidSpan(
  * Интерполирует прямоугольник индикатора между двумя соседними плитками:
  * растягивается по горизонтали для соседей по ряду и по вертикали для соседей по столбцу.
  */
-fun interpolateFluidRect(
+internal fun interpolateFluidRect(
     from: Rect,
     to: Rect,
     fraction: Float,
@@ -91,85 +111,101 @@ fun interpolateFluidRect(
 }
 
 /**
- * Рисует скруглённую плашку активной вкладки: плавно перетекает между соседними плитками
- * и мягко меняет прозрачность на месте при переходе между несоседними.
+ * Оценивает положение соседней вкладки [missingIndex], которая пока находится за краем
+ * `LazyRow`, опираясь на видимого соседа [anchor] ([anchorIndex]) и шаг [spacingPx].
  */
+internal fun estimateAdjacentOffscreenSpan(
+    anchor: HorizontalSpan,
+    anchorIndex: Int,
+    missingIndex: Int,
+    spacingPx: Float,
+    layoutDirection: LayoutDirection,
+): HorizontalSpan {
+    val gap = spacingPx.coerceAtLeast(0f)
+    val width = anchor.width
+    val isToTheRight = (missingIndex > anchorIndex) == (layoutDirection == LayoutDirection.Ltr)
+    return if (isToTheRight) {
+        val start = anchor.end + gap
+        HorizontalSpan(start = start, end = start + width)
+    } else {
+        val end = anchor.start - gap
+        HorizontalSpan(start = end - width, end = end)
+    }
+}
+
+/**
+ * Единая логика отрисовки индикатора вкладки (фиксированный `Row`, сетка и `LazyRow`):
+ * - в покое рисует активный элемент с полной непрозрачностью;
+ * - между соседними вкладками ([areAdjacent]) перетекает через [drawBlended], при частичной
+ *   видимости в `LazyRow` достраивая соседа за краем через [fallbackAdjacent];
+ * - между дальними вкладками выполняет кроссфейд `1 - fraction` / `fraction`, учитывая
+ *   частичную видимость каждого края ([crossfadeVisibility]).
+ */
+internal inline fun <T : Any> renderTabIndicator(
+    transition: MobileTabTransition,
+    itemAt: (index: Int) -> T?,
+    areAdjacent: (from: Int, to: Int) -> Boolean,
+    fallbackAdjacent: (anchor: T, anchorIndex: Int, missingIndex: Int) -> T? = { _, _, _ -> null },
+    crossfadeVisibility: (item: T) -> Float = { 1f },
+    drawSingle: (item: T, index: Int, alphaFactor: Float) -> Unit,
+    drawBlended: (from: T, to: T, fromIndex: Int, toIndex: Int, fraction: Float) -> Unit,
+) {
+    if (transition.isIdle) {
+        val index = transition.activeIndex
+        val item = itemAt(index) ?: return
+        drawSingle(item, index, 1f)
+        return
+    }
+
+    val fromIndex = transition.fromIndex
+    val toIndex = transition.toIndex
+    val fraction = transition.fraction.coerceIn(0f, 1f)
+    val adjacent = areAdjacent(fromIndex, toIndex)
+    val rawFrom = itemAt(fromIndex)
+    val rawTo = itemAt(toIndex)
+
+    if (adjacent) {
+        val resolvedFrom = rawFrom ?: rawTo?.let { fallbackAdjacent(it, toIndex, fromIndex) }
+        val resolvedTo = rawTo ?: rawFrom?.let { fallbackAdjacent(it, fromIndex, toIndex) }
+        if (resolvedFrom != null && resolvedTo != null) {
+            drawBlended(resolvedFrom, resolvedTo, fromIndex, toIndex, fraction)
+            return
+        }
+    }
+
+    rawFrom?.let { item ->
+        val alpha = (1f - fraction) * crossfadeVisibility(item).coerceIn(0f, 1f)
+        if (alpha > 0f) drawSingle(item, fromIndex, alpha)
+    }
+    rawTo?.let { item ->
+        val alpha = fraction * crossfadeVisibility(item).coerceIn(0f, 1f)
+        if (alpha > 0f) drawSingle(item, toIndex, alpha)
+    }
+}
+
+/** Рисует скруглённую плашку активной вкладки для фиксированного `Row` или сетки. */
 internal fun DrawScope.drawFluidPillIndicator(
-    bounds: List<Rect?>,
+    boundsAt: (Int) -> Rect?,
     transition: MobileTabTransition,
     cornerRadius: CornerRadius,
     colorForIndex: (Int) -> Color,
     areAdjacent: (Int, Int) -> Boolean,
 ) {
-    if (transition.isIdle) {
-        val index = transition.activeIndex
-        val rect = bounds.getOrNull(index) ?: return
-        drawPillRect(rect, colorForIndex(index), cornerRadius)
-        return
-    }
-
-    val fromRect = bounds.getOrNull(transition.fromIndex)
-    val toRect = bounds.getOrNull(transition.toIndex)
-    val fraction = transition.fraction.coerceIn(0f, 1f)
-    val fromColor = colorForIndex(transition.fromIndex)
-    val toColor = colorForIndex(transition.toIndex)
-
-    if (fromRect != null && toRect != null && areAdjacent(transition.fromIndex, transition.toIndex)) {
-        val blendedRect = interpolateFluidRect(fromRect, toRect, fraction)
-        drawPillRect(blendedRect, lerp(fromColor, toColor, fraction), cornerRadius)
-    } else {
-        fromRect?.let { drawPillRect(it, fromColor.scaleAlpha(1f - fraction), cornerRadius) }
-        toRect?.let { drawPillRect(it, toColor.scaleAlpha(fraction), cornerRadius) }
-    }
-}
-
-/**
- * Рисует скруглённую плашку активной вкладки внутри горизонтального `LazyRow`:
- * между соседними элементами перетекает, между дальними — плавно затухает/проявляется.
- */
-fun DrawScope.drawLazyRowPillIndicator(
-    listState: LazyListState,
-    transition: MobileTabTransition,
-    color: Color,
-    cornerRadius: CornerRadius,
-    verticalInsetPx: Float = 0f,
-) {
-    val layoutInfo = listState.layoutInfo
-    if (layoutInfo.visibleItemsInfo.isEmpty()) return
-    val top = verticalInsetPx.coerceAtLeast(0f)
-    val bottom = (size.height - top).coerceAtLeast(top)
-    if (bottom <= top) return
-
-    clipRect {
-        if (transition.isIdle) {
-            val span = layoutInfo.itemHorizontalSpan(transition.activeIndex, size.width, layoutDirection)
-                ?: return@clipRect
-            drawPillRect(Rect(span.first, top, span.second, bottom), color, cornerRadius)
-            return@clipRect
-        }
-
-        val fromSpan = layoutInfo.itemHorizontalSpan(transition.fromIndex, size.width, layoutDirection)
-        val toSpan = layoutInfo.itemHorizontalSpan(transition.toIndex, size.width, layoutDirection)
-        val fraction = transition.fraction.coerceIn(0f, 1f)
-
-        if (fromSpan != null && toSpan != null && areAdjacentRowTabs(transition.fromIndex, transition.toIndex)) {
-            val (left, right) = interpolateFluidSpan(
-                fromStart = fromSpan.first,
-                fromEnd = fromSpan.second,
-                toStart = toSpan.first,
-                toEnd = toSpan.second,
-                fraction = fraction,
+    renderTabIndicator(
+        transition = transition,
+        itemAt = boundsAt,
+        areAdjacent = areAdjacent,
+        drawSingle = { rect, index, alpha ->
+            drawPillRect(rect, colorForIndex(index).scaleAlpha(alpha), cornerRadius)
+        },
+        drawBlended = { from, to, fromIndex, toIndex, fraction ->
+            drawPillRect(
+                rect = interpolateFluidRect(from, to, fraction),
+                color = lerp(colorForIndex(fromIndex), colorForIndex(toIndex), fraction),
+                cornerRadius = cornerRadius,
             )
-            drawPillRect(Rect(left, top, right, bottom), color, cornerRadius)
-        } else {
-            fromSpan?.let {
-                drawPillRect(Rect(it.first, top, it.second, bottom), color.scaleAlpha(1f - fraction), cornerRadius)
-            }
-            toSpan?.let {
-                drawPillRect(Rect(it.first, top, it.second, bottom), color.scaleAlpha(fraction), cornerRadius)
-            }
-        }
-    }
+        },
+    )
 }
 
 /** Рисует нижнее подчёркивание активной вкладки для фиксированного `Row`. */
@@ -179,28 +215,46 @@ internal fun DrawScope.drawFluidUnderlineIndicator(
     color: Color,
     indicatorHeightPx: Float,
     topCornerRadiusPx: Float,
+    scratchPath: Path,
 ) {
     if (indicatorHeightPx <= 0f) return
-    if (transition.isIdle) {
-        val rect = bounds.getOrNull(transition.activeIndex) ?: return
-        drawTopRoundedBar(rect.left, rect.right, color, indicatorHeightPx, topCornerRadiusPx)
-        return
-    }
+    renderTabIndicator(
+        transition = transition,
+        itemAt = bounds::getOrNull,
+        areAdjacent = ::areAdjacentRowTabs,
+        drawSingle = { rect, _, alpha ->
+            drawTopRoundedBar(
+                left = rect.left,
+                right = rect.right,
+                color = color.scaleAlpha(alpha),
+                heightPx = indicatorHeightPx,
+                topCornerRadiusPx = topCornerRadiusPx,
+                path = scratchPath,
+            )
+        },
+        drawBlended = { from, to, _, _, fraction ->
+            val (left, right) = interpolateFluidSpan(from.left, from.right, to.left, to.right, fraction)
+            drawTopRoundedBar(left, right, color, indicatorHeightPx, topCornerRadiusPx, scratchPath)
+        },
+    )
+}
 
-    val fromRect = bounds.getOrNull(transition.fromIndex)
-    val toRect = bounds.getOrNull(transition.toIndex)
-    val fraction = transition.fraction.coerceIn(0f, 1f)
-
-    if (fromRect != null && toRect != null && areAdjacentRowTabs(transition.fromIndex, transition.toIndex)) {
-        val (left, right) = interpolateFluidSpan(fromRect.left, fromRect.right, toRect.left, toRect.right, fraction)
-        drawTopRoundedBar(left, right, color, indicatorHeightPx, topCornerRadiusPx)
-    } else {
-        fromRect?.let {
-            drawTopRoundedBar(it.left, it.right, color.scaleAlpha(1f - fraction), indicatorHeightPx, topCornerRadiusPx)
-        }
-        toRect?.let {
-            drawTopRoundedBar(it.left, it.right, color.scaleAlpha(fraction), indicatorHeightPx, topCornerRadiusPx)
-        }
+/** Рисует скруглённую плашку активной вкладки внутри прокручиваемого `LazyRow`. */
+internal fun DrawScope.drawLazyRowPillIndicator(
+    listState: LazyListState,
+    transition: MobileTabTransition,
+    color: Color,
+    cornerRadius: CornerRadius,
+    verticalInsetPx: Float = 0f,
+) {
+    val top = verticalInsetPx.coerceAtLeast(0f)
+    val bottom = (size.height - top).coerceAtLeast(top)
+    if (bottom <= top) return
+    drawLazyRowSpanIndicator(
+        listState = listState,
+        transition = transition,
+    ) { left, right, alpha ->
+        drawPillRect(Rect(left, top, right, bottom), color.scaleAlpha(alpha), cornerRadius)
     }
 }
 
@@ -211,59 +265,61 @@ internal fun DrawScope.drawLazyRowUnderlineIndicator(
     color: Color,
     indicatorHeightPx: Float,
     topCornerRadiusPx: Float,
+    scratchPath: Path,
 ) {
-    val layoutInfo = listState.layoutInfo
-    if (indicatorHeightPx <= 0f || layoutInfo.visibleItemsInfo.isEmpty()) return
-
-    clipRect {
-        if (transition.isIdle) {
-            val span = layoutInfo.itemHorizontalSpan(transition.activeIndex, size.width, layoutDirection)
-                ?: return@clipRect
-            drawTopRoundedBar(span.first, span.second, color, indicatorHeightPx, topCornerRadiusPx)
-            return@clipRect
-        }
-
-        val fromSpan = layoutInfo.itemHorizontalSpan(transition.fromIndex, size.width, layoutDirection)
-        val toSpan = layoutInfo.itemHorizontalSpan(transition.toIndex, size.width, layoutDirection)
-        val fraction = transition.fraction.coerceIn(0f, 1f)
-
-        if (fromSpan != null && toSpan != null && areAdjacentRowTabs(transition.fromIndex, transition.toIndex)) {
-            val (left, right) = interpolateFluidSpan(
-                fromStart = fromSpan.first,
-                fromEnd = fromSpan.second,
-                toStart = toSpan.first,
-                toEnd = toSpan.second,
-                fraction = fraction,
-            )
-            drawTopRoundedBar(left, right, color, indicatorHeightPx, topCornerRadiusPx)
-        } else {
-            fromSpan?.let {
-                drawTopRoundedBar(
-                    left = it.first,
-                    right = it.second,
-                    color = color.scaleAlpha(1f - fraction),
-                    heightPx = indicatorHeightPx,
-                    topCornerRadiusPx = topCornerRadiusPx,
-                )
-            }
-            toSpan?.let {
-                drawTopRoundedBar(
-                    left = it.first,
-                    right = it.second,
-                    color = color.scaleAlpha(fraction),
-                    heightPx = indicatorHeightPx,
-                    topCornerRadiusPx = topCornerRadiusPx,
-                )
-            }
-        }
+    if (indicatorHeightPx <= 0f) return
+    drawLazyRowSpanIndicator(
+        listState = listState,
+        transition = transition,
+    ) { left, right, alpha ->
+        drawTopRoundedBar(
+            left = left,
+            right = right,
+            color = color.scaleAlpha(alpha),
+            heightPx = indicatorHeightPx,
+            topCornerRadiusPx = topCornerRadiusPx,
+            path = scratchPath,
+        )
     }
 }
 
+private inline fun DrawScope.drawLazyRowSpanIndicator(
+    listState: LazyListState,
+    transition: MobileTabTransition,
+    drawSpan: (left: Float, right: Float, alphaFactor: Float) -> Unit,
+) {
+    val layoutInfo = listState.layoutInfo
+    if (layoutInfo.visibleItemsInfo.isEmpty() || size.width <= 0f) return
+    val spacingPx = layoutInfo.mainAxisItemSpacing.toFloat()
+
+    clipRect {
+        renderTabIndicator(
+            transition = transition,
+            itemAt = { index -> layoutInfo.itemHorizontalSpan(index, size.width, layoutDirection) },
+            areAdjacent = ::areAdjacentRowTabs,
+            fallbackAdjacent = { anchor, anchorIndex, missingIndex ->
+                estimateAdjacentOffscreenSpan(anchor, anchorIndex, missingIndex, spacingPx, layoutDirection)
+            },
+            crossfadeVisibility = { span -> span.visibilityFraction(0f, size.width) },
+            drawSingle = { span, _, alpha -> drawSpan(span.start, span.end, alpha) },
+            drawBlended = { from, to, _, _, fraction ->
+                val (left, right) = interpolateFluidSpan(from.start, from.end, to.start, to.end, fraction)
+                drawSpan(left, right, 1f)
+            },
+        )
+    }
+}
+
+/** Индекс вкладки, к которой следует подкручивать `LazyRow` (для дальних прыжков — сразу [MobileTabTransition.toIndex]). */
+internal fun MobileTabTransition.lazyRowScrollTarget(): Int =
+    if (!isIdle && !areAdjacentRowTabs(fromIndex, toIndex)) toIndex else activeIndex
+
 /** Плавно подкручивает горизонтальный [LazyListState], удерживая вкладку [index] ближе к центру. */
-suspend fun LazyListState.animateScrollTabIntoCenter(index: Int) {
+internal suspend fun LazyListState.animateScrollTabIntoCenter(index: Int) {
     if (index < 0) return
     val info = layoutInfo
     if (info.totalItemsCount <= 0 || index >= info.totalItemsCount) return
+    val viewportWidth = info.viewportEndOffset - info.viewportStartOffset
     val target = info.visibleItemsInfo.firstOrNull { it.index == index }
     if (target != null) {
         val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2
@@ -274,7 +330,18 @@ suspend fun LazyListState.animateScrollTabIntoCenter(index: Int) {
             animateScrollBy(delta)
         }
     } else {
-        animateScrollToItem(index)
+        val visible = info.visibleItemsInfo
+        val estimatedSize = if (visible.isNotEmpty()) {
+            visible.sumOf { it.size } / visible.size
+        } else {
+            0
+        }
+        val centerOffset = if (viewportWidth > estimatedSize && estimatedSize > 0) {
+            -((viewportWidth - estimatedSize) / 2)
+        } else {
+            0
+        }
+        animateScrollToItem(index = index, scrollOffset = centerOffset)
     }
 }
 
@@ -282,14 +349,14 @@ private fun LazyListLayoutInfo.itemHorizontalSpan(
     index: Int,
     containerWidth: Float,
     layoutDirection: LayoutDirection,
-): Pair<Float, Float>? {
+): HorizontalSpan? {
     val item = visibleItemsInfo.firstOrNull { it.index == index } ?: return null
     val start = (item.offset + beforeContentPadding).toFloat()
     return if (layoutDirection == LayoutDirection.Ltr) {
-        start to (start + item.size)
+        HorizontalSpan(start = start, end = start + item.size)
     } else {
         val right = containerWidth - start
-        (right - item.size) to right
+        HorizontalSpan(start = right - item.size, end = right)
     }
 }
 
@@ -313,25 +380,25 @@ private fun DrawScope.drawTopRoundedBar(
     color: Color,
     heightPx: Float,
     topCornerRadiusPx: Float,
+    path: Path,
 ) {
     if (right <= left || heightPx <= 0f || color.alpha <= 0f) return
     val topRadius = CornerRadius(topCornerRadiusPx, topCornerRadiusPx)
-    val path = Path().apply {
-        addRoundRect(
-            RoundRect(
-                rect = Rect(
-                    left = left,
-                    top = (size.height - heightPx).coerceAtLeast(0f),
-                    right = right,
-                    bottom = size.height,
-                ),
-                topLeft = topRadius,
-                topRight = topRadius,
-                bottomLeft = CornerRadius.Zero,
-                bottomRight = CornerRadius.Zero,
+    path.reset()
+    path.addRoundRect(
+        RoundRect(
+            rect = Rect(
+                left = left,
+                top = (size.height - heightPx).coerceAtLeast(0f),
+                right = right,
+                bottom = size.height,
             ),
-        )
-    }
+            topLeft = topRadius,
+            topRight = topRadius,
+            bottomLeft = CornerRadius.Zero,
+            bottomRight = CornerRadius.Zero,
+        ),
+    )
     drawPath(path = path, color = color)
 }
 

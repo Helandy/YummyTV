@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.designsystem.mobile.tabs
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.unit.LayoutDirection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -63,11 +64,9 @@ class MobileTabTransitionTest {
             toEnd = 204f,
             fraction = 0.5f,
         )
-        // В середине перехода плашка шире исходной (100px) и симметрично перекрывает зазор.
         assertTrue(midRight - midLeft > 100f)
         assertEquals(102f, (midLeft + midRight) / 2f, DELTA)
 
-        // Прямой переход 0 -> 1 в точке t совпадает с обратным 1 -> 0 в точке (1 - t).
         val forward = interpolateFluidSpan(0f, 100f, 104f, 204f, fraction = 0.3f)
         val backward = interpolateFluidSpan(104f, 204f, 0f, 100f, fraction = 0.7f)
         assertEquals(forward.first, backward.first, DELTA)
@@ -87,29 +86,70 @@ class MobileTabTransitionTest {
     }
 
     @Test
-    fun `programmatic jump across four pages smoothly maps post-snap span from zero to one`() {
-        // Тап с плитки 1 на плитку 5 под ней в сетке 4×2: pager перескакивает на 2 и докручивает 2 -> 5.
-        val jump = ProgrammaticTabJump(fromIndex = 1, toIndex = 5, startPosition = 1f)
+    fun `renderTabIndicator glides toward offscreen neighbor in LazyRow for LTR and RTL`() {
+        val anchor = HorizontalSpan(start = 220f, end = 300f)
+        var blendedTo: HorizontalSpan? = null
 
-        val beforeSnap = resolvePagerTabTransition(1, 0f, pageCount = 8, jump = jump)
-        assertEquals(1, beforeSnap.fromIndex)
-        assertEquals(5, beforeSnap.toIndex)
-        assertEquals(0f, beforeSnap.fraction, DELTA)
-        assertTrue(beforeSnap.isIdle)
+        renderTabIndicator(
+            transition = MobileTabTransition(fromIndex = 2, toIndex = 3, fraction = 0.4f),
+            itemAt = { index -> if (index == 2) anchor else null },
+            areAdjacent = ::areAdjacentRowTabs,
+            fallbackAdjacent = { item, anchorIdx, missingIdx ->
+                estimateAdjacentOffscreenSpan(item, anchorIdx, missingIdx, spacingPx = 10f, LayoutDirection.Ltr)
+            },
+            drawSingle = { _, _, _ -> error("expected fluid blend, not crossfade") },
+            drawBlended = { _, to, _, _, _ -> blendedTo = to },
+        )
+        assertEquals(HorizontalSpan(start = 310f, end = 390f), blendedTo)
 
-        val atSnap = resolvePagerTabTransition(2, 0f, pageCount = 8, jump = jump)
-        assertEquals(0f, atSnap.fraction, DELTA)
+        val rtlEstimated = estimateAdjacentOffscreenSpan(
+            anchor = HorizontalSpan(start = 20f, end = 100f),
+            anchorIndex = 2,
+            missingIndex = 3,
+            spacingPx = 10f,
+            layoutDirection = LayoutDirection.Rtl,
+        )
+        assertEquals(HorizontalSpan(start = -70f, end = 10f), rtlEstimated)
+    }
 
-        val halfway = resolvePagerTabTransition(3, 0.5f, pageCount = 8, jump = jump)
-        assertEquals(1, halfway.fromIndex)
-        assertEquals(5, halfway.toIndex)
-        assertEquals(0.5f, halfway.fraction, DELTA)
-        assertFalse(halfway.isIdle)
+    @Test
+    fun `renderTabIndicator crossfades distant tabs smoothly with partial viewport visibility`() {
+        // Прыжок 0 -> 7: вкладка 0 уходит влево (видна наполовину), вкладка 7 ещё за правым краем.
+        val halfVisibleFrom = HorizontalSpan(start = -40f, end = 40f)
+        val drawnPhase1 = mutableListOf<Pair<Int, Float>>()
+        renderTabIndicator(
+            transition = MobileTabTransition(fromIndex = 0, toIndex = 7, fraction = 0.25f),
+            itemAt = { index -> if (index == 0) halfVisibleFrom else null },
+            areAdjacent = ::areAdjacentRowTabs,
+            crossfadeVisibility = { it.visibilityFraction(viewportStart = 0f, viewportEnd = 300f) },
+            drawSingle = { _, index, alpha -> drawnPhase1 += index to alpha },
+            drawBlended = { _, _, _, _, _ -> error("distant tabs must not stretch across middle items") },
+        )
+        assertEquals(1, drawnPhase1.size)
+        assertEquals(0, drawnPhase1.single().first)
+        assertEquals(0.75f * 0.5f, drawnPhase1.single().second, DELTA)
 
-        val finished = resolvePagerTabTransition(5, 0f, pageCount = 8, jump = jump)
-        assertTrue(finished.isIdle)
-        assertEquals(5, finished.activeIndex)
-        assertEquals(1f, finished.selectionFraction(5), DELTA)
+        // Вторая фаза: вкладка 0 скрылась, вкладка 7 на четверть показалась справа.
+        val quarterVisibleTo = HorizontalSpan(start = 280f, end = 360f)
+        val drawnPhase2 = mutableListOf<Pair<Int, Float>>()
+        renderTabIndicator(
+            transition = MobileTabTransition(fromIndex = 0, toIndex = 7, fraction = 0.8f),
+            itemAt = { index -> if (index == 7) quarterVisibleTo else null },
+            areAdjacent = ::areAdjacentRowTabs,
+            crossfadeVisibility = { it.visibilityFraction(viewportStart = 0f, viewportEnd = 300f) },
+            drawSingle = { _, index, alpha -> drawnPhase2 += index to alpha },
+            drawBlended = { _, _, _, _, _ -> error("distant tabs must not stretch across middle items") },
+        )
+        assertEquals(1, drawnPhase2.size)
+        assertEquals(7, drawnPhase2.single().first)
+        assertEquals(0.8f * 0.25f, drawnPhase2.single().second, DELTA)
+    }
+
+    @Test
+    fun `lazyRowScrollTarget heads to destination immediately for distant jumps only`() {
+        assertEquals(7, MobileTabTransition(fromIndex = 0, toIndex = 7, fraction = 0.1f).lazyRowScrollTarget())
+        assertEquals(0, MobileTabTransition(fromIndex = 0, toIndex = 1, fraction = 0.3f).lazyRowScrollTarget())
+        assertEquals(1, MobileTabTransition(fromIndex = 0, toIndex = 1, fraction = 0.6f).lazyRowScrollTarget())
     }
 
     private companion object {
