@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
@@ -34,6 +35,7 @@ internal fun UserProfileStickyTabs(
     showBack: Boolean,
     onBack: () -> Unit,
     onSelected: (UserProfileState.Tab) -> Unit,
+    transition: MobileTabTransition? = null,
 ) {
     Row(
         modifier = Modifier
@@ -60,6 +62,7 @@ internal fun UserProfileStickyTabs(
                 selected = selected,
                 profile = profile,
                 onSelected = onSelected,
+                transition = transition,
             )
         }
     }

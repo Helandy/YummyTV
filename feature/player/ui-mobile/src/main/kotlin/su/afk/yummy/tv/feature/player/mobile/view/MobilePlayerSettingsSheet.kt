@@ -37,12 +37,14 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.designsystem.components.ScrollToTopOnChange
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.asMobileTabTransition
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
 import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.designsystem.utils.dubbingLogoRes
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.presentation.R
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,9 +106,13 @@ internal fun MobilePlayerSettingsSheet(
                         }
                     },
                     onTabSelected = { tab ->
-                        scope.launch { trackPagerState.animateScrollToPage(trackTabs.indexOf(tab)) }
+                        val target = trackTabs.indexOf(tab)
+                        if (trackPagerState.currentPage != target || abs(trackPagerState.currentPageOffsetFraction) > 0.001f) {
+                            scope.launch { trackPagerState.animateScrollToPage(target) }
+                        }
                     },
                     compact = isLandscape,
+                    transition = trackPagerState.asMobileTabTransition(),
                     modifier = tabsModifier,
                 )
             }

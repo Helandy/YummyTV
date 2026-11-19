@@ -23,9 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toPersistentList
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.asMobileTabTransition
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.common.utils.averageRatingLabel
@@ -110,26 +112,29 @@ internal fun AccountMobileProfileStatsPager(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
         if (pages.size > 1) {
+            val statsTransition = pagerState.asMobileTabTransition()
+            val activeColor = MaterialTheme.colorScheme.primary
+            val inactiveColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 pages.forEachIndexed { index, _ ->
+                    val fraction = statsTransition.selectionFraction(index)
+                    val widthDp = INACTIVE_DOT_WIDTH_DP + (ACTIVE_DOT_WIDTH_DP - INACTIVE_DOT_WIDTH_DP) * fraction
                     Box(
                         modifier = Modifier
-                            .size(if (pagerState.currentPage == index) 22.dp else 7.dp, 7.dp)
+                            .size(widthDp.dp, DOT_HEIGHT)
                             .clip(CircleShape)
-                            .background(
-                                if (pagerState.currentPage == index) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f)
-                                },
-                            ),
+                            .background(lerp(inactiveColor, activeColor, fraction)),
                     )
                 }
             }
         }
     }
 }
+
+private const val INACTIVE_DOT_WIDTH_DP = 7f
+private const val ACTIVE_DOT_WIDTH_DP = 22f
+private val DOT_HEIGHT = 7.dp
