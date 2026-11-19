@@ -7,16 +7,16 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlin.math.abs
 import kotlin.math.floor
+import kotlin.math.roundToInt
 
 internal const val TAB_TRANSITION_EPSILON = 0.001f
-private const val TAB_TRANSITION_DURATION_MS = 220
-private const val PAGER_MAX_ANIMATE_PAGES = 3
+internal const val TAB_TRANSITION_DURATION_MS = 220
 
 /**
  * Состояние перехода между вкладками с непрерывным прогрессом [fraction] (`0f..1f`).
@@ -61,32 +61,45 @@ data class MobileTabTransition(
 /**
  * Программный переход по тапу между несоседними страницами `PagerState`.
  *
- * Позволяет анимировать индикатор напрямую из [fromIndex] в [toIndex] (например, между
- * соседними по вертикали плитками сетки или с плавным затуханием между дальними вкладками),
- * не мигая промежуточными страницами.
+ * Ведёт собственный [Animatable] от [startFraction] до `1f`, не полагаясь на внутреннюю
+ * логику перескока `PagerState.animateScrollToPage`, поэтому промежуточные вкладки не мигают,
+ * а разворот на полпути стартует ровно с текущего прогресса без рывка.
  */
-@Immutable
-internal data class ProgrammaticTabJump(
+@Stable
+internal class ProgrammaticTabJump(
     val fromIndex: Int,
     val toIndex: Int,
-    val startPosition: Float,
+    startFraction: Float = 0f,
 ) {
-    fun fraction(currentPosition: Float): Float {
-        if (fromIndex == toIndex) return 1f
-        // PagerState.animateScrollToPage при прыжке дальше 3 страниц сначала перескакивает
-        // на расстояние 3 страниц от цели и плавно докручивает оставшийся участок.
-        val effectiveStart = if (toIndex > fromIndex) {
-            maxOf(startPosition, (toIndex - PAGER_MAX_ANIMATE_PAGES).toFloat())
-        } else {
-            minOf(startPosition, (toIndex + PAGER_MAX_ANIMATE_PAGES).toFloat())
-        }
-        val span = toIndex.toFloat() - effectiveStart
-        if (abs(span) <= TAB_TRANSITION_EPSILON) return 1f
-        return ((currentPosition - effectiveStart) / span).coerceIn(0f, 1f)
-    }
+    private val animatable = Animatable(startFraction.coerceIn(0f, 1f))
 
-    fun activeIndex(currentPosition: Float): Int =
-        if (fraction(currentPosition) >= 0.5f) toIndex else fromIndex
+    val fraction: Float
+        get() = animatable.value.coerceIn(0f, 1f)
+
+    val activeIndex: Int
+        get() = if (fraction >= 0.5f) toIndex else fromIndex
+
+    suspend fun animateToCompletion() {
+        if (fromIndex == toIndex) {
+            animatable.snapTo(1f)
+            return
+        }
+        val remaining = (1f - fraction).coerceIn(0f, 1f)
+        if (remaining <= TAB_TRANSITION_EPSILON) {
+            animatable.snapTo(1f)
+            return
+        }
+        val durationMs = (remaining * TAB_TRANSITION_DURATION_MS)
+            .roundToInt()
+            .coerceAtLeast(1)
+        animatable.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = durationMs,
+                easing = FastOutSlowInEasing,
+            ),
+        )
+    }
 }
 
 /** Непрерывная позиция страницы pager'а (`0f..(pageCount - 1)`), без скачка на середине свайпа. */
@@ -125,22 +138,26 @@ internal fun resolvePagerTabTransition(
     jump: ProgrammaticTabJump? = null,
 ): MobileTabTransition {
     if (pageCount <= 0) return MobileTabTransition.settled(0)
-    val maxIndex = pageCount - 1
-    val position = calculatePagerPosition(currentPage, currentPageOffsetFraction, pageCount)
     if (jump != null) {
+        val maxIndex = pageCount - 1
         val safeFrom = jump.fromIndex.coerceIn(0, maxIndex)
         val safeTo = jump.toIndex.coerceIn(0, maxIndex)
-        val fraction = jump.fraction(position)
+        val fraction = jump.fraction
         return when {
             safeFrom == safeTo || fraction >= 1f - TAB_TRANSITION_EPSILON ->
                 MobileTabTransition.settled(safeTo)
             else -> MobileTabTransition(fromIndex = safeFrom, toIndex = safeTo, fraction = fraction)
         }
     }
+    val position = calculatePagerPosition(currentPage, currentPageOffsetFraction, pageCount)
     return mobileTabTransitionFromPagePosition(position, pageCount)
 }
 
-/** Читает [MobileTabTransition] напрямую из [PagerState] (для экранов со своим pager'ом). */
+/**
+ * Читает [MobileTabTransition] напрямую из [PagerState] (для экранов со своим pager'ом).
+ * Вызывайте внутри фазы отрисовки или в провайдере `() -> MobileTabTransition`, чтобы не
+ * вызывать рекомпозицию на каждом кадре свайпа.
+ */
 fun PagerState.asMobileTabTransition(): MobileTabTransition = resolvePagerTabTransition(
     currentPage = currentPage,
     currentPageOffsetFraction = currentPageOffsetFraction,
@@ -148,22 +165,25 @@ fun PagerState.asMobileTabTransition(): MobileTabTransition = resolvePagerTabTra
 )
 
 /**
- * Плавно анимирует [MobileTabTransition] при смене [selectedIndex] для вкладок без `HorizontalPager`.
- * При развороте обратно к предыдущей вкладке продолжает движение с текущей точки без рывка.
+ * Возвращает провайдер `() -> MobileTabTransition`, плавно анимируемый при смене [selectedIndex]
+ * для вкладок без `HorizontalPager`. Значение [Animatable] читается только внутри возвращаемой
+ * лямбды (в фазе отрисовки), без покадровой рекомпозиции. При развороте обратно к предыдущей
+ * вкладке движение продолжается с текущей точки без рывка.
  */
 @Composable
-fun rememberAnimatedTabTransition(
+internal fun rememberAnimatedTabTransition(
     selectedIndex: Int,
     tabCount: Int,
-): MobileTabTransition {
-    val maxIndex = (tabCount - 1).coerceAtLeast(0)
-    val safeTarget = if (tabCount > 0) selectedIndex.coerceIn(0, maxIndex) else 0
+): () -> MobileTabTransition {
+    val safeCount = tabCount.coerceAtLeast(0)
+    val maxIndex = (safeCount - 1).coerceAtLeast(0)
+    val safeTarget = if (safeCount > 0) selectedIndex.coerceIn(0, maxIndex) else 0
     var fromIndex by remember { mutableIntStateOf(safeTarget) }
     var toIndex by remember { mutableIntStateOf(safeTarget) }
     val progress = remember { Animatable(1f) }
 
-    LaunchedEffect(safeTarget, tabCount) {
-        if (tabCount <= 0) {
+    LaunchedEffect(safeTarget, safeCount) {
+        if (safeCount <= 0) {
             fromIndex = 0
             toIndex = 0
             progress.snapTo(1f)
@@ -182,22 +202,29 @@ fun rememberAnimatedTabTransition(
         fromIndex = if (isDirectReversal) toIndex.coerceIn(0, maxIndex) else currentVisual
         toIndex = safeTarget
         progress.snapTo(startFraction)
+        val durationMs = ((1f - startFraction) * TAB_TRANSITION_DURATION_MS)
+            .roundToInt()
+            .coerceAtLeast(1)
         progress.animateTo(
             targetValue = 1f,
             animationSpec = tween(
-                durationMillis = TAB_TRANSITION_DURATION_MS,
+                durationMillis = durationMs,
                 easing = FastOutSlowInEasing,
             ),
         )
         fromIndex = safeTarget
     }
 
-    val safeFrom = fromIndex.coerceIn(0, maxIndex)
-    val safeTo = toIndex.coerceIn(0, maxIndex)
-    val fraction = progress.value.coerceIn(0f, 1f)
-    return if (safeFrom == safeTo || fraction >= 1f - TAB_TRANSITION_EPSILON) {
-        MobileTabTransition.settled(safeTo)
-    } else {
-        MobileTabTransition(fromIndex = safeFrom, toIndex = safeTo, fraction = fraction)
+    return remember(maxIndex) {
+        {
+            val safeFrom = fromIndex.coerceIn(0, maxIndex)
+            val safeTo = toIndex.coerceIn(0, maxIndex)
+            val fraction = progress.value.coerceIn(0f, 1f)
+            if (safeFrom == safeTo || fraction >= 1f - TAB_TRANSITION_EPSILON) {
+                MobileTabTransition.settled(safeTo)
+            } else {
+                MobileTabTransition(fromIndex = safeFrom, toIndex = safeTo, fraction = fraction)
+            }
+        }
     }
 }
