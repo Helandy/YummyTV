@@ -161,10 +161,7 @@ class MobileSwipeableTabsStateTest {
 
         pager.currentPage = 1
         pager.currentPageOffsetFraction = 0.35f
-        val transition = state.tabTransition
-        assertEquals(1, transition.fromIndex)
-        assertEquals(2, transition.toIndex)
-        assertEquals(0.35f, transition.fraction, DELTA)
+        assertEquals(MobileTabTransition(fromIndex = 1, toIndex = 2, fraction = 0.35f), state.tabTransition)
 
         pager.finishCurrentScroll(settledPage = 2)
         advanceUntilIdle()
