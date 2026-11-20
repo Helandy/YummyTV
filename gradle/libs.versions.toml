@@ -1,6 +1,8 @@
 [versions]
 # Android / Build
 android-compileSdk = "37"
+# Подверсия платформы: Compose 1.13 требует compileSdk 37.1 (platforms;android-37.1)
+android-compileSdkMinor = "1"
 android-minSdk = "24"
 agp = "9.5.1"
 desugar-jdk-libs = "2.1.5"

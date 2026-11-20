@@ -17,7 +17,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("com.android.library")
         extensions.configure<LibraryExtension> {
-            compileSdk = libs.versionInt("android-compileSdk")
+            compileSdk {
+                version = release(libs.versionInt("android-compileSdk")) {
+                    minorApiLevel = libs.versionInt("android-compileSdkMinor")
+                }
+            }
             defaultConfig {
                 minSdk = libs.versionInt("android-minSdk")
             }
@@ -50,7 +54,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         configureComposeCompiler()
         addComposeBom()
         extensions.configure<ApplicationExtension> {
-            compileSdk = libs.versionInt("android-compileSdk")
+            compileSdk {
+                version = release(libs.versionInt("android-compileSdk")) {
+                    minorApiLevel = libs.versionInt("android-compileSdkMinor")
+                }
+            }
             defaultConfig {
                 minSdk = libs.versionInt("android-minSdk")
             }
