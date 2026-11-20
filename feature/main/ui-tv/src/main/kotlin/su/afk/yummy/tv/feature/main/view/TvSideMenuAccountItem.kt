@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.main.view
 
 import androidx.compose.ui.unit.Dp
-import su.afk.yummy.tv.core.designsystem.seasonal.seasonalAvatarHat
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalAvatarWreath
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -101,7 +101,7 @@ internal fun TvSideMenuAccountItem(
                     modifier = Modifier
                         .size(28.dp)
                         .align(Alignment.Center)
-                        .seasonalAvatarHat()
+                        .seasonalAvatarWreath()
                         .clip(CircleShape),
                 )
             } else {

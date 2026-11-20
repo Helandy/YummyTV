@@ -104,7 +104,7 @@
     <string name="settings_watch_next_enabled">Синхронізується з TV Home</string>
     <string name="settings_seasonal_decorations">Святкове оформлення</string>
     <string name="settings_seasonal_decorations_halloween">Оформлення до Гелловіну: з 20.10 по 02.11</string>
-    <string name="settings_seasonal_decorations_new_year">Новорічне оформлення: з 15.12 по 10.01</string>
+    <string name="settings_seasonal_decorations_new_year">Новорічне оформлення: з 15.12 по 20.01</string>
     <string name="settings_seasonal_decorations_off_season">Зараз непідхожа дата для святкового оформлення — воно ввімкнеться саме в сезон</string>
     <string name="settings_disabled">Вимкнено</string>
     <string name="settings_save_last_search_label">Зберігати останній пошук</string>

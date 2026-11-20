@@ -146,11 +146,11 @@ dependencies {
     findProject(":source:zedfilm:data")?.let { implementation(it) }
     // Необязательный источник «Tenrai» (пометки филлер/рекап): нет каталога external/tenrai, нет и зависимости.
     findProject(":external:tenrai")?.let { implementation(it) }
+
     implementation(project(":core:analytics"))
     implementation(project(":core:deeplink"))
     implementation(project(":core:deeplink:api"))
     implementation(project(":core:designsystem"))
-    // реализация обработки ошибок: биндинги нужны в графе, хотя фичи знают только core:error:api
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
     implementation(project(":core:network"))
@@ -159,6 +159,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":core:featuretoggle"))
     implementation(project(":core:tv"))
+
     implementation(project(":feature:account:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:account:ui-mobile"))
@@ -270,6 +271,7 @@ dependencies {
     // APK ставится мимо Play (самообновление) — без profileinstaller профиль не применится
     implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.tracing.ktx)
+
     baselineProfile(project(":baselineprofile"))
     add("ksp", libs.hilt.work.compiler)
 

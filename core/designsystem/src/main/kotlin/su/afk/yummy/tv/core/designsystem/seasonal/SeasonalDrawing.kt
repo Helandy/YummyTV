@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.core.designsystem.seasonal
 
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -9,8 +8,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
+import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.pow
 import kotlin.math.PI
@@ -24,8 +23,23 @@ private val WebShadow = Color(0x80000000)
 private val SpiderColor = Color(0xFF1E1E24)
 private val SpiderEyes = Color(0xFFFF3B3B)
 private val SnowColor = Color(0xF2FFFFFF)
-private val HatRed = Color(0xFFD62828)
-private val HatWhite = Color(0xFFFFFFFF)
+private val BerryRed = Color(0xFFC62828)
+private val BerryShine = Color(0xFFFF8A80)
+private val BowDark = Color(0xFFB71C1C)
+private val BowShade = Color(0xFF9E1B1B)
+private val BowKnot = Color(0xFFE53935)
+private val WreathBase = Color(0xFF14452A)
+private const val WreathUnit = 0.0078f
+private const val WreathRadius = 45f
+private val BowLoopOuter = listOf(8f to -17f, 27f to -14f, 24f to 1f, 22f to 10f, 9f to 6f)
+private val BowLoopInner = listOf(7f to -9f, 16f to -8f, 17f to -1f, 14f to 3f, 7f to 3f)
+private val WreathBerryAngles = listOf(-60, 15, 100, 190, 235)
+private val WreathBerrySpots = listOf(0f to 0.0, 3.8f to 0.07, -3.4f to 0.06)
+private val WreathLayers = listOf(
+    WreathLayer(30, 0.0, -0.55, 2.5f, 19f, 5.2f, listOf(Color(0xFF1F6B34), Color(0xFF27793C))),
+    WreathLayer(30, PI / 30.0, 0.55, -2.5f, 17f, 4.8f, listOf(Color(0xFF2E8B45), Color(0xFF37984D), Color(0xFF43A55A))),
+    WreathLayer(24, PI / 24.0, -0.35, 0f, 13f, 3.6f, listOf(Color(0xFF5CBF73), Color(0xFF4FB068))),
+)
 
 /** Паутина из угла [corner]: [direction] 1 — вправо от угла, -1 — влево. */
 internal fun DrawScope.drawCornerWeb(corner: Offset, direction: Float, radius: Float) {
@@ -96,28 +110,100 @@ internal fun DrawScope.drawSnowCap(capHeight: Float, inset: Float = 0f) {
     drawPath(path, SnowColor)
 }
 
-/** Шапка Деда Мороза на круглой аватарке размера [size] (от левого верхнего угла аватарки). */
-internal fun DrawScope.drawSantaHat(size: Float) {
-    rotate(degrees = 18f, pivot = Offset(size * 0.62f, size * 0.12f)) {
-        val baseY = size * 0.2f
-        val left = size * 0.18f
-        val right = size * 1.04f
-        val body = Path().apply {
-            moveTo(left, baseY)
-            quadraticTo(size * 0.45f, -size * 0.34f, size * 0.98f, -size * 0.12f)
-            lineTo(right, baseY)
+/**
+ * Новогодний венок по краю круглой аватарки размера [size]: два слоя заострённых хвойных листьев, кластеры ягод
+ * и бант внизу. Рисунок целиком лежит в квадрате [size], кроме хвостов банта.
+ */
+internal fun DrawScope.drawNewYearWreath(size: Float) {
+    val k = size * WreathUnit
+    val center = Offset(size / 2f, size / 2f)
+    val ring = WreathRadius * k
+    drawCircle(WreathBase, ring, center, style = Stroke(width = 9f * k))
+    for (layer in WreathLayers) {
+        for (i in 0 until layer.count) {
+            val angle = 2.0 * PI * i / layer.count + layer.offset
+            val radius = ring + layer.radius * k
+            val base = Offset(
+                center.x + radius * cos(angle).toFloat(),
+                center.y + radius * sin(angle).toFloat(),
+            )
+            drawLeaf(base, (angle + PI / 2.0 + layer.tilt).toFloat(), layer.length * k, layer.width * k, layer.colors[i % layer.colors.size])
+        }
+    }
+    for (degrees in WreathBerryAngles) {
+        val angle = Math.toRadians(degrees.toDouble())
+        for ((index, spot) in WreathBerrySpots.withIndex()) {
+            val berryAngle = angle + spot.second * (if (index == 2) -1.0 else 1.0)
+            val berryRadius = ring + spot.first * k
+            val at = Offset(
+                center.x + berryRadius * cos(berryAngle).toFloat(),
+                center.y + berryRadius * sin(berryAngle).toFloat(),
+            )
+            drawCircle(BerryRed, 3.3f * k, at)
+            drawCircle(BerryShine, 1f * k, Offset(at.x - 0.9f * k, at.y - 0.9f * k))
+        }
+    }
+    drawWreathBow(Offset(center.x, center.y + ring + 2f * k), k)
+}
+
+private fun DrawScope.drawLeaf(base: Offset, angle: Float, length: Float, width: Float, color: Color) {
+    val cosA = cos(angle)
+    val sinA = sin(angle)
+    fun point(x: Float, y: Float) = Offset(base.x + x * cosA - y * sinA, base.y + x * sinA + y * cosA)
+    val path = Path().apply {
+        moveTo(base.x, base.y)
+        val c1 = point(length * 0.5f, -width)
+        val tip = point(length, 0f)
+        quadraticTo(c1.x, c1.y, tip.x, tip.y)
+        val c2 = point(length * 0.5f, width)
+        quadraticTo(c2.x, c2.y, base.x, base.y)
+        close()
+    }
+    drawPath(path, color)
+}
+
+/** Бант венка с узлом в [knot]; [k] — масштаб относительно координат иконки. */
+private fun DrawScope.drawWreathBow(knot: Offset, k: Float) {
+    fun at(x: Float, y: Float) = Offset(knot.x + x * k, knot.y + y * k)
+    for (side in listOf(-1f, 1f)) {
+        val tail = Path().apply {
+            val start = at(side * 2f, 2f)
+            moveTo(start.x, start.y)
+            for ((x, y) in listOf(12f to 13f, 9f to 12f, 7f to 15f, 0f to 6f)) {
+                val p = at(side * x, y)
+                lineTo(p.x, p.y)
+            }
             close()
         }
-        drawPath(body, HatRed)
-        drawRoundRect(
-            HatWhite,
-            Offset(left - size * 0.04f, baseY - size * 0.07f),
-            Size(right - left + size * 0.08f, size * 0.15f),
-            cornerRadius = CornerRadius(size * 0.075f),
-        )
-        drawCircle(HatWhite, size * 0.1f, Offset(size * 0.98f, -size * 0.12f))
+        drawPath(tail, BowDark)
     }
+    for (side in listOf(-1f, 1f)) {
+        drawPath(bowLoop(::at, side, BowLoopOuter), BerryRed)
+        drawPath(bowLoop(::at, side, BowLoopInner), BowShade)
+    }
+    drawCircle(BowKnot, 4.8f * k, knot)
+    drawCircle(BerryShine, 1.6f * k, at(-1f, -1f))
 }
+
+/** Петля банта: координаты [points] — две контрольные точки и конец первой кривой, две контрольные второй. */
+private fun bowLoop(at: (Float, Float) -> Offset, side: Float, points: List<Pair<Float, Float>>): Path = Path().apply {
+    fun p(index: Int) = at(side * points[index].first, points[index].second)
+    val start = at(0f, 0f)
+    moveTo(start.x, start.y)
+    cubicTo(p(0).x, p(0).y, p(1).x, p(1).y, p(2).x, p(2).y)
+    cubicTo(p(3).x, p(3).y, p(4).x, p(4).y, start.x, start.y)
+    close()
+}
+
+private class WreathLayer(
+    val count: Int,
+    val offset: Double,
+    val tilt: Double,
+    val radius: Float,
+    val length: Float,
+    val width: Float,
+    val colors: List<Color>,
+)
 
 /** Паук с телом радиуса [radius] в [center]. */
 internal fun DrawScope.drawSpider(center: Offset, radius: Float) {
