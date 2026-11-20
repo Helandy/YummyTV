@@ -201,6 +201,8 @@ dependencies {
     implementation(project(":feature:pages:api"))
     implementation(project(":feature:pages:data"))
     implementation(project(":feature:pages:ui-mobile"))
+    implementation(project(":feature:community:api"))
+    implementation(project(":feature:community:ui-mobile"))
     implementation(project(":feature:home:api"))
     implementation(project(":feature:home:domain"))
     implementation(project(":feature:home:ui-mobile"))

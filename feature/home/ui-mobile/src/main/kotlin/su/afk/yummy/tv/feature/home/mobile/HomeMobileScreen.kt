@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -47,6 +48,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+import su.afk.yummy.tv.core.designsystem.mobile.scroll.PinToEndOnViewportChange
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
@@ -72,7 +74,6 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSkeleton
 import su.afk.yummy.tv.feature.home.mobile.view.HomeQuickActionsSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
-import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
 import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
@@ -216,7 +217,10 @@ fun HomeMobileScreen(
                 onRefresh = { onEvent(HomeState.Event.RefreshRequested) },
                 modifier = Modifier.fillMaxSize(),
             ) {
+                val listState = rememberLazyListState()
+                listState.PinToEndOnViewportChange()
                 LazyColumn(
+                    state = listState,
                     // Без общего предела ширины: лента почти целиком из горизонтальных рядов, им
                     // ширина окна только на пользу. Ограничены лишь баннеры и кнопки внизу.
                     modifier = Modifier
@@ -224,7 +228,7 @@ fun HomeMobileScreen(
                         .testTag("home_feed"),
                     contentPadding = PaddingValues(
                         top = 12.dp,
-                        bottom = MobileBottomBarDefaults.contentBottomPadding,
+                        bottom = MobileBottomBarDefaults.rootContentBottomPadding,
                     ),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                 ) {
@@ -273,30 +277,6 @@ fun HomeMobileScreen(
                                                 onEvent(HomeState.Event.ContinueWatchingSelected(it))
                                             },
                                             onEntryLongClick = { continueWatchingActionEntry = it },
-                                        )
-                                    }
-                                }
-                            }
-
-                            HomeBlockKind.BLOGGER_VIDEOS -> {
-                                if (state.bloggerVideos.isNotEmpty()) {
-                                    item(key = "blogger_videos") {
-                                        MobileHomeBloggerVideosSection(
-                                            title = stringResource(R.string.home_mobile_blogger_videos),
-                                            allLabel = stringResource(R.string.home_mobile_all),
-                                            videos = state.bloggerVideos,
-                                            onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
-                                            onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
-                                        )
-                                    }
-                                }
-
-                                state.bloggerVideosError?.let { message ->
-                                    item(key = "blogger_videos_error") {
-                                        MobileMessage(
-                                            title = message.asString(),
-                                            actionLabel = stringResource(CoreR.string.common_retry),
-                                            onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
                                         )
                                     }
                                 }

@@ -65,19 +65,12 @@ private fun PostLoadingCard(skeletonColor: Color) {
                     .aspectRatio(16f / 9f)
                     .background(skeletonColor),
             )
-            // Как у MobileNewsCard: отступ 16dp, шаг 8dp, рубрика (чип 32dp), заголовок в 2 строки titleLarge,
-            // анонс в 3 строки bodyMedium и подпись.
+            // Как у MobileNewsCard: отступ 16dp, шаг 8dp, заголовок в 2 строки titleLarge, анонс в
+            // 3 строки bodyMedium и подпись; рубрика лежит на постере и высоты не добавляет.
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                SkeletonBlock(
-                    modifier = Modifier
-                        .width(88.dp)
-                        .height(32.dp),
-                    color = skeletonColor,
-                    shape = RoundedCornerShape(8.dp),
-                )
                 SkeletonBlock(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)

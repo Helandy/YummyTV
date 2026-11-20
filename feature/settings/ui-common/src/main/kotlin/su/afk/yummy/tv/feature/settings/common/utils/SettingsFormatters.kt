@@ -398,7 +398,6 @@ fun HomeBlockKind.label(): String = stringResource(
         HomeBlockKind.RECOMMENDATIONS -> R.string.settings_home_block_recommendations
         HomeBlockKind.ANNOUNCEMENTS -> R.string.settings_home_block_announcements
         HomeBlockKind.COLLECTIONS -> R.string.settings_home_block_collections
-        HomeBlockKind.BLOGGER_VIDEOS -> R.string.settings_home_block_blogger_videos
         HomeBlockKind.QUICK_ACTIONS -> R.string.settings_home_block_quick_actions
     },
 )

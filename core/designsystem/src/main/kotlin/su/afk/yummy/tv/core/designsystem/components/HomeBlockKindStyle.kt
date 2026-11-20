@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Recommend
 import androidx.compose.material.icons.filled.Slideshow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -28,7 +27,6 @@ fun HomeBlockKind.icon(): ImageVector = when (this) {
     HomeBlockKind.RECOMMENDATIONS -> Icons.Filled.Recommend
     HomeBlockKind.ANNOUNCEMENTS -> Icons.Filled.Campaign
     HomeBlockKind.COLLECTIONS -> Icons.Filled.VideoLibrary
-    HomeBlockKind.BLOGGER_VIDEOS -> Icons.Filled.Videocam
     HomeBlockKind.QUICK_ACTIONS -> Icons.Filled.Bolt
 }
 
@@ -43,6 +41,5 @@ fun HomeBlockKind.color(): Color = when (this) {
     HomeBlockKind.RECOMMENDATIONS -> YummySemanticColors.StatusPostponed
     HomeBlockKind.ANNOUNCEMENTS -> YummySemanticColors.StatusDropped
     HomeBlockKind.COLLECTIONS -> MaterialTheme.colorScheme.secondary
-    HomeBlockKind.BLOGGER_VIDEOS -> MaterialTheme.colorScheme.onSurfaceVariant
     HomeBlockKind.QUICK_ACTIONS -> MaterialTheme.colorScheme.primary
 }

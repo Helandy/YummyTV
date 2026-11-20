@@ -154,6 +154,10 @@ include(":feature:pages:data")
 include(":feature:pages:presentation")
 include(":feature:pages:ui-mobile")
 
+include(":feature:community:api")
+include(":feature:community:presentation")
+include(":feature:community:ui-mobile")
+
 include(":feature:video-download:api")
 include(":feature:video-download:domain")
 include(":feature:video-download:data")

@@ -38,8 +38,6 @@ import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
-import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
-import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -55,7 +53,6 @@ import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
-import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -78,11 +75,9 @@ class HomeViewModelTest : BaseUnitTest() {
     private val detailsNavigator: IDetailsNavigator = mockk()
     private val collectionNavigator: ICollectionNavigator = mockk()
     private val reviewsNavigator: IReviewsNavigator = mockk()
-    private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
     private val scheduleNavigator: IScheduleNavigator = mockk()
     private val catalogSearchOpener: ICatalogSearchOpener = mockk(relaxed = true)
     private val getHomeFeed: GetHomeFeedUseCase = mockk()
-    private val getBloggerVideos: GetBloggerVideosUseCase = mockk()
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase = mockk()
     private val refreshHomeFeed: RefreshHomeFeedUseCase = mockk()
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase = mockk()
@@ -137,13 +132,10 @@ class HomeViewModelTest : BaseUnitTest() {
         every { collectionNavigator.getCollectionDest(any()) } returns navKey
         every { collectionNavigator.getCollectionsCatalogDest() } returns navKey
         every { reviewsNavigator.feed() } returns navKey
-        every { bloggerVideosNavigator.feed() } returns navKey
-        every { bloggerVideosNavigator.video(any()) } returns navKey
         every { scheduleNavigator.getScheduleDest() } returns navKey
         coEvery { getCachedHomeFeed() } returns null
         coEvery { getHomeFeed() } returns feed()
         coEvery { refreshHomeFeed() } returns feed()
-        coEvery { getBloggerVideos(any(), any(), any(), any(), any()) } returns emptyList()
         coEvery { setAnimeRecommendationIgnored(any(), any()) } returns true
         coEvery { getRecentlyAiredSchedule(any()) } returns emptyList()
     }
@@ -155,11 +147,9 @@ class HomeViewModelTest : BaseUnitTest() {
         detailsNavigator = detailsNavigator,
         collectionNavigator = collectionNavigator,
         reviewsNavigator = reviewsNavigator,
-        bloggerVideosNavigator = bloggerVideosNavigator,
         scheduleNavigator = scheduleNavigator,
         catalogSearchOpener = catalogSearchOpener,
         getHomeFeed = getHomeFeed,
-        getBloggerVideos = getBloggerVideos,
         getCachedHomeFeed = getCachedHomeFeed,
         refreshHomeFeed = refreshHomeFeed,
         refreshRemoteContinueWatching = refreshRemoteContinueWatching,
@@ -338,20 +328,6 @@ class HomeViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.ScreenResumed)
 
         assertEquals(listOf(newItem), vm.currentState.feed?.continueWatchingItems)
-    }
-
-    @Test
-    fun `blogger videos load and failure shows an error`() {
-        val video: BloggerVideo = mockk()
-        coEvery { getBloggerVideos(any(), any(), any(), any(), any()) } returns listOf(video)
-        val vm = createViewModel()
-        assertEquals(listOf(video), vm.currentState.bloggerVideos)
-        assertFalse(vm.currentState.isBloggerVideosLoading)
-
-        coEvery { getBloggerVideos(any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
-        vm.setEvent(Event.BloggerVideosRetrySelected)
-
-        assertEquals("boom", (vm.currentState.bloggerVideosError as UiText.Failure).cause.message)
     }
 
     @Test
@@ -590,13 +566,10 @@ class HomeViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.CollectionsCatalogSelected)
         vm.setEvent(Event.ScheduleSelected)
         vm.setEvent(Event.ReviewsSelected)
-        vm.setEvent(Event.BloggerVideosSelected)
-        vm.setEvent(Event.BloggerVideoSelected(mockk<BloggerVideo> { every { id } returns 8 }))
 
-        verify(exactly = 7) { nav.navigate(navKey) }
+        verify(exactly = 5) { nav.navigate(navKey) }
         verify(exactly = 1) { detailsNavigator.getDetailsDest(3) }
         verify(exactly = 1) { collectionNavigator.getCollectionDest(4) }
-        verify(exactly = 1) { bloggerVideosNavigator.video(8) }
     }
 
     @Test

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="community_title">Спільнота</string>
+    <string name="community_all">Усі</string>
+    <string name="community_section_news">Новини</string>
+    <string name="community_section_reviews">Рецензії</string>
+    <string name="community_section_collections">Колекції</string>
+    <string name="community_section_schedule">Розклад</string>
+    <string name="community_section_chat">Чат</string>
+    <string name="community_section_friends">Друзі</string>
+    <string name="community_section_users">Користувачі</string>
+    <string name="community_section_about">Про нас</string>
+    <string name="community_videos_title">Від блогерів</string>
+    <string name="community_news_load_error">Не вдалося завантажити новини</string>
+    <string name="community_videos_load_error">Не вдалося завантажити відео блогерів</string>
+</resources>

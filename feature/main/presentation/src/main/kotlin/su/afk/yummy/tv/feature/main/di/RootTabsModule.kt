@@ -8,6 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
 import su.afk.yummy.tv.feature.collection.navigator.CollectionsCatalogDestination
+import su.afk.yummy.tv.feature.community.navigator.CommunityDestination
 import su.afk.yummy.tv.feature.home.navigator.HomeDestination
 import su.afk.yummy.tv.feature.library.navigator.LibraryDestination
 import su.afk.yummy.tv.feature.library.navigator.LibraryHistoryDestination
@@ -27,6 +28,7 @@ internal object RootTabsModule {
         RootTab.CATALOG to CatalogDestination(),
         RootTab.HOME to HomeDestination,
         RootTab.POSTS to PostsDestination,
+        RootTab.COMMUNITY to CommunityDestination,
         RootTab.COLLECTIONS to CollectionsCatalogDestination,
         RootTab.SCHEDULE to ScheduleDestination,
         RootTab.LIBRARY to LibraryDestination,
