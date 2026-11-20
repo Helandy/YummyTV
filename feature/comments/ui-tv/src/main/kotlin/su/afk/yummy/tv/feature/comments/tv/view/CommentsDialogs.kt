@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -39,7 +39,7 @@ internal fun CommentsDialogs(
             title = { Text(stringResource(R.string.comments_delete_title)) },
             text = { Text(stringResource(R.string.comments_delete_message)) },
             confirmButton = {
-                TextButton(
+                TvDialogButton(
                     onClick = onDeleteConfirmed,
                     enabled = !isMutating,
                     modifier = Modifier.focusRequester(confirmFocusRequester),
@@ -48,7 +48,7 @@ internal fun CommentsDialogs(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onDeleteDismissed, enabled = !isMutating) {
+                TvDialogButton(onClick = onDeleteDismissed, enabled = !isMutating) {
                     Text(stringResource(CoreR.string.common_cancel))
                 }
             },
@@ -65,7 +65,7 @@ internal fun CommentsDialogs(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(stringResource(R.string.comments_report_message))
                     CommentReportReason.entries.forEachIndexed { index, reason ->
-                        TextButton(
+                        TvDialogButton(
                             onClick = { onReportConfirmed(reason) },
                             enabled = !isMutating,
                             modifier = if (index == 0) {
@@ -81,7 +81,7 @@ internal fun CommentsDialogs(
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = onReportDismissed, enabled = !isMutating) {
+                TvDialogButton(onClick = onReportDismissed, enabled = !isMutating) {
                     Text(stringResource(CoreR.string.common_cancel))
                 }
             },

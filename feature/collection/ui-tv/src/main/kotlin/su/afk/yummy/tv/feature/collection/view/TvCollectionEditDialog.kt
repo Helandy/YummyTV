@@ -9,7 +9,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -79,7 +79,7 @@ internal fun TvCollectionEditDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm, enabled = title.isNotBlank() && !isUpdating) {
+            TvDialogButton(onClick = onConfirm, enabled = title.isNotBlank() && !isUpdating) {
                 if (isUpdating) {
                     YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
@@ -88,7 +88,7 @@ internal fun TvCollectionEditDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isUpdating) {
+            TvDialogButton(onClick = onDismiss, enabled = !isUpdating) {
                 Text(stringResource(CoreR.string.common_cancel))
             }
         },

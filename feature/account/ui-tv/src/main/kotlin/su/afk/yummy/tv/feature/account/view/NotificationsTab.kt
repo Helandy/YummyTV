@@ -21,7 +21,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -233,13 +233,13 @@ internal fun NotificationsTab(
             title = { Text(stringResource(R.string.account_mark_all_read_title)) },
             text = { Text(stringResource(R.string.account_mark_all_read_message)) },
             confirmButton = {
-                TextButton(onClick = {
+                TvDialogButton(onClick = {
                     notificationsTabState.showReadAllConfirm = false
                     onMarkAllRead?.invoke()
                 }) { Text(stringResource(R.string.account_mark_all_read)) }
             },
             dismissButton = {
-                TextButton(onClick = { notificationsTabState.showReadAllConfirm = false }) {
+                TvDialogButton(onClick = { notificationsTabState.showReadAllConfirm = false }) {
                     Text(stringResource(CoreR.string.common_cancel))
                 }
             },
@@ -253,13 +253,13 @@ internal fun NotificationsTab(
             title = { Text(stringResource(R.string.account_delete_all_notifications_title)) },
             text = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
             confirmButton = {
-                TextButton(onClick = {
+                TvDialogButton(onClick = {
                     notificationsTabState.showDeleteAllConfirm = false
                     onNotificationsEvent(NotificationsState.Event.AllNotificationsDeleteSelected)
                 }) { Text(stringResource(R.string.account_delete_all_notifications)) }
             },
             dismissButton = {
-                TextButton(onClick = { notificationsTabState.showDeleteAllConfirm = false }) {
+                TvDialogButton(onClick = { notificationsTabState.showDeleteAllConfirm = false }) {
                     Text(stringResource(CoreR.string.common_cancel))
                 }
             },

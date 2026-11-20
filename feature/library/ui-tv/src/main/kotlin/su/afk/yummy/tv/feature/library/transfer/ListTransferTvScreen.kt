@@ -13,7 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.feature.library.model.ListTransferExportSummaryUi
@@ -211,15 +210,12 @@ private fun ListTransferTvExitImportDialog(
         title = { Text(stringResource(R.string.library_transfer_exit_import_title)) },
         text = { Text(stringResource(R.string.library_transfer_exit_import_message)) },
         confirmButton = {
-            TextButton(onClick = onConfirmExit) {
-                Text(
-                    text = stringResource(R.string.library_transfer_exit_import_confirm),
-                    color = YummySemanticColors.Destructive,
-                )
+            TvDialogButton(onClick = onConfirmExit, destructive = true) {
+                Text(text = stringResource(R.string.library_transfer_exit_import_confirm))
             }
         },
         dismissButton = {
-            TextButton(
+            TvDialogButton(
                 onClick = onContinue,
                 modifier = Modifier.focusRequester(continueFocusRequester),
             ) {
