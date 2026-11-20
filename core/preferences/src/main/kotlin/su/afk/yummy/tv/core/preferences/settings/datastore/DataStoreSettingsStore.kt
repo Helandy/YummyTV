@@ -22,7 +22,6 @@ import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountShortcutsExpandedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
@@ -163,7 +162,6 @@ internal class DataStoreSettingsStore @Inject constructor(
             homeBlocks = prefs[homeBlocksKey].toHomeBlocks(prefs[newEpisodesSectionEnabledKey] ?: true),
             detailsSections = prefs[detailsSectionsKey].toDetailsSections(),
             seasonalDecorationsEnabled = prefs[seasonalDecorationsEnabledKey] ?: true,
-            accountShortcutsExpanded = prefs[accountShortcutsExpandedKey] ?: false,
         )
     }
 

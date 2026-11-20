@@ -53,7 +53,6 @@ class SettingsState {
         val showEpisodeFlags: Boolean = true,
         val newEpisodesSectionEnabled: Boolean = true,
         val seasonalDecorationsEnabled: Boolean = true,
-        val accountShortcutsExpanded: Boolean = false,
         val seasonalTheme: SeasonalTheme = SeasonalTheme.NONE,
         val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
         val showLibraryTitleYear: Boolean = false,
@@ -166,7 +165,6 @@ class SettingsState {
 
         /** Пользователь включил или выключил праздничное оформление. */
         data object SeasonalDecorationsToggled : Event
-        data object AccountShortcutsToggled : Event
 
         /** Пользователь включил или выключил блок новых серий на главной. */
         data object NewEpisodesSectionToggled : Event

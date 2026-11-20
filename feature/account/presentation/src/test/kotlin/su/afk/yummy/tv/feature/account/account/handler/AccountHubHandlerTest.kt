@@ -57,13 +57,20 @@ class AccountHubHandlerTest : BaseUnitTest() {
         val summary: UserProfileSummary = mockk()
         coEvery { getCachedSummary(USER_ID) } returns summary
         coEvery { getCachedStats(USER_ID) } throws IllegalStateException("room")
-        coEvery { getCachedNotifications(20) } returns null
 
         val cached = createHandler().loadCached(USER_ID)
 
         assertEquals(summary, cached.profileSummary)
         assertNull(cached.stats)
-        assertNull(cached.notifications)
+    }
+
+    @Test
+    fun `cached notifications are empty when nothing is stored or the read fails`() = runTest {
+        coEvery { getCachedNotifications(20) } returns null
+        assertNull(createHandler().loadCachedNotifications())
+
+        coEvery { getCachedNotifications(20) } throws IllegalStateException("room")
+        assertNull(createHandler().loadCachedNotifications())
     }
 
     @Test

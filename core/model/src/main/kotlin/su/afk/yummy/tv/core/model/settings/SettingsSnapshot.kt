@@ -41,7 +41,6 @@ data class SettingsSnapshot(
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val seasonalDecorationsEnabled: Boolean = true,
-    val accountShortcutsExpanded: Boolean = false,
     val libraryTabOrder: List<LibraryTabKind> = LibraryTabKind.entries,
     val homeBlocks: List<HomeBlockConfig> = HomeBlockConfig.default,
     val detailsSections: List<DetailsSectionConfig> = DetailsSectionConfig.default,

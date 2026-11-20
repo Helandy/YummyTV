@@ -102,8 +102,6 @@
     <string name="settings_details_button_move_down">Перемістити нижче</string>
     <string name="settings_watch_next_label">Продовжити перегляд</string>
     <string name="settings_watch_next_enabled">Синхронізується з TV Home</string>
-    <string name="settings_account_shortcuts_expanded">Окремі кнопки в акаунті</string>
-    <string name="settings_account_shortcuts_expanded_hint">Показувати «Пошук користувачів» і «Відкладений перегляд» окремими кнопками на вкладці акаунта</string>
     <string name="settings_seasonal_decorations">Святкове оформлення</string>
     <string name="settings_seasonal_decorations_halloween">Оформлення до Гелловіну: з 20.10 по 02.11</string>
     <string name="settings_seasonal_decorations_new_year">Новорічне оформлення: з 15.12 по 10.01</string>
@@ -360,7 +358,6 @@
     <string name="settings_home_block_recommendations">Рекомендації</string>
     <string name="settings_home_block_announcements">Незабаром</string>
     <string name="settings_home_block_collections">Колекції</string>
-    <string name="settings_home_block_blogger_videos">Від блогерів</string>
     <string name="settings_home_block_quick_actions">Ще</string>
     <string name="settings_details_sections_title">Розділи сторінки аніме</string>
     <string name="settings_details_sections_hint">Показати, приховати та переставити розділи на сторінці аніме</string>

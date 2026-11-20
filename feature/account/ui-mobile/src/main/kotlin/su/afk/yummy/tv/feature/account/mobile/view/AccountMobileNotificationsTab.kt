@@ -16,8 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,47 +25,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.mobile.MobileAlertDialog
-import su.afk.yummy.tv.core.designsystem.mobile.state.MobileBlockingLoading
-import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.notifications.NotificationsState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 
 @Composable
 internal fun AccountMobileNotificationsTab(
-    state: AccountState.State,
-    onEvent: (AccountState.Event) -> Unit,
+    state: NotificationsState.State,
+    onEvent: (NotificationsState.Event) -> Unit,
+    /** Пользователь открыл уведомление или ссылку из него: экран держит лоадер до перехода. */
+    onOpenNotification: () -> Unit,
 ) {
     var showDeleteAllConfirm by remember { mutableStateOf(false) }
     var showReadAllConfirm by remember { mutableStateOf(false) }
-    // Защёлка: VM гасит isNotificationOpening за кадр до navigate, иначе лоадер мигает.
-    var isOpeningNotification by remember { mutableStateOf(false) }
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) isOpeningNotification = false
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-    LaunchedEffect(state.isNotificationOpening, state.hubError) {
-        if (!state.isNotificationOpening && state.hubError != null) isOpeningNotification = false
-    }
-    LaunchedEffect(isOpeningNotification) {
-        if (isOpeningNotification) {
-            delay(OPENING_LOADER_TIMEOUT_MS)
-            isOpeningNotification = false
-        }
-    }
     val unreadCount = state.unreadNotificationCount
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         AccountMobileMySubscriptionsRow(
-            onClick = { onEvent(AccountState.Event.MySubscriptionsSelected) },
+            onClick = { onEvent(NotificationsState.Event.MySubscriptionsSelected) },
         )
         AccountMobileNotificationTypeBadges(state.unreadNotificationCounts)
         if (unreadCount > 0 || state.notifications.isNotEmpty()) {
@@ -133,21 +109,21 @@ internal fun AccountMobileNotificationsTab(
                     AccountMobileNotificationRow(
                         notification = notification,
                         onClick = {
-                            isOpeningNotification = true
-                            onEvent(AccountState.Event.NotificationSelected(notification.id))
+                            onOpenNotification()
+                            onEvent(NotificationsState.Event.NotificationSelected(notification.id))
                         },
-                        onRead = { onEvent(AccountState.Event.NotificationReadSelected(notification.id)) },
+                        onRead = { onEvent(NotificationsState.Event.NotificationReadSelected(notification.id)) },
                         expanded = notification.id in state.expandedNotificationIds,
                         onToggleExpand = {
-                            onEvent(AccountState.Event.NotificationExpandToggled(notification.id))
+                            onEvent(NotificationsState.Event.NotificationExpandToggled(notification.id))
                         },
                         onLinkClick = { slug ->
-                            isOpeningNotification = true
-                            onEvent(AccountState.Event.NotificationLinkSelected(notification.id, slug))
+                            onOpenNotification()
+                            onEvent(NotificationsState.Event.NotificationLinkSelected(notification.id, slug))
                         },
                         onDelete = {
                             onEvent(
-                                AccountState.Event.NotificationDeleteSelected(
+                                NotificationsState.Event.NotificationDeleteSelected(
                                     notification.id
                                 )
                             )
@@ -158,7 +134,7 @@ internal fun AccountMobileNotificationsTab(
                     AccountMobileLoadingIndicator()
                 } else if (state.hasMoreNotifications) {
                     TextButton(
-                        onClick = { onEvent(AccountState.Event.NotificationsLoadMoreSelected) },
+                        onClick = { onEvent(NotificationsState.Event.NotificationsLoadMoreSelected) },
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                     ) {
                         Text(stringResource(R.string.account_notifications_load_more))
@@ -174,7 +150,7 @@ internal fun AccountMobileNotificationsTab(
             confirmText = stringResource(R.string.account_mark_all_read),
             onConfirm = {
                     showReadAllConfirm = false
-                    onEvent(AccountState.Event.AllNotificationsReadSelected)
+                    onEvent(NotificationsState.Event.AllNotificationsReadSelected)
                 },
             dismissText = stringResource(CoreR.string.common_cancel),
             onDismiss = { showReadAllConfirm = false },
@@ -188,16 +164,11 @@ internal fun AccountMobileNotificationsTab(
             confirmText = stringResource(R.string.account_delete_all_notifications),
             onConfirm = {
                     showDeleteAllConfirm = false
-                    onEvent(AccountState.Event.AllNotificationsDeleteSelected)
+                    onEvent(NotificationsState.Event.AllNotificationsDeleteSelected)
                 },
             dismissText = stringResource(CoreR.string.common_cancel),
             onDismiss = { showDeleteAllConfirm = false },
             content = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
         )
     }
-    if (state.isNotificationOpening || isOpeningNotification) {
-        MobileBlockingLoading()
-    }
 }
-
-private const val OPENING_LOADER_TIMEOUT_MS = 15_000L

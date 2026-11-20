@@ -9,6 +9,9 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.account.ITvAccountEntry
 import su.afk.yummy.tv.feature.account.account.AccountTvScreen
 import su.afk.yummy.tv.feature.account.account.AccountViewModel
+import su.afk.yummy.tv.feature.account.notifications.NotificationsViewModel
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsTvScreen
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsViewModel
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
@@ -22,11 +25,19 @@ class AccountNavRegistrar @Inject constructor() : ITvAccountEntry {
         with(builder) {
             entry<AccountDestination> {
                 val viewModel = hiltViewModel<AccountViewModel>()
+                val notificationsViewModel = hiltViewModel<NotificationsViewModel>()
+                val notificationsState by notificationsViewModel.state.collectAsStateWithLifecycle()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     val isActiveDestination = nav.appBackStack.isEmpty() &&
                             nav.backStack.lastOrNull() == AccountDestination
                     CompositionLocalProvider(LocalAccountTvActiveDestination provides isActiveDestination) {
-                        AccountTvScreen(state = state, effect = effect, onEvent = onEvent)
+                        AccountTvScreen(
+                            state = state,
+                            notificationsState = notificationsState,
+                            effect = effect,
+                            onEvent = onEvent,
+                            onNotificationsEvent = notificationsViewModel::setEvent,
+                        )
                     }
                 }
             }

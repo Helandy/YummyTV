@@ -21,6 +21,10 @@ data object UserSearchDestination : NavKey
 @Serializable
 data object MySubscriptionsDestination : NavKey
 
+/** Список уведомлений отдельным экраном (мобильная сборка). */
+@Serializable
+data object AccountNotificationsDestination : NavKey
+
 @Serializable
 data object ProfileEditDestination : NavKey
 

@@ -1,17 +1,10 @@
 package su.afk.yummy.tv.feature.account.account
 
 import androidx.compose.runtime.Immutable
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.PersistentSet
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
-import su.afk.yummy.tv.domain.account.model.NotificationCount
-import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -24,7 +17,6 @@ class AccountState {
         val isSessionResolved: Boolean = false,
         val isSignedIn: Boolean = false,
         /** Пункты аккаунта показываются отдельными кнопками, а не сгруппированы (настройка). */
-        val shortcutsExpanded: Boolean = false,
         val userId: Int = 0,
         val nickname: String = "",
         val avatarUrl: String = "",
@@ -35,16 +27,9 @@ class AccountState {
         val selectedTab: AccountTab = AccountTab.STATS,
         val profileSummary: UserProfileSummary? = null,
         val stats: UserStats? = null,
-        val notifications: ImmutableList<ProfileNotification> = persistentListOf(),
-        val notificationCounts: ImmutableList<NotificationCount> = persistentListOf(),
-        val isNotificationOpening: Boolean = false,
-        /** Уведомления, развёрнутые пользователем до полного текста. */
-        val expandedNotificationIds: PersistentSet<Int> = persistentSetOf(),
+        /** Число непрочитанных уведомлений для значка на кнопке; сам список ведёт NotificationsViewModel. */
+        val unreadNotificationCount: Int = 0,
         val isStatsLoading: Boolean = false,
-        val isNotificationsLoading: Boolean = false,
-        val isNotificationsLoadingMore: Boolean = false,
-        /** Последняя страница оказалась полной — на сервере могут быть ещё уведомления. */
-        val hasMoreNotifications: Boolean = false,
         val isCaptchaRequired: Boolean = false,
         val captchaSiteKey: String = YANI_HCAPTCHA_SITE_KEY,
         val captchaChallengeId: Int = 0,
@@ -52,17 +37,8 @@ class AccountState {
         val error: AccountUiError? = null,
         val errorMessage: String? = null,
         val hubError: AccountUiError? = null,
-        /** Техническая причина ошибки загрузки уведомлений (код ответа, исключение). */
-        val hubErrorDetails: String? = null,
         val localAuthServerState: LocalAuthServerState = LocalAuthServerState.Idle,
-    ) : UiState {
-        val unreadNotificationCounts: ImmutableList<NotificationCount>
-            get() = notificationCounts.filterNot { it.type.equals("message", ignoreCase = true) }
-                .toImmutableList()
-
-        val unreadNotificationCount: Int
-            get() = unreadNotificationCounts.sumOf { it.count }
-    }
+    ) : UiState
 
     enum class AccountTab {
         STATS,
@@ -106,16 +82,10 @@ class AccountState {
 
         /** Пользователь открыл скачанные серии на устройстве. */
         data object DownloadedEpisodesSelected : Event
-        data object WatchLaterSelected : Event
 
 
-        /** Экран показан — перечитываем уведомления, если их кэш успел устареть. */
+        /** Экран показан — перечитываем данные профиля, если их кэш успел устареть. */
         data object ScreenShown : Event
-
-        data object UserSearchSelected : Event
-
-        /** Переход к списку своих друзей. */
-        data object FriendsSelected : Event
 
         /** Переход к FAQ из быстрых действий аккаунта. */
         data object FaqSelected : Event
@@ -129,35 +99,11 @@ class AccountState {
         /** Переход к настройкам приложения из быстрых действий аккаунта. */
         data object SettingsSelected : Event
 
-        /** Переход к списку подписок пользователя. */
-        data object MySubscriptionsSelected : Event
+        /** Открыть список уведомлений отдельным экраном. */
+        data object NotificationsSelected : Event
         data object ProfileEditSelected : Event
         data object PasswordResetSelected : Event
         data object RegistrationSelected : Event
-
-        /** Пользователь открыл уведомление с указанным идентификатором. */
-        data class NotificationSelected(val id: Int) : Event
-
-        /** Пользователь развернул или свернул уведомление с указанным идентификатором. */
-        data class NotificationExpandToggled(val id: Int) : Event
-
-        /** Пользователь выбрал ссылку на аниме [slug] в тексте уведомления [notificationId]. */
-        data class NotificationLinkSelected(val notificationId: Int, val slug: String) : Event
-
-        /** Пользователь отметил уведомление с указанным идентификатором прочитанным. */
-        data class NotificationReadSelected(val id: Int) : Event
-
-        /** Пользователь отметил все уведомления прочитанными. */
-        data object AllNotificationsReadSelected : Event
-
-        /** Пользователь удалил все уведомления. */
-        data object AllNotificationsDeleteSelected : Event
-
-        /** Пользователь запросил следующую страницу уведомлений. */
-        data object NotificationsLoadMoreSelected : Event
-
-        /** Пользователь удалил уведомление с указанным идентификатором. */
-        data class NotificationDeleteSelected(val id: Int) : Event
 
         /** ТВ: поднять локальный сервер и показать PIN для передачи сессии с телефона. */
         data object StartLocalAuthServerSelected : Event
