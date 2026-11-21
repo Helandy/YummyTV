@@ -39,28 +39,33 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
                 dubbing = source.dubbing,
                 iframeUrl = source.episode.iframeUrl,
             )
-            when (val result = resolvePlayerStream(
-                PlayerStreamRequest(
-                    iframeUrl = refreshedItem.iframeUrl,
-                    autoQualityLabel = resolveQualityLabel,
-                    forceRefresh = forceRefresh,
+            when (
+                val result = resolvePlayerStream(
+                    PlayerStreamRequest(
+                        iframeUrl = refreshedItem.iframeUrl,
+                        autoQualityLabel = resolveQualityLabel,
+                        forceRefresh = forceRefresh,
+                    ),
                 )
-            )) {
+            ) {
                 is PlayerStreamResolveResult.Stream -> result.toRefreshResult(
                     item = refreshedItem,
                     autoQualityLabel = normalizedAutoLabel,
                 )
 
                 is PlayerStreamResolveResult.KodikBlocked -> VideoDownloadStreamRefreshResult.Failure(
-                    result.message ?: REFRESH_ERROR_MESSAGE,
+                    message = result.message ?: REFRESH_ERROR_MESSAGE,
+                    diagnostic = "KodikBlocked status=${result.statusCode}",
                 )
 
                 is PlayerStreamResolveResult.Unavailable -> VideoDownloadStreamRefreshResult.Failure(
-                    result.message ?: DUBBING_UNAVAILABLE_MESSAGE,
+                    message = result.message ?: DUBBING_UNAVAILABLE_MESSAGE,
+                    diagnostic = "Unavailable cause=${result.cause}",
                 )
 
                 is PlayerStreamResolveResult.Failed -> VideoDownloadStreamRefreshResult.Failure(
-                    REFRESH_ERROR_MESSAGE,
+                    message = REFRESH_ERROR_MESSAGE,
+                    diagnostic = "ResolveFailed reason=${result.reason}",
                 )
 
                 PlayerStreamResolveResult.Unsupported -> VideoDownloadStreamRefreshResult.Failure(
@@ -69,9 +74,11 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
             }
         }.getOrElse { throwable ->
             VideoDownloadStreamRefreshResult.Failure(
-                throwable.message.takeIf { message ->
+                message = throwable.message.takeIf { message ->
                     message == DUBBING_UNAVAILABLE_MESSAGE
                 } ?: REFRESH_ERROR_MESSAGE,
+                diagnostic = "Exception ${throwable::class.java.simpleName}: ${throwable.message}",
+                cause = throwable,
             )
         }
     }
@@ -83,9 +90,9 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
         ).videos
         val candidates = videos.filter { candidate ->
             candidate.episode == episode &&
-                    candidate.player == playerName &&
-                    candidate.dubbing == dubbing &&
-                    candidate.iframeUrl.isNotBlank()
+                candidate.player == playerName &&
+                candidate.dubbing == dubbing &&
+                candidate.iframeUrl.isNotBlank()
         }
         val refreshedEpisode = candidates.firstOrNull { it.id == videoId }
             ?: playerId?.let { previousPlayerId ->
@@ -186,10 +193,10 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
 
     private fun String.isReusableDownloadHeader(): Boolean =
         !equals(ACCESS_CONTROL_REQUEST_HEADERS_HEADER, ignoreCase = true) &&
-                !equals(ACCESS_CONTROL_REQUEST_METHOD_HEADER, ignoreCase = true) &&
-                !equals(HOST_HEADER, ignoreCase = true) &&
-                !equals(RANGE_HEADER, ignoreCase = true) &&
-                !startsWith(SEC_FETCH_HEADER_PREFIX, ignoreCase = true)
+            !equals(ACCESS_CONTROL_REQUEST_METHOD_HEADER, ignoreCase = true) &&
+            !equals(HOST_HEADER, ignoreCase = true) &&
+            !equals(RANGE_HEADER, ignoreCase = true) &&
+            !startsWith(SEC_FETCH_HEADER_PREFIX, ignoreCase = true)
 
     private companion object {
         const val DEFAULT_AUTO_QUALITY_LABEL = "Auto"

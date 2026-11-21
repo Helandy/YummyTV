@@ -7,5 +7,8 @@ sealed interface VideoDownloadStreamRefreshResult {
 
     data class Failure(
         val message: String,
+        /** Техническая причина для диагностики (тип результата резолвера, HTTP-код); пользователю не показывается. */
+        val diagnostic: String? = null,
+        val cause: Throwable? = null,
     ) : VideoDownloadStreamRefreshResult
 }

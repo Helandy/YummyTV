@@ -116,6 +116,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                     strategy = strategy,
                     reason = reason,
                     message = result.message,
+                    throwable = result.cause,
                 )
             }
         }
@@ -443,7 +444,11 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             }
 
             is VideoDownloadStreamRefreshResult.Failure ->
-                DownloadStreamRefresh.Failure(refreshResult.message)
+                DownloadStreamRefresh.Failure(
+                    message = listOfNotNull(refreshResult.message, refreshResult.diagnostic)
+                        .joinToString(" | "),
+                    cause = refreshResult.cause,
+                )
         }
     }
 
@@ -463,7 +468,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
 
     private sealed interface DownloadStreamRefresh {
         data class Success(val item: VideoDownloadItem) : DownloadStreamRefresh
-        data class Failure(val message: String) : DownloadStreamRefresh
+        data class Failure(val message: String, val cause: Throwable? = null) : DownloadStreamRefresh
     }
 
     private enum class DownloadRestartReason {
