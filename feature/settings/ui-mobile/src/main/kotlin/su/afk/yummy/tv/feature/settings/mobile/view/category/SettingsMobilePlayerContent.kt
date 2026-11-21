@@ -114,6 +114,8 @@ internal fun SettingsMobilePlayerContent(
                     onClick = { onEvent(SettingsState.Event.VolumeStabilizationToggled) },
                 )
             }
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_section_video)) {
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_video_enhancement_label),
                 valueLabel = { VideoEnhancementMode.entries[it].label() },
@@ -124,6 +126,12 @@ internal fun SettingsMobilePlayerContent(
                 onValueCommitted = {
                     onEvent(SettingsState.Event.VideoEnhancementModeSelected(VideoEnhancementMode.entries[it]))
                 },
+            )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_keep_video_enhancement_on_drops_title),
+                hint = stringResource(R.string.settings_keep_video_enhancement_on_drops_hint),
+                enabled = state.keepVideoEnhancementOnFrameDrops,
+                onClick = { onEvent(SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled) },
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {

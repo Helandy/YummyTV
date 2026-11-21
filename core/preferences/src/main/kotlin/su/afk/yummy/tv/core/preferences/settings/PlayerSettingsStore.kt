@@ -67,6 +67,9 @@ interface PlayerSettingsStore {
     /** Улучшение картинки в плеере: выключено, резкость или Anime4K. */
     val videoEnhancementMode: Flow<VideoEnhancementMode>
 
+    /** Не отключать улучшение картинки автоматически при дропе кадров. */
+    val keepVideoEnhancementOnFrameDrops: Flow<Boolean>
+
     /** Аудиофокус плеера отключён пользователем (плеер не реагирует на перехват фокуса другими приложениями). */
     val audioFocusDisabled: Flow<Boolean>
 
@@ -100,6 +103,7 @@ interface PlayerSettingsStore {
 
     /** Адаптивное качество: плеер сам понижает и повышает качество; предпочитаемое тогда не нужно. */
     suspend fun setAdaptiveVideoQualityEnabled(enabled: Boolean)
+    suspend fun setKeepVideoEnhancementOnFrameDrops(enabled: Boolean)
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean)
     suspend fun setAutoSkipDelaySeconds(seconds: Int)
     suspend fun setShowOpeningOnTimeline(enabled: Boolean)

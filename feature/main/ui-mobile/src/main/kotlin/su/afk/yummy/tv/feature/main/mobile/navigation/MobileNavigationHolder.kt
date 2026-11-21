@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.account.IMobileAccountEntry
 import su.afk.yummy.tv.feature.bloggers.IMobileBloggerVideosEntry
 import su.afk.yummy.tv.feature.collection.IMobileCollectionEntry
+import su.afk.yummy.tv.feature.community.IMobileCommunityEntry
 import su.afk.yummy.tv.feature.comments.IMobileCommentsEntry
 import su.afk.yummy.tv.feature.commonscreen.navigator.IErrorScreenEntry
 import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewEntry
@@ -37,6 +38,7 @@ class MobileNavigationHolder @Inject constructor(
     account: IMobileAccountEntry,
     bloggerVideos: IMobileBloggerVideosEntry,
     collection: IMobileCollectionEntry,
+    community: IMobileCommunityEntry,
     comments: IMobileCommentsEntry,
     details: IMobileDetailsEntry,
     faq: IMobileFaqEntry,
@@ -62,6 +64,7 @@ class MobileNavigationHolder @Inject constructor(
         account,
         bloggerVideos,
         collection,
+        community,
         comments,
         details,
         faq,

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="community_title">Community</string>
+    <string name="community_all">All</string>
+    <string name="community_section_news">News</string>
+    <string name="community_section_reviews">Reviews</string>
+    <string name="community_section_collections">Collections</string>
+    <string name="community_section_schedule">Schedule</string>
+    <string name="community_section_chat">Chat</string>
+    <string name="community_section_friends">Friends</string>
+    <string name="community_section_users">Users</string>
+    <string name="community_section_about">About</string>
+    <string name="community_section_glossary">Glossary</string>
+    <string name="community_videos_title">From bloggers</string>
+    <string name="community_news_load_error">Failed to load news</string>
+    <string name="community_videos_load_error">Failed to load blogger videos</string>
+</resources>

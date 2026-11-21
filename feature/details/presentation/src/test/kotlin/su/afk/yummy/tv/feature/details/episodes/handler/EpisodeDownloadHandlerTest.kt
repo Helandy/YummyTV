@@ -6,6 +6,7 @@ import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,6 +16,8 @@ import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.settings.VideoDownloadPreset
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -32,6 +35,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
     private val resolvePlayerStream: ResolvePlayerStreamUseCase = mockk()
     private val enqueueVideoDownload: EnqueueVideoDownloadUseCase = mockk(relaxed = true)
     private val cancelOrDelete: CancelOrDeleteVideoDownloadUseCase = mockk(relaxed = true)
+    private val downloadSettings: VideoDownloadSettingsStore = mockk(relaxed = true)
     private val thumbnailResolver: EpisodeThumbnailResolver = mockk()
     private val strings: StringProvider = mockk()
 
@@ -123,6 +127,53 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
         )
 
         assertEquals(listOf("Alloha", "Kodik"), selection.options.map { it.title })
+    }
+
+    // ---------------- preset ----------------
+
+    @Test
+    fun `preset picks the source with the saved dubbing and player`() = runTest {
+        every { downloadSettings.videoDownloadPreset(ANIME_ID) } returns flowOf(VideoDownloadPreset("AniLibria", "Alloha"))
+
+        val found = createHandler().findPresetVideo(ANIME_ID, listOf(kodik, alloha, dream), emptyMap(), emptySet())
+
+        assertEquals(alloha, found)
+    }
+
+    @Test
+    fun `without a preset or a matching source the pickers are needed`() = runTest {
+        val handler = createHandler()
+        every { downloadSettings.videoDownloadPreset(ANIME_ID) } returns flowOf(null)
+        assertNull(handler.findPresetVideo(ANIME_ID, listOf(kodik, alloha), emptyMap(), emptySet()))
+
+        every { downloadSettings.videoDownloadPreset(ANIME_ID) } returns flowOf(VideoDownloadPreset("Dream Cast", "Alloha"))
+        assertNull(handler.findPresetVideo(ANIME_ID, listOf(kodik, alloha, dream), emptyMap(), emptySet()))
+    }
+
+    @Test
+    fun `preset source that is already downloading or resolving falls back to the pickers`() = runTest {
+        every { downloadSettings.videoDownloadPreset(ANIME_ID) } returns flowOf(VideoDownloadPreset("AniLibria", "Kodik"))
+        val handler = createHandler()
+
+        val busy = mapOf(key(kodik) to status(EpisodeDownloadUiStatus.Downloading))
+        assertNull(handler.findPresetVideo(ANIME_ID, listOf(kodik), busy, emptySet()))
+        assertNull(handler.findPresetVideo(ANIME_ID, listOf(kodik), emptyMap(), setOf(key(kodik))))
+
+        val failed = mapOf(key(kodik) to status(EpisodeDownloadUiStatus.Failed))
+        assertEquals(kodik, handler.findPresetVideo(ANIME_ID, listOf(kodik), failed, emptySet()))
+    }
+
+    @Test
+    fun `preset is saved from the chosen video and can be cleared`() = runTest {
+        val handler = createHandler()
+
+        handler.savePreset(ANIME_ID, alloha)
+        handler.clearPreset(ANIME_ID)
+
+        coVerifyOrder {
+            downloadSettings.setVideoDownloadPreset(ANIME_ID, VideoDownloadPreset("AniLibria", "Alloha"))
+            downloadSettings.setVideoDownloadPreset(ANIME_ID, null)
+        }
     }
 
     // ---------------- prepare ----------------
@@ -276,6 +327,7 @@ class EpisodeDownloadHandlerTest : BaseUnitTest() {
         prepareDownloadQualities = PrepareVideoDownloadQualityOptionsUseCase(),
         enqueueVideoDownload = enqueueVideoDownload,
         cancelOrDeleteVideoDownload = cancelOrDelete,
+        downloadSettings = downloadSettings,
         thumbnailResolver = thumbnailResolver,
         strings = strings,
     )

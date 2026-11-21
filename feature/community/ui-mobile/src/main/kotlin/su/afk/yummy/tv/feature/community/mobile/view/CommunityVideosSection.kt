@@ -1,8 +1,9 @@
-package su.afk.yummy.tv.feature.home.mobile.view
+package su.afk.yummy.tv.feature.community.mobile.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,8 +24,9 @@ import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 
+/** Горизонтальная лента последних видео блогеров с заголовком и переходом ко всем. */
 @Composable
-internal fun MobileHomeBloggerVideosSection(
+internal fun CommunityVideosSection(
     title: String,
     allLabel: String,
     videos: List<BloggerVideo>,
@@ -40,9 +42,9 @@ internal fun MobileHomeBloggerVideosSection(
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
-            items(videos, key = { lazyKey("bloggervideo", it.id) }) { video ->
+            items(videos, key = { lazyKey("communityvideo", it.id) }) { video ->
                 ElevatedCard(
                     shape = MaterialTheme.shapes.medium,
                     colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),

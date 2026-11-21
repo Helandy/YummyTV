@@ -6,8 +6,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +36,7 @@ import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.schedule.ScheduleState
 import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileDateChips
+import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileLibraryFilterChip
 import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileReleaseCard
 import su.afk.yummy.tv.feature.schedule.model.ScheduleDayUi
 import su.afk.yummy.tv.feature.schedule.presentation.R
@@ -67,25 +73,33 @@ private fun ScheduleMobileScreenErrorPreview() = ScreenPreviewTheme {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun ScheduleMobileScreen(
-
     state: ScheduleState.State,
     effect: Flow<ScheduleState.Effect>,
     onEvent: (ScheduleState.Event) -> Unit,
-
 ) {
     val schedule = state.tvSchedule
     val dayGroups = schedule.dayGroups
+    val selectedPage = dayGroups
+        .indexOfFirst { it.date.toEpochDay() == schedule.selectedEpochDay }
+        .coerceAtLeast(0)
+    val currentDayGroups by rememberUpdatedState(dayGroups)
+    val currentSelectedEpochDay by rememberUpdatedState(schedule.selectedEpochDay)
     val tabsState = rememberMobileSwipeableTabsState(
-        selectedPage = dayGroups
-            .indexOfFirst { it.date.toEpochDay() == schedule.selectedEpochDay }
-            .coerceAtLeast(0),
+        selectedPage = selectedPage,
         pageCount = dayGroups.size.coerceAtLeast(1),
         onPageSelected = { page ->
-            dayGroups.getOrNull(page)?.let {
-                onEvent(ScheduleState.Event.DateSelected(it.date.toEpochDay()))
+            val epochDay = currentDayGroups.getOrNull(page)?.date?.toEpochDay()
+            if (epochDay != null && epochDay != currentSelectedEpochDay) {
+                onEvent(ScheduleState.Event.DateSelected(epochDay))
             }
         },
     )
+
+    LaunchedEffect(state.onlyInLibrary) {
+        if (dayGroups.isNotEmpty() && tabsState.pagerState.currentPage != selectedPage) {
+            tabsState.pagerState.scrollToPage(selectedPage)
+        }
+    }
 
     BaseScreen(
         isScroll = false,
@@ -93,12 +107,23 @@ fun ScheduleMobileScreen(
             MobileTopBar(
                 title = stringResource(R.string.schedule_mobile_title),
                 onBack = { onEvent(ScheduleState.Event.BackSelected) },
+                actions = {
+                    val showFilterChip = !state.isLoading &&
+                        state.error == null &&
+                        (dayGroups.isNotEmpty() || state.onlyInLibrary)
+                    if (showFilterChip) {
+                        ScheduleMobileLibraryFilterChip(
+                            selected = state.onlyInLibrary,
+                            onToggle = { onEvent(ScheduleState.Event.InLibraryFilterToggled) },
+                        )
+                    }
+                },
             )
         },
         isLoading = state.isLoading,
         error = state.error?.asString()?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(ScheduleState.Event.RetrySelected) },
-        isEmpty = schedule.dayGroups.isEmpty(),
+        isEmpty = !state.onlyInLibrary && dayGroups.isEmpty(),
         errorContent = state.error?.asString()?.let { message ->
             { _, retry ->
                 MobileMessage(
@@ -119,19 +144,28 @@ fun ScheduleMobileScreen(
             transition = tabsState::tabTransition,
         )
 
-        if (dayGroups.isNotEmpty()) {
+        if (dayGroups.isEmpty()) {
+            MobileMessage(
+                title = stringResource(R.string.schedule_filter_in_library_empty),
+                icon = Icons.Filled.DateRange,
+                actionLabel = stringResource(R.string.schedule_filter_show_all),
+                onAction = { onEvent(ScheduleState.Event.InLibraryFilterToggled) },
+                modifier = Modifier.weight(1f),
+            )
+        } else {
             MobileSwipeableTabsPager(
                 state = tabsState,
                 modifier = Modifier.weight(1f),
-                key = { page -> dayGroups[page].date.toEpochDay() },
+                key = { page -> dayGroups.getOrNull(page)?.date?.toEpochDay() ?: page },
             ) { page ->
+                val group = dayGroups.getOrNull(page) ?: return@MobileSwipeableTabsPager
                 PullToRefreshBox(
                     isRefreshing = state.isRefreshing,
                     onRefresh = { onEvent(ScheduleState.Event.RefreshRequested) },
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     ScheduleDayReleases(
-                        group = dayGroups[page],
+                        group = group,
                         now = schedule.now,
                         zone = schedule.zone,
                         onAnimeSelected = { onEvent(ScheduleState.Event.AnimeSelected(it)) },

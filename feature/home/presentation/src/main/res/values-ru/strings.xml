@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_blogger_videos_load_error">Не удалось загрузить видео блогеров</string>
     <string name="home_error_status_hint">Если ошибка повторяется, проверьте статус сервиса: %1$s</string>
     <string name="home_error_status_url">https://yummystatus.me/</string>
     <string name="home_load_error">Не удалось загрузить главную страницу</string>
@@ -15,7 +14,6 @@
     <string name="home_mobile_schedule">Расписание</string>
     <string name="home_mobile_reviews">Рецензии</string>
     <string name="home_mobile_more">Ещё</string>
-    <string name="home_mobile_blogger_videos">От блогеров</string>
     <string name="home_mobile_search_placeholder">Поиск аниме…</string>
     <string name="home_mobile_all">Все</string>
     <string name="home_mobile_recommendation_hide">Не рекомендовать это аниме</string>

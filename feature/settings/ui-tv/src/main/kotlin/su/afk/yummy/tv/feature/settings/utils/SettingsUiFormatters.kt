@@ -22,18 +22,19 @@ import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.hint
+import su.afk.yummy.tv.feature.settings.common.utils.optionalStringResource
 
 @Composable
-internal fun LibraryContinueWatchingCardSize.hint(): String = stringResource(
+internal fun LibraryContinueWatchingCardSize.hint(): String = optionalStringResource(
     when (this) {
         LibraryContinueWatchingCardSize.COMPACT ->
-            R.string.settings_library_continue_watching_card_size_compact_hint_tv
+            null
 
         LibraryContinueWatchingCardSize.STANDARD ->
             R.string.settings_library_continue_watching_card_size_standard_hint
 
         LibraryContinueWatchingCardSize.LARGE ->
-            R.string.settings_library_continue_watching_card_size_large_hint_tv
+            null
     },
 )
 

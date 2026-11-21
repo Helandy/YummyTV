@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -23,15 +25,18 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
+import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
+import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.ExternalListFormat
 import su.afk.yummy.tv.feature.library.model.ListTransferExportSummaryUi
@@ -45,8 +50,8 @@ import su.afk.yummy.tv.feature.library.transfer.view.ListTransferTvImportSection
 import su.afk.yummy.tv.feature.library.utils.KeepTransferScreenOnEffect
 
 @Preview(
-    name = "Default",
-    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    name = "Default (TV 960x540dp)",
+    device = "spec:width=960dp,height=540dp,dpi=320",
     uiMode = Configuration.UI_MODE_TYPE_TELEVISION,
     showBackground = true,
 )
@@ -61,7 +66,7 @@ private fun ListTransferTvScreenDefaultPreview() = ScreenPreviewTheme {
 
 @Preview(
     name = "PreviewAndExported",
-    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    device = "spec:width=960dp,height=540dp,dpi=320",
     uiMode = Configuration.UI_MODE_TYPE_TELEVISION,
     showBackground = true,
 )
@@ -111,8 +116,13 @@ fun ListTransferTvScreen(
     }
 
     val initialFocusRequester = remember { FocusRequester() }
+    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    DisposableEffect(initialFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(initialFocusRequester)
+        onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
     LaunchedEffect(Unit) {
-        runCatching { initialFocusRequester.requestFocus() }
+        requestFocusUntilTimeout(initialFocusRequester)
     }
 
     val colors = MaterialTheme.colorScheme
@@ -123,13 +133,13 @@ fun ListTransferTvScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(colors.background)
-            .padding(horizontal = 48.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(horizontal = TvScreenPadding.Horizontal, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -137,11 +147,15 @@ fun ListTransferTvScreen(
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = colors.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = stringResource(R.string.library_transfer_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             Text(
@@ -154,7 +168,10 @@ fun ListTransferTvScreen(
                 ),
                 style = MaterialTheme.typography.labelMedium,
                 color = colors.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
+                    .widthIn(max = 300.dp)
                     .background(colors.surfaceContainer, RoundedCornerShape(10.dp))
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             )
@@ -177,19 +194,19 @@ fun ListTransferTvScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.Top,
         ) {
             ListTransferTvImportSection(
                 state = state,
                 initialFocusRequester = initialFocusRequester,
                 onEvent = onEvent,
-                modifier = Modifier.weight(1.15f),
+                modifier = Modifier.weight(1.1f),
             )
             ListTransferTvExportSection(
                 state = state,
                 onEvent = onEvent,
-                modifier = Modifier.weight(0.85f),
+                modifier = Modifier.weight(0.9f),
             )
         }
     }
@@ -211,15 +228,12 @@ private fun ListTransferTvExitImportDialog(
         title = { Text(stringResource(R.string.library_transfer_exit_import_title)) },
         text = { Text(stringResource(R.string.library_transfer_exit_import_message)) },
         confirmButton = {
-            TextButton(onClick = onConfirmExit) {
-                Text(
-                    text = stringResource(R.string.library_transfer_exit_import_confirm),
-                    color = YummySemanticColors.Destructive,
-                )
+            TvDialogButton(onClick = onConfirmExit, destructive = true) {
+                Text(text = stringResource(R.string.library_transfer_exit_import_confirm))
             }
         },
         dismissButton = {
-            TextButton(
+            TvDialogButton(
                 onClick = onContinue,
                 modifier = Modifier.focusRequester(continueFocusRequester),
             ) {

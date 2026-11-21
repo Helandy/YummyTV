@@ -66,6 +66,7 @@ import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.adaptiveLimitLabel
 import su.afk.yummy.tv.feature.player.utils.adaptiveQualityActive
 import su.afk.yummy.tv.feature.player.utils.artworkSource
+import su.afk.yummy.tv.feature.player.utils.buildSyntheticHlsMasterUrl
 import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
@@ -178,6 +179,20 @@ class PlayerViewModel @AssistedInject internal constructor(
 
         override fun streamErrorMessage(): String =
             sourceStreamHandler.playbackErrorMessage(strings.get(R.string.player_stream_error))
+    }
+
+    /**
+     * В синтетическом master выбранное качество — только потолок для ABR, поток не пересоздаётся. Пользователь
+     * поднял лимит — поднимаем потолок сразу, а не ждём, пока адаптация сама решит повысить (это десятки секунд).
+     */
+    private fun raiseMasterCeiling(state: PlayerState.State, ceiling: Int, positionMs: Long) {
+        if (!adaptiveQualityActive(state)) return
+        val qualities = streamQualities(state)
+        if (state.streamQualityMap == null || buildSyntheticHlsMasterUrl(qualities) == null) return
+        val target = adaptiveLimitLabel(qualities.keys, ceiling) ?: return
+        if ((target.qualityHeight() ?: 0) > (activeQuality(state)?.qualityHeight() ?: 0)) {
+            onEvent(PlayerState.Event.QualitySelected(target, positionMs, auto = true))
+        }
     }
 
     /**
@@ -614,11 +629,19 @@ class PlayerViewModel @AssistedInject internal constructor(
                 val target = adaptiveLimitLabel(streamQualities(currentState).keys, ceiling)
                 if (target != null && (active?.qualityHeight() ?: 0) > ceiling) {
                     onEvent(PlayerState.Event.QualitySelected(target, event.currentPosMs, auto = true))
+                } else {
+                    raiseMasterCeiling(currentState, ceiling, event.currentPosMs)
                 }
             }
 
-            is PlayerState.Event.AdaptiveQualityLimitBestSelected ->
+            is PlayerState.Event.AdaptiveQualityLimitBestSelected -> {
                 preferences.setAdaptiveLimit(host, PreferredVideoQuality.BEST)
+                raiseMasterCeiling(
+                    currentState,
+                    QualityAdaptationPolicy.DEFAULT_CEILING_HEIGHT,
+                    currentState.playbackPositionMs,
+                )
+            }
 
             is PlayerState.Event.AdaptiveQualityToggled ->
                 preferences.setAdaptiveQuality(host, event.enabled)
@@ -897,15 +920,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
-    /**
-     * Применяет выбранный пользователем источник и запускает загрузку потока.
-     *
-     * Переключение серии параллельно со стартом потока обновляет `/videos`: поток не ждёт сеть,
-     * а если после обновления активный iframe изменится, [loadSourceGraph] перезапустит загрузку.
-     * Устаревший iframe, на котором resolve упал, и так уводит в обновление графа через
-     * [PlayerStreamLoadResult.RefreshSources]. Смена балансера или озвучки использует уже
-     * загруженный граф источников.
-     */
     /** Перезагружает поток на качестве [quality] с позиции [positionMs] (после ошибки воспроизведения). */
     private fun reloadWithQuality(quality: String, positionMs: Long) {
         val position = positionMs.coerceAtLeast(0L)
@@ -927,6 +941,15 @@ class PlayerViewModel @AssistedInject internal constructor(
         )
     }
 
+    /**
+     * Применяет выбранный пользователем источник и запускает загрузку потока.
+     *
+     * Переключение серии параллельно со стартом потока обновляет `/videos`: поток не ждёт сеть,
+     * а если после обновления активный iframe изменится, [loadSourceGraph] перезапустит загрузку.
+     * Устаревший iframe, на котором resolve упал, и так уводит в обновление графа через
+     * [PlayerStreamLoadResult.RefreshSources]. Смена балансера или озвучки использует уже
+     * загруженный граф источников.
+     */
     private fun applySourceSelection(
         state: PlayerState.State?,
         sourceScopeChanged: Boolean = false,

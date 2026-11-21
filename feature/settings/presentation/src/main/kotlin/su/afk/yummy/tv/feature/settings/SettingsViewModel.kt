@@ -112,7 +112,6 @@ class SettingsViewModel @Inject internal constructor(
                         homeBlocks = snapshot.homeBlocks.toImmutableList(),
                         detailsSections = snapshot.detailsSections.toImmutableList(),
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
-                        accountShortcutsExpanded = snapshot.accountShortcutsExpanded,
                         seasonalTheme = seasonalThemeAt(appClock.nowMillis()),
                         newEpisodesSources = snapshot.newEpisodesSources,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
@@ -137,6 +136,7 @@ class SettingsViewModel @Inject internal constructor(
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
                         videoEnhancementMode = snapshot.videoEnhancementMode,
+                        keepVideoEnhancementOnFrameDrops = snapshot.keepVideoEnhancementOnFrameDrops,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
@@ -289,10 +289,6 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setSeasonalDecorationsEnabled(!currentState.seasonalDecorationsEnabled)
             }
 
-            SettingsState.Event.AccountShortcutsToggled -> viewModelScope.launch {
-                settingsStore.setAccountShortcutsExpanded(!currentState.accountShortcutsExpanded)
-            }
-
             SettingsState.Event.NewEpisodesSectionToggled -> viewModelScope.launch {
                 settingsStore.setHomeBlocks(
                     currentState.homeBlocks.toggledHomeBlock(HomeBlockKind.MY_NEW_EPISODES),
@@ -430,6 +426,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.AdaptiveVideoQualityToggled -> viewModelScope.launch {
                 settingsStore.setAdaptiveVideoQualityEnabled(!currentState.adaptiveVideoQualityEnabled)
+            }
+
+            SettingsState.Event.KeepVideoEnhancementOnFrameDropsToggled -> viewModelScope.launch {
+                settingsStore.setKeepVideoEnhancementOnFrameDrops(!currentState.keepVideoEnhancementOnFrameDrops)
             }
 
             SettingsState.Event.VolumeStabilizationToggled -> viewModelScope.launch {

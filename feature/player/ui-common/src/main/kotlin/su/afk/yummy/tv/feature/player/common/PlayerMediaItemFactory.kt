@@ -5,6 +5,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
+import su.afk.yummy.tv.feature.player.utils.isSyntheticMasterUrl
 
 object PlayerMediaItemFactory {
     fun mediaItemFor(
@@ -24,6 +25,7 @@ object PlayerMediaItemFactory {
     ): MediaItem {
         val cleanUrl = url.substringBefore('?').substringBefore('#')
         val mimeType = when {
+            url.isSyntheticMasterUrl() -> MimeTypes.APPLICATION_M3U8
             cleanUrl.endsWith(".m3u8", ignoreCase = true) -> MimeTypes.APPLICATION_M3U8
             cleanUrl.endsWith(".mpd", ignoreCase = true) -> MimeTypes.APPLICATION_MPD
             else -> null

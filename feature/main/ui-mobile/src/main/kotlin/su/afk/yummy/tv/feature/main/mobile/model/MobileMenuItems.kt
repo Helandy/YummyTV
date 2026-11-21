@@ -4,8 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.navigation.root.RootTab
@@ -15,9 +15,9 @@ import su.afk.yummy.tv.feature.main.presentation.R
 @Composable
 internal fun mobileMenuItems(unreadNotificationsCount: Int, avatarUrl: String): List<MobileMenuItem<RootTab>> = listOf(
     MobileMenuItem(
-        stringResource(R.string.main_tab_news),
-        RootTab.POSTS,
-        Icons.Default.Newspaper,
+        stringResource(R.string.main_tab_community),
+        RootTab.COMMUNITY,
+        Icons.Default.Groups,
     ),
     MobileMenuItem(
         stringResource(R.string.main_tab_catalog),

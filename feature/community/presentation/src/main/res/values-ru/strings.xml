@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="community_title">Сообщество</string>
+    <string name="community_all">Все</string>
+    <string name="community_section_news">Новости</string>
+    <string name="community_section_reviews">Рецензии</string>
+    <string name="community_section_collections">Коллекции</string>
+    <string name="community_section_schedule">Расписание</string>
+    <string name="community_section_chat">Чат</string>
+    <string name="community_section_friends">Друзья</string>
+    <string name="community_section_users">Пользователи</string>
+    <string name="community_section_about">О нас</string>
+    <string name="community_section_glossary">Глоссарий</string>
+    <string name="community_videos_title">От блогеров</string>
+    <string name="community_news_load_error">Не удалось загрузить новости</string>
+    <string name="community_videos_load_error">Не удалось загрузить видео блогеров</string>
+</resources>

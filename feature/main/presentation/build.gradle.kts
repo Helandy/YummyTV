@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":feature:update:domain"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:collection:api"))
+    implementation(project(":feature:community:api"))
     implementation(project(":feature:home:api"))
     implementation(project(":feature:library:api"))
     implementation(project(":feature:posts:api"))

@@ -53,7 +53,6 @@ class SettingsState {
         val showEpisodeFlags: Boolean = true,
         val newEpisodesSectionEnabled: Boolean = true,
         val seasonalDecorationsEnabled: Boolean = true,
-        val accountShortcutsExpanded: Boolean = false,
         val seasonalTheme: SeasonalTheme = SeasonalTheme.NONE,
         val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
         val showLibraryTitleYear: Boolean = false,
@@ -92,6 +91,7 @@ class SettingsState {
         val volumeStabilizationEnabled: Boolean = false,
         /** Улучшение картинки в плеере: выключено, резкость или Anime4K. */
         val videoEnhancementMode: VideoEnhancementMode = VideoEnhancementMode.OFF,
+        val keepVideoEnhancementOnFrameDrops: Boolean = false,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
@@ -165,7 +165,6 @@ class SettingsState {
 
         /** Пользователь включил или выключил праздничное оформление. */
         data object SeasonalDecorationsToggled : Event
-        data object AccountShortcutsToggled : Event
 
         /** Пользователь включил или выключил блок новых серий на главной. */
         data object NewEpisodesSectionToggled : Event
@@ -187,6 +186,9 @@ class SettingsState {
         data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
 
         data object AdaptiveVideoQualityToggled : Event
+
+        /** Улучшение видео не отключается автоматически при дропе кадров. */
+        data object KeepVideoEnhancementOnFrameDropsToggled : Event
 
         /** Пользователь выбрал размер буфера плеера. */
         data class PlayerBufferProfileSelected(val profile: PlayerBufferProfile) : Event

@@ -47,6 +47,7 @@
     <string name="details_episodes_filter_unwatched">Unwatched</string>
     <string name="details_episodes_filter_watched">Watched</string>
     <string name="details_episodes_filter_empty">No episodes match the filter</string>
+    <string name="details_episodes_range_label">%1$s–%2$s</string>
     <string name="details_sections_hint">You can press down to see more sections: description, rating, the title’s universe and similar titles. Give it a try — it’s easy</string>
     <string name="details_sections_hint_dismiss">Got it</string>
     <string name="details_subscriptions">Subscriptions</string>
@@ -145,6 +146,10 @@
     <string name="details_mobile_download_quality_title">Download quality</string>
     <string name="details_mobile_download_quality_prompt">Choose quality</string>
     <string name="details_mobile_download_quality_empty">No qualities available</string>
+    <string name="details_mobile_download_preset_remember">Remember dubbing and player</string>
+    <string name="details_mobile_download_preset_remember_hint">Next time only the quality will be asked</string>
+    <string name="details_mobile_download_preset_label">Preset: %1$s</string>
+    <string name="details_mobile_download_preset_change">Change</string>
             <string name="details_episodes_count_short">%1$d ep.</string>
     <string name="details_count_thousands">%1$sK</string>
     <string name="details_count_millions">%1$sM</string>

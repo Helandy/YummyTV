@@ -103,6 +103,8 @@ class PlayerState {
         val volumeStabilizationEnabled: Boolean = false,
         /** Улучшение картинки: выключено, резкость или Anime4K. */
         val videoEnhancementMode: VideoEnhancementMode = VideoEnhancementMode.OFF,
+        /** Пользователь принимает дроп кадров: улучшение картинки автоматически не отключаем. */
+        val keepVideoEnhancementOnFrameDrops: Boolean = false,
         /** DynamicsProcessing есть только с API 28 — ниже тумблер стабилизации не показываем. */
         val volumeStabilizationSupported: Boolean = PlatformInfo.isAtLeastPie,
         val mobileVideoScale: Float = 1f,

@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
-import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -42,9 +41,6 @@ class HomeState {
         val statusMessage: String? = null,
         /** Предложение добавить preview-канал «Новинки» на главный экран ТВ. */
         val previewChannelPromptVisible: Boolean = false,
-        val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),
-        val isBloggerVideosLoading: Boolean = true,
-        val bloggerVideosError: UiText? = null,
         /** Тайтлы, скрытые из блока рекомендаций в текущей сессии. */
         val hiddenRecommendationIds: PersistentSet<Int> = persistentSetOf(),
         /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */
@@ -87,12 +83,6 @@ class HomeState {
 
         /** Пользователь нажал поиск в верхней панели — открываем каталог с фокусом в поле. */
         data object SearchSelected : Event
-
-        data object BloggerVideosSelected : Event
-
-        data object BloggerVideosRetrySelected : Event
-
-        data class BloggerVideoSelected(val video: BloggerVideo) : Event
 
         /** Пользователь отказался от предложения поддержать проект. */
         data object SupportPromptDismissed : Event

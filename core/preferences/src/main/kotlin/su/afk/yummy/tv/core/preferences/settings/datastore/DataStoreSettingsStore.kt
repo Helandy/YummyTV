@@ -22,7 +22,6 @@ import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountShortcutsExpandedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
@@ -36,6 +35,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserU
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsSectionsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.holdToConfirmEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBlocksKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.keepVideoEnhancementOnFrameDropsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
@@ -146,6 +146,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             videoEnhancementMode = prefs.videoEnhancementMode(),
+            keepVideoEnhancementOnFrameDrops = prefs[keepVideoEnhancementOnFrameDropsKey] ?: false,
             audioFocusDisabled = prefs[audioFocusDisabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
             browserUserAgentProfile = prefs.enum(
@@ -161,7 +162,6 @@ internal class DataStoreSettingsStore @Inject constructor(
             homeBlocks = prefs[homeBlocksKey].toHomeBlocks(prefs[newEpisodesSectionEnabledKey] ?: true),
             detailsSections = prefs[detailsSectionsKey].toDetailsSections(),
             seasonalDecorationsEnabled = prefs[seasonalDecorationsEnabledKey] ?: true,
-            accountShortcutsExpanded = prefs[accountShortcutsExpandedKey] ?: false,
         )
     }
 

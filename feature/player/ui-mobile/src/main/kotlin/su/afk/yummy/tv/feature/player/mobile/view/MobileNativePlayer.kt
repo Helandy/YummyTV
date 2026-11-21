@@ -388,7 +388,8 @@ internal fun MobileNativePlayer(
 
     PlayerVideoEnhancementOverloadEffect(
         player = player,
-        enabled = state.videoEnhancementMode != VideoEnhancementMode.OFF,
+        enabled = state.videoEnhancementMode != VideoEnhancementMode.OFF &&
+            !state.keepVideoEnhancementOnFrameDrops,
         onEvent = onEvent,
     )
 
@@ -398,6 +399,7 @@ internal fun MobileNativePlayer(
         qualities = ui.qualityLabels,
         activeQuality = ui.activeQuality,
         ceilingHeight = ui.adaptiveCeilingHeight,
+        deviceOnly = ui.videoHeightCap != null,
         onEvent = onEvent,
     )
 

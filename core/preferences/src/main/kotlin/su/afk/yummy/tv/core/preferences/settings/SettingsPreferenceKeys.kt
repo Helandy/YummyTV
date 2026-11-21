@@ -14,7 +14,6 @@ internal object SettingsPreferenceKeys {
     val showEpisodeFlagsKey = booleanPreferencesKey("show_episode_flags")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
     val seasonalDecorationsEnabledKey = booleanPreferencesKey("seasonal_decorations_enabled")
-    val accountShortcutsExpandedKey = booleanPreferencesKey("account_shortcuts_expanded")
     val seasonalAnnouncedKey = stringPreferencesKey("seasonal_announced_key")
     val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
     val showLibraryTitleYearKey = booleanPreferencesKey("show_library_title_year")
@@ -25,6 +24,10 @@ internal object SettingsPreferenceKeys {
     val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
     val adaptiveVideoQualityEnabledKey =
         booleanPreferencesKey("adaptive_video_quality_enabled")
+
+    /** Улучшение видео не отключается автоматически из-за дропа кадров. */
+    val keepVideoEnhancementOnFrameDropsKey =
+        booleanPreferencesKey("keep_video_enhancement_on_frame_drops")
     val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     val betaUpdatesEnabledKey = booleanPreferencesKey("beta_updates_enabled")
     val appLogRecordingEnabledKey = booleanPreferencesKey("app_log_recording_enabled")
@@ -119,6 +122,14 @@ internal object SettingsPreferenceKeys {
     val videoExportDirectoryNameKey = stringPreferencesKey("video_export_directory_name")
     val videoExportAutoEnabledKey = booleanPreferencesKey("video_export_auto_enabled")
     val videoDownloadWifiOnlyKey = booleanPreferencesKey("video_download_wifi_only")
+
+    /** Пресет скачивания привязан к тайтлу: озвучки и плееры у каждого свои. */
+    fun videoDownloadPresetDubbingKey(animeId: Int) =
+        stringPreferencesKey("video_download_preset_dubbing|anime_id:$animeId")
+
+    fun videoDownloadPresetPlayerKey(animeId: Int) =
+        stringPreferencesKey("video_download_preset_player|anime_id:$animeId")
+
     val saveLastSearchEnabledKey = booleanPreferencesKey("save_last_search_enabled")
     val lastSearchQueryKey = stringPreferencesKey("last_search_query")
     val starredDubbingsKey = stringSetPreferencesKey("starred_dubbings")

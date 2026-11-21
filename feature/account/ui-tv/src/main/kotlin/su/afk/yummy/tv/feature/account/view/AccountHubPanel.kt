@@ -8,11 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.notifications.NotificationsState
 
 @Composable
 internal fun AccountHubPanel(
     state: AccountState.State,
+    notificationsState: NotificationsState.State,
     onEvent: (AccountState.Event) -> Unit,
+    onNotificationsEvent: (NotificationsState.Event) -> Unit,
     initialFocusRequester: FocusRequester? = null,
     isActiveDestination: Boolean = true,
     onStatsContentFocusChanged: (Boolean) -> Unit = {},
@@ -22,7 +25,7 @@ internal fun AccountHubPanel(
         .fillMaxHeight()
         .fillMaxWidth(0.96f)
         .widthIn(max = 1680.dp)
-    val unreadCount = state.unreadNotificationCount
+    val unreadCount = notificationsState.unreadNotificationCount
 
     when (state.selectedTab) {
         AccountState.AccountTab.STATS -> StatsTab(
@@ -35,15 +38,17 @@ internal fun AccountHubPanel(
 
         AccountState.AccountTab.NOTIFICATIONS -> NotificationsTab(
             state = state,
+            notificationsState = notificationsState,
             onEvent = onEvent,
+            onNotificationsEvent = onNotificationsEvent,
             selectedTabFocusRequester = initialFocusRequester,
             isActiveDestination = isActiveDestination,
             onMarkAllRead = if (unreadCount > 0) {
-                { onEvent(AccountState.Event.AllNotificationsReadSelected) }
+                { onNotificationsEvent(NotificationsState.Event.AllNotificationsReadSelected) }
             } else {
                 null
             },
-            markAllReadEnabled = !state.isNotificationsLoading,
+            markAllReadEnabled = !notificationsState.isNotificationsLoading,
             modifier = contentModifier,
         )
     }

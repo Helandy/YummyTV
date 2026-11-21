@@ -111,7 +111,6 @@ internal fun SettingsTvPickerPanel(
                 values = AppInterfaceMode.entries,
                 selected = state.interfaceMode,
                 labelOf = { it.label() },
-                hintOf = { it.hint() },
                 focusRequester = entryFocusRequester,
                 onSelected = {
                     onClose()

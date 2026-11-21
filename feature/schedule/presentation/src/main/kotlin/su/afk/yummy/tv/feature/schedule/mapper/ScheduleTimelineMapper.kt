@@ -15,9 +15,14 @@ internal fun List<AnimeScheduleDay>.toTimelineUi(
     zone: ZoneId = ZoneId.systemDefault(),
     now: ZonedDateTime = ZonedDateTime.now(zone),
     selectedEpochDay: Long? = null,
+    allowedAnimeIds: Set<Int>? = null,
 ): ScheduleTimelineUi {
     val today = now.toLocalDate()
-    val dayGroups = toUiDayGroups(zone = zone, today = today)
+    val dayGroups = toUiDayGroups(
+        zone = zone,
+        today = today,
+        allowedAnimeIds = allowedAnimeIds,
+    )
     val availableEpochDays = dayGroups.map { it.date.toEpochDay() }
     val nextSelectedEpochDay = selectedEpochDay(
         availableEpochDays = availableEpochDays,
@@ -49,8 +54,10 @@ private fun selectedEpochDay(
 private fun List<AnimeScheduleDay>.toUiDayGroups(
     zone: ZoneId,
     today: LocalDate,
+    allowedAnimeIds: Set<Int>?,
 ): List<ScheduleDayUi> =
     flatMap { it.items }
+        .filter { item -> allowedAnimeIds == null || item.animeId in allowedAnimeIds }
         .flatMap { item ->
             buildList {
                 // У анонсов prev_date — общая дата-заглушка, поэтому берём его только если серии выходили.

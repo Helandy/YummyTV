@@ -16,7 +16,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
-import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.notifications.NotificationsState
 import su.afk.yummy.tv.feature.account.account.model.NotificationsTabState
 
 /** One row in the notifications list: wires [NotificationRow]'s focus/click plumbing to [notificationsTabState]. */
@@ -29,7 +29,7 @@ internal fun NotificationsTabRow(
     expanded: Boolean,
     mainMenuFocusRequester: FocusRequester?,
     selectedTabFocusRequester: FocusRequester?,
-    onEvent: (AccountState.Event) -> Unit,
+    onEvent: (NotificationsState.Event) -> Unit,
 ) {
     val rowFocusRequester = notificationsTabState.focusRequesters.rowFocusRequester(index, notification.id)
     val readFocusRequester = notificationsTabState.focusRequesters.readFocusRequester(notification.id)
@@ -61,18 +61,18 @@ internal fun NotificationsTabRow(
         notification = notification,
         onClick = {
             notificationsTabState.handleNotificationFocus(index, notificationIds)
-            onEvent(AccountState.Event.NotificationExpandToggled(notification.id))
+            onEvent(NotificationsState.Event.NotificationExpandToggled(notification.id))
         },
         onOpen = {
             notificationsTabState.handleNotificationFocus(index, notificationIds)
             notificationsTabState.beginOpeningNotification(notification.id)
-            onEvent(AccountState.Event.NotificationSelected(notification.id))
+            onEvent(NotificationsState.Event.NotificationSelected(notification.id))
         },
         expanded = expanded,
         onLinkClick = { slug ->
             notificationsTabState.handleNotificationFocus(index, notificationIds)
             notificationsTabState.beginOpeningNotification(notification.id)
-            onEvent(AccountState.Event.NotificationLinkSelected(notification.id, slug))
+            onEvent(NotificationsState.Event.NotificationLinkSelected(notification.id, slug))
         },
         linkModifier = { linkIndex ->
             val lastLink = linkRequesters.lastIndex
@@ -117,7 +117,7 @@ internal fun NotificationsTabRow(
         onRead = {
             notificationsTabState.pendingFocus.beginPendingReadFocus(notification.id)
             notificationsTabState.requestDeleteFocus(index, notificationIds)
-            onEvent(AccountState.Event.NotificationReadSelected(notification.id))
+            onEvent(NotificationsState.Event.NotificationReadSelected(notification.id))
         },
         onDelete = {
             notificationsTabState.pendingFocus.beginPendingDeleteFocus(notification.id, index)
@@ -127,7 +127,7 @@ internal fun NotificationsTabRow(
             } else {
                 notificationsTabState.requestEmptyOrTopFocus()
             }
-            onEvent(AccountState.Event.NotificationDeleteSelected(notification.id))
+            onEvent(NotificationsState.Event.NotificationDeleteSelected(notification.id))
         },
         onReadDirectionRight = {
             notificationsTabState.requestDeleteFocus(index, notificationIds)

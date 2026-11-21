@@ -5,9 +5,9 @@ import java.util.Calendar
 private const val HALLOWEEN_FROM_DAY = 20
 private const val HALLOWEEN_TO_DAY = 2
 private const val NEW_YEAR_FROM_DAY = 15
-private const val NEW_YEAR_TO_DAY = 10
+private const val NEW_YEAR_TO_DAY = 20
 
-/** Праздничная тема для момента [nowMillis]: Хэллоуин 20.10–02.11, Новый год 15.12–10.01. */
+/** Праздничная тема для момента [nowMillis]: Хэллоуин 20.10–02.11, Новый год 15.12–20.01. */
 fun seasonalThemeAt(nowMillis: Long): SeasonalTheme {
     val calendar = Calendar.getInstance().apply { timeInMillis = nowMillis }
     val month = calendar.get(Calendar.MONTH)

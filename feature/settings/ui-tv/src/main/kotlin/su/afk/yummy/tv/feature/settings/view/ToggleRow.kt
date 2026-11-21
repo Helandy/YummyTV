@@ -36,7 +36,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.label
 @Composable
 internal fun ToggleRow(
     label: String,
-    hint: String,
+    hint: String? = null,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -81,11 +81,13 @@ internal fun ToggleRow(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
             )
-            Text(
-                text = hint,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (hint != null) {
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Switch(

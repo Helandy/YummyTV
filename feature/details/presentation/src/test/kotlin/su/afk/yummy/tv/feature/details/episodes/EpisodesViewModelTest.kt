@@ -344,6 +344,7 @@ class EpisodesViewModelTest : BaseUnitTest() {
     fun `download dubbing picker is built by the handler and can be dismissed`() {
         val selection = EpisodesState.EpisodeDownloadDubbingSelection(episode = "1", options = persistentListOf())
         every { downloadHandler.dubbingSelection(any(), any(), any(), any(), any()) } returns selection
+        coEvery { downloadHandler.findPresetVideo(any(), any(), any(), any()) } returns null
         val vm = createViewModel()
 
         vm.setEvent(Event.EpisodeDownloadSelected(listOf(v1)))
@@ -369,6 +370,73 @@ class EpisodesViewModelTest : BaseUnitTest() {
 
         vm.setEvent(Event.DownloadQualitySelected(EpisodesState.EpisodeDownloadQualityOption("720p", "url")))
         assertNull(vm.currentState.pendingDownloadQualitySelection)
+    }
+
+    @Test
+    fun `saved preset skips the pickers and goes straight to quality`() {
+        val selection = EpisodesState.EpisodeDownloadQualitySelection(videoId = 1, episode = "1", options = persistentListOf())
+        coEvery { downloadHandler.findPresetVideo(any(), any(), any(), any()) } returns v1
+        every { downloadHandler.presetLabel(v1) } returns "Anidub • Kodik"
+        every { downloadHandler.downloadStatusKey(any()) } returns "key"
+        coEvery { downloadHandler.prepare(v1) } returns EpisodeDownloadPrepareResult.Ready("key", selection)
+        val vm = createViewModel()
+
+        vm.setEvent(Event.EpisodeDownloadSelected(listOf(v1)))
+
+        assertNull(vm.currentState.pendingDownloadDubbingSelection)
+        assertEquals(selection.copy(presetLabel = "Anidub • Kodik"), vm.currentState.pendingDownloadQualitySelection)
+    }
+
+    @Test
+    fun `failed preset source falls back to the dubbing picker`() = runTest {
+        val dubbings = EpisodesState.EpisodeDownloadDubbingSelection(episode = "1", options = persistentListOf())
+        coEvery { downloadHandler.findPresetVideo(any(), any(), any(), any()) } returns v1
+        every { downloadHandler.presetLabel(v1) } returns "Anidub • Kodik"
+        every { downloadHandler.downloadStatusKey(any()) } returns "key"
+        every { downloadHandler.dubbingSelection(any(), any(), any(), any(), any()) } returns dubbings
+        coEvery { downloadHandler.prepare(v1) } returns EpisodeDownloadPrepareResult.Failure("key", "no stream")
+        val vm = createViewModel()
+        val effects = collectEmissions(vm.effect)
+
+        vm.setEvent(Event.EpisodeDownloadSelected(listOf(v1)))
+
+        assertEquals(Effect.ShowToast("no stream"), effects.last())
+        assertEquals(dubbings, vm.currentState.pendingDownloadDubbingSelection)
+    }
+
+    @Test
+    fun `remember flag saves the chosen source as preset`() {
+        every { downloadHandler.downloadStatusKey(any()) } returns "key"
+        coEvery { downloadHandler.prepare(any()) } returns EpisodeDownloadPrepareResult.Failure("key", "no stream")
+        val vm = createViewModel()
+
+        vm.setEvent(Event.DownloadBalancerSelected(v1, rememberAsPreset = true))
+        vm.setEvent(Event.DownloadBalancerSelected(v1, rememberAsPreset = false))
+
+        coVerify(exactly = 1) { downloadHandler.savePreset(ANIME_ID, v1) }
+    }
+
+    @Test
+    fun `resetting the preset clears it and reopens the dubbing picker`() {
+        val quality = EpisodesState.EpisodeDownloadQualitySelection(
+            videoId = 1,
+            episode = "1",
+            options = persistentListOf(),
+            presetLabel = "Anidub • Kodik",
+        )
+        val dubbings = EpisodesState.EpisodeDownloadDubbingSelection(episode = "1", options = persistentListOf())
+        every { downloadHandler.downloadStatusKey(any()) } returns "key"
+        every { downloadHandler.dubbingSelection(any(), any(), any(), any(), any()) } returns dubbings
+        coEvery { downloadHandler.prepare(v1) } returns EpisodeDownloadPrepareResult.Ready("key", quality)
+        val vm = createViewModel()
+        vm.setEvent(Event.DownloadBalancerSelected(v1))
+
+        vm.setEvent(Event.DownloadPresetResetSelected)
+
+        assertNull(vm.currentState.pendingDownloadQualitySelection)
+        assertEquals(dubbings, vm.currentState.pendingDownloadDubbingSelection)
+        coVerify(exactly = 1) { downloadHandler.clearPreset(ANIME_ID) }
+        verify(exactly = 1) { downloadHandler.clearPending() }
     }
 
     @Test

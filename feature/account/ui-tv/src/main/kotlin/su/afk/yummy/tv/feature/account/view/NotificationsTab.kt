@@ -21,7 +21,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -39,6 +39,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.notifications.NotificationsState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
@@ -49,7 +50,9 @@ import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 @Composable
 internal fun NotificationsTab(
     state: AccountState.State,
+    notificationsState: NotificationsState.State,
     onEvent: (AccountState.Event) -> Unit,
+    onNotificationsEvent: (NotificationsState.Event) -> Unit,
     selectedTabFocusRequester: FocusRequester? = null,
     isActiveDestination: Boolean = true,
     onMarkAllRead: (() -> Unit)? = null,
@@ -58,17 +61,17 @@ internal fun NotificationsTab(
 ) {
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val notificationsTabState = rememberNotificationsTabState()
-    val notificationIds = remember(state.notifications) { state.notifications.map { it.id } }
+    val notificationIds = remember(notificationsState.notifications) { notificationsState.notifications.map { it.id } }
     val notificationReadStates =
-        remember(state.notifications) { state.notifications.map { it.viewed } }
+        remember(notificationsState.notifications) { notificationsState.notifications.map { it.viewed } }
     val showOpeningOverlay =
-        state.isNotificationOpening || notificationsTabState.showOpeningOverlayImmediately
-    val hubErrorWithoutOpenFailure =
-        state.hubError.takeIf { it != AccountUiError.OPEN_NOTIFICATION_FAILED }
+        notificationsState.isNotificationOpening || notificationsTabState.showOpeningOverlayImmediately
+    val notificationsErrorWithoutOpenFailure =
+        notificationsState.error.takeIf { it != AccountUiError.OPEN_NOTIFICATION_FAILED }
     val context = LocalContext.current
     val openNotificationFailed = AccountUiError.OPEN_NOTIFICATION_FAILED.accountErrorMessage()
-    LaunchedEffect(state.hubError) {
-        if (state.hubError == AccountUiError.OPEN_NOTIFICATION_FAILED && openNotificationFailed != null) {
+    LaunchedEffect(notificationsState.error) {
+        if (notificationsState.error == AccountUiError.OPEN_NOTIFICATION_FAILED && openNotificationFailed != null) {
             Toast.makeText(context, openNotificationFailed, Toast.LENGTH_SHORT).show()
         }
     }
@@ -78,10 +81,10 @@ internal fun NotificationsTab(
         notificationIds = notificationIds,
         notificationReadStates = notificationReadStates,
         isActiveDestination = isActiveDestination,
-        isNotificationsLoading = state.isNotificationsLoading,
-        isNotificationOpening = state.isNotificationOpening,
+        isNotificationsLoading = notificationsState.isNotificationsLoading,
+        isNotificationOpening = notificationsState.isNotificationOpening,
         showOpeningOverlay = showOpeningOverlay,
-        hubError = state.hubError,
+        hubError = notificationsState.error,
     )
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -124,13 +127,13 @@ internal fun NotificationsTab(
                     AccountAction(
                         label = stringResource(R.string.account_my_subscriptions),
                         icon = Icons.Filled.Subscriptions,
-                        onClick = { onEvent(AccountState.Event.MySubscriptionsSelected) },
+                        onClick = { onNotificationsEvent(NotificationsState.Event.MySubscriptionsSelected) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(notificationsTabState.focusRequesters.mySubscriptionsFocusRequester),
                     )
-                    if (state.notificationCounts.any { it.count > 0 } || state.notifications.isNotEmpty()) {
-                        NotificationTypeBadges(state.notificationCounts)
+                    if (notificationsState.notificationCounts.any { it.count > 0 } || notificationsState.notifications.isNotEmpty()) {
+                        NotificationTypeBadges(notificationsState.notificationCounts)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -144,7 +147,7 @@ internal fun NotificationsTab(
                                         .weight(1f)
                                         .focusRequester(notificationsTabState.focusRequesters.markAllReadFocusRequester)
                                         .focusProperties {
-                                            if (state.notifications.isNotEmpty()) {
+                                            if (notificationsState.notifications.isNotEmpty()) {
                                                 right =
                                                     notificationsTabState.focusRequesters.deleteAllFocusRequester
                                             }
@@ -152,7 +155,7 @@ internal fun NotificationsTab(
                                     enabled = markAllReadEnabled,
                                 )
                             }
-                            if (state.notifications.isNotEmpty()) {
+                            if (notificationsState.notifications.isNotEmpty()) {
                                 AccountAction(
                                     label = stringResource(R.string.account_delete_all_notifications),
                                     icon = Icons.Filled.DeleteSweep,
@@ -166,7 +169,7 @@ internal fun NotificationsTab(
                                                     notificationsTabState.focusRequesters.markAllReadFocusRequester
                                             }
                                         },
-                                    enabled = !state.isNotificationsLoading,
+                                    enabled = !notificationsState.isNotificationsLoading,
                                 )
                             }
                         }
@@ -176,24 +179,27 @@ internal fun NotificationsTab(
             item {
                 // Ошибку открытия уведомления показываем тостом, а не блоком с «Повторить».
                 AccountHubError(
-                    error = (state.error ?: hubErrorWithoutOpenFailure).accountErrorMessage(),
-                    onRetry = { onEvent(AccountState.Event.RefreshHubSelected) },
+                    error = (state.error ?: notificationsErrorWithoutOpenFailure).accountErrorMessage(),
+                    onRetry = {
+                        onEvent(AccountState.Event.RefreshHubSelected)
+                        onNotificationsEvent(NotificationsState.Event.RefreshSelected)
+                    },
                 )
             }
-            if (state.isNotificationsLoading && state.notifications.isEmpty()) {
+            if (notificationsState.isNotificationsLoading && notificationsState.notifications.isEmpty()) {
                 item {
                     TvLoadingScreen(
                         modifier = Modifier.height(360.dp),
                     )
                 }
-            } else if (state.notifications.isEmpty()) {
+            } else if (notificationsState.notifications.isEmpty()) {
                 item {
                     // Не фокусируется: подсветки у текста нет, фокус в нём был бы невидим.
                     EmptyText(stringResource(R.string.account_notifications_empty))
                 }
             } else {
                 itemsIndexed(
-                    state.notifications,
+                    notificationsState.notifications,
                     key = { index, item -> lazyKey("notification", item.id, index) },
                 ) { index, notification ->
                     NotificationsTabRow(
@@ -201,10 +207,10 @@ internal fun NotificationsTab(
                         notificationIds = notificationIds,
                         index = index,
                         notification = notification,
-                        expanded = notification.id in state.expandedNotificationIds,
+                        expanded = notification.id in notificationsState.expandedNotificationIds,
                         mainMenuFocusRequester = mainMenuFocusRequester,
                         selectedTabFocusRequester = selectedTabFocusRequester,
-                        onEvent = onEvent,
+                        onEvent = onNotificationsEvent,
                     )
                 }
             }
@@ -227,13 +233,13 @@ internal fun NotificationsTab(
             title = { Text(stringResource(R.string.account_mark_all_read_title)) },
             text = { Text(stringResource(R.string.account_mark_all_read_message)) },
             confirmButton = {
-                TextButton(onClick = {
+                TvDialogButton(onClick = {
                     notificationsTabState.showReadAllConfirm = false
                     onMarkAllRead?.invoke()
                 }) { Text(stringResource(R.string.account_mark_all_read)) }
             },
             dismissButton = {
-                TextButton(onClick = { notificationsTabState.showReadAllConfirm = false }) {
+                TvDialogButton(onClick = { notificationsTabState.showReadAllConfirm = false }) {
                     Text(stringResource(CoreR.string.common_cancel))
                 }
             },
@@ -247,13 +253,13 @@ internal fun NotificationsTab(
             title = { Text(stringResource(R.string.account_delete_all_notifications_title)) },
             text = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
             confirmButton = {
-                TextButton(onClick = {
+                TvDialogButton(onClick = {
                     notificationsTabState.showDeleteAllConfirm = false
-                    onEvent(AccountState.Event.AllNotificationsDeleteSelected)
+                    onNotificationsEvent(NotificationsState.Event.AllNotificationsDeleteSelected)
                 }) { Text(stringResource(R.string.account_delete_all_notifications)) }
             },
             dismissButton = {
-                TextButton(onClick = { notificationsTabState.showDeleteAllConfirm = false }) {
+                TvDialogButton(onClick = { notificationsTabState.showDeleteAllConfirm = false }) {
                     Text(stringResource(CoreR.string.common_cancel))
                 }
             },

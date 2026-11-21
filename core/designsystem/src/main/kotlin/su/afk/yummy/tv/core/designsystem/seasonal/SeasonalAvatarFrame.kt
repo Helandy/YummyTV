@@ -24,7 +24,7 @@ private const val AvatarDecorScale = 1.2f
 /**
  * Область аватарки с сезонным декором. На Хэллоуин это квадрат, в который целиком вписан анимированный декор, а
  * круглая аватарка из [content] лежит внутри и сохраняет размер [avatarSize]. В остальное время — квадрат
- * [avatarSize] (на Новый год с шапкой Деда Мороза). [content] сам скругляет аватарку.
+ * [avatarSize] (на Новый год с венком). [content] сам скругляет аватарку.
  */
 @Composable
 fun SeasonalAvatarFrame(
@@ -34,7 +34,7 @@ fun SeasonalAvatarFrame(
 ) {
     if (rememberSeasonalTheme() != SeasonalTheme.HALLOWEEN) {
         Box(
-            modifier = modifier.size(avatarSize).seasonalAvatarHat(),
+            modifier = modifier.size(avatarSize).seasonalAvatarWreath(),
             contentAlignment = Alignment.Center,
         ) { content() }
         return

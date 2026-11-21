@@ -1,12 +1,15 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.common.player.balancerDisplayComparator
 import su.afk.yummy.tv.core.common.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.core.common.player.playerDisplayName
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.settings.VideoDownloadPreset
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
@@ -21,6 +24,8 @@ import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityO
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.utils.aggregateDubbingDownloadStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.downloadBalancersLabel
+import su.afk.yummy.tv.feature.details.episodes.utils.findPresetVideo
+import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadPresetLabel
 import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadDubbingName
 import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadStatusKey
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -34,6 +39,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
     private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
     private val enqueueVideoDownload: EnqueueVideoDownloadUseCase,
     private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
+    private val downloadSettings: VideoDownloadSettingsStore,
     private val thumbnailResolver: EpisodeThumbnailResolver,
     private val strings: StringProvider,
 ) {
@@ -55,6 +61,39 @@ internal class EpisodeDownloadHandler @Inject constructor(
 
     fun dismissSourcePicker() {
         replacementDownloadId = null
+    }
+
+    /**
+     * Видео серии под сохранённый пресет тайтла (озвучка + плеер) или `null`, если пресета нет, источника
+     * нет у этой серии либо он уже скачивается — тогда нужен обычный выбор.
+     */
+    suspend fun findPresetVideo(
+        animeId: Int,
+        videos: List<AnimeVideo>,
+        statuses: Map<String, EpisodesState.EpisodeDownloadUiState>,
+        resolvingKeys: Set<String>,
+    ): AnimeVideo? {
+        val preset = runSuspendCatching { downloadSettings.videoDownloadPreset(animeId).first() }.getOrNull()
+            ?: return null
+        return videos.findPresetVideo(preset, statuses, resolvingKeys)
+    }
+
+    /** Подпись пресета для шторки качества: «Озвучка • Плеер». */
+    fun presetLabel(video: AnimeVideo): String = video.toDownloadPresetLabel()
+
+    /** Запоминает озвучку и плеер выбранного видео как пресет скачивания тайтла. */
+    suspend fun savePreset(animeId: Int, video: AnimeVideo) {
+        runSuspendCatching {
+            downloadSettings.setVideoDownloadPreset(
+                animeId,
+                VideoDownloadPreset(dubbing = video.toDownloadDubbingName(), player = video.player),
+            )
+        }
+    }
+
+    /** Сбрасывает пресет: следующее скачивание снова спросит озвучку и плеер. */
+    suspend fun clearPreset(animeId: Int) {
+        runSuspendCatching { downloadSettings.setVideoDownloadPreset(animeId, null) }
     }
 
     fun dubbingSelection(

@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.account.view
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -49,7 +49,7 @@ internal fun LocalNetworkPermissionTvDialog(
             )
         },
         confirmButton = {
-            TextButton(
+            TvDialogButton(
                 onClick = if (isBlocked) onOpenSettings else onConfirm,
                 modifier = Modifier.focusRequester(confirmFocusRequester),
             ) {
@@ -65,7 +65,7 @@ internal fun LocalNetworkPermissionTvDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TvDialogButton(onClick = onDismiss) {
                 Text(stringResource(R.string.account_local_network_permission_later))
             }
         },

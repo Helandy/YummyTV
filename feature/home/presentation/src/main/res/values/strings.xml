@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_blogger_videos_load_error">Failed to load blogger videos</string>
     <string name="home_error_status_hint">If the problem persists, check service status: %1$s</string>
     <string name="home_error_status_url">https://yummystatus.me/</string>
     <string name="home_load_error">Could not load the home page</string>
@@ -15,7 +14,6 @@
     <string name="home_mobile_schedule">Schedule</string>
     <string name="home_mobile_reviews">Reviews</string>
     <string name="home_mobile_more">More</string>
-    <string name="home_mobile_blogger_videos">From bloggers</string>
     <string name="home_mobile_search_placeholder">Search anime…</string>
     <string name="home_mobile_all">All</string>
     <string name="home_mobile_recommendation_hide">Do not recommend this anime</string>

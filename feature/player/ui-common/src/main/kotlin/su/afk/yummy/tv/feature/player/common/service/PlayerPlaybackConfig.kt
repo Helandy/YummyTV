@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.common.service
 
 import android.content.Context
+import androidx.media3.datasource.DataSchemeDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.CacheDataSource
@@ -117,11 +118,15 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
                 .setFlags(CacheDataSource.FLAG_BLOCK_ON_CACHE)
                 .createDataSource()
         } else {
-            CacheDataSource.Factory()
-                .setCache(streamingCacheProvider.cache)
-                .setCacheKeyFactory(PlayerStreamingCacheKeyFactory())
-                .setUpstreamDataSourceFactory(httpDataSourceFactory.create(headers))
-                .createDataSource()
+            // `data:`-URI синтетического master читается из самой ссылки, мимо кэша и сети.
+            SchemeRoutingDataSource(
+                dataUriSource = DataSchemeDataSource(),
+                other = CacheDataSource.Factory()
+                    .setCache(streamingCacheProvider.cache)
+                    .setCacheKeyFactory(PlayerStreamingCacheKeyFactory())
+                    .setUpstreamDataSourceFactory(httpDataSourceFactory.create(headers))
+                    .createDataSource(),
+            )
         }
     }
 }

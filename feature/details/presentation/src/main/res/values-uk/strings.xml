@@ -47,6 +47,7 @@
     <string name="details_episodes_filter_unwatched">Непереглянуті</string>
     <string name="details_episodes_filter_watched">Переглянуті</string>
     <string name="details_episodes_filter_empty">Немає серій під обраний фільтр</string>
+    <string name="details_episodes_range_label">%1$s–%2$s</string>
     <string name="details_sections_hint">Ви можете натискати вниз, щоб побачити більше секцій: опис, рейтинг, всесвіт тайтлу та схожі тайтли. Спробуйте — це легко</string>
     <string name="details_sections_hint_dismiss">Добре, запам’ятав</string>
     <string name="details_subscriptions">Підписки</string>
@@ -157,6 +158,10 @@
     <string name="details_mobile_download_quality_title">Якість завантаження</string>
     <string name="details_mobile_download_quality_prompt">Виберіть якість</string>
     <string name="details_mobile_download_quality_empty">Немає доступних якостей</string>
+    <string name="details_mobile_download_preset_remember">Запам\'ятати озвучення та плеєр</string>
+    <string name="details_mobile_download_preset_remember_hint">Наступного разу запитаємо лише якість</string>
+    <string name="details_mobile_download_preset_label">Пресет: %1$s</string>
+    <string name="details_mobile_download_preset_change">Змінити</string>
             <string name="details_episodes_count_short">%1$d сер.</string>
     <string name="details_count_thousands">%1$sтис.</string>
     <string name="details_count_millions">%1$sмлн</string>

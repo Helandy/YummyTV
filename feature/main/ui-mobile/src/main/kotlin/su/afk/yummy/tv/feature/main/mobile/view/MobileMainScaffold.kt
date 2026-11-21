@@ -17,7 +17,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
@@ -55,10 +54,11 @@ internal fun <T> MobileMainScaffold(
         else -> MobileNavigationLayout.BottomBar
     }
 
+    // Состояние всегда «показан»: бар скрываем тем, что не рисуем его вовсе, и тогда место под него
+    // освобождается и занимается в том же кадре, что смена экрана и [LocalMobileNavigationLayout].
+    // С анимацией состояния вьюпорт списка менялся постепенно, а отступ — сразу, и LazyList зажимал
+    // сохранённую прокрутку: после возврата нижние кнопки главной оставались под баром.
     val suiteState = rememberNavigationSuiteScaffoldState()
-    LaunchedEffect(isVisible) {
-        if (isVisible) suiteState.show() else suiteState.hide()
-    }
 
     val surface = MaterialTheme.colorScheme.surface
     NavigationSuiteScaffoldLayout(
@@ -69,7 +69,9 @@ internal fun <T> MobileMainScaffold(
         },
         state = suiteState,
         navigationSuite = {
-            if (isRail) {
+            if (!isVisible) {
+                Unit
+            } else if (isRail) {
                 MobileMainNavigationRail(
                     selectedDestination = selectedDestination,
                     menuItems = menuItems,

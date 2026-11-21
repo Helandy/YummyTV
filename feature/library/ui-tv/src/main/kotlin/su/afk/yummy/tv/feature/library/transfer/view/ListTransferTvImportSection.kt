@@ -1,35 +1,41 @@
 package su.afk.yummy.tv.feature.library.transfer.view
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FileOpen
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.domain.library.model.AnimeListImportProgress
 import su.afk.yummy.tv.domain.library.model.ImportConflictPolicy
 import su.afk.yummy.tv.feature.library.model.ListTransferImportSummaryUi
@@ -42,6 +48,7 @@ import su.afk.yummy.tv.feature.library.utils.label
 import su.afk.yummy.tv.feature.library.utils.phaseLabel
 import su.afk.yummy.tv.feature.library.utils.transferLabel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ListTransferTvImportSection(
     state: ListTransferState.State,
@@ -51,6 +58,8 @@ internal fun ListTransferTvImportSection(
 ) {
     val colors = MaterialTheme.colorScheme
     val cancelFocusRequester = remember { FocusRequester() }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.isImporting) {
         if (state.isImporting) {
@@ -58,11 +67,26 @@ internal fun ListTransferTvImportSection(
         }
     }
 
+    LaunchedEffect(state.importSummary) {
+        if (state.importSummary != null) {
+            val previewItemsCount = if (state.importPreview != null) {
+                IMPORT_PREVIEW_STATIC_ITEMS_COUNT + ImportConflictPolicy.entries.size
+            } else {
+                0
+            }
+            val summaryIndex = IMPORT_HEADER_ITEMS_COUNT + previewItemsCount
+            if (summaryIndex < listState.layoutInfo.totalItemsCount) {
+                listState.animateScrollToItem(summaryIndex)
+            }
+        }
+    }
+
     Column(
         modifier = modifier
             .background(colors.surfaceContainerLow, RoundedCornerShape(16.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(16.dp)
+            .focusGroup(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = stringResource(R.string.library_transfer_section_import),
@@ -70,183 +94,202 @@ internal fun ListTransferTvImportSection(
             fontWeight = FontWeight.Bold,
             color = colors.onBackground,
         )
-        Text(
-            text = stringResource(R.string.library_transfer_import_description),
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurfaceVariant,
-        )
 
-        LazyColumn(
-            modifier = Modifier.weight(1f, fill = false),
-            contentPadding = PaddingValues(vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item(key = "pick_file") {
-                ListTransferTvButton(
-                    label = stringResource(
-                        if (state.importPreview == null) {
-                            R.string.library_transfer_select_file
-                        } else {
-                            R.string.library_transfer_change_file
-                        },
-                    ),
-                    icon = Icons.Outlined.FileOpen,
-                    enabled = !state.isBusy,
-                    primary = state.importPreview == null,
-                    onClick = { onEvent(ListTransferState.Event.PickImportFileClicked) },
-                    modifier = Modifier.focusRequester(initialFocusRequester),
-                )
-            }
-
-            if (state.isParsingFile) {
-                item(key = "parsing") {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.padding(vertical = 4.dp),
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                        )
-                        Text(
-                            text = stringResource(R.string.library_transfer_parsing),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                }
-            }
-
-            val preview = state.importPreview
-            if (preview != null) {
-                item(key = "preview") {
-                    TvImportPreviewSummary(preview = preview)
-                }
-                item(key = "conflict_header") {
+        CompositionLocalProvider(LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false),
+                contentPadding = PaddingValues(top = 2.dp, bottom = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item(key = "import_description") {
                     Text(
-                        text = stringResource(R.string.library_transfer_conflict_label),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = colors.primary,
-                        modifier = Modifier.padding(top = 4.dp),
+                        text = stringResource(R.string.library_transfer_import_description),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
                     )
                 }
-                items(ImportConflictPolicy.entries, key = { "conflict_${it.name}" }) { policy ->
-                    ListTransferTvRadioRow(
-                        label = policy.label(),
-                        hint = policy.hint(),
-                        selected = state.importOptions.conflictPolicy == policy,
-                        enabled = !state.isBusy,
-                        onClick = {
-                            onEvent(ListTransferState.Event.ConflictPolicySelected(policy))
-                        },
-                    )
-                }
-                item(key = "opt_scores") {
-                    ListTransferTvToggleRow(
-                        label = stringResource(R.string.library_transfer_option_scores_label),
-                        hint = stringResource(R.string.library_transfer_option_scores_hint),
-                        checked = state.importOptions.importScores,
-                        enabled = !state.isBusy,
-                        onToggle = {
-                            onEvent(
-                                ListTransferState.Event.ImportScoresChanged(
-                                    !state.importOptions.importScores,
-                                ),
-                            )
-                        },
-                    )
-                }
-                item(key = "opt_episodes") {
-                    ListTransferTvToggleRow(
-                        label = stringResource(R.string.library_transfer_option_episodes_label),
-                        hint = stringResource(R.string.library_transfer_option_episodes_hint),
-                        checked = state.importOptions.importWatchedEpisodesLocally,
-                        enabled = !state.isBusy,
-                        onToggle = {
-                            onEvent(
-                                ListTransferState.Event.ImportWatchedEpisodesChanged(
-                                    !state.importOptions.importWatchedEpisodesLocally,
-                                ),
-                            )
-                        },
-                    )
-                }
-                item(key = "import_action") {
-                    if (state.isImporting) {
-                        TvImportProgressBlock(
-                            progress = state.importProgress,
-                            isCancelRequested = state.isCancelRequested,
-                            cancelFocusRequester = cancelFocusRequester,
-                            onCancel = { onEvent(ListTransferState.Event.CancelImportClicked) },
-                        )
-                    } else {
-                        ListTransferTvButton(
-                            label = stringResource(R.string.library_transfer_start_import),
-                            enabled = !state.isBusy,
-                            primary = true,
-                            onClick = { onEvent(ListTransferState.Event.StartImportClicked) },
-                        )
-                    }
-                }
-            }
 
-            val summary = state.importSummary
-            if (summary != null) {
-                item(key = "import_summary") {
-                    TvImportResultBlock(summary = summary)
-                }
-                if (summary.retryableCount > 0) {
-                    item(key = "retry_failed") {
+                item(key = "pick_file") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .tvWholeItemBringIntoView()
+                            .onFocusChanged { focusState ->
+                                val isScrolled = listState.firstVisibleItemIndex > 0 ||
+                                    listState.firstVisibleItemScrollOffset > 0
+                                if (focusState.hasFocus && isScrolled) {
+                                    scope.launch { listState.animateScrollToItem(0) }
+                                }
+                            },
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         ListTransferTvButton(
                             label = stringResource(
-                                R.string.library_transfer_retry_failed,
-                                summary.retryableCount,
+                                if (state.importPreview == null) {
+                                    R.string.library_transfer_select_file
+                                } else {
+                                    R.string.library_transfer_change_file
+                                },
                             ),
+                            icon = Icons.Outlined.FileOpen,
                             enabled = !state.isBusy,
-                            onClick = {
-                                onEvent(ListTransferState.Event.RetryFailedImportClicked)
-                            },
+                            primary = state.importPreview == null,
+                            retainFocusWhenDisabled = state.isParsingFile,
+                            onClick = { onEvent(ListTransferState.Event.PickImportFileClicked) },
+                            modifier = Modifier.focusRequester(initialFocusRequester),
                         )
+                        if (state.isParsingFile) {
+                            ListTransferTvStatusRow(
+                                text = stringResource(R.string.library_transfer_parsing),
+                            )
+                        }
                     }
                 }
-                if (summary.unmatched.isNotEmpty()) {
-                    item(key = "unmatched_toggle") {
-                        ListTransferTvButton(
-                            label = if (state.showUnmatchedDetails) {
-                                stringResource(R.string.library_transfer_unmatched_hide)
-                            } else {
-                                stringResource(
-                                    R.string.library_transfer_unmatched_show,
-                                    summary.unmatched.size,
-                                )
-                            },
-                            onClick = { onEvent(ListTransferState.Event.ToggleUnmatchedDetails) },
+
+                val preview = state.importPreview
+                if (preview != null) {
+                    item(key = "preview") {
+                        TvImportPreviewSummary(preview = preview)
+                    }
+                    item(key = "conflict_header") {
+                        Text(
+                            text = stringResource(R.string.library_transfer_conflict_label),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.primary,
+                            modifier = Modifier.padding(top = 4.dp),
                         )
                     }
-                    if (state.showUnmatchedDetails) {
-                        items(
-                            items = summary.unmatched,
-                            key = { "unmatched_${it.externalId}" },
-                        ) { item ->
-                            val displayTitle = item.title.ifBlank {
-                                stringResource(
-                                    R.string.library_transfer_unmatched_untitled,
-                                    item.externalId,
+                    items(ImportConflictPolicy.entries, key = { "conflict_${it.name}" }) { policy ->
+                        ListTransferTvRadioRow(
+                            label = policy.label(),
+                            hint = policy.hint(),
+                            selected = state.importOptions.conflictPolicy == policy,
+                            enabled = !state.isBusy,
+                            onClick = {
+                                onEvent(ListTransferState.Event.ConflictPolicySelected(policy))
+                            },
+                            modifier = Modifier.tvWholeItemBringIntoView(),
+                        )
+                    }
+                    item(key = "opt_scores") {
+                        ListTransferTvToggleRow(
+                            label = stringResource(R.string.library_transfer_option_scores_label),
+                            hint = stringResource(R.string.library_transfer_option_scores_hint),
+                            checked = state.importOptions.importScores,
+                            enabled = !state.isBusy,
+                            onToggle = {
+                                onEvent(
+                                    ListTransferState.Event.ImportScoresChanged(
+                                        !state.importOptions.importScores,
+                                    ),
+                                )
+                            },
+                            modifier = Modifier.tvWholeItemBringIntoView(),
+                        )
+                    }
+                    item(key = "opt_episodes") {
+                        ListTransferTvToggleRow(
+                            label = stringResource(R.string.library_transfer_option_episodes_label),
+                            hint = stringResource(R.string.library_transfer_option_episodes_hint),
+                            checked = state.importOptions.importWatchedEpisodesLocally,
+                            enabled = !state.isBusy,
+                            onToggle = {
+                                onEvent(
+                                    ListTransferState.Event.ImportWatchedEpisodesChanged(
+                                        !state.importOptions.importWatchedEpisodesLocally,
+                                    ),
+                                )
+                            },
+                            modifier = Modifier.tvWholeItemBringIntoView(),
+                        )
+                    }
+                    item(key = "import_action") {
+                        if (state.isImporting) {
+                            TvImportProgressBlock(
+                                progress = state.importProgress,
+                                isCancelRequested = state.isCancelRequested,
+                                cancelFocusRequester = cancelFocusRequester,
+                                onCancel = { onEvent(ListTransferState.Event.CancelImportClicked) },
+                                modifier = Modifier.tvWholeItemBringIntoView(),
+                            )
+                        } else {
+                            ListTransferTvButton(
+                                label = stringResource(R.string.library_transfer_start_import),
+                                enabled = !state.isBusy,
+                                primary = true,
+                                onClick = { onEvent(ListTransferState.Event.StartImportClicked) },
+                                modifier = Modifier.tvWholeItemBringIntoView(),
+                            )
+                        }
+                    }
+                }
+
+                val summary = state.importSummary
+                if (summary != null) {
+                    item(key = "import_summary") {
+                        TvImportResultBlock(
+                            summary = summary,
+                            modifier = Modifier.tvWholeItemBringIntoView(),
+                        )
+                    }
+                    if (summary.retryableCount > 0) {
+                        item(key = "retry_failed") {
+                            ListTransferTvButton(
+                                label = stringResource(
+                                    R.string.library_transfer_retry_failed,
+                                    summary.retryableCount,
+                                ),
+                                enabled = !state.isBusy,
+                                onClick = {
+                                    onEvent(ListTransferState.Event.RetryFailedImportClicked)
+                                },
+                                modifier = Modifier.tvWholeItemBringIntoView(),
+                            )
+                        }
+                    }
+                    if (summary.unmatched.isNotEmpty()) {
+                        item(key = "unmatched_toggle") {
+                            ListTransferTvButton(
+                                label = if (state.showUnmatchedDetails) {
+                                    stringResource(R.string.library_transfer_unmatched_hide)
+                                } else {
+                                    stringResource(
+                                        R.string.library_transfer_unmatched_show,
+                                        summary.unmatched.size,
+                                    )
+                                },
+                                onClick = { onEvent(ListTransferState.Event.ToggleUnmatchedDetails) },
+                                modifier = Modifier.tvWholeItemBringIntoView(),
+                            )
+                        }
+                        if (state.showUnmatchedDetails) {
+                            items(
+                                items = summary.unmatched,
+                                key = { "unmatched_${it.externalId}" },
+                            ) { item ->
+                                val displayTitle = item.title.ifBlank {
+                                    stringResource(
+                                        R.string.library_transfer_unmatched_untitled,
+                                        item.externalId,
+                                    )
+                                }
+                                Text(
+                                    text = stringResource(
+                                        R.string.library_transfer_unmatched_item,
+                                        item.externalId,
+                                        displayTitle,
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                                 )
                             }
-                            Text(
-                                text = stringResource(
-                                    R.string.library_transfer_unmatched_item,
-                                    item.externalId,
-                                    displayTitle,
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            )
                         }
                     }
                 }
@@ -338,9 +381,10 @@ private fun TvImportProgressBlock(
     isCancelRequested: Boolean,
     cancelFocusRequester: FocusRequester,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (progress != null) {
@@ -363,6 +407,7 @@ private fun TvImportProgressBlock(
         ListTransferTvButton(
             label = stringResource(R.string.library_transfer_cancel),
             enabled = !isCancelRequested,
+            retainFocusWhenDisabled = isCancelRequested,
             onClick = onCancel,
             modifier = Modifier.focusRequester(cancelFocusRequester),
         )
@@ -370,15 +415,12 @@ private fun TvImportProgressBlock(
 }
 
 @Composable
-private fun TvImportResultBlock(summary: ListTransferImportSummaryUi) {
+private fun TvImportResultBlock(
+    summary: ListTransferImportSummaryUi,
+    modifier: Modifier = Modifier,
+) {
     val colors = MaterialTheme.colorScheme
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colors.primaryContainer.copy(alpha = 0.45f), RoundedCornerShape(10.dp))
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
+    ListTransferTvResultCard(modifier = modifier) {
         Text(
             text = stringResource(
                 if (summary.wasCancelled) {
@@ -431,3 +473,6 @@ private fun TvImportResultBlock(summary: ListTransferImportSummaryUi) {
         }
     }
 }
+
+private const val IMPORT_HEADER_ITEMS_COUNT = 2
+private const val IMPORT_PREVIEW_STATIC_ITEMS_COUNT = 5

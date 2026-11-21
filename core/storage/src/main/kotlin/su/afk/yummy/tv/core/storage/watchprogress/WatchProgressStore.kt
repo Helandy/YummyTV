@@ -140,7 +140,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
                 dao.deleteSuppression(animeId)
                 dao.save(
                     existing.copy(
-                        videoId = videoId.takeIf { it > 0 } ?: existing.videoId,
+                        videoId = resolveVideoId(videoId, episodeUrl, existing),
                         episodeUrl = episodeUrl.ifBlank { existing.episodeUrl },
                         animeTitle = animeTitle.ifBlank { existing.animeTitle },
                         posterUrl = posterUrl.ifBlank { existing.posterUrl },
@@ -148,7 +148,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
                         dubbing = dubbing.ifBlank { existing.dubbing },
                         screenshotUrl = screenshotUrl.ifBlank { existing.screenshotUrl },
                         updatedAt = updatedAt,
-                    )
+                    ),
                 )
                 return@withLock
             }
@@ -163,7 +163,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
             WatchProgressEntry(
                 animeId = animeId,
                 episode = episode,
-                videoId = videoId.takeIf { it > 0 } ?: existing?.videoId ?: 0,
+                videoId = resolveVideoId(videoId, episodeUrl, existing),
                 episodeUrl = episodeUrl.ifBlank { existing?.episodeUrl.orEmpty() },
                 positionMs = positionMs,
                 durationMs = durationMs.takeIf { it > 0L } ?: existing?.durationMs ?: 0L,
@@ -173,7 +173,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
                 playerName = playerName.ifBlank { existing?.playerName.orEmpty() },
                 dubbing = dubbing.ifBlank { existing?.dubbing.orEmpty() },
                 screenshotUrl = screenshotUrl.ifBlank { existing?.screenshotUrl.orEmpty() },
-            )
+            ),
         )
     }
 
@@ -206,7 +206,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
                     !isWatchedProgressEntry(existing)
                 ) {
                     existing.copy(
-                        videoId = videoId.takeIf { it > 0 } ?: existing.videoId,
+                        videoId = resolveVideoId(videoId, episodeUrl, existing),
                         episodeUrl = episodeUrl.ifBlank { existing.episodeUrl },
                         updatedAt = updatedAt,
                         animeTitle = animeTitle.ifBlank { existing.animeTitle },
@@ -219,7 +219,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
                     WatchProgressEntry(
                         animeId = animeId,
                         episode = episode,
-                        videoId = videoId.takeIf { it > 0 } ?: existing?.videoId ?: 0,
+                        videoId = resolveVideoId(videoId, episodeUrl, existing),
                         episodeUrl = episodeUrl.ifBlank { existing?.episodeUrl.orEmpty() },
                         positionMs = 0L,
                         durationMs = 0L,
@@ -230,7 +230,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
                         dubbing = dubbing.ifBlank { existing?.dubbing.orEmpty() },
                         screenshotUrl = screenshotUrl.ifBlank { existing?.screenshotUrl.orEmpty() },
                     )
-                }
+                },
             )
         }
     }
@@ -244,6 +244,23 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
         dao.deleteByAnimeId(animeId)
     }
 
+    /**
+     * Id видео для записи: настоящий (положительный) id берём как есть. Если его нет (extra-source
+     * с отрицательным id), наследуем старый id только при том же источнике: иначе в строку с
+     * `source://` URL попал бы id другого видео этой серии (например, Kodik), и «Продолжить»
+     * открыло бы не тот плеер.
+     */
+    private fun resolveVideoId(
+        videoId: Int,
+        episodeUrl: String,
+        existing: WatchProgressEntry?,
+    ): Int = when {
+        videoId > 0 -> videoId
+        existing == null -> 0
+        episodeUrl.isBlank() || episodeUrl == existing.episodeUrl -> existing.videoId
+        else -> 0
+    }
+
     override suspend fun suppressContinueWatchingDisplay(
         animeId: Int,
         suppressedAt: Long,
@@ -253,8 +270,7 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
             ContinueWatchingSuppressionEntry(
                 animeId = animeId,
                 suppressedAt = suppressedAt,
-            )
+            ),
         )
     }
-
 }

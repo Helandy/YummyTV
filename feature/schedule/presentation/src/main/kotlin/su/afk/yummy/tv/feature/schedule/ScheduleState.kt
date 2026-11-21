@@ -18,6 +18,8 @@ class ScheduleState {
         val isRefreshing: Boolean = false,
         val days: ImmutableList<AnimeScheduleDay> = persistentListOf(),
         val tvSchedule: ScheduleTimelineUi = ScheduleTimelineUi(),
+        /** Показывать в расписании только тайтлы из локальной библиотеки пользователя. */
+        val onlyInLibrary: Boolean = false,
         val error: UiText? = null,
     ) : UiState
 
@@ -31,6 +33,9 @@ class ScheduleState {
 
         /** Пользователь потянул список вниз, чтобы обновить расписание. */
         data object RefreshRequested : Event
+
+        /** Пользователь переключил фильтр «В библиотеке». */
+        data object InLibraryFilterToggled : Event
 
         /** Пользователь выбрал дату по значению epoch day. */
         data class DateSelected(val epochDay: Long) : Event

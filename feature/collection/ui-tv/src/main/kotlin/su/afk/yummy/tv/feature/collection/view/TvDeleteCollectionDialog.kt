@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.collection.view
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -32,7 +32,7 @@ internal fun TvDeleteCollectionDialog(
         title = { Text(stringResource(R.string.collection_delete_dialog_title)) },
         text = { Text(stringResource(R.string.collection_delete_dialog_message)) },
         confirmButton = {
-            TextButton(onClick = onConfirm, enabled = !isDeleting) {
+            TvDialogButton(onClick = onConfirm, enabled = !isDeleting) {
                 if (isDeleting) {
                     YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
@@ -41,7 +41,7 @@ internal fun TvDeleteCollectionDialog(
             }
         },
         dismissButton = {
-            TextButton(
+            TvDialogButton(
                 onClick = onDismiss,
                 enabled = !isDeleting,
                 modifier = Modifier.focusRequester(cancelFocusRequester),

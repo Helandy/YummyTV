@@ -1,8 +1,11 @@
 [versions]
 # Android / Build
 android-compileSdk = "37"
+# Подверсия платформы: Compose 1.13 требует compileSdk 37.1 (platforms;android-37.1)
+android-compileSdkMinor = "1"
 android-minSdk = "24"
-agp = "9.5.1"
+
+agp = "9.5.2"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin
@@ -15,13 +18,13 @@ stability-analyzer = "0.15.0"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
 androidx-core = "1.19.1"
-androidx-lifecycle = "2.11.0"
+androidx-lifecycle = "2.11.1"
 androidx-paging = "3.5.3"
 jetbrains-navigation3 = "1.2.0"
 
 # Compose
-androidx-composeBom = "2026.09.00"
-material3 = "1.5.0-rc01"
+androidx-composeBom = "2026.11.01"
+material3 = "1.5.0"
 
 # DI / Codegen
 hilt = "2.60.1"

@@ -9,6 +9,7 @@ import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.utils.isSyntheticMasterUrl
 
 class PlayerPlaybackUiStateMapperTest : BaseUnitTest() {
 
@@ -39,6 +40,58 @@ class PlayerPlaybackUiStateMapperTest : BaseUnitTest() {
             .toPlayerPlaybackUiState(playerNamePrefix = "Плеер ", connectionErrorMessage = NO_CONNECTION)
 
         org.junit.Assert.assertTrue(ui.episodes.isEmpty())
+    }
+
+    private val kodikQualities = linkedMapOf(
+        "360p" to "https://cdn.test/v/360.mp4:hls:manifest.m3u8",
+        "720p" to "https://cdn.test/v/720.mp4:hls:manifest.m3u8",
+    )
+
+    @Test
+    fun `адаптивный режим играет синтетический master с потолком по выбранному качеству`() {
+        val state = PlayerState.State(
+            adaptiveQualityEnabled = true,
+            streamUrl = kodikQualities.getValue("720p"),
+            streamQualityMap = kodikQualities,
+            selectedQuality = "720p",
+        )
+
+        val ui = state.toPlayerPlaybackUiState(playerNamePrefix = "Плеер ", connectionErrorMessage = NO_CONNECTION)
+
+        org.junit.Assert.assertTrue(ui.playbackUrl.isSyntheticMasterUrl())
+        org.junit.Assert.assertEquals(720, ui.videoHeightCap)
+        org.junit.Assert.assertFalse(ui.videoHeightPinned)
+    }
+
+    @Test
+    fun `источник без отдельных HLS-плейлистов играет ссылку выбранного качества`() {
+        val mp4 = linkedMapOf("360p" to "https://cdn.test/a.mp4", "720p" to "https://cdn.test/b.mp4")
+        val state = PlayerState.State(
+            streamUrl = mp4.getValue("720p"),
+            streamQualityMap = mp4,
+            selectedQuality = "360p",
+        )
+
+        val ui = state.toPlayerPlaybackUiState(playerNamePrefix = "Плеер ", connectionErrorMessage = NO_CONNECTION)
+
+        org.junit.Assert.assertEquals("https://cdn.test/a.mp4", ui.playbackUrl)
+        assertNull(ui.videoHeightCap)
+    }
+
+    @Test
+    fun `ручной выбор качества закрепляет вариант master без пересоздания потока`() {
+        val state = PlayerState.State(
+            adaptiveQualityEnabled = false,
+            streamUrl = kodikQualities.getValue("720p"),
+            streamQualityMap = kodikQualities,
+            selectedQuality = "360p",
+        )
+
+        val ui = state.toPlayerPlaybackUiState(playerNamePrefix = "Плеер ", connectionErrorMessage = NO_CONNECTION)
+
+        org.junit.Assert.assertTrue(ui.playbackUrl.isSyntheticMasterUrl())
+        org.junit.Assert.assertEquals(360, ui.videoHeightCap)
+        org.junit.Assert.assertTrue(ui.videoHeightPinned)
     }
 
     private fun offlineState(episodeCount: Int) = PlayerState.State(

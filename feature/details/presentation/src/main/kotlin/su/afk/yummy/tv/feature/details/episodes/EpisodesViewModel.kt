@@ -66,6 +66,7 @@ import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadPrepareRe
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchLaterHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
 import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeGroups
+import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeRanges
 import su.afk.yummy.tv.feature.details.episodes.utils.filterEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.isActive
 import su.afk.yummy.tv.feature.details.episodes.utils.resolveDownloadStatuses
@@ -311,7 +312,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
             is EpisodesState.Event.EpisodeDownloadSelected -> {
                 downloadHandler.beginNewDownload()
-                showDownloadDubbingPicker(event.videos)
+                startEpisodeDownload(event.videos)
             }
 
             is EpisodesState.Event.DownloadedEpisodeSelected -> {
@@ -369,8 +370,13 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
             is EpisodesState.Event.DownloadBalancerSelected -> {
                 setState { copy(pendingDownloadBalancerSelection = null) }
+                if (event.rememberAsPreset) {
+                    viewModelScope.launch { downloadHandler.savePreset(animeId, event.video) }
+                }
                 prepareEpisodeDownload(event.video)
             }
+
+            EpisodesState.Event.DownloadPresetResetSelected -> resetDownloadPreset()
 
             EpisodesState.Event.DownloadDubbingPickerDismissed -> {
                 downloadHandler.dismissSourcePicker()
@@ -598,8 +604,13 @@ class EpisodesViewModel @AssistedInject internal constructor(
         setState { copy(watchProgress = buildWatchProgressIndex(serverVideos)).withVisibleGroups() }
     }
 
-    private fun EpisodesState.State.withVisibleGroups(): EpisodesState.State =
-        copy(visibleEpisodeGroups = filterEpisodeGroups(episodeGroups, watchProgress, watchFilter))
+    private fun EpisodesState.State.withVisibleGroups(): EpisodesState.State {
+        val visible = filterEpisodeGroups(episodeGroups, watchProgress, watchFilter)
+        return copy(
+            visibleEpisodeGroups = visible,
+            episodeRanges = buildEpisodeRanges(visible),
+        )
+    }
 
     private fun buildWatchProgressIndex(
         videos: List<AnimeVideo>,
@@ -616,6 +627,42 @@ class EpisodesViewModel @AssistedInject internal constructor(
         val progress: DetailsWatchProgressIndex,
         val bestDubbing: String,
     )
+
+    /**
+     * Старт скачивания серии: при сохранённом пресете сразу готовит качества у его источника,
+     * иначе открывает выбор озвучки.
+     */
+    private fun startEpisodeDownload(videos: List<AnimeVideo>) {
+        viewModelScope.launch {
+            val presetVideo = downloadHandler.findPresetVideo(
+                animeId = animeId,
+                videos = videos,
+                statuses = currentState.downloadStatuses,
+                resolvingKeys = currentState.resolvingDownloadKeys,
+            )
+            if (presetVideo == null) {
+                showDownloadDubbingPicker(videos)
+            } else {
+                prepareEpisodeDownload(
+                    video = presetVideo,
+                    presetLabel = downloadHandler.presetLabel(presetVideo),
+                    fallbackVideos = videos,
+                )
+            }
+        }
+    }
+
+    private fun resetDownloadPreset() {
+        val selection = currentState.pendingDownloadQualitySelection ?: return
+        val episodeVideos = (currentState.videosState as? VideosUiState.Content)
+            ?.videos
+            .orEmpty()
+            .filter { it.episode == selection.episode }
+        downloadHandler.clearPending()
+        setState { copy(pendingDownloadQualitySelection = null) }
+        viewModelScope.launch { downloadHandler.clearPreset(animeId) }
+        showDownloadDubbingPicker(episodeVideos)
+    }
 
     private fun showDownloadDubbingPicker(
         videos: List<AnimeVideo>,
@@ -645,7 +692,15 @@ class EpisodesViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun prepareEpisodeDownload(video: AnimeVideo) {
+    /**
+     * [presetLabel] задан, когда источник взят из пресета; [fallbackVideos] — видео серии, чтобы при
+     * неудаче показать обычный выбор озвучки, а не оставить пользователя без пути дальше.
+     */
+    private fun prepareEpisodeDownload(
+        video: AnimeVideo,
+        presetLabel: String? = null,
+        fallbackVideos: List<AnimeVideo>? = null,
+    ) {
         val key = downloadHandler.downloadStatusKey(video)
         if (currentState.downloadStatuses[key]?.status?.isActive == true || key in currentState.resolvingDownloadKeys) {
             return
@@ -657,7 +712,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 is EpisodeDownloadPrepareResult.Ready -> setState {
                     copy(
                         resolvingDownloadKeys = resolvingDownloadKeys - result.key,
-                        pendingDownloadQualitySelection = result.selection,
+                        pendingDownloadQualitySelection = result.selection.copy(presetLabel = presetLabel),
                     )
                 }
 
@@ -669,6 +724,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         )
                     }
                     setEffect(EpisodesState.Effect.ShowToast(result.message))
+                    fallbackVideos?.let { showDownloadDubbingPicker(it) }
                 }
             }
         }

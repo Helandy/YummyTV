@@ -17,7 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -88,7 +88,7 @@ internal fun ReleaseNotesTvDialog(
                     text = stringResource(R.string.settings_release_notes_label),
                     modifier = Modifier.weight(1f),
                 )
-                TextButton(
+                TvDialogButton(
                     onClick = onDismiss,
                     modifier = Modifier.focusRequester(closeFocusRequester),
                 ) {
@@ -120,7 +120,7 @@ internal fun ReleaseNotesTvDialog(
         },
         confirmButton = {
             if (status == ReleaseNotesStatus.Error) {
-                TextButton(onClick = onRetry) {
+                TvDialogButton(onClick = onRetry) {
                     Text(stringResource(CoreR.string.common_retry))
                 }
             }

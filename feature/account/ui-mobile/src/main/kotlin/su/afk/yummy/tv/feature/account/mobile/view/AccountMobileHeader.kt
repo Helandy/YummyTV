@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.presentation.R
 
+/** Шапка своего профиля: «Редактировать» и «Выйти» вверху справа поверх баннера. */
 @Composable
 internal fun AccountMobileHeader(
     state: AccountState.State,

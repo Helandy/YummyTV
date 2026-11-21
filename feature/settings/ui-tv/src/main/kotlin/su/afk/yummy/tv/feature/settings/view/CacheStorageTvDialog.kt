@@ -11,7 +11,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -80,7 +80,7 @@ internal fun CacheStorageTvDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onRefresh, enabled = !isLoading) {
+            TvDialogButton(onClick = onRefresh, enabled = !isLoading) {
                 Text(
                     stringResource(
                         if (isLoading) {
@@ -93,7 +93,7 @@ internal fun CacheStorageTvDialog(
             }
         },
         dismissButton = {
-            TextButton(
+            TvDialogButton(
                 onClick = onDismiss,
                 modifier = Modifier.focusRequester(closeFocusRequester),
             ) {

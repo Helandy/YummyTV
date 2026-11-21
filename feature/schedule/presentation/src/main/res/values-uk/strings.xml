@@ -14,4 +14,7 @@
     <string name="schedule_less_than_minute">менше хвилини</string>
     <string name="schedule_loading">Завантажуємо розклад</string>
     <string name="schedule_empty">Розклад порожній</string>
+    <string name="schedule_filter_in_library">У бібліотеці</string>
+    <string name="schedule_filter_in_library_empty">У розкладі поки немає тайтлів із вашої бібліотеки</string>
+    <string name="schedule_filter_show_all">Показати всі</string>
 </resources>

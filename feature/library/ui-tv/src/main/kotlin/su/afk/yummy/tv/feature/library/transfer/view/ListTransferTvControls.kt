@@ -3,15 +3,18 @@ package su.afk.yummy.tv.feature.library.transfer.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -26,7 +29,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.library.presentation.R
@@ -40,6 +48,7 @@ internal fun ListTransferTvButton(
     icon: ImageVector? = null,
     enabled: Boolean = true,
     primary: Boolean = false,
+    retainFocusWhenDisabled: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -60,23 +69,38 @@ internal fun ListTransferTvButton(
         else -> colors.onSurface
     }
     val borderColor = when {
+        focused && !enabled -> colors.outline
         focused && primary -> colors.onPrimary
         focused -> colors.primary
         else -> Color.Transparent
+    }
+    // Во время короткой операции (экспорт / разбор файла) кнопка остаётся в дереве и держит фокус,
+    // чтобы Android не уводил DPAD-фокус в боковое меню из-за отключения узла.
+    val interactionModifier = if (!enabled && retainFocusWhenDisabled) {
+        Modifier
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+                disabled()
+            }
+            .focusable(interactionSource = interactionSource)
+    } else {
+        Modifier.clickable(
+            enabled = enabled,
+            role = Role.Button,
+            interactionSource = interactionSource,
+            indication = null,
+            onClick = onClick,
+        )
     }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 48.dp)
             .clip(shape)
             .border(width = 2.dp, color = borderColor, shape = shape)
             .background(bgColor, shape)
-            .clickable(
-                enabled = enabled,
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-            )
+            .then(interactionModifier)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
@@ -94,9 +118,61 @@ internal fun ListTransferTvButton(
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             color = contentColor,
-            maxLines = 1,
+            textAlign = if (icon != null) TextAlign.Start else TextAlign.Center,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false),
         )
+    }
+}
+
+@Composable
+internal fun ListTransferTvStatusRow(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(18.dp),
+            strokeWidth = 2.dp,
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+internal fun ListTransferTvResultCard(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val colors = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(10.dp)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .border(
+                width = 2.dp,
+                color = if (focused) colors.primary else Color.Transparent,
+                shape = shape,
+            )
+            .background(colors.primaryContainer.copy(alpha = 0.45f), shape)
+            .focusable(interactionSource = interactionSource)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        content()
     }
 }
 

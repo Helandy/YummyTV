@@ -9,4 +9,6 @@ internal data class AccountMobileQuickAction(
     val icon: ImageVector,
     val onClick: () -> Unit,
     val focusRequester: FocusRequester? = null,
+    /** Число на значке в углу иконки (непрочитанные); 0 — значка нет. */
+    val badgeCount: Int = 0,
 )

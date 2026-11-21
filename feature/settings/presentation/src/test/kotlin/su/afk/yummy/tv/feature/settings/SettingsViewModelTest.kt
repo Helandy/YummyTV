@@ -327,6 +327,15 @@ class SettingsViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `keep video enhancement on frame drops toggle writes the opposite value to the store`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.KeepVideoEnhancementOnFrameDropsToggled)
+
+        coVerify(exactly = 1) { settingsStore.setKeepVideoEnhancementOnFrameDrops(true) }
+    }
+
+    @Test
     fun `toggles write the opposite value to the store`() {
         val vm = createViewModel()
 

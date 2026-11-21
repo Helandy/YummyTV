@@ -127,17 +127,38 @@ class AccountMobileScreenTest {
     fun quickActionFaqSendsFaqSelected() {
         setScreen(signedOut())
 
-        composeRule.onNodeWithText(string(R.string.account_faq)).performClick()
+        composeRule.onNodeWithText(string(R.string.account_faq_group)).performClick()
 
         assertTrue(AccountState.Event.FaqSelected in events)
     }
 
     @Test
-    fun signedInShowsNicknameAndMessagesAction() {
+    fun signedInShowsNicknameAndFourQuickActions() {
         setScreen(signedIn())
 
         composeRule.onNodeWithText("ТестовыйАккаунт").assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.account_notification_type_message)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.account_faq_group)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.account_settings)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.account_downloaded_episodes)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.account_tab_notifications)).assertIsDisplayed()
+    }
+
+    @Test
+    fun settingsQuickActionSendsSettingsSelected() {
+        setScreen(signedIn())
+
+        composeRule.onNodeWithText(string(R.string.account_settings)).performClick()
+
+        assertTrue(AccountState.Event.SettingsSelected in events)
+    }
+
+    @Test
+    fun notificationsTileSendsNotificationsSelected() {
+        setScreen(signedIn())
+
+        composeRule.onNodeWithText(string(R.string.account_tab_notifications)).performClick()
+
+        assertTrue(AccountState.Event.NotificationsSelected in events)
     }
 
     @Test

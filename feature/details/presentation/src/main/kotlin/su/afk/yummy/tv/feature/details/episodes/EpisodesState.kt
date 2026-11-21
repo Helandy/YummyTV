@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeRange
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchFilter
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
@@ -46,10 +47,12 @@ class EpisodesState {
         val expandedEpisodeDescriptions: PersistentSet<String> = persistentSetOf(),
         /** Видео, сгруппированные по серии и отсортированные по номеру. */
         val episodeGroups: ImmutableList<EpisodeGroup> = persistentListOf(),
-        /** Выбранный фильтр по статусу просмотра (только мобильный список). */
+        /** Выбранный фильтр по статусу просмотра. */
         val watchFilter: EpisodeWatchFilter = EpisodeWatchFilter.All,
         /** [episodeGroups] после применения [watchFilter]. */
         val visibleEpisodeGroups: ImmutableList<EpisodeGroup> = persistentListOf(),
+        /** Диапазоны серий для быстрого перехода; пусто, если видимых серий не больше порога. */
+        val episodeRanges: ImmutableList<EpisodeRange> = persistentListOf(),
         /** Озвучка с наибольшим числом просмотров среди kodik-источников. */
         val bestDubbing: String = "",
         /** Приоритетный статус загрузки на серию: busy > paused > downloaded > failed. */
@@ -140,6 +143,8 @@ class EpisodesState {
         val videoId: Int,
         val episode: String,
         val options: ImmutableList<EpisodeDownloadQualityOption>,
+        /** «Озвучка • Плеер», если источник взят из пресета; `null` — выбран вручную. */
+        val presetLabel: String? = null,
     )
 
     data class EpisodeDownloadQualityOption(
@@ -226,7 +231,14 @@ class EpisodesState {
         data object DownloadDubbingPickerDismissed : Event
 
         /** Пользователь выбрал балансер для скачивания. */
-        data class DownloadBalancerSelected(val video: AnimeVideo) : Event
+        data class DownloadBalancerSelected(
+            val video: AnimeVideo,
+            /** Запомнить озвучку и плеер как пресет, чтобы не выбирать их в следующий раз. */
+            val rememberAsPreset: Boolean = false,
+        ) : Event
+
+        /** Пользователь сбросил пресет в шторке качества и хочет выбрать источник заново. */
+        data object DownloadPresetResetSelected : Event
 
         /** Пользователь закрыл выбор балансера для скачивания. */
         data object DownloadBalancerPickerDismissed : Event

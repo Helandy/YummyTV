@@ -1,10 +1,6 @@
 package su.afk.yummy.tv.feature.account.account
 
-import androidx.navigation3.runtime.NavKey
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.launchIn
@@ -12,46 +8,28 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
-import su.afk.yummy.tv.core.model.comments.CommentTargetType
-import su.afk.yummy.tv.core.model.error.toDisplayDetails
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
-import su.afk.yummy.tv.domain.account.model.NotificationCommentTarget
-import su.afk.yummy.tv.domain.account.model.NotificationCount
-import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
-import su.afk.yummy.tv.domain.account.model.commentTarget
-import su.afk.yummy.tv.domain.account.model.isExpandable
-import su.afk.yummy.tv.domain.account.model.totalUnreadCount
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.account.handler.AccountHubHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountLoginResult
-import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationHandler
-import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationHandler
-import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationOutcome
-import su.afk.yummy.tv.feature.account.account.handler.AccountOpenNotificationResult
+import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
 import su.afk.yummy.tv.feature.account.account.handler.AccountRefreshResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountSessionHandler
-import su.afk.yummy.tv.feature.account.account.handler.NOTIFICATIONS_PAGE_LIMIT
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
-import su.afk.yummy.tv.feature.account.utils.decrementCount
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
-import su.afk.yummy.tv.feature.comments.ICommentsNavigator
-import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
-import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
-import su.afk.yummy.tv.feature.watchlater.IWatchLaterNavigator
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,21 +38,14 @@ class AccountViewModel @Inject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val settingsStore: YaniAccountSettingsStore,
-    private val appearanceSettingsStore: AppearanceSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
-    private val detailsNavigator: IDetailsNavigator,
-    private val commentsNavigator: ICommentsNavigator,
     private val videoDownloadNavigator: IVideoDownloadNavigator,
-    private val watchLaterNavigator: IWatchLaterNavigator,
     private val accountNavigator: IAccountNavigator,
     private val faqNavigator: IFaqNavigator,
-    private val glossaryNavigator: IGlossaryNavigator,
     private val sitePagesNavigator: ISitePagesNavigator,
     private val settingsNavigator: ISettingsNavigator,
     private val sessionHandler: AccountSessionHandler,
     private val hubHandler: AccountHubHandler,
-    private val notificationHandler: AccountNotificationHandler,
-    private val notificationMutationHandler: AccountNotificationMutationHandler,
     private val localAuthHandler: AccountLocalAuthHandler,
     private val analytics: AccountAnalytics,
     private val localAuthAnalytics: LocalAuthAnalytics,
@@ -96,9 +67,7 @@ class AccountViewModel @Inject internal constructor(
                             userId = 0,
                             profileSummary = null,
                             stats = null,
-                            notifications = persistentListOf(),
-                            notificationCounts = persistentListOf(),
-                            isNotificationOpening = false,
+                            unreadNotificationCount = 0,
                             hubError = null,
                             localAuthServerState = LocalAuthServerState.Idle,
                         )
@@ -117,11 +86,11 @@ class AccountViewModel @Inject internal constructor(
         settingsStore.yaniNickname
             .onEach { setState { copy(nickname = it) } }
             .launchIn(viewModelScope)
-        appearanceSettingsStore.accountShortcutsExpanded
-            .onEach { setState { copy(shortcutsExpanded = it) } }
-            .launchIn(viewModelScope)
         settingsStore.yaniAvatarUrl
             .onEach { setState { copy(avatarUrl = it) } }
+            .launchIn(viewModelScope)
+        settingsStore.yaniUnreadNotificationsCount
+            .onEach { setState { copy(unreadNotificationCount = it) } }
             .launchIn(viewModelScope)
     }
 
@@ -202,9 +171,7 @@ class AccountViewModel @Inject internal constructor(
                             selectedTab = AccountState.AccountTab.STATS,
                             profileSummary = null,
                             stats = null,
-                            notifications = persistentListOf(),
-                            notificationCounts = persistentListOf(),
-                            isNotificationOpening = false,
+                            unreadNotificationCount = 0,
                             isCaptchaRequired = false,
                             captchaChallengeId = captchaChallengeId + 1,
                             captchaError = null,
@@ -251,10 +218,6 @@ class AccountViewModel @Inject internal constructor(
                 maybeLoadHub(force = true)
             }
 
-            AccountState.Event.WatchLaterSelected -> {
-                nav.navigate(watchLaterNavigator.getWatchLaterDest())
-            }
-
             AccountState.Event.DownloadedEpisodesSelected -> {
                 nav.navigate(videoDownloadNavigator.getVideoDownloadDest())
             }
@@ -264,22 +227,13 @@ class AccountViewModel @Inject internal constructor(
                 // решить по TTL, ходить ли в сеть.
                 maybeLoadHub(force = sessionHandler.isHubLoadedFor(currentState.userId))
 
-            AccountState.Event.UserSearchSelected ->
-                nav.navigate(accountNavigator.getUserSearchDest())
-
-            AccountState.Event.FriendsSelected ->
-                if (currentState.isSignedIn) nav.navigate(accountNavigator.getUserFriendsDest(currentState.userId))
-
             AccountState.Event.FaqSelected -> nav.navigate(faqNavigator.getFaqDest())
-            AccountState.Event.GlossarySelected -> nav.navigate(glossaryNavigator.getGlossaryDest())
 
             AccountState.Event.SitePagesSelected -> nav.navigate(sitePagesNavigator.pages())
 
             AccountState.Event.SettingsSelected -> nav.navigate(settingsNavigator.getSettingsDest())
 
-            AccountState.Event.MySubscriptionsSelected -> {
-                if (currentState.isSignedIn) nav.navigate(accountNavigator.getMySubscriptionsDest())
-            }
+            AccountState.Event.NotificationsSelected -> nav.navigate(AccountNotificationsDestination)
 
             AccountState.Event.ProfileEditSelected -> {
                 if (currentState.isSignedIn) nav.navigate(accountNavigator.getProfileEditDest())
@@ -291,29 +245,6 @@ class AccountViewModel @Inject internal constructor(
             AccountState.Event.RegistrationSelected ->
                 nav.navigate(accountNavigator.getRegistrationDest())
 
-            is AccountState.Event.NotificationSelected -> openNotification(event.id)
-            is AccountState.Event.NotificationExpandToggled -> toggleNotificationExpanded(event.id)
-            is AccountState.Event.NotificationLinkSelected -> openNotificationLink(event.notificationId, event.slug)
-            is AccountState.Event.NotificationReadSelected -> {
-                analytics.eventNotificationReadSelected(event.id)
-                markNotificationReadOptimistically(event.id)
-            }
-
-            AccountState.Event.AllNotificationsReadSelected -> {
-                analytics.eventAllNotificationsReadSelected()
-                markAllNotificationsReadOptimistically()
-            }
-
-            AccountState.Event.AllNotificationsDeleteSelected -> {
-                deleteAllNotificationsOptimistically()
-            }
-
-            AccountState.Event.NotificationsLoadMoreSelected -> loadMoreNotifications()
-
-            is AccountState.Event.NotificationDeleteSelected -> {
-                analytics.eventNotificationDeleteSelected(event.id)
-                deleteNotificationOptimistically(event.id)
-            }
 
             AccountState.Event.StartLocalAuthServerSelected -> {
                 localAuthAnalytics.eventTvPairingStarted()
@@ -374,90 +305,6 @@ class AccountViewModel @Inject internal constructor(
             localAuthAnalytics.eventTvPinShown()
         } else {
             localAuthAnalytics.eventTvWrongPin(state.attemptsLeft)
-        }
-    }
-
-    private fun openNotification(id: Int) {
-        val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
-        when (val target = notification.commentTarget) {
-            null -> {
-                if (!notification.isNewEpisode) return
-                val slug = notification.animeSlug ?: return
-                openNotificationAnime(notification, slug)
-            }
-
-            else -> openNotificationComments(notification, target)
-        }
-    }
-
-    private fun openNotificationLink(notificationId: Int, slug: String) {
-        val notification = currentState.notifications.firstOrNull { it.id == notificationId } ?: return
-        openNotificationAnime(notification, slug)
-    }
-
-    private fun toggleNotificationExpanded(id: Int) {
-        val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
-        if (!notification.isExpandable) return
-        val expanding = id !in currentState.expandedNotificationIds
-        setState {
-            copy(
-                expandedNotificationIds = if (expanding) {
-                    expandedNotificationIds.adding(id)
-                } else {
-                    expandedNotificationIds.removing(id)
-                },
-            )
-        }
-        if (expanding && !notification.viewed) markNotificationReadOptimistically(id)
-    }
-
-    private fun openNotificationComments(
-        notification: ProfileNotification,
-        target: NotificationCommentTarget,
-    ) {
-        when (target) {
-            is NotificationCommentTarget.Post -> openComments(
-                notification,
-                commentsNavigator.getCommentsDest(CommentTargetType.POST, target.postId, showDetailsAction = true),
-            )
-
-            is NotificationCommentTarget.Anime -> openComments(notification, animeCommentsDest(target.animeId))
-        }
-    }
-
-    private fun animeCommentsDest(animeId: Int) =
-        commentsNavigator.getAnimeCommentsDest(animeId, showDetailsAction = true)
-
-    private fun openComments(notification: ProfileNotification, destination: NavKey) {
-        if (!notification.viewed) markNotificationReadOptimistically(notification.id)
-        nav.navigate(destination)
-    }
-
-    private fun openNotificationAnime(notification: ProfileNotification, slug: String) {
-        if (currentState.isNotificationOpening) return
-        viewModelScope.launch {
-            setState { copy(isNotificationOpening = true, hubError = null) }
-            when (val result = notificationHandler.resolveAnimeId(slug)) {
-                is AccountOpenNotificationResult.Navigate -> {
-                    analytics.eventNotificationSelected(notification, result.animeId)
-                    setState {
-                        copy(
-                            isNotificationOpening = false,
-                        )
-                    }
-                    if (!notification.viewed) markNotificationReadOptimistically(notification.id)
-                    nav.navigate(detailsNavigator.getDetailsDest(result.animeId))
-                }
-
-                AccountOpenNotificationResult.Failure -> {
-                    setState {
-                        copy(
-                            isNotificationOpening = false,
-                            hubError = AccountUiError.OPEN_NOTIFICATION_FAILED,
-                        )
-                    }
-                }
-            }
         }
     }
 
@@ -589,20 +436,15 @@ class AccountViewModel @Inject internal constructor(
         val state = currentState
         if (!sessionHandler.markHubLoadIfNeeded(state, force)) return
         viewModelScope.launch {
-            setState { copy(isStatsLoading = true, isNotificationsLoading = true, hubError = null, hubErrorDetails = null) }
+            setState { copy(isStatsLoading = true, hubError = null) }
             showCachedHub(state.userId)
             // Каждая часть хаба показывается по мере прихода, не дожидаясь самой медленной.
             coroutineScope {
                 val summary = async { hubHandler.loadProfileSummary(state.userId).also(::applyProfileSummary) }
                 val stats = async { hubHandler.loadStats(state.userId).also(::applyStats) }
-                val notifications = async { hubHandler.loadNotifications().also(::applyNotifications) }
-                val counts = async { hubHandler.loadNotificationCounts().also(::applyNotificationCounts) }
+                // Счётчик непрочитанных обновляется через общую настройку, на экране его слушает init.
+                launch { hubHandler.loadNotificationCounts() }
                 launch { finishStatistics(summary.await(), stats.await()) }
-                launch {
-                    notifications.await()
-                    counts.await()
-                    setState { copy(isNotificationsLoading = false) }
-                }
             }
         }
     }
@@ -614,11 +456,6 @@ class AccountViewModel @Inject internal constructor(
             copy(
                 profileSummary = profileSummary ?: cached.profileSummary,
                 stats = stats ?: cached.stats,
-                notifications = if (notifications.isEmpty() && cached.notifications != null) {
-                    cached.notifications.distinctBy { it.id }.toImmutableList()
-                } else {
-                    notifications
-                },
             )
         }
     }
@@ -642,141 +479,6 @@ class AccountViewModel @Inject internal constructor(
                     hubError
                 },
             )
-        }
-    }
-
-    private fun applyNotifications(result: Result<List<ProfileNotification>>) {
-        result.fold(
-            onSuccess = { notifications ->
-                setState {
-                    copy(
-                        notifications = notifications.distinctBy { it.id }.toImmutableList(),
-                        hasMoreNotifications = notifications.size >= NOTIFICATIONS_PAGE_LIMIT,
-                    )
-                }
-            },
-            onFailure = { error ->
-                val details = errorHandler.parse(error).toDisplayDetails()
-                setState {
-                    copy(hubError = AccountUiError.LOAD_NOTIFICATIONS_FAILED, hubErrorDetails = details)
-                }
-            },
-        )
-    }
-
-    /** Подгружает одну следующую страницу; смещение — число уже загруженных, удалённые уходят и с сервера. */
-    private fun loadMoreNotifications() {
-        val state = currentState
-        if (state.isNotificationsLoadingMore || !state.hasMoreNotifications) return
-        setState { copy(isNotificationsLoadingMore = true) }
-        viewModelScope.launch {
-            hubHandler.loadNotifications(offset = state.notifications.size).fold(
-                onSuccess = { page ->
-                    setState {
-                        copy(
-                            notifications = (notifications + page).distinctBy { it.id }.toImmutableList(),
-                            hasMoreNotifications = page.size >= NOTIFICATIONS_PAGE_LIMIT,
-                            isNotificationsLoadingMore = false,
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    val details = errorHandler.parse(error).toDisplayDetails()
-                    setState {
-                        copy(
-                            isNotificationsLoadingMore = false,
-                            hubError = AccountUiError.LOAD_NOTIFICATIONS_FAILED,
-                            hubErrorDetails = details,
-                        )
-                    }
-                },
-            )
-        }
-    }
-
-    private fun applyNotificationCounts(result: Result<List<NotificationCount>>) {
-        result.onSuccess { counts -> setState { copy(notificationCounts = counts.toImmutableList()) } }
-    }
-
-    // Notification mutations apply to local state immediately so the UI never waits on a
-    // network round trip; the server call runs in the background and only a failure re-syncs
-    // from `hubHandler`, since a stale response is otherwise indistinguishable from success.
-
-    private fun markNotificationReadOptimistically(id: Int) {
-        val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
-        if (notification.viewed) return
-        mutateNotificationsOptimistically(
-            notifications = currentState.notifications.map {
-                if (it.id == id) it.copy(viewed = true) else it
-            }.toImmutableList(),
-            counts = currentState.notificationCounts.decrementCount(notification.type),
-        ) { notificationMutationHandler.markNotificationRead(id) }
-    }
-
-    private fun deleteNotificationOptimistically(id: Int) {
-        val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
-        mutateNotificationsOptimistically(
-            notifications = currentState.notifications.filterNot { it.id == id }.toImmutableList(),
-            counts = if (notification.viewed) {
-                currentState.notificationCounts
-            } else {
-                currentState.notificationCounts.decrementCount(notification.type)
-            },
-            syncUnreadCount = !notification.viewed,
-        ) { notificationMutationHandler.deleteNotification(id) }
-    }
-
-    private fun markAllNotificationsReadOptimistically() {
-        if (currentState.notifications.all { it.viewed }) return
-        mutateNotificationsOptimistically(
-            notifications = currentState.notifications.map { it.copy(viewed = true) }.toImmutableList(),
-            counts = currentState.notificationCounts.map { it.copy(count = 0) }.toImmutableList(),
-        ) { notificationMutationHandler.markAllNotificationsRead() }
-    }
-
-    private fun deleteAllNotificationsOptimistically() {
-        if (currentState.notifications.isEmpty()) return
-        mutateNotificationsOptimistically(
-            notifications = persistentListOf(),
-            counts = persistentListOf(),
-        ) { notificationMutationHandler.deleteAllNotifications() }
-    }
-
-    /** Применяет [notifications]/[counts] сразу, а при ошибке сервера возвращает прежнее состояние. */
-    private fun mutateNotificationsOptimistically(
-        notifications: ImmutableList<ProfileNotification>,
-        counts: ImmutableList<NotificationCount>,
-        syncUnreadCount: Boolean = true,
-        mutation: suspend () -> AccountNotificationMutationOutcome,
-    ) {
-        val previousNotifications = currentState.notifications
-        val previousCounts = currentState.notificationCounts
-        setState { copy(notifications = notifications, notificationCounts = counts, hubError = null) }
-        viewModelScope.launch {
-            if (syncUnreadCount) {
-                settingsStore.setYaniUnreadNotificationsCount(counts.totalUnreadCount())
-            }
-            val outcome = mutation()
-            if (outcome is AccountNotificationMutationOutcome.Failure) {
-                revertNotifications(previousNotifications, previousCounts, outcome.error)
-            }
-        }
-    }
-
-    private fun revertNotifications(
-        notifications: ImmutableList<ProfileNotification>,
-        counts: ImmutableList<NotificationCount>,
-        error: AccountUiError,
-    ) {
-        setState {
-            copy(
-                notifications = notifications,
-                notificationCounts = counts,
-                hubError = error,
-            )
-        }
-        viewModelScope.launch {
-            settingsStore.setYaniUnreadNotificationsCount(counts.totalUnreadCount())
         }
     }
 }

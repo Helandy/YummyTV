@@ -38,15 +38,15 @@ internal class AccountHubHandler @Inject constructor(
     suspend fun loadCached(userId: Int): AccountCachedHub = coroutineScope {
         val profileSummary = async { runSuspendCatching { getCachedUserProfileSummary(userId) }.getOrNull() }
         val stats = async { runSuspendCatching { getCachedUserStats(userId) }.getOrNull() }
-        val notifications = async {
-            runSuspendCatching { getCachedNotifications(NOTIFICATIONS_PAGE_LIMIT) }.getOrNull()
-        }
         AccountCachedHub(
             profileSummary = profileSummary.await(),
             stats = stats.await(),
-            notifications = notifications.await(),
         )
     }
+
+    /** Сохранённый список уведомлений любой давности или `null`, если кэш пуст. */
+    suspend fun loadCachedNotifications(): List<ProfileNotification>? =
+        runSuspendCatching { getCachedNotifications(NOTIFICATIONS_PAGE_LIMIT) }.getOrNull()
 
     suspend fun loadProfileSummary(userId: Int): Result<UserProfileSummary> =
         runSuspendCatching { getUserProfileSummary(userId) }
@@ -68,5 +68,4 @@ internal class AccountHubHandler @Inject constructor(
 internal data class AccountCachedHub(
     val profileSummary: UserProfileSummary?,
     val stats: UserStats?,
-    val notifications: List<ProfileNotification>?,
 )

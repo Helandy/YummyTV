@@ -18,6 +18,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun EpisodeDownloadQualitySheet(
     selection: EpisodesState.EpisodeDownloadQualitySelection,
     onSelected: (EpisodesState.EpisodeDownloadQualityOption) -> Unit,
+    onPresetChange: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     BaseBottomSheet(
@@ -29,6 +30,9 @@ internal fun EpisodeDownloadQualitySheet(
             )
         },
     ) {
+        selection.presetLabel?.let { label ->
+            EpisodeDownloadPresetInfo(label = label, onChange = onPresetChange)
+        }
         if (selection.options.isEmpty()) {
             MobileMessage(
                 title = stringResource(R.string.details_mobile_download_quality_empty),

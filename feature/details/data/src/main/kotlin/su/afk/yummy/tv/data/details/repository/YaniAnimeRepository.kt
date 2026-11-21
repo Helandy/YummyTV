@@ -155,10 +155,8 @@ class YaniAnimeRepository(
      */
     private suspend fun fetchDetailsShared(animeId: Int, languageCode: String): AnimeDetails {
         val key = "$animeId:$languageCode"
-        val deferred = detailsInFlight.computeIfAbsent(key) {
-            detailsScope.async { fetchDetailsFromNetwork(animeId, languageCode) }.also { started ->
-                started.invokeOnCompletion { detailsInFlight.remove(key, started) }
-            }
+        val deferred = detailsInFlight.getOrCreateInFlight(key) {
+            detailsScope.async { fetchDetailsFromNetwork(animeId, languageCode) }
         }
         return deferred.await()
     }
@@ -605,7 +603,7 @@ class YaniAnimeRepository(
         // Ответ зависит от авторизации (поле `subscribed`, серверный прогресс): запрос, начатый до входа или
         // выхода, чужому состоянию отдавать нельзя.
         val key = "$animeId:$languageCode:${settingsStore.currentUserId()}"
-        val deferred = videosInFlight.computeIfAbsent(key) {
+        val deferred = videosInFlight.getOrCreateInFlight(key) {
             detailsScope.async {
                 val (dto, fromMirror) = withMirrorTrace { api.getAnimeVideos(animeId) }
                 // Маппинг тысяч видео — вычисления, а не IO: отдаём его пулу Default.
@@ -620,8 +618,6 @@ class YaniAnimeRepository(
                 val cache = if (fromMirror) mapped.withUserStateFrom(animeStorage.getVideos(animeId, languageCode)) else mapped
                 animeStorage.saveVideos(cache)
                 cache
-            }.also { started ->
-                started.invokeOnCompletion { videosInFlight.remove(key, started) }
             }
         }
         return deferred.await()

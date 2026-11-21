@@ -11,6 +11,7 @@ import su.afk.yummy.tv.feature.account.localauth.LocalAuthViewModel
 import su.afk.yummy.tv.feature.account.mobile.account.AccountMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.localauth.LocalAuthMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.mysubscriptions.MySubscriptionsMobileScreen
+import su.afk.yummy.tv.feature.account.mobile.notifications.AccountNotificationsMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.passwordreset.PasswordResetMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.profileedit.ProfileEditMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.registration.RegistrationMobileScreen
@@ -19,6 +20,8 @@ import su.afk.yummy.tv.feature.account.mobile.userprofile.UserProfileResolverMob
 import su.afk.yummy.tv.feature.account.mobile.usersearch.UserSearchMobileScreen
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsViewModel
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
+import su.afk.yummy.tv.feature.account.notifications.NotificationsViewModel
+import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
 import su.afk.yummy.tv.feature.account.navigator.LocalAuthDestination
 import su.afk.yummy.tv.feature.account.navigator.MySubscriptionsDestination
 import su.afk.yummy.tv.feature.account.navigator.PasswordResetDestination
@@ -45,6 +48,12 @@ class AccountNavRegistrar @Inject constructor() : IMobileAccountEntry {
                 val viewModel = hiltViewModel<AccountViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     AccountMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<AccountNotificationsDestination> {
+                val viewModel = hiltViewModel<NotificationsViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    AccountNotificationsMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
             entry<UserProfileDestination> { dest ->

@@ -23,7 +23,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.label
 @Composable
 internal fun SettingsMobileToggleRow(
     label: String,
-    hint: String,
+    hint: String? = null,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -42,11 +42,13 @@ internal fun SettingsMobileToggleRow(
                 fontWeight = if (enabled) FontWeight.SemiBold else FontWeight.Normal,
                 color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
             )
-            Text(
-                text = hint,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (hint != null) {
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Switch(

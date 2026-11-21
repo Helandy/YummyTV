@@ -55,9 +55,7 @@ internal fun SettingsMobileTorrentContent(
         }
         SettingsMobileToggleRow(
             label = stringResource(R.string.settings_torrent_enabled_label),
-            hint = stringResource(
-                if (settings.enabled) R.string.settings_torrent_enabled_on else R.string.settings_torrent_enabled_off,
-            ),
+            hint = if (settings.enabled) stringResource(R.string.settings_torrent_enabled_on) else null,
             enabled = settings.enabled,
             onClick = {
                 if (!settings.enabled) requestLocalNetworkAccess()
@@ -112,9 +110,7 @@ internal fun SettingsMobileTorrentContent(
         }
         SettingsMobileToggleRow(
             label = stringResource(R.string.settings_torrent_jacred_label),
-            hint = stringResource(
-                if (settings.jacRedEnabled) R.string.settings_torrent_jacred_on else R.string.settings_torrent_jacred_off,
-            ),
+            hint = if (settings.jacRedEnabled) stringResource(R.string.settings_torrent_jacred_on) else null,
             enabled = settings.jacRedEnabled,
             onClick = { onChange(settings.copy(jacRedEnabled = !settings.jacRedEnabled)) },
         )
@@ -129,9 +125,7 @@ internal fun SettingsMobileTorrentContent(
         }
         SettingsMobileToggleRow(
             label = stringResource(R.string.settings_torrent_jackett_label),
-            hint = stringResource(
-                if (settings.jackettEnabled) R.string.settings_torrent_jackett_on else R.string.settings_torrent_jackett_off,
-            ),
+            hint = if (settings.jackettEnabled) stringResource(R.string.settings_torrent_jackett_on) else null,
             enabled = settings.jackettEnabled,
             onClick = { onChange(settings.copy(jackettEnabled = !settings.jackettEnabled)) },
         )
@@ -157,13 +151,6 @@ internal fun SettingsMobileTorrentContent(
         )
         SettingsMobileToggleRow(
             label = stringResource(R.string.settings_torrent_sort_reversed_label),
-            hint = stringResource(
-                if (settings.sortReversed) {
-                    R.string.settings_torrent_sort_reversed_on
-                } else {
-                    R.string.settings_torrent_sort_reversed_off
-                },
-            ),
             enabled = settings.sortReversed,
             onClick = { onChange(settings.copy(sortReversed = !settings.sortReversed)) },
         )

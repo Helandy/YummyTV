@@ -102,6 +102,8 @@ fun buildPlayerMediaItemConfig(
         audioTrackPolicy = playerAudioTrackPolicyFor(episodeUrl),
         playbackPositionMs = playbackPositionMs,
         resumeFromMs = state.resumeFromMs,
+        videoHeightCap = playback.videoHeightCap,
+        videoHeightPinned = playback.videoHeightPinned,
         subtitleUrl = subtitle?.url,
         subtitleMimeType = subtitle?.mediaMimeType(),
         subtitleLanguage = subtitle?.language,

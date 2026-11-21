@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.settings.view
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -36,12 +36,12 @@ internal fun TvInterfaceModeConfirmationDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TvDialogButton(onClick = onConfirm) {
                 Text(stringResource(R.string.settings_interface_confirm))
             }
         },
         dismissButton = {
-            TextButton(
+            TvDialogButton(
                 onClick = onDismiss,
                 modifier = Modifier.focusRequester(cancelFocusRequester),
             ) {
