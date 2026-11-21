@@ -304,6 +304,70 @@ internal class PlayerAnalytics @Inject constructor(
     }
 
     /**
+     * Восстановление Alloha исчерпало попытки, потому что свежая сессия не открывалась (resolve_failed).
+     * Сам сбой резолва уже учтён `player_stream_resolve_failed` (там же решено, ошибка это или состояние
+     * контента), поэтому здесь обычное событие, а не второй non-fatal на то же самое.
+     *
+     * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing, error_type,
+     * error_message, retry_attempts, quality, position, position_ms.
+     */
+    fun eventRecoveryGaveUp(
+        state: PlayerState.State,
+        message: String,
+        errorType: String?,
+        positionMs: Long,
+        retryAttempts: Int,
+    ) {
+        val source = state.analyticsSource()
+        tracker.track(
+            EVENT_RECOVERY_GAVE_UP,
+            sourceParams(source) +
+                analyticsParamsOf(
+                    PARAM_ANIME_NAME to source.animeName,
+                    PARAM_ERROR_TYPE to errorType,
+                    PARAM_ERROR_MESSAGE to message.analyticsMessage(),
+                    PARAM_RETRY_ATTEMPTS to retryAttempts,
+                    PARAM_QUALITY to state.selectedQuality,
+                    PARAM_POSITION to positionMs.formatPlaybackTimecode(),
+                    PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
+                ),
+        )
+    }
+
+    /**
+     * Ошибка источника пришла на самом конце потока (битый или обрезанный последний сегмент) и принята
+     * за конец серии: пользователь её досмотрел, ретраи и экран ошибки ему не нужны.
+     *
+     * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing, error_code,
+     * error_message, error_cause, stream_host, quality, position, position_ms, duration_ms.
+     */
+    fun eventEndOfStreamError(
+        state: PlayerState.State,
+        errorCode: String?,
+        message: String,
+        errorCause: String?,
+        positionMs: Long,
+        durationMs: Long,
+    ) {
+        val source = state.analyticsSource()
+        tracker.track(
+            EVENT_END_OF_STREAM_ERROR,
+            sourceParams(source) +
+                analyticsParamsOf(
+                    PARAM_ANIME_NAME to source.animeName,
+                    PARAM_ERROR_CODE to errorCode,
+                    PARAM_ERROR_MESSAGE to message.analyticsMessage(),
+                    PARAM_ERROR_CAUSE to errorCause,
+                    PARAM_STREAM_HOST to state.streamUrl?.streamHost(),
+                    PARAM_QUALITY to state.selectedQuality,
+                    PARAM_POSITION to positionMs.formatPlaybackTimecode(),
+                    PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
+                    PARAM_DURATION_MS to durationMs.coerceAtLeast(0L),
+                ),
+        )
+    }
+
+    /**
      * Пользователь сменил качество с экрана ошибки декодера.
      *
      * Параметры: anime_id, quality (выбранное), from_quality.
@@ -549,6 +613,9 @@ internal class PlayerAnalytics @Inject constructor(
             "ERROR_CODE_IO_BAD_HTTP_STATUS",
             // Таймаут операции плеера (медленная сеть или зависшая операция железа).
             "ERROR_CODE_TIMEOUT",
+            // Систему забрала аппаратный кодек (фон, другое приложение): повтор пересоздаёт его сам,
+            // а в error-лог такой отказ ничего не добавляет.
+            "ERROR_CODE_DECODING_RESOURCES_RECLAIMED",
         )
 
         // Причины «серия недоступна на источнике»: контентное состояние, не баг приложения —
@@ -573,6 +640,8 @@ internal class PlayerAnalytics @Inject constructor(
         const val EVENT_EPISODE_FULLY_COMPLETED = "player_episode_fully_completed"
         const val EVENT_PLAYER_ERROR = "player_error"
         const val EVENT_DECODER_ERROR = "player_decoder_error"
+        const val EVENT_RECOVERY_GAVE_UP = "player_recovery_gave_up"
+        const val EVENT_END_OF_STREAM_ERROR = "player_end_of_stream_error"
         const val EVENT_DECODER_QUALITY_CHANGED = "player_decoder_quality_changed"
         const val EVENT_QUALITY_AUTO_FALLBACK = "player_quality_auto_fallback"
         const val EVENT_SKIP_SEGMENT_SELECTED = "player_skip_segment_selected"

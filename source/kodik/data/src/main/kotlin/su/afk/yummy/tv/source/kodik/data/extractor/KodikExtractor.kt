@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -62,6 +63,22 @@ internal class KodikExtractor @Inject constructor(
         Regex("""/(\d+)\.mp4:hls:manifest\.m3u8(?=$|[?#])""")
 
     override val reportsOwnProgress: Boolean = true
+
+    private val HTTP_SERVER_ERROR = 500
+    private val SERVER_ERROR_RETRY_DELAY_MS = 700L
+    private val ERROR_BODY_HINT_LENGTH = 80
+    private val HTML_TAG = Regex("<[^>]+>")
+    private val WHITESPACE = Regex("\\s+")
+
+    /**
+     * Начало тела при HTTP-ошибке эндпоинта: по длине в 627 символов нельзя понять, что отвечает Kodik.
+     * Для успешного ответа без ссылок текст не нужен (там своя причина), поэтому только для статусов 400+.
+     */
+    private fun errorBodyHint(statusCode: Int, body: String): String {
+        if (statusCode < 400) return ""
+        val text = body.replace(HTML_TAG, " ").replace(WHITESPACE, " ").trim().take(ERROR_BODY_HINT_LENGTH)
+        return if (text.isEmpty()) "" else ": \"$text\""
+    }
 
     override fun supports(url: String): Boolean = url.isKodikPlayerUrl()
 
@@ -167,11 +184,17 @@ internal class KodikExtractor @Inject constructor(
                 }
 
                 onStatus(PlayerStreamResolveStatus.RequestingStream)
-                val response = try {
+                suspend fun requestEndpoint(): PlayerHttpResponse = try {
                     postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
                 } catch (e: Exception) {
                     endpointPathByScriptUrl.remove(playerScriptUrl)
                     throw e
+                }
+                var response = requestEndpoint()
+                if (response.statusCode >= HTTP_SERVER_ERROR) {
+                    // Кратковременные 5xx у Kodik: те же серии через секунду отдают ссылки, один быстрый повтор их снимает.
+                    delay(SERVER_ERROR_RETRY_DELAY_MS)
+                    response = requestEndpoint()
                 }
                 val responseText = response.body
 
@@ -193,7 +216,8 @@ internal class KodikExtractor @Inject constructor(
                         "stream URL was not found in endpoint response"
                     )
                     KodikResult.Failed(
-                        "no stream URL in endpoint response: HTTP ${response.statusCode}, ${responseText.length} chars",
+                        "no stream URL in endpoint response: HTTP ${response.statusCode}, ${responseText.length} chars" +
+                            errorBodyHint(response.statusCode, responseText),
                     )
                 }
             } catch (e: KodikBlockedException) {

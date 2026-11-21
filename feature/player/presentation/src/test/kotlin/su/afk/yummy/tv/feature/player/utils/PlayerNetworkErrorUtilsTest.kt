@@ -38,6 +38,28 @@ class PlayerNetworkErrorUtilsTest {
     }
 
     @Test
+    fun `tls trust failures from device certificate stores are environment failures`() {
+        assertTrue(
+            isNetworkResolveFailure(
+                null,
+                "Unacceptable certificate: CN=AAA Certificate Services, O=Comodo CA Limited, L=Salford, ST=Greater Manchester, C=GB",
+            ),
+        )
+        assertTrue(
+            isNetworkResolveFailure(
+                null,
+                "java.security.cert.CertPathValidatorException: Trust anchor for certification path not found.",
+            ),
+        )
+        assertTrue(
+            isNetworkResolveFailure(
+                null,
+                "Alloha: session was not opened (SSLHandshakeException: java.security.cert.CertPathValidatorException: Trust anch)",
+            ),
+        )
+    }
+
+    @Test
     fun `parsing failure is not a network failure`() {
         assertFalse(isNetworkResolveFailure(null, "missing anime_id"))
         assertFalse(isNetworkResolveFailure(IllegalStateException("boom"), null))

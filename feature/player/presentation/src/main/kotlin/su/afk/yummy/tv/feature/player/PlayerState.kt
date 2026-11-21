@@ -300,6 +300,18 @@ class PlayerState {
             val httpStatusCode: Int? = null,
         ) : Event
 
+        /**
+         * Источник упал на самом конце потока (битый последний сегмент): серию досмотрели, это конец
+         * эпизода, а не ошибка. Конец эпизода UI отрабатывает сам, событие нужно для сброса ретраев и аналитики.
+         */
+        data class PlaybackEndedWithError(
+            val message: String,
+            val errorCode: String? = null,
+            val cause: String? = null,
+            val positionMs: Long = 0L,
+            val durationMs: Long = 0L,
+        ) : Event
+
         /** Новый media item подготовлен после фонового восстановления воспроизведения. */
         data object PlaybackReady : Event
 

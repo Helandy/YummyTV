@@ -70,6 +70,21 @@ class VkExtractorTest : BaseUnitTest() {
     }
 
     @Test
+    fun `access denied in the prefetch cache is an unavailable video`() = runTest {
+        stubPages(
+            """<script>window.cur.apiPrefetchCache = [{"method":"video.getOldWebAds","response":null,""" +
+                """"error":{"error_code":204,"error_msg":"Access denied"}}];</script>""",
+        )
+
+        val result = extractor().extract(request(), context)
+
+        assertEquals(
+            PlayerStreamResolveResult.Unavailable(cause = PlayerStreamUnavailableCause.VideoNotFound),
+            result,
+        )
+    }
+
+    @Test
     fun `page without streams and without a vk message is a failure with a reason`() = runTest {
         stubPages("<html>nothing here</html>")
 

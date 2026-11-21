@@ -148,7 +148,9 @@ internal class VkExtractor @Inject constructor(
                 // повтор того же запроса обычно возвращает полную, поэтому пустой ответ без маркера
                 // «видео недоступно» перезапрашиваем. Ошибки сети не повторяем: таймаут уже долгий.
                 val emptyPage = videoExtUrl != null && videoExtFailure == null &&
-                    candidates.isEmpty() && VIDEO_UNAVAILABLE_MARKER !in sourceHtml
+                    candidates.isEmpty() && VIDEO_UNAVAILABLE_MARKER !in sourceHtml &&
+                    // Отказ в доступе не лечится повтором: страница каждый раз та же.
+                    !sourceHtml.isVkAccessDenied()
                 if (!emptyPage || attempt >= VIDEO_EXT_MAX_ATTEMPTS) break
                 delay(VIDEO_EXT_RETRY_DELAY_MS)
             }
@@ -163,6 +165,10 @@ internal class VkExtractor @Inject constructor(
                     return@withContext VkOutcome.Failed(
                         "${failure::class.java.simpleName}: ${failure.message.orEmpty().take(60)}",
                     )
+                }
+                if (sourceHtml.isVkAccessDenied()) {
+                    analyticsTracker.logExtractorFailure("VK", sourceUrl, "video access denied on VK")
+                    return@withContext VkOutcome.VideoUnavailable(null)
                 }
                 analyticsTracker.logExtractorFailure("VK", normalizedUrl, "no stream URLs found")
                 return@withContext VkOutcome.Failed(

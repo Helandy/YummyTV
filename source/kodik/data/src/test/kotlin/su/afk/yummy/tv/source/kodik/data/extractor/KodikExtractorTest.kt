@@ -167,6 +167,20 @@ class KodikExtractorTest : BaseUnitTest() {
     }
 
     @Test
+    fun `server error of the endpoint is retried once and reports what the body says`() = runTest {
+        stubPage()
+        stubScript()
+        stubEndpoint("<html><body><h1>Internal   Server Error</h1></body></html>", status = 500)
+
+        val result = extract()
+
+        assertEquals(2, http.callsTo("POST").size)
+        val reason = (result as PlayerStreamResolveResult.Failed).reason.orEmpty()
+        assertTrue(reason, reason.startsWith("no stream URL in endpoint response: HTTP 500, "))
+        assertTrue(reason, reason.endsWith(": \"Internal Server Error\""))
+    }
+
+    @Test
     fun `post carries signed params, cookies and the referer`() = runTest {
         stubPage(headers = mapOf("Set-Cookie" to listOf("session=abc; Path=/", "k=v; HttpOnly")))
         stubScript()

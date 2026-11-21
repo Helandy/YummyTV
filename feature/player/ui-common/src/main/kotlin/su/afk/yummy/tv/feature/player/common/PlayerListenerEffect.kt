@@ -7,6 +7,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.utils.isEndOfStreamError
 import su.afk.yummy.tv.feature.player.common.utils.positionSnapshot
 
 /**
@@ -56,8 +57,24 @@ fun PlayerListenerEffect(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                val position = player.currentPosition.coerceAtLeast(0L)
-                currentOnEvent(error.toPlaybackErrorEvent(position))
+                val snapshot = player.positionSnapshot(currentFallbackDuration())
+                val position = snapshot.positionMs
+                val event = error.toPlaybackErrorEvent(position)
+                if (isEndOfStreamError(event.errorCode, position, snapshot.durationMs)) {
+                    // Битый хвост потока: серию уже досмотрели. Вместо ретраев и экрана ошибки — конец эпизода.
+                    currentOnEvent(
+                        PlayerState.Event.PlaybackEndedWithError(
+                            message = event.message,
+                            errorCode = event.errorCode,
+                            cause = event.cause,
+                            positionMs = position,
+                            durationMs = snapshot.durationMs,
+                        ),
+                    )
+                    currentOnEpisodeEnd(position, snapshot.durationMs)
+                } else {
+                    currentOnEvent(event)
+                }
             }
         }
         player.addListener(listener)

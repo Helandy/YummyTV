@@ -100,3 +100,24 @@ internal fun String.normalizeStreamUrl(): String = if (startsWith("//")) "https:
 
 private fun String.normalizeQualityLabel(): String =
     trim().let { if (it.endsWith("p")) it else "${it}p" }
+
+private val ERROR_PAGE_STYLE_OR_SCRIPT = Regex("(?is)<(style|script)\\b.*?</\\1>")
+private val ERROR_PAGE_HTML_TAG = Regex("<[^>]+>")
+private val ERROR_PAGE_WHITESPACE = Regex("\\s+")
+private val ERROR_PAGE_TITLE = Regex("^(?:Ошибка!\\s*)+")
+private const val ERROR_PAGE_REASON_LENGTH = 100
+
+/**
+ * Видимый текст страницы-заглушки Alloha на 404 («запрашиваемая серия отсутствует в нашей коллекции»,
+ * «указанная озвучка недоступна», «сезон недоступен») без заголовка «Ошибка!». Нужен как причина в отчётах:
+ * по ней отличают «серии нет» от «озвучки нет». `null` — на странице нет текста.
+ */
+internal fun allohaErrorPageReason(html: String): String? =
+    html.replace(ERROR_PAGE_STYLE_OR_SCRIPT, " ")
+        .replace(ERROR_PAGE_HTML_TAG, " ")
+        .replace(ERROR_PAGE_WHITESPACE, " ")
+        .trim()
+        .replace(ERROR_PAGE_TITLE, "")
+        .trim()
+        .take(ERROR_PAGE_REASON_LENGTH)
+        .takeIf { it.isNotEmpty() }

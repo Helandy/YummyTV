@@ -9,6 +9,9 @@
         <trust-anchors>
             <certificates src="system" />
             <certificates src="@raw/isrg_root_x1" />
+            <!-- Ashdi (*.ashdi.vip) и VK подписаны SSL.com TLS RSA Root CA 2022; в хранилище старых прошивок
+                 (Android 11 и ниже) его нет, и они падают на «Unacceptable certificate». -->
+            <certificates src="@raw/ssl_com_tls_rsa_root_2022" />
         </trust-anchors>
     </base-config>
 </network-security-config>

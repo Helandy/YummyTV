@@ -115,6 +115,12 @@ internal class AllohaHttpSessionOpener(
             .header("Accept-Language", ACCEPT_LANGUAGE)
             .build()
         return client.newCall(request).execute().use { response ->
+            if (response.code == HTTP_NOT_FOUND) {
+                // 404 с «Ошибка!» — это ответ Alloha «такой серии/озвучки/сезона у нас нет» (список видео у yani
+                // устарел), а не сбой: повтор того же адреса вернёт то же самое.
+                val reason = runCatching { response.body.string() }.getOrNull()?.let(::allohaErrorPageReason)
+                throw AllohaSourceUnavailableException("player page HTTP 404" + reason?.let { ": $it" }.orEmpty())
+            }
             if (!response.isSuccessful) throw IOException("Alloha: player page HTTP ${response.code}")
             response.body.string()
         }
@@ -185,6 +191,7 @@ internal class AllohaHttpSessionOpener(
         val API_KEY = Regex("""['"]([a-zA-Z0-9]{340,420})['"]""")
         const val LOG_TAG = PersistedLogTags.ALLOHA_EXTRACTOR
         const val MIRROR_PROBE_TIMEOUT_MS = 4_000L
+        const val HTTP_NOT_FOUND = 404
 
         // The page is served only to a visitor that arrives from the site that embeds it.
         const val PAGE_REFERER = "https://ru.yummyani.me/"

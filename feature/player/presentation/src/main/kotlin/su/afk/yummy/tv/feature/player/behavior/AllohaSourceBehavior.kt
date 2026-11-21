@@ -207,18 +207,32 @@ internal class AllohaSourceBehavior @Inject constructor(
             // действиями, вместо того чтобы крутиться дальше без шанса на успех.
             // Пользователь увидит ошибку, а обычный путь PlaybackError сюда не доходит
             // (ошибку перехватило восстановление) — отправляем её явно.
-            analytics.eventPlaybackError(
-                state = host.state,
-                message = "Alloha playback recovery giving up after " +
-                    "${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} attempts",
-                errorCode = null,
-                errorType = ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE,
-                positionMs = host.state.playbackPositionMs,
-                retryAttempts = PlayerAllohaRecoveryHandler.MAX_ATTEMPTS,
-                // Код исходной ошибки — в cause, а не в errorCode: сетевые коды в errorCode
-                // глушатся аналитикой, и отчёт об исчерпании пропал бы целиком.
-                errorCause = recovery.lastFailure,
-            )
+            val giveUpMessage = "Alloha playback recovery giving up after " +
+                "${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} attempts"
+            if (recovery.lastFailure == RESOLVE_FAILED_SUMMARY) {
+                // Свежая сессия не открылась: причина (404 «серии нет», сеть, TLS) уже учтена
+                // `player_stream_resolve_failed` и решено, ошибка это или состояние контента.
+                // Второй non-fatal на тот же сбой только раздувал error-лог.
+                analytics.eventRecoveryGaveUp(
+                    state = host.state,
+                    message = giveUpMessage,
+                    errorType = ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE,
+                    positionMs = host.state.playbackPositionMs,
+                    retryAttempts = PlayerAllohaRecoveryHandler.MAX_ATTEMPTS,
+                )
+            } else {
+                analytics.eventPlaybackError(
+                    state = host.state,
+                    message = giveUpMessage,
+                    errorCode = null,
+                    errorType = ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE,
+                    positionMs = host.state.playbackPositionMs,
+                    retryAttempts = PlayerAllohaRecoveryHandler.MAX_ATTEMPTS,
+                    // Код исходной ошибки — в cause, а не в errorCode: сетевые коды в errorCode
+                    // глушатся аналитикой, и отчёт об исчерпании пропал бы целиком.
+                    errorCause = recovery.lastFailure,
+                )
+            }
             recovery.reset()
             host.changePlayerHint.cancel()
             host.update {

@@ -8,6 +8,7 @@ private val VK_MESSAGE_PATTERN = Regex(
     """id="video_ext_msg"[^>]*>(.*?)</div>""",
     setOf(RegexOption.DOT_MATCHES_ALL, RegexOption.IGNORE_CASE),
 )
+private val VK_ACCESS_DENIED_PATTERN = Regex(""""error_code"\s*:\s*204\b""")
 private val HTML_TAG_PATTERN = Regex("<[^>]+>")
 private val WHITESPACE_PATTERN = Regex("\\s+")
 
@@ -30,3 +31,10 @@ internal fun ByteArray.vkUnavailableMessage(): String? =
 /** VK сообщает, что видеофайла нет (удалён или никогда не существовал). */
 internal fun String.isVkVideoNotFoundMessage(): Boolean =
     contains(VK_NOT_FOUND_FRAGMENT, ignoreCase = true)
+
+/**
+ * Новая страница `video_ext.php` (SPA) не кладёт ссылки в HTML, а ошибки доступа отдаёт в `apiPrefetchCache`
+ * как `{"error_code":204,"error_msg":"Access denied"}`: видео закрыто для анонимного зрителя (приватное,
+ * только для подписчиков и т. п.). Это состояние контента, а не сбой разбора страницы.
+ */
+internal fun String.isVkAccessDenied(): Boolean = VK_ACCESS_DENIED_PATTERN.containsMatchIn(this)

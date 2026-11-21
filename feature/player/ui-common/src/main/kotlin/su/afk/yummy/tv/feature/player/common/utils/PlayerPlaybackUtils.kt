@@ -17,8 +17,19 @@ fun Player.positionSnapshot(fallbackDurationMs: Long): PlayerPositionSnapshot =
         durationMs = duration.takeIf { it > 0 } ?: fallbackDurationMs,
     )
 
+/**
+ * Тип ошибки плеера для аналитики. Имя класса самого исключения в release обфусцировано (`t15`) и
+ * группировать по нему нечем, поэтому берём первое необфусцированное (JDK/Android) исключение из
+ * цепочки причин, иначе общее «PlaybackException». Конкретный код — в `error_code`.
+ */
 fun PlaybackException.analyticsType(): String =
-    this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+    generateSequence(cause) { it.cause }
+        .take(CAUSE_SUMMARY_DEPTH)
+        .map { it.javaClass }
+        .firstOrNull { it.name.startsWith("java.") || it.name.startsWith("android.") }
+        ?.simpleName
+        ?.takeIf { it.isNotBlank() }
+        ?: "PlaybackException"
 
 /**
  * Цепочка причин ошибки плеера для аналитики.

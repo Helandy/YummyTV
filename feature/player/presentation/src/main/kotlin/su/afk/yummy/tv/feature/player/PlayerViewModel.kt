@@ -446,6 +446,20 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
 
+            is PlayerState.Event.PlaybackEndedWithError -> {
+                analytics.eventEndOfStreamError(
+                    state = currentState,
+                    errorCode = event.errorCode,
+                    message = event.message,
+                    errorCause = event.cause,
+                    positionMs = event.positionMs,
+                    durationMs = event.durationMs,
+                )
+                // Конец эпизода уже обрабатывает UI; тихие ретраи этого потока ему только мешают.
+                sourceBehaviors.forEach { it.reset() }
+                changePlayerHint.cancel()
+            }
+
             PlayerState.Event.PlaybackStalled -> {
                 activeSourceBehavior()?.onPlaybackStalled()
             }
