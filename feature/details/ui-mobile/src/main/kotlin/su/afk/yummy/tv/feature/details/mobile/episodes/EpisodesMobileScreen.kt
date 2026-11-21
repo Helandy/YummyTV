@@ -1,15 +1,13 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes
 
-import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
-import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 import android.widget.Toast
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -30,8 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -44,6 +42,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
+import su.afk.yummy.tv.core.designsystem.motion.rememberStateChangeFade
+import su.afk.yummy.tv.core.designsystem.motion.stateChangeFade
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnail
@@ -61,7 +61,7 @@ import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadQuali
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadedActionSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDubbingDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeMobileCard
-import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeRangeMobileChips
+import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeRangeMobileTabs
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeWatchFilterAction
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodesMobileSkeleton
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -147,7 +147,7 @@ fun EpisodesMobileScreen(
             }
             Column(modifier = Modifier.mobileContentMaxWidth().stateChangeFade(episodesFade)) {
                 if (state.episodeRanges.isNotEmpty()) {
-                    EpisodeRangeMobileChips(
+                    EpisodeRangeMobileTabs(
                         ranges = state.episodeRanges,
                         selectedRangeIndex = selectedRangeIndex,
                         onRangeSelected = { index, range ->
@@ -170,12 +170,17 @@ fun EpisodesMobileScreen(
                 }
                 LazyColumn(
                     state = episodesListState,
+                    // Под вкладками диапазонов верхний отступ — padding списка, а не contentPadding:
+                    // иначе прокрученные карточки проходят через эти 12dp и просвечивают под вкладками.
+                    // Без вкладок наоборот: под шапкой отступ в contentPadding, чтобы карточки уходили
+                    // прямо под неё, а не обрезались по полосе фона в 12dp.
                     modifier = Modifier
                         .weight(1f)
+                        .padding(top = if (state.episodeRanges.isNotEmpty()) 12.dp else 0.dp)
                         .navigationBarsPadding(),
                     contentPadding = PaddingValues(
                         start = 16.dp,
-                        top = 12.dp,
+                        top = if (state.episodeRanges.isNotEmpty()) 0.dp else 12.dp,
                         end = 16.dp,
                         bottom = 16.dp,
                     ),
