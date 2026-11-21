@@ -192,7 +192,7 @@ fun LibraryMobileScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 16.dp, top = 6.dp, end = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 3.dp),
                     )
                 }
             }

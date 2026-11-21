@@ -100,7 +100,7 @@ internal fun LibraryMobilePage(
             .fillMaxSize(),
         contentPadding = PaddingValues(
             start = 16.dp,
-            top = 12.dp,
+            top = 0.dp,
             end = 16.dp,
             bottom = MobileBottomBarDefaults.contentBottomPadding,
         ),
