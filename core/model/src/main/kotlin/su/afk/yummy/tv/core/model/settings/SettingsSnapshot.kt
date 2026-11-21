@@ -15,7 +15,6 @@ data class SettingsSnapshot(
     val preferredVideoQuality: PreferredVideoQuality,
     val adaptiveVideoQualityEnabled: Boolean = true,
     val watchNextEnabled: Boolean,
-    val previewCacheSize: Int,
     val autoSkipOpeningsEndings: Boolean,
     val autoSkipDelaySeconds: Int,
     val showOpeningOnTimeline: Boolean,

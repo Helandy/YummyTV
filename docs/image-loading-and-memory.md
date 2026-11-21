@@ -11,16 +11,13 @@
 | Параметр                  | Значение                                                                            |
 |---------------------------|-------------------------------------------------------------------------------------|
 | Memory cache              | `maxSizePercent`: `0.15` доступной памяти приложения, `0.10` при `isLowRamDevice`   |
-| Disk cache                | `cacheDir/image_cache`, размер из настройки (`CacheSettingsStore.previewCacheSize`) |
+| Disk cache                | `cacheDir/image_cache`, фиксированные 100 МБ (не настраивается)                     |
 | Crossfade                 | Включён на мобильном интерфейсе, выключен на ТВ                                     |
 | Сеть                      | `KtorNetworkFetcherFactory` поверх `okHttpClient.newBuilder()` (общий пул соединений и диспетчер с API-клиентом, независимая конфигурация) |
 | Дополнительные компоненты | `KodikThumbnailKeyer`, `KodikThumbnailFetcher.Factory`, `HistoryEpisodeThumbnailKeyer`, `HistoryEpisodeThumbnailFetcher.Factory` |
 
 Из комментариев в коде:
 
-- Размер диска читается блокирующе (`runBlocking`, таймаут 1 с): Coil создаёт дисковый кэш лениво и
-  не на main, а снапшот `currentPreviewCacheSize` на холодном старте ещё не заполнен и отдал бы
-  значение по умолчанию вместо выбранного пользователем.
 - Crossfade на ТВ выключен: анимация на каждой карточке грида стоит кадров на слабых приставках, а
   при DPAD-скролле её всё равно не видно.
 

@@ -161,18 +161,6 @@ internal class SettingsAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь изменил размер кэша превью.
-     *
-     * Параметры: value.
-     */
-    fun eventPreviewCacheSizeSelected(size: Int) {
-        tracker.track(
-            EVENT_PREVIEW_CACHE_SIZE_SELECTED,
-            analyticsParamsOf(PARAM_VALUE to size),
-        )
-    }
-
-    /**
      * Пользователь включил или выключил автопропуск опенингов и эндингов.
      *
      * Параметры: target_state.
@@ -547,7 +535,6 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_BROWSER_USER_AGENT_SELECTED = "settings_browser_user_agent_selected"
         const val EVENT_PREFERRED_VIDEO_QUALITY_SELECTED =
             "settings_preferred_video_quality_selected"
-        const val EVENT_PREVIEW_CACHE_SIZE_SELECTED = "settings_preview_cache_size_selected"
         const val EVENT_REQUEST_PREVIEW_CHANNEL_BROWSABLE =
             "settings_request_preview_channel_browsable"
         const val EVENT_SUGGEST_NEXT_EPISODE_ON_WATCHED_TOGGLED =

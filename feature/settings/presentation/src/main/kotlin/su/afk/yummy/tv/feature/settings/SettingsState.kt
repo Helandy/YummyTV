@@ -62,7 +62,6 @@ class SettingsState {
         val adaptiveVideoQualityEnabled: Boolean = false,
         val isPreviewChannelBrowsable: Boolean = false,
         val watchNextEnabled: Boolean = true,
-        val previewCacheSize: Int = 100,
         val autoSkipOpeningsEndings: Boolean = false,
         val autoSkipDelaySeconds: Int = 5,
         val showOpeningOnTimeline: Boolean = false,
@@ -201,9 +200,6 @@ class SettingsState {
 
         /** Пользователь переключил публикацию в Watch Next. */
         data object WatchNextToggled : Event
-
-        /** Пользователь выбрал размер кеша превью. */
-        data class PreviewCacheSizeSelected(val size: Int) : Event
 
         /** Пользователь переключил автопропуск опенингов и эндингов. */
         data object AutoSkipOpeningsEndingsToggled : Event

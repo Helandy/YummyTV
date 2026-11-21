@@ -10,11 +10,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.toPreviewCacheSizeText
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
-import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
 import su.afk.yummy.tv.feature.settings.presentation.R
 
@@ -28,17 +26,6 @@ internal fun SettingsMobileStorageContent(
 
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         SettingsMobileSection(title = stringResource(R.string.settings_poster_cache_size_title)) {
-            SettingsMobileSliderRow(
-                label = stringResource(R.string.settings_mobile_preview_cache),
-                valueLabel = { it.toPreviewCacheSizeText() },
-                value = state.previewCacheSize,
-                valueRange = 50..500,
-                stepSize = 50,
-                enabled = true,
-                onValueCommitted = {
-                    onEvent(SettingsState.Event.PreviewCacheSizeSelected(it))
-                },
-            )
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_cache_storage_title),
                 value = Formatter.formatShortFileSize(

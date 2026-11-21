@@ -89,7 +89,6 @@
     <string name="settings_preferred_video_quality_480">480p</string>
     <string name="settings_preferred_video_quality_360">360p</string>
     <string name="settings_preferred_video_quality_fallback_hint">Якщо якість недоступна, буде обрано найближчу нижчу</string>
-    <string name="settings_mobile_preview_cache">Кеш зображень</string>
     <string name="settings_details_button_position">Позиція %1$d</string>
     <string name="settings_details_button_move_up">Перемістити вище</string>
     <string name="settings_details_button_move_down">Перемістити нижче</string>
@@ -182,7 +181,6 @@
         <string name="settings_cache_size_100">100 МБ</string>
         <string name="settings_cache_size_200">200 МБ</string>
     <string name="settings_cache_size_max">Максимальний</string>
-    <string name="settings_cache_size_mb">%1$d МБ</string>
     <string name="settings_cache_size_300">300 МБ</string>
     <string name="settings_interface_language_title">Мова інтерфейсу</string>
     <string name="settings_interface_language_system">Як у системі</string>

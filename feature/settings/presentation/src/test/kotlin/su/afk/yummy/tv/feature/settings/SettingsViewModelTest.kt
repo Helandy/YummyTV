@@ -182,7 +182,6 @@ class SettingsViewModelTest : BaseUnitTest() {
         libraryContinueWatchingCardSize = LibraryContinueWatchingCardSize.entries.first(),
         preferredVideoQuality = PreferredVideoQuality.entries.first(),
         watchNextEnabled = false,
-        previewCacheSize = 1,
         autoSkipOpeningsEndings = false,
         autoSkipDelaySeconds = 1,
         showOpeningOnTimeline = false,

@@ -15,7 +15,6 @@ import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.TorrentSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreTorrentSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
@@ -27,7 +26,6 @@ import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLifecycle
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLogRecordingSettings
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreBrowserUserAgentProvider
-import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreCacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreEpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStorePlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSearchSettingsStore
@@ -67,10 +65,6 @@ internal interface PreferencesModule {
     @Binds
     @Singleton
     fun bindAppearanceSettingsStore(impl: DataStoreAppearanceSettingsStore): AppearanceSettingsStore
-
-    @Binds
-    @Singleton
-    fun bindCacheSettingsStore(impl: DataStoreCacheSettingsStore): CacheSettingsStore
 
     @Binds
     @Singleton

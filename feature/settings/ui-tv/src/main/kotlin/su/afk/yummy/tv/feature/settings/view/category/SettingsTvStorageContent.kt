@@ -14,14 +14,12 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.label
-import su.afk.yummy.tv.feature.settings.common.utils.toPreviewCacheSizeText
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.AboutRow
 import su.afk.yummy.tv.feature.settings.view.CacheStorageTvDialog
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
-import su.afk.yummy.tv.feature.settings.view.SettingsSliderRow
 
 @Composable
 internal fun SettingsTvStorageContent(
@@ -33,22 +31,6 @@ internal fun SettingsTvStorageContent(
     val context = LocalContext.current
     var showCacheStorageDialog by remember { mutableStateOf(false) }
 
-    SettingsSectionTitle(text = stringResource(R.string.settings_poster_cache_size_title))
-    SettingsSliderRow(
-        label = stringResource(R.string.settings_poster_cache_size_title),
-        valueText = state.previewCacheSize.toPreviewCacheSizeText(),
-        value = state.previewCacheSize,
-        valueRange = 50..500,
-        stepSize = 50,
-        enabled = true,
-        onValueChange = {
-            onEvent(SettingsState.Event.PreviewCacheSizeSelected(it))
-        },
-        modifier = Modifier
-            .focusRequester(tabContentFocusRequester)
-            .restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    SettingsDivider()
     AboutRow(
         label = stringResource(R.string.settings_cache_storage_title),
         hint = Formatter.formatShortFileSize(context, state.cacheStorageTotalBytes),
@@ -56,6 +38,9 @@ internal fun SettingsTvStorageContent(
             onEvent(SettingsState.Event.CacheStorageRefreshRequested)
             showCacheStorageDialog = true
         },
+        modifier = Modifier
+            .focusRequester(tabContentFocusRequester)
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
     AboutRow(

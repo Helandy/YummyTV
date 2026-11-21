@@ -8,7 +8,7 @@ import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 
 /**
  * Фасад над доменными хранилищами настроек ([YaniAccountSettingsStore], [PlayerSettingsStore],
- * [AppearanceSettingsStore], [CacheSettingsStore], [VideoExportSettingsStore], [VideoDownloadSettingsStore],
+ * [AppearanceSettingsStore], [VideoExportSettingsStore], [VideoDownloadSettingsStore],
  * [AppLifecycleSettingsStore], [SearchSettingsStore]) для кода, которому нужны поля сразу нескольких доменов
  * (например, [settingsSnapshot]/[mainSettingsSnapshot] агрегируют их). Однодоменным
  * потребителям следует зависеть от узкого интерфейса напрямую.
@@ -17,7 +17,6 @@ interface SettingsStore :
     YaniAccountSettingsStore,
     PlayerSettingsStore,
     AppearanceSettingsStore,
-    CacheSettingsStore,
     VideoExportSettingsStore,
     VideoDownloadSettingsStore,
     AppLifecycleSettingsStore,

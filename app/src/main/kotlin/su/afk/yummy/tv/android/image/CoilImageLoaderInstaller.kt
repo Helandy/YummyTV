@@ -13,9 +13,6 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.model.anime.utils.PosterMirrorConfig
 import su.afk.yummy.tv.core.network.okHttpKtorClient
@@ -23,7 +20,6 @@ import su.afk.yummy.tv.core.network.statics.AppVersionHeaderPlugin
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
-import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailFetcher
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailKeyer
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
@@ -34,8 +30,8 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 /**
- * Собирает и устанавливает singleton Coil [ImageLoader]: размер кэша считаем от пользовательских
- * настроек и типа устройства (урезаем memory cache на low-RAM), плюс регистрируем кастомные
+ * Собирает и устанавливает singleton Coil [ImageLoader]: размер дискового кэша фиксирован
+ * ([DISK_CACHE_BYTES]), memory cache урезаем на low-RAM устройствах, плюс регистрируем кастомные
  * компоненты — fetcher/keyer превью серий и Ktor network fetcher поверх общего OkHttpClient приложения.
  * Превью серий читаются/пишутся не в этот кэш, а в собственный маленький [DiskCache] через
  * [KodikThumbnailCacheIO] (см. su.afk.yummy.tv.core.utils.kodik.di.KodikNetworkModule).
@@ -44,7 +40,6 @@ import javax.inject.Singleton
 class CoilImageLoaderInstaller @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val okHttpClient: OkHttpClient,
-    private val settingsStore: CacheSettingsStore,
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val episodeThumbnailResolver: EpisodeThumbnailResolver,
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
@@ -81,7 +76,7 @@ class CoilImageLoaderInstaller @Inject constructor(
                 .diskCache {
                     DiskCache.Builder()
                         .directory(context.cacheDir.resolve(IMAGE_CACHE_DIR_NAME))
-                        .maxSizeBytes(readPreviewCacheSizeMb().toLong() * 1024L * 1024L)
+                        .maxSizeBytes(DISK_CACHE_BYTES)
                         .build()
                 }
                 .components {
@@ -105,22 +100,12 @@ class CoilImageLoaderInstaller @Inject constructor(
         }
     }
 
-    /**
-     * Coil создаёт дисковый кэш лениво и не на main, поэтому здесь можно дождаться DataStore.
-     * Снапшот [CacheSettingsStore.currentPreviewCacheSize] на холодном старте ещё не заполнен
-     * и отдал бы значение по умолчанию вместо выбранного пользователем.
-     */
-    private fun readPreviewCacheSizeMb(): Int =
-        runBlocking {
-            withTimeoutOrNull(CACHE_SIZE_READ_TIMEOUT_MS) { settingsStore.previewCacheSize.first() }
-        } ?: settingsStore.currentPreviewCacheSize
-
     private fun isLowRamDevice(): Boolean =
         (context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
 
     private companion object {
         const val IMAGE_CACHE_DIR_NAME = "image_cache"
-        const val CACHE_SIZE_READ_TIMEOUT_MS = 1_000L
+        const val DISK_CACHE_BYTES = 100L * 1024L * 1024L
         const val MEMORY_CACHE_PERCENT = 0.15
         const val LOW_RAM_MEMORY_CACHE_PERCENT = 0.10
     }

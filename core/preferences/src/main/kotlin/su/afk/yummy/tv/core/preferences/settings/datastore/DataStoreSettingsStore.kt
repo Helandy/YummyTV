@@ -19,7 +19,6 @@ import su.afk.yummy.tv.core.preferences.BuildConfig
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
-import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.adaptiveVideoQualityEnabledKey
@@ -48,7 +47,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerCo
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewCacheSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showCatalogTitleYearKey
@@ -84,7 +82,6 @@ internal class DataStoreSettingsStore @Inject constructor(
     appearance: AppearanceSettingsStore,
     player: PlayerSettingsStore,
     yaniAccount: YaniAccountSettingsStore,
-    cache: CacheSettingsStore,
     videoExport: VideoExportSettingsStore,
     videoDownload: VideoDownloadSettingsStore,
     appLifecycle: AppLifecycleSettingsStore,
@@ -94,7 +91,6 @@ internal class DataStoreSettingsStore @Inject constructor(
     AppearanceSettingsStore by appearance,
     PlayerSettingsStore by player,
     YaniAccountSettingsStore by yaniAccount,
-    CacheSettingsStore by cache,
     VideoExportSettingsStore by videoExport,
     VideoDownloadSettingsStore by videoDownload,
     AppLifecycleSettingsStore by appLifecycle,
@@ -123,7 +119,6 @@ internal class DataStoreSettingsStore @Inject constructor(
             ),
             adaptiveVideoQualityEnabled = prefs[adaptiveVideoQualityEnabledKey] ?: true,
             watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
-            previewCacheSize = (prefs[previewCacheSizeKey] ?: 100).coerceIn(50, 500),
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
             autoSkipDelaySeconds = (prefs[autoSkipDelaySecondsKey] ?: 5).coerceIn(1, 15),
             showOpeningOnTimeline = prefs[showOpeningOnTimelineKey] ?: false,

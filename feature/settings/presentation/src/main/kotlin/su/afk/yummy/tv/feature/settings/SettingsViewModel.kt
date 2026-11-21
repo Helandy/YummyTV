@@ -119,7 +119,6 @@ class SettingsViewModel @Inject internal constructor(
                         preferredVideoQuality = snapshot.preferredVideoQuality,
                         adaptiveVideoQualityEnabled = snapshot.adaptiveVideoQualityEnabled,
                         watchNextEnabled = snapshot.watchNextEnabled,
-                        previewCacheSize = snapshot.previewCacheSize,
                         autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
                         autoSkipDelaySeconds = snapshot.autoSkipDelaySeconds,
                         showOpeningOnTimeline = snapshot.showOpeningOnTimeline,
@@ -354,11 +353,6 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.watchNextEnabled
                 analytics.eventWatchNextToggled(enabled)
                 settingsStore.setWatchNextEnabled(enabled)
-            }
-
-            is SettingsState.Event.PreviewCacheSizeSelected -> viewModelScope.launch {
-                analytics.eventPreviewCacheSizeSelected(event.size)
-                settingsStore.setPreviewCacheSize(event.size)
             }
 
             SettingsState.Event.AutoSkipOpeningsEndingsToggled -> viewModelScope.launch {

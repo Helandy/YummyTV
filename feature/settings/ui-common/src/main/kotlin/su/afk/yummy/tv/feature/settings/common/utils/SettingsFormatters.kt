@@ -226,10 +226,6 @@ fun PreferredVideoQuality.hint(): String = optionalStringResource(
     },
 )
 
-@Composable
-fun Int.toPreviewCacheSizeText(): String =
-    stringResource(R.string.settings_cache_size_mb, this)
-
 /** Порядок значений слайдера качества видео: от худшего к «Авто» (лучшее). */
 val videoQualitySliderEntries: List<PreferredVideoQuality> = listOf(
     PreferredVideoQuality.P360,
