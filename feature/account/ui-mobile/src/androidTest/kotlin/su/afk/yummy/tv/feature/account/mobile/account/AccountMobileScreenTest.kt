@@ -133,30 +133,21 @@ class AccountMobileScreenTest {
     }
 
     @Test
-    fun quickActionGlossarySendsGlossarySelected() {
-        setScreen(signedOut())
-
-        composeRule.onNodeWithText(string(R.string.account_glossary)).performClick()
-
-        assertTrue(AccountState.Event.GlossarySelected in events)
-    }
-
-    @Test
     fun signedInShowsNicknameAndFourQuickActions() {
         setScreen(signedIn())
 
         composeRule.onNodeWithText("ТестовыйАккаунт").assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.account_faq_group)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.account_glossary)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.account_settings)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.account_downloaded_episodes)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.account_tab_notifications)).assertIsDisplayed()
     }
 
     @Test
-    fun settingsButtonInHeaderSendsSettingsSelected() {
+    fun settingsQuickActionSendsSettingsSelected() {
         setScreen(signedIn())
 
-        composeRule.onNodeWithContentDescription(string(R.string.account_settings)).performClick()
+        composeRule.onNodeWithText(string(R.string.account_settings)).performClick()
 
         assertTrue(AccountState.Event.SettingsSelected in events)
     }

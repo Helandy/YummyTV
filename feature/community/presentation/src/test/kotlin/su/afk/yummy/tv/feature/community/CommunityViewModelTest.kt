@@ -31,6 +31,7 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.community.model.CommunitySection
+import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.posts.IPostsNavigator
@@ -46,6 +47,7 @@ class CommunityViewModelTest : BaseUnitTest() {
     private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
     private val messagesNavigator: IMessagesNavigator = mockk()
     private val sitePagesNavigator: ISitePagesNavigator = mockk()
+    private val glossaryNavigator: IGlossaryNavigator = mockk()
     private val accountNavigator: IAccountNavigator = mockk()
     private val reviewsNavigator: IReviewsNavigator = mockk()
     private val collectionNavigator: ICollectionNavigator = mockk()
@@ -67,6 +69,7 @@ class CommunityViewModelTest : BaseUnitTest() {
         every { bloggerVideosNavigator.video(any()) } returns navKey
         every { messagesNavigator.dialogs() } returns navKey
         every { sitePagesNavigator.pages() } returns navKey
+        every { glossaryNavigator.getGlossaryDest() } returns navKey
         every { accountNavigator.getUserSearchDest() } returns navKey
         every { reviewsNavigator.feed() } returns navKey
         every { collectionNavigator.getCollectionsCatalogDest() } returns navKey
@@ -85,6 +88,7 @@ class CommunityViewModelTest : BaseUnitTest() {
         bloggerVideosNavigator = bloggerVideosNavigator,
         messagesNavigator = messagesNavigator,
         sitePagesNavigator = sitePagesNavigator,
+        glossaryNavigator = glossaryNavigator,
         accountNavigator = accountNavigator,
         reviewsNavigator = reviewsNavigator,
         collectionNavigator = collectionNavigator,
@@ -167,6 +171,7 @@ class CommunityViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { accountNavigator.getUserSearchDest() }
         verify(exactly = 1) { accountNavigator.getUserFriendsDest(USER_ID) }
         verify(exactly = 1) { sitePagesNavigator.pages() }
+        verify(exactly = 1) { glossaryNavigator.getGlossaryDest() }
     }
 
     @Test

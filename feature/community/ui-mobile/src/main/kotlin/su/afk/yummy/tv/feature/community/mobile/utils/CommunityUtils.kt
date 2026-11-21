@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -22,6 +23,7 @@ internal fun CommunitySection.icon(): ImageVector = when (this) {
     CommunitySection.FRIENDS -> Icons.Filled.PersonAdd
     CommunitySection.USERS -> Icons.Filled.Groups
     CommunitySection.ABOUT -> Icons.Filled.Info
+    CommunitySection.GLOSSARY -> Icons.Filled.MenuBook
 }
 
 /** Подпись плитки раздела. */
@@ -34,4 +36,5 @@ internal fun CommunitySection.titleRes(): Int = when (this) {
     CommunitySection.FRIENDS -> R.string.community_section_friends
     CommunitySection.USERS -> R.string.community_section_users
     CommunitySection.ABOUT -> R.string.community_section_about
+    CommunitySection.GLOSSARY -> R.string.community_section_glossary
 }

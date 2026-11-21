@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":feature:bloggers:api"))
     implementation(project(":feature:messages:api"))
     implementation(project(":feature:pages:api"))
+    implementation(project(":feature:glossary:api"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:reviews:api"))

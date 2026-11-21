@@ -90,9 +90,6 @@ class AccountState {
         /** Переход к FAQ из быстрых действий аккаунта. */
         data object FaqSelected : Event
 
-        /** Переход к глоссарию аниме-терминов из быстрых действий аккаунта. */
-        data object GlossarySelected : Event
-
         /** Переход к информационным страницам сайта из быстрых действий аккаунта. */
         data object SitePagesSelected : Event
 

@@ -24,6 +24,7 @@ import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.community.model.CommunitySection
 import su.afk.yummy.tv.feature.community.presentation.R
+import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.posts.IPostsNavigator
@@ -43,6 +44,7 @@ class CommunityViewModel @Inject constructor(
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
     private val messagesNavigator: IMessagesNavigator,
     private val sitePagesNavigator: ISitePagesNavigator,
+    private val glossaryNavigator: IGlossaryNavigator,
     private val accountNavigator: IAccountNavigator,
     private val reviewsNavigator: IReviewsNavigator,
     private val collectionNavigator: ICollectionNavigator,
@@ -97,6 +99,7 @@ class CommunityViewModel @Inject constructor(
         CommunitySection.FRIENDS -> error("Friends are opened by openSection")
         CommunitySection.USERS -> accountNavigator.getUserSearchDest()
         CommunitySection.ABOUT -> sitePagesNavigator.pages()
+        CommunitySection.GLOSSARY -> glossaryNavigator.getGlossaryDest()
     }
 
     /** Обновляет обе ленты; уже показанные карточки остаются на месте, пока идёт запрос. */

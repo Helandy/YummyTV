@@ -10,6 +10,7 @@
     <string name="community_section_friends">Друзья</string>
     <string name="community_section_users">Пользователи</string>
     <string name="community_section_about">О нас</string>
+    <string name="community_section_glossary">Глоссарий</string>
     <string name="community_videos_title">От блогеров</string>
     <string name="community_news_load_error">Не удалось загрузить новости</string>
     <string name="community_videos_load_error">Не удалось загрузить видео блогеров</string>

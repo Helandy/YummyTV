@@ -4,9 +4,10 @@ package su.afk.yummy.tv.feature.community.model
 enum class CommunitySection {
     ABOUT,
     REVIEWS,
-    COLLECTIONS,
     CHAT,
+    COLLECTIONS,
     USERS,
+    GLOSSARY,
     FRIENDS,
     SCHEDULE,
 }

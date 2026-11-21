@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
@@ -33,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
@@ -137,15 +137,8 @@ fun AccountMobileScreen(
         } else if (!state.isSignedIn) {
             val quickActions = listOf(
                 faqAction(onEvent),
-                glossaryAction(onEvent),
-                downloadedAction(onEvent),
-                AccountMobileQuickAction(
-                    key = "settings",
-                    title = stringResource(R.string.account_settings),
-                    icon = Icons.Outlined.Settings,
-                    onClick = { onEvent(AccountState.Event.SettingsSelected) },
-                    focusRequester = bottomBarUpFocusRequester,
-                ),
+                settingsAction(onEvent),
+                downloadedAction(onEvent, focusRequester = bottomBarUpFocusRequester),
             )
             LazyColumn(
                 modifier = Modifier
@@ -171,7 +164,7 @@ fun AccountMobileScreen(
         } else {
             val quickActions = listOf(
                 faqAction(onEvent),
-                glossaryAction(onEvent),
+                settingsAction(onEvent),
                 downloadedAction(onEvent),
                 AccountMobileQuickAction(
                     key = "notifications",
@@ -198,7 +191,6 @@ fun AccountMobileScreen(
                             state = state,
                             profileSummary = state.profileSummary,
                             onEditClick = { onEvent(AccountState.Event.ProfileEditSelected) },
-                            onSettingsClick = { onEvent(AccountState.Event.SettingsSelected) },
                             onLogoutClick = { showLogoutConfirm = true },
                             topExtra = with(LocalDensity.current) { bannerHeightPx.toDp() },
                         )
@@ -275,17 +267,21 @@ private fun faqAction(onEvent: (AccountState.Event) -> Unit) = AccountMobileQuic
 )
 
 @Composable
-private fun glossaryAction(onEvent: (AccountState.Event) -> Unit) = AccountMobileQuickAction(
-    key = "glossary",
-    title = stringResource(R.string.account_glossary),
-    icon = Icons.Outlined.MenuBook,
-    onClick = { onEvent(AccountState.Event.GlossarySelected) },
+private fun settingsAction(onEvent: (AccountState.Event) -> Unit) = AccountMobileQuickAction(
+    key = "settings",
+    title = stringResource(R.string.account_settings),
+    icon = Icons.Outlined.Settings,
+    onClick = { onEvent(AccountState.Event.SettingsSelected) },
 )
 
 @Composable
-private fun downloadedAction(onEvent: (AccountState.Event) -> Unit) = AccountMobileQuickAction(
+private fun downloadedAction(
+    onEvent: (AccountState.Event) -> Unit,
+    focusRequester: FocusRequester? = null,
+) = AccountMobileQuickAction(
     key = "downloaded_episodes",
     title = stringResource(R.string.account_downloaded_episodes),
     icon = Icons.Outlined.VideoLibrary,
     onClick = { onEvent(AccountState.Event.DownloadedEpisodesSelected) },
+    focusRequester = focusRequester,
 )
