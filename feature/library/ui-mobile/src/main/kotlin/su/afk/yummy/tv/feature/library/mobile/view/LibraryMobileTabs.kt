@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileChipTab
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileChipTabs
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTitle
 import su.afk.yummy.tv.feature.library.mobile.utils.tabColor
 import su.afk.yummy.tv.feature.library.mobile.utils.tabIcon
@@ -16,6 +17,7 @@ internal fun LibraryMobileTabs(
     tabCounts: Map<LibraryTab, Int?>,
     onSelected: (LibraryTab) -> Unit,
     modifier: Modifier = Modifier,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileChipTabs(
         tabs = tabs.map { tab ->
@@ -30,5 +32,6 @@ internal fun LibraryMobileTabs(
         selectedKey = selectedTab,
         onSelected = onSelected,
         modifier = modifier,
+        transition = transition,
     )
 }

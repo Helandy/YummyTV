@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -17,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -31,8 +28,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
+import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.LibrarySort
@@ -70,13 +68,18 @@ fun LibraryMobileScreen(
     val itemRemovedText = stringResource(R.string.library_remove_success)
     val tabs = state.tabs
     // При смене порядка вкладок страницы пейджера меняют смысл, поэтому состояние создаётся заново.
-    val pagerState = key(tabs) {
-        rememberPagerState(
-            initialPage = state.selectedTab.toLibraryMobilePage(tabs),
-            pageCount = { tabs.size },
+    val tabsState = key(tabs) {
+        rememberMobileSwipeableTabsState(
+            selectedPage = state.selectedTab.toLibraryMobilePage(tabs),
+            pageCount = tabs.size,
+            onPageSelected = { page ->
+                val selectedTab = page.toLibraryMobileTab(tabs)
+                if (selectedTab != state.selectedTab) {
+                    onEvent(LibraryState.Event.TabSelected(selectedTab))
+                }
+            },
         )
     }
-    val coroutineScope = rememberCoroutineScope()
     // Состояние скролла держим на экране, а не внутри страницы пейджера: иначе позиция теряется,
     // когда страница выходит за пределы окна композиции, и её нельзя сбросить извне.
     val listStates = tabs.associateWith { tab ->
@@ -144,24 +147,8 @@ fun LibraryMobileScreen(
         if (state.sort != target.first || state.sortDirection != target.second) {
             return@LaunchedEffect
         }
-        listStates[pagerState.currentPage.toLibraryMobileTab(tabs)]?.scrollToItem(0)
+        listStates[tabsState.currentPage.toLibraryMobileTab(tabs)]?.scrollToItem(0)
         pendingSortScroll = null
-    }
-
-    LaunchedEffect(state.selectedTab) {
-        val targetPage = state.selectedTab.toLibraryMobilePage(tabs)
-        if (pagerState.currentPage != targetPage) {
-            pagerState.animateScrollToPage(targetPage)
-        }
-    }
-
-    // Сообщаем наружу только осевшую страницу: промежуточные страницы при докрутке тапом по табу
-    // иначе возвращали бы pager назад (эхо через state.selectedTab) и вкладка зависала посередине.
-    LaunchedEffect(pagerState.settledPage) {
-        val selectedTab = pagerState.settledPage.toLibraryMobileTab(tabs)
-        if (selectedTab != state.selectedTab) {
-            onEvent(LibraryState.Event.TabSelected(selectedTab))
-        }
     }
 
     BaseScreen(
@@ -173,22 +160,16 @@ fun LibraryMobileScreen(
         ) {
             LibraryMobileTabs(
                 tabs = tabs,
-                selectedTab = pagerState.currentPage.toLibraryMobileTab(tabs),
+                selectedTab = state.selectedTab,
                 tabCounts = tabCounts,
-                onSelected = { tab ->
-                    val targetPage = tab.toLibraryMobilePage(tabs)
-                    if (pagerState.currentPage != targetPage) {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(targetPage)
-                        }
-                    }
-                },
+                onSelected = { tab -> tabsState.selectPage(tab.toLibraryMobilePage(tabs)) },
+                transition = tabsState::tabTransition,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 12.dp, end = 16.dp),
             )
 
-            if (pagerState.currentPage.toLibraryMobileTab(tabs).hasSort) {
+            if (tabsState.currentPage.toLibraryMobileTab(tabs).hasSort) {
                 LibraryMobileSortRow(
                     sort = state.sort,
                     direction = state.sortDirection,
@@ -206,8 +187,8 @@ fun LibraryMobileScreen(
                 )
             }
 
-            HorizontalPager(
-                state = pagerState,
+            MobileSwipeableTabsPager(
+                state = tabsState,
                 key = { page -> page.toLibraryMobileTab(tabs) },
                 modifier = Modifier
                     .weight(1f)
