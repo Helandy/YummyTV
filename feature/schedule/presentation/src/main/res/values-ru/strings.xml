@@ -14,4 +14,7 @@
     <string name="schedule_less_than_minute">меньше чем минуту</string>
     <string name="schedule_loading">Загружаем расписание</string>
     <string name="schedule_empty">Расписание пустое</string>
+    <string name="schedule_filter_in_library">В библиотеке</string>
+    <string name="schedule_filter_in_library_empty">В расписании пока нет тайтлов из вашей библиотеки</string>
+    <string name="schedule_filter_show_all">Показать все</string>
 </resources>

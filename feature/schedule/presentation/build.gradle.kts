@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
     implementation(project(":feature:details:api"))
+    implementation(project(":feature:library:domain"))
 
     implementation(libs.bundles.compose.presentation)
     testImplementation(project(":core:testing"))

@@ -20,12 +20,13 @@ internal fun ScheduleDateChips(
     downFocusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
     onSelected: (Long) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
 
     LazyRow(
         state = listState,
-        modifier = Modifier.focusGroup(),
+        modifier = modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
     ) {
