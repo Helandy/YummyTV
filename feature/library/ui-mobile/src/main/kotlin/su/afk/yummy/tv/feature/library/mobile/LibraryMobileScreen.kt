@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.library.mobile
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,13 +32,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
+import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileHideOnScrollState
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.feature.library.LibraryState
-import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTabItemCount
 import su.afk.yummy.tv.feature.library.mobile.utils.toLibraryMobilePage
@@ -45,6 +47,7 @@ import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobilePage
 import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobileRemoveConfirmDialog
 import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobileSortRow
 import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobileTabs
+import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -87,6 +90,9 @@ fun LibraryMobileScreen(
             LazyListState()
         }
     }
+    // Строка сортировки прячется при скролле списка вниз и возвращается при скролле вверх.
+    val headerScroll = rememberMobileHideOnScrollState()
+    LaunchedEffect(tabsState.currentPage) { headerScroll.show() }
     var pendingRemoval by remember { mutableStateOf<PendingLibraryMobileRemoval?>(null) }
     // Индикатор жеста — только для обновления, начатого пользователем, а не при возврате на экран.
     var isPullRefreshing by remember { mutableStateOf(false) }
@@ -147,6 +153,7 @@ fun LibraryMobileScreen(
         if (state.sort != target.first || state.sortDirection != target.second) {
             return@LaunchedEffect
         }
+        headerScroll.show()
         listStates[tabsState.currentPage.toLibraryMobileTab(tabs)]?.scrollToItem(0)
         pendingSortScroll = null
     }
@@ -156,7 +163,8 @@ fun LibraryMobileScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .nestedScroll(headerScroll.nestedScrollConnection),
         ) {
             LibraryMobileTabs(
                 tabs = tabs,
@@ -170,21 +178,23 @@ fun LibraryMobileScreen(
             )
 
             if (tabsState.currentPage.toLibraryMobileTab(tabs).hasSort) {
-                LibraryMobileSortRow(
-                    sort = state.sort,
-                    direction = state.sortDirection,
-                    onSortSelected = { sort ->
-                        onEvent(LibraryState.Event.SortSelected(sort))
-                        pendingSortScroll = sort to state.sortDirection
-                    },
-                    onDirectionToggled = {
-                        onEvent(LibraryState.Event.SortDirectionToggled)
-                        pendingSortScroll = state.sort to state.sortDirection.toggled()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp),
-                )
+                AnimatedVisibility(visible = headerScroll.isVisible) {
+                    LibraryMobileSortRow(
+                        sort = state.sort,
+                        direction = state.sortDirection,
+                        onSortSelected = { sort ->
+                            onEvent(LibraryState.Event.SortSelected(sort))
+                            pendingSortScroll = sort to state.sortDirection
+                        },
+                        onDirectionToggled = {
+                            onEvent(LibraryState.Event.SortDirectionToggled)
+                            pendingSortScroll = state.sort to state.sortDirection.toggled()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 6.dp, end = 16.dp),
+                    )
+                }
             }
 
             MobileSwipeableTabsPager(
