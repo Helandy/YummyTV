@@ -35,6 +35,9 @@
 - Put child composable UI pieces in the feature UI module's `.view` package.
 - Prefer one significant composable component per file in `.view`; small local lambdas inside a
   component are fine.
+- Do not keep private `@Composable` components or UI-model factories (e.g. lists of quick-action
+  buttons) in `XxxMobileScreen.kt`/`XxxTvScreen.kt`: move them to `.view`; the screen keeps only the
+  assembly, event wiring and calls to components. `@Preview` functions are the exception.
 - Put Handler classes next to the ViewModel in the feature module's `.handler` package.
 - `XxxState.kt` must contain only the `State`/`Event`/`Effect` declarations (plus types nested
   strictly inside `State`, e.g. an enum that only makes sense as part of one screen's state). Any

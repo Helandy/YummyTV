@@ -11,10 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import su.afk.yummy.tv.core.designsystem.focus.TvDialogButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -22,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,7 +31,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
-import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -45,6 +41,7 @@ import su.afk.yummy.tv.feature.library.model.ListTransferStatusCountUi
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.transfer.view.ListTransferTvEffects
 import su.afk.yummy.tv.feature.library.transfer.view.ListTransferTvErrorBanner
+import su.afk.yummy.tv.feature.library.transfer.view.ListTransferTvExitImportDialog
 import su.afk.yummy.tv.feature.library.transfer.view.ListTransferTvExportSection
 import su.afk.yummy.tv.feature.library.transfer.view.ListTransferTvImportSection
 import su.afk.yummy.tv.feature.library.utils.KeepTransferScreenOnEffect
@@ -210,35 +207,4 @@ fun ListTransferTvScreen(
             )
         }
     }
-}
-
-@Composable
-private fun ListTransferTvExitImportDialog(
-    onContinue: () -> Unit,
-    onConfirmExit: () -> Unit,
-) {
-    val continueFocusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        runCatching { continueFocusRequester.requestFocus() }
-    }
-
-    AlertDialog(
-        onDismissRequest = onContinue,
-        modifier = Modifier.tvBackKeyForwarding(),
-        title = { Text(stringResource(R.string.library_transfer_exit_import_title)) },
-        text = { Text(stringResource(R.string.library_transfer_exit_import_message)) },
-        confirmButton = {
-            TvDialogButton(onClick = onConfirmExit, destructive = true) {
-                Text(text = stringResource(R.string.library_transfer_exit_import_confirm))
-            }
-        },
-        dismissButton = {
-            TvDialogButton(
-                onClick = onContinue,
-                modifier = Modifier.focusRequester(continueFocusRequester),
-            ) {
-                Text(stringResource(R.string.library_transfer_exit_import_continue))
-            }
-        },
-    )
 }

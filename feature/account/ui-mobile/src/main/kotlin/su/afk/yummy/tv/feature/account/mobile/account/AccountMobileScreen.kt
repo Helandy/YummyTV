@@ -18,10 +18,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +39,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
@@ -57,7 +51,6 @@ import su.afk.yummy.tv.core.designsystem.mvi.collectAsEffect
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
-import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileQuickAction
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
@@ -66,7 +59,9 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLogoutConfirmDia
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLogoutProgressDialog
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsRow
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
+import su.afk.yummy.tv.feature.account.mobile.view.accountMobileQuickActions
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -135,11 +130,7 @@ fun AccountMobileScreen(
                     .statusBarsPadding(),
             )
         } else if (!state.isSignedIn) {
-            val quickActions = listOf(
-                faqAction(onEvent),
-                settingsAction(onEvent),
-                downloadedAction(onEvent, focusRequester = bottomBarUpFocusRequester),
-            )
+            val quickActions = accountMobileQuickActions(state, onEvent, bottomBarUpFocusRequester)
             LazyColumn(
                 modifier = Modifier
                     .mobileContentMaxWidth()
@@ -162,19 +153,7 @@ fun AccountMobileScreen(
                 }
             }
         } else {
-            val quickActions = listOf(
-                faqAction(onEvent),
-                settingsAction(onEvent),
-                downloadedAction(onEvent),
-                AccountMobileQuickAction(
-                    key = "notifications",
-                    title = stringResource(R.string.account_tab_notifications),
-                    icon = Icons.Outlined.Notifications,
-                    onClick = { onEvent(AccountState.Event.NotificationsSelected) },
-                    focusRequester = bottomBarUpFocusRequester,
-                    badgeCount = state.unreadNotificationCount,
-                ),
-            )
+            val quickActions = accountMobileQuickActions(state, onEvent, bottomBarUpFocusRequester)
             // Шапка на всю ширину и под статус-баром; остальным блокам отступ по бокам задаём сами.
             LazyColumn(
                 modifier = Modifier
@@ -257,31 +236,3 @@ fun AccountMobileScreen(
         )
     }
 }
-
-@Composable
-private fun faqAction(onEvent: (AccountState.Event) -> Unit) = AccountMobileQuickAction(
-    key = "faq",
-    title = stringResource(R.string.account_faq_group),
-    icon = Icons.AutoMirrored.Outlined.HelpOutline,
-    onClick = { onEvent(AccountState.Event.FaqSelected) },
-)
-
-@Composable
-private fun settingsAction(onEvent: (AccountState.Event) -> Unit) = AccountMobileQuickAction(
-    key = "settings",
-    title = stringResource(R.string.account_settings),
-    icon = Icons.Outlined.Settings,
-    onClick = { onEvent(AccountState.Event.SettingsSelected) },
-)
-
-@Composable
-private fun downloadedAction(
-    onEvent: (AccountState.Event) -> Unit,
-    focusRequester: FocusRequester? = null,
-) = AccountMobileQuickAction(
-    key = "downloaded_episodes",
-    title = stringResource(R.string.account_downloaded_episodes),
-    icon = Icons.Outlined.VideoLibrary,
-    onClick = { onEvent(AccountState.Event.DownloadedEpisodesSelected) },
-    focusRequester = focusRequester,
-)
