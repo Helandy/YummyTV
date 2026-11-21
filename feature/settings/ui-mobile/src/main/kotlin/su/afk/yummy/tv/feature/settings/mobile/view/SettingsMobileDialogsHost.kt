@@ -74,7 +74,6 @@ internal fun SettingsMobileDialogsHost(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint(),
                 )
             },
             onDismiss = { dialogs.activePicker = null },

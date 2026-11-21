@@ -52,11 +52,6 @@ internal fun SettingsMobilePlaybackContent(
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_auto_play_next_episode_label),
-                hint = if (state.autoPlayNextEpisode) {
-                    stringResource(R.string.settings_auto_play_next_episode_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
                 enabled = state.autoPlayNextEpisode,
                 onClick = { onEvent(SettingsState.Event.AutoPlayNextEpisodeToggled) },
             )

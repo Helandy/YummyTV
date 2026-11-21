@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings.common.utils
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -37,19 +38,15 @@ fun SeasonalTheme.enabledHint(): String = stringResource(
     },
 )
 
+/** Строка по id или пустая, если у варианта нет подписи: пустая подпись в строках настроек не рисуется. */
+@Composable
+fun optionalStringResource(@StringRes id: Int?): String = id?.let { stringResource(it) }.orEmpty()
+
 @Composable
 fun AppInterfaceMode.label(): String = stringResource(
     when (this) {
         AppInterfaceMode.MOBILE -> R.string.settings_interface_mobile
         AppInterfaceMode.TV -> R.string.settings_interface_tv
-    },
-)
-
-@Composable
-fun AppInterfaceMode.hint(): String = stringResource(
-    when (this) {
-        AppInterfaceMode.MOBILE -> R.string.settings_interface_mobile_hint
-        AppInterfaceMode.TV -> R.string.settings_interface_tv_hint
     },
 )
 
@@ -82,18 +79,18 @@ fun AppTheme.label(): String = stringResource(
 )
 
 @Composable
-fun AppTheme.hint(): String = stringResource(
+fun AppTheme.hint(): String = optionalStringResource(
     when (this) {
-        AppTheme.WARM_AMBER -> R.string.settings_theme_warm_amber_hint
-        AppTheme.SAKURA -> R.string.settings_theme_sakura_hint
-        AppTheme.MINT -> R.string.settings_theme_mint_hint
-        AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
-        AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
-        AppTheme.LAVENDER -> R.string.settings_theme_lavender_hint
-        AppTheme.RUBY -> R.string.settings_theme_ruby_hint
-        AppTheme.FOREST -> R.string.settings_theme_forest_hint
-        AppTheme.SUNSET -> R.string.settings_theme_sunset_hint
-        AppTheme.GOLD -> R.string.settings_theme_gold_hint
+        AppTheme.WARM_AMBER -> null
+        AppTheme.SAKURA -> null
+        AppTheme.MINT -> null
+        AppTheme.OCEAN -> null
+        AppTheme.GRAPHITE -> null
+        AppTheme.LAVENDER -> null
+        AppTheme.RUBY -> null
+        AppTheme.FOREST -> null
+        AppTheme.SUNSET -> null
+        AppTheme.GOLD -> null
         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic_hint
     },
 )
@@ -109,7 +106,7 @@ fun BackgroundStyle.label(): String = stringResource(
 )
 
 @Composable
-fun BackgroundStyle.hint(): String = stringResource(
+fun BackgroundStyle.hint(): String = optionalStringResource(
     when (this) {
         BackgroundStyle.SYSTEM -> R.string.settings_background_system_hint
         BackgroundStyle.LIGHT -> R.string.settings_background_light_hint
@@ -128,11 +125,11 @@ fun NavTransitionStyle.label(): String = stringResource(
 )
 
 @Composable
-fun NavTransitionStyle.hint(): String = stringResource(
+fun NavTransitionStyle.hint(): String = optionalStringResource(
     when (this) {
         NavTransitionStyle.SLIDE -> R.string.settings_nav_transition_slide_hint
         NavTransitionStyle.FADE_SCALE -> R.string.settings_nav_transition_fade_scale_hint
-        NavTransitionStyle.NONE -> R.string.settings_nav_transition_none_hint
+        NavTransitionStyle.NONE -> null
     },
 )
 
@@ -146,11 +143,11 @@ fun TorrentSort.label(): String = stringResource(
 )
 
 @Composable
-fun TorrentSort.hint(): String = stringResource(
+fun TorrentSort.hint(): String = optionalStringResource(
     when (this) {
         TorrentSort.SEEDERS -> R.string.settings_torrent_sort_seeders_hint
-        TorrentSort.SIZE -> R.string.settings_torrent_sort_size_hint
-        TorrentSort.TITLE -> R.string.settings_torrent_sort_title_hint
+        TorrentSort.SIZE -> null
+        TorrentSort.TITLE -> null
     },
 )
 
@@ -180,11 +177,11 @@ fun PosterCardSize.label(): String = stringResource(
 )
 
 @Composable
-fun PosterCardSize.hint(): String = stringResource(
+fun PosterCardSize.hint(): String = optionalStringResource(
     when (this) {
         PosterCardSize.COMPACT -> R.string.settings_poster_card_size_compact_hint
-        PosterCardSize.STANDARD -> R.string.settings_poster_card_size_standard_hint
-        PosterCardSize.LARGE -> R.string.settings_poster_card_size_large_hint
+        PosterCardSize.STANDARD -> null
+        PosterCardSize.LARGE -> null
     },
 )
 
@@ -216,9 +213,9 @@ fun PreferredVideoQuality.label(): String = stringResource(
 )
 
 @Composable
-fun PreferredVideoQuality.hint(): String = stringResource(
+fun PreferredVideoQuality.hint(): String = optionalStringResource(
     when (this) {
-        PreferredVideoQuality.BEST -> R.string.settings_preferred_video_quality_best_hint
+        PreferredVideoQuality.BEST -> null
         PreferredVideoQuality.P2160,
         PreferredVideoQuality.P1440,
         PreferredVideoQuality.P1080,

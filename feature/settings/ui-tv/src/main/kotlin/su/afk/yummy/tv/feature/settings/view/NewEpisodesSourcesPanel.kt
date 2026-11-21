@@ -33,11 +33,6 @@ internal fun NewEpisodesSourcesPanel(
             key(source) {
                 ToggleRow(
                     label = source.label(),
-                    hint = if (source in selected) {
-                        stringResource(R.string.settings_new_episodes_source_on)
-                    } else {
-                        stringResource(R.string.settings_new_episodes_source_off)
-                    },
                     enabled = source in selected,
                     onClick = { onToggle(source) },
                     icon = source.icon(),

@@ -29,7 +29,6 @@ internal fun SettingsMobileGeneralContent(
             SettingsMobileOptionRow(
                 label = stringResource(R.string.settings_interface_type),
                 value = state.interfaceMode.label(),
-                hint = state.interfaceMode.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.INTERFACE_MODE) },
             )
             SettingsMobileOptionRow(

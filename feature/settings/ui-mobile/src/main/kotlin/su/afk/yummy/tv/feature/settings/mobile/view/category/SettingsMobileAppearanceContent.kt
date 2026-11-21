@@ -79,31 +79,16 @@ internal fun SettingsMobileAppearanceContent(
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_catalog_title_year),
-                hint = if (state.showCatalogTitleYear) {
-                    stringResource(R.string.settings_show_catalog_title_year_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
                 enabled = state.showCatalogTitleYear,
                 onClick = { onEvent(SettingsState.Event.ShowCatalogTitleYearToggled) },
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_episode_flags),
-                hint = if (state.showEpisodeFlags) {
-                    stringResource(R.string.settings_show_episode_flags_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
                 enabled = state.showEpisodeFlags,
                 onClick = { onEvent(SettingsState.Event.ShowEpisodeFlagsToggled) },
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_library_title_year),
-                hint = if (state.showLibraryTitleYear) {
-                    stringResource(R.string.settings_show_library_title_year_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
                 enabled = state.showLibraryTitleYear,
                 onClick = { onEvent(SettingsState.Event.ShowLibraryTitleYearToggled) },
             )

@@ -90,11 +90,6 @@ internal fun SettingsTvGeneralContent(
     SettingsDivider()
     ToggleRow(
         label = stringResource(R.string.settings_watch_next_label),
-        hint = if (state.watchNextEnabled) {
-            stringResource(R.string.settings_watch_next_enabled)
-        } else {
-            stringResource(R.string.settings_disabled)
-        },
         enabled = state.watchNextEnabled,
         onClick = { onEvent(SettingsState.Event.WatchNextToggled) },
     )
