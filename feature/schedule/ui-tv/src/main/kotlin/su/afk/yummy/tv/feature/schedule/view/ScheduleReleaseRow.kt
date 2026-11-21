@@ -66,9 +66,17 @@ internal fun ScheduleReleaseRow(
     onClick: () -> Unit,
 ) {
     val item = release.item
-    val releaseAt = Instant.ofEpochSecond(release.epochSeconds).atZone(zone)
-    val aired = releaseAt.isAfter(now).not()
+    // Строка перерисовывается на каждую смену фокуса, поэтому дорогое считаем один раз на вход.
+    val releaseAt = remember(release.epochSeconds, zone) {
+        Instant.ofEpochSecond(release.epochSeconds).atZone(zone)
+    }
+    val aired = remember(releaseAt, now) { releaseAt.isAfter(now).not() }
     val remainingLabels = scheduleRemainingLabels()
+    val timeLabel = remember(releaseAt) { releaseAt.timeLabel() }
+    val remainingText = remember(releaseAt, now, remainingLabels, aired) {
+        if (aired) null else releaseAt.remainingText(now, remainingLabels)
+    }
+    val posterUrls = remember(item.poster) { item.poster.posterUrls() }
     val accentColor = if (aired) AiredColor else MaterialTheme.colorScheme.onSurfaceVariant
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -131,7 +139,7 @@ internal fun ScheduleReleaseRow(
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
             ) {
                 FallbackAsyncImage(
-                    models = item.poster.posterUrls(),
+                    models = posterUrls,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
@@ -156,7 +164,7 @@ internal fun ScheduleReleaseRow(
                         stringResource(
                             R.string.schedule_episode_future,
                             release.episode,
-                            releaseAt.remainingText(now, remainingLabels),
+                            remainingText.orEmpty(),
                         )
                     },
                     style = MaterialTheme.typography.bodyLarge,
@@ -167,7 +175,7 @@ internal fun ScheduleReleaseRow(
                 )
             }
             Text(
-                text = releaseAt.timeLabel(),
+                text = timeLabel,
                 modifier = Modifier.widthIn(min = 82.dp),
                 style = MaterialTheme.typography.headlineSmall,
                 color = accentColor,

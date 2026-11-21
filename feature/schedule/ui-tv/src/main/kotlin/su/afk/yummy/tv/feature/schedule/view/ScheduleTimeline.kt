@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -58,7 +57,6 @@ internal fun ScheduleTimeline(
     onEvent: (ScheduleState.Event) -> Unit,
 ) {
     val selectedGroup = schedule.selectedGroup
-    val timelineEntryFocusRequester = remember { FocusRequester() }
     val filterChipFocusRequester = remember { FocusRequester() }
     val emptyResetFocusRequester = remember { FocusRequester() }
     val listFocusRequester = remember { FocusRequester() }
@@ -131,7 +129,7 @@ internal fun ScheduleTimeline(
         if (hasPendingResumeRestore) {
             handledRestoreFocusRequestToken = restoreFocusRequestToken
             if (selectedGroup == null || focusRestoreState.savedKey == null) {
-                runCatching { filterChipFocusRequester.requestFocus() }
+                runCatching { selectedChipFocusRequester.requestFocus() }
             } else {
                 restoreFocusJob = launchReleaseFocusRestore()
             }
@@ -145,14 +143,16 @@ internal fun ScheduleTimeline(
         }
     }
 
-    LaunchedEffect(requestInitialFocus, filterChipFocusRequester) {
+    LaunchedEffect(requestInitialFocus, selectedChipFocusRequester) {
         if (!requestInitialFocus) return@LaunchedEffect
-        requestFocusUntilTimeout(filterChipFocusRequester)
+        requestFocusUntilTimeout(selectedChipFocusRequester)
         onInitialFocusHandled()
     }
 
+    // Предпочтительный фокус — сам выбранный чип даты, а не группа-строка: запрос фокуса на группе
+    // повторяется скаффолдом и при повторе уходит на первый дочерний элемент (чип фильтра).
     val preferredContentFocusRequester = if (selectedGroup == null || focusRestoreState.savedKey == null) {
-        timelineEntryFocusRequester
+        selectedChipFocusRequester
     } else {
         listFocusRequester
     }
@@ -170,7 +170,7 @@ internal fun ScheduleTimeline(
             .focusProperties {
                 onEnter = {
                     if (selectedGroup == null || focusRestoreState.savedKey == null) {
-                        runCatching { filterChipFocusRequester.requestFocus() }
+                        runCatching { selectedChipFocusRequester.requestFocus() }
                     } else {
                         restoreFocusJob = launchReleaseFocusRestore()
                     }
@@ -188,19 +188,11 @@ internal fun ScheduleTimeline(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(timelineEntryFocusRequester)
                 .focusProperties {
                     down = contentDownFocusRequester
                     mainMenuFocusRequester?.let { left = it }
                     onEnter = {
-                        // При входе с бокового меню начинаем с фильтра, а при возврате
-                        // вверх из списка сохраняем переход к выбранной дате.
-                        val target = if (requestedFocusDirection == FocusDirection.Up) {
-                            selectedChipFocusRequester
-                        } else {
-                            filterChipFocusRequester
-                        }
-                        runCatching { target.requestFocus() }
+                        runCatching { selectedChipFocusRequester.requestFocus() }
                     }
                 }
                 .focusGroup(),

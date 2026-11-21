@@ -44,28 +44,24 @@ internal fun ScheduleDateChip(
     downFocusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
     onMoveLeft: (() -> Boolean)?,
+    /** Фокус пришёл на чип: выбор следует за фокусом, но список меняется не сразу. */
+    onFocused: () -> Unit,
+    /** Явный клик (OK): применяется сразу. */
     onSelected: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val selectedFocused = selected && focused
     val selectedIdle = selected && !focused
-    val shape = RoundedCornerShape(10.dp)
-    val background = when {
-        selectedFocused -> MaterialTheme.colorScheme.primary
-        focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
-    }
-    val contentColor = when {
-        selectedFocused -> MaterialTheme.colorScheme.onPrimary
-        selected -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val shape = ScheduleChipShape
+    val chipColors = scheduleChipColors(selected = selected, focused = focused)
+    val background = chipColors.background
+    val contentColor = chipColors.content
 
     Box(
         modifier = Modifier
             .width(84.dp)
-            .height(72.dp)
+            .height(ScheduleChipHeight)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .focusProperties {
                 down = downFocusRequester
@@ -77,7 +73,7 @@ internal fun ScheduleDateChip(
                 }
                 onMoveLeft?.invoke() ?: false
             }
-            .onFocusChanged { if (it.isFocused) onSelected() }
+            .onFocusChanged { if (it.isFocused) onFocused() }
             .clip(shape)
             .background(background, shape)
             .border(
@@ -143,7 +139,7 @@ internal fun ScheduleDateChip(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .height(4.dp)
+                    .height(ScheduleChipUnderlineHeight)
                     .background(MaterialTheme.colorScheme.primary),
             )
         }
