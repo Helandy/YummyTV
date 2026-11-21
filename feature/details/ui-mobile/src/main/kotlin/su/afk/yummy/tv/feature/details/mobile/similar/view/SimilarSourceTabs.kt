@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTabTransition
 import su.afk.yummy.tv.core.designsystem.mobile.tabs.MobileTextTabs
 import su.afk.yummy.tv.feature.details.presentation.R
 
@@ -14,6 +15,7 @@ internal fun SimilarSourceTabs(
     fromAi: Boolean,
     onSourceSelected: (fromAi: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    transition: (() -> MobileTabTransition)? = null,
 ) {
     MobileTextTabs(
         titles = listOf(
@@ -25,5 +27,6 @@ internal fun SimilarSourceTabs(
         modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface),
+        transition = transition,
     )
 }

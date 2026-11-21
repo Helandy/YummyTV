@@ -141,6 +141,7 @@ fun ScheduleMobileScreen(
             onSelected = { epochDay ->
                 tabsState.selectPage(dayGroups.indexOfFirst { it.date.toEpochDay() == epochDay })
             },
+            transition = tabsState::tabTransition,
         )
 
         if (dayGroups.isEmpty()) {
