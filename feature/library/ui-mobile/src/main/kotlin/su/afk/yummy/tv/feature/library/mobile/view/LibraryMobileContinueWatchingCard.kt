@@ -26,9 +26,9 @@ import su.afk.yummy.tv.core.model.anime.posterUrls
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailModels
 import su.afk.yummy.tv.core.utils.episode.episodeThumbnailOf
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.feature.library.mobile.utils.watchProgress
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.timingLabel
-import su.afk.yummy.tv.feature.library.mobile.utils.watchProgress
 
 @Composable
 internal fun LibraryMobileContinueWatchingCard(
@@ -57,7 +57,7 @@ internal fun LibraryMobileContinueWatchingCard(
         imageOverlay = {
             ContinueWatchingOverlayButton(
                 contentDescription = stringResource(
-                    R.string.library_mobile_remove_content_description
+                    R.string.library_mobile_remove_content_description,
                 ),
                 onClick = onDelete,
                 isError = true,
@@ -75,13 +75,13 @@ internal fun LibraryMobileContinueWatchingCard(
             }
             ContinueWatchingOverlayButton(
                 contentDescription = stringResource(
-                    R.string.library_mobile_details_content_description
+                    R.string.library_mobile_details_content_description,
                 ),
                 onClick = onDetails,
                 size = 36.dp,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(5.dp),
+                    .padding(start = 5.dp, top = 5.dp, end = 5.dp, bottom = 7.dp),
             ) {
                 Icon(
                     imageVector = Icons.Filled.Info,
