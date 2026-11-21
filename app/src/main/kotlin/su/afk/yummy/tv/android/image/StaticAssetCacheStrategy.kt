@@ -10,6 +10,7 @@ import okio.BufferedSink
 import okio.FileSystem
 import okio.IOException
 import okio.Path
+import su.afk.yummy.tv.core.model.anime.utils.yaniPosterCacheKey
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -31,8 +32,11 @@ internal class StaticAssetCacheStrategy(
         options: Options,
     ): CacheStrategy.ReadResult {
         val age = nowMillis() - cacheResponse.responseMillis
-        val isFresh = cacheResponse.code == 200 && age in 0..StaticFreshness.inWholeMilliseconds
-        val isStableAsset = isOwnStatic(networkRequest.url, staticPrefix()) || isImage(cacheResponse.headers["Content-Type"])
+        // Постер yani с id не меняется (новый постер получает новый id): скачанный лежит в кэше без срока годности.
+        // Иначе по истечении срока Coil шёл бы за ним в сеть, а при недоступном CDN постер пропадал бы, хотя файл есть.
+        val isPoster = yaniPosterCacheKey(networkRequest.url) != null
+        val isFresh = cacheResponse.code == 200 && (isPoster || age in 0..StaticFreshness.inWholeMilliseconds)
+        val isStableAsset = isPoster || isOwnStatic(networkRequest.url, staticPrefix()) || isImage(cacheResponse.headers["Content-Type"])
         return if (isFresh && isStableAsset) {
             CacheStrategy.ReadResult(cacheResponse)
         } else {

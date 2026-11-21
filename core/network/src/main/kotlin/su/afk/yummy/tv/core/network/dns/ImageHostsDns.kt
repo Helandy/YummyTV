@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.network.dns
 
 import okhttp3.Dns
+import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -12,27 +13,55 @@ import java.util.concurrent.TimeUnit
 /** CDN картинок TMDB: у части провайдеров его DNS-имена подменены на `127.0.0.1`, а узлы бывают медленными или упавшими. */
 private val TMDB_IMAGE_HOSTS = setOf("image.tmdb.org", "media.themoviedb.org")
 
-/** Картинки yani (постеры, баннеры, аватары): та же история с блокировками и упавшими узлами, что и у TMDB. */
-private const val YANI_STATIC_HOST = "static.yani.tv"
+/** Домен yani: на его поддоменах лежат картинки (постеры, баннеры, аватары), и их хост yani уже менял (`static` → `imgproxy`). */
+private const val YANI_DOMAIN_SUFFIX = ".yani.tv"
 
-/** Хосты чужих CDN с картинками, у которых есть запасные источники: для них короткие таймауты и запасной DNS. */
-private val IMAGE_CDN_HOSTS = TMDB_IMAGE_HOSTS + YANI_STATIC_HOST
-
+/** API yani живёт на том же домене, но идёт через общий клиент с обычными таймаутами и без DoH: к нему правила картинок не применяем. */
+private const val YANI_API_HOST = "api.yani.tv"
 
 /**
- * Таймауты для картинок: соединение 3 с, чтение 5 с. Для CDN TMDB, CDN картинок yani и для своего хоста статики [staticHost] (копии кадров
+ * Хост картинок, у которого есть запасные источники: CDN TMDB и любой поддомен `yani.tv`, кроме API. Поддомены не перечисляем
+ * по именам: когда yani снова переедет на другой хост картинок, короткие таймауты и запасной DNS сработают сами.
+ */
+internal fun isImageCdnHost(host: String): Boolean {
+    val name = host.lowercase()
+    return name in TMDB_IMAGE_HOSTS || (name.endsWith(YANI_DOMAIN_SUFFIX) && name != YANI_API_HOST)
+}
+
+private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "avif", "gif")
+
+/**
+ * Запрос картинки у хоста с запасными источниками: хост из [isImageCdnHost] или свой [staticHost] и путь с расширением
+ * картинки. Поддомены yani не только про картинки (`alloha.yani.tv` отдаёт страницу плеера), и таймауты с памятью
+ * о сбое должны касаться только картинок, а не остальных запросов к тому же домену.
+ */
+internal fun isImageCdnRequest(url: HttpUrl, staticHost: String): Boolean {
+    val host = url.host
+    val knownHost = isImageCdnHost(host) || (staticHost.isNotBlank() && host.equals(staticHost, ignoreCase = true))
+    return knownHost && url.encodedPath.substringAfterLast('.', "").lowercase() in IMAGE_EXTENSIONS
+}
+
+/**
+ * Таймауты для картинок: соединение 3 с, чтение 5 с. Для CDN TMDB, CDN картинок yani (любой поддомен `yani.tv`, кроме API) и для своего хоста статики [staticHost] (копии кадров
  * и постеров). У каждой картинки есть запасные источники (Tenrai, Kodik, yani, TMDB, наш хост), поэтому при упавшем или зависшем
  * узле лучше быстро перейти к ним, чем ждать общие десять секунд. Пустой [staticHost] — только чужие CDN.
  */
 fun imageHostTimeouts(staticHost: String): Interceptor =
     HostTimeoutInterceptor(
-        hosts = { if (staticHost.isBlank()) IMAGE_CDN_HOSTS else IMAGE_CDN_HOSTS + staticHost.lowercase() },
+        isTarget = { url -> isImageCdnRequest(url, staticHost) },
         connectTimeoutSeconds = NetworkTimeouts.IMAGE_HOST_CONNECT_SECONDS,
         readTimeoutSeconds = NetworkTimeouts.IMAGE_HOST_READ_SECONDS,
     )
 
 /**
- * DNS общего OkHttp-клиента: хосты картинок TMDB и yani при блокировке или сбое DNS резолвятся через Quad9 (DNS-over-HTTPS, адрес
+ * Память о сбое хоста картинок: см. [HostFailureMemoryInterceptor]. Цели те же, что у [imageHostTimeouts]: картинки CDN TMDB,
+ * любого поддомена `yani.tv`, кроме API, и своего хоста статики [staticHost].
+ */
+fun imageHostFailureMemory(staticHost: String): Interceptor =
+    HostFailureMemoryInterceptor(isTarget = { url -> isImageCdnRequest(url, staticHost) })
+
+/**
+ * DNS общего OkHttp-клиента: хосты картинок TMDB и yani (любые поддомены `yani.tv`, кроме API) при блокировке или сбое DNS резолвятся через Quad9 (DNS-over-HTTPS, адрес
  * `9.9.9.9` задан сразу, поэтому для самого DoH обычный DNS не нужен), остальные — системным DNS.
  */
 fun imageHostsDns(): Dns {
@@ -49,5 +78,5 @@ fun imageHostsDns(): Dns {
             .bootstrapDnsHosts(InetAddress.getByName("9.9.9.9"), InetAddress.getByName("149.112.112.112"))
             .build()
     }
-    return BlockedHostDns(hosts = IMAGE_CDN_HOSTS, fallback = Dns { hostname -> quad9.lookup(hostname) })
+    return BlockedHostDns(isTargetHost = ::isImageCdnHost, fallback = Dns { hostname -> quad9.lookup(hostname) })
 }

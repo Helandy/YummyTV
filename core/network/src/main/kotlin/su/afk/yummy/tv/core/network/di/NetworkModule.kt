@@ -18,6 +18,7 @@ import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
 import su.afk.yummy.tv.core.network.NetworkTimeouts
 import su.afk.yummy.tv.core.network.applyTimeouts
+import su.afk.yummy.tv.core.network.dns.imageHostFailureMemory
 import su.afk.yummy.tv.core.network.dns.imageHostTimeouts
 import su.afk.yummy.tv.core.network.dns.imageHostsDns
 import su.afk.yummy.tv.core.network.okHttpKtorClient
@@ -38,13 +39,17 @@ object NetworkModule {
 
     /**
      * Базовый клиент: источник пула соединений, диспетчера и DNS для всех остальных. Не нейтральный: DNS
-     * обходит блокировку картинок TMDB (DoH) и интерцептор даёт короткие таймауты хостам картинок. Остальные клиенты
+     * обходит блокировку картинок TMDB (DoH) и интерцепторы дают хостам картинок короткие таймауты и память о сбое. Остальные клиенты
      * приложения (Ktor, [StreamingOkHttp], [DownloadOkHttp], [AllohaOkHttp]) строятся от него через `newBuilder()`.
      */
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder().dns(imageHostsDns()).addInterceptor(imageHostTimeouts(BuildConfig.STATIC_HOST)).build()
+        OkHttpClient.Builder()
+            .dns(imageHostsDns())
+            .addInterceptor(imageHostFailureMemory(BuildConfig.STATIC_HOST))
+            .addInterceptor(imageHostTimeouts(BuildConfig.STATIC_HOST))
+            .build()
 
     @Provides
     @Singleton

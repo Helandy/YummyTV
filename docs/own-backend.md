@@ -96,9 +96,10 @@ yani, Kodik и остальные источники, не зависящие о
 
 - **Постеры.** Выбора качества нет, везде версия `mega` (AVIF, ~28 КБ). Если yani ответил `404`/
   `5xx` или сеть упала, `FallbackAsyncImage` переходит на копию: `posterMirrorUrl` меняет домен
-  `static.yani.tv` на `yummytv.staticHost`, путь и `?v=…` остаются. Копия есть только у AVIF `mega`,
-  а AVIF приходит, только если устройство его декодирует (`ImageFormatProbe`, заголовок
-  `Accept: image/avif`). Подробности: [image-loading-and-memory.md](image-loading-and-memory.md),
+  `static.yani.tv` на `yummytv.staticHost`, `?v=…` остаётся. Копия всегда `posters/mega/<id>.avif`: для
+  JPEG (`posters/full/<id>.jpg`) берётся тот же `<id>`. Цепочка постера: ссылка из API → тот же путь на
+  `static.yani.tv` (если API отдал другой хост, например `imgproxy.yani.tv`) → наш хост. AVIF yani
+  отдаёт, только если устройство его декодирует (`ImageFormatProbe`, заголовок `Accept: image/avif`). Подробности: [image-loading-and-memory.md](image-loading-and-memory.md),
   код `PosterMirrorUtils.kt` (`core/model`).
 - **Кадры серий.** `previewMirrorUrl` из ответа TMDB-ручки. Файла может ещё не быть (`404`), тогда
   следующий источник в цепочке.

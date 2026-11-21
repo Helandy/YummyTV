@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.catalog.mobile
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -17,10 +18,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,6 +107,19 @@ fun CatalogMobileScreen(
         ?.error
         ?.uiMessage()
     val gridState = rememberLazyGridState()
+    // Индикатор тянем только за свайп пользователя: фоновая загрузка первой страницы (поиск, фильтры) его не показывает.
+    // Гасим, когда обновление прошло через Loading и закончилось (успехом или ошибкой).
+    var isPullRefreshing by remember { mutableStateOf(false) }
+    var pullRefreshStarted by remember { mutableStateOf(false) }
+    LaunchedEffect(refreshState) {
+        if (!isPullRefreshing) return@LaunchedEffect
+        if (refreshState is LoadState.Loading) {
+            pullRefreshStarted = true
+        } else if (pullRefreshStarted) {
+            isPullRefreshing = false
+            pullRefreshStarted = false
+        }
+    }
     val keyboardController = LocalSoftwareKeyboardController.current
     val queryFocusRequester = remember { FocusRequester() }
 
@@ -126,173 +144,182 @@ fun CatalogMobileScreen(
         },
         floatingActionButtonBottomPadding = 8.dp,
     ) {
-        MobilePosterGrid(
-            contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding),
-            modifier = Modifier.imePadding(),
-            state = gridState,
-            singleColumn = isRowLayout,
+        PullToRefreshBox(
+            isRefreshing = isPullRefreshing,
+            onRefresh = {
+                isPullRefreshing = true
+                results.refresh()
+            },
+            modifier = Modifier.fillMaxSize(),
         ) {
-            if (isOffline || isYaniMirrorActive) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "offline_banner") {
-                    OfflineBanner(isOffline = isOffline, horizontalPadding = 0.dp)
+            MobilePosterGrid(
+                contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding),
+                modifier = Modifier.imePadding(),
+                state = gridState,
+                singleColumn = isRowLayout,
+            ) {
+                if (isOffline || isYaniMirrorActive) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "offline_banner") {
+                        OfflineBanner(isOffline = isOffline, horizontalPadding = 0.dp)
+                    }
                 }
-            }
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {
-                OutlinedTextField(
-                    shape = MaterialTheme.shapes.large,
-                    value = state.query,
-                    onValueChange = { onEvent(CatalogState.Event.QueryChanged(it)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(queryFocusRequester),
-                    placeholder = { Text(stringResource(R.string.search_placeholder)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = {
-                        keyboardController?.hide()
-                        onEvent(CatalogState.Event.SearchSubmitted)
-                    }),
-                    trailingIcon = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (state.query.isNotEmpty()) {
-                                CatalogMobileClearButton(
-                                    onClick = { onEvent(CatalogState.Event.QueryChanged("")) },
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {
+                    OutlinedTextField(
+                        shape = MaterialTheme.shapes.large,
+                        value = state.query,
+                        onValueChange = { onEvent(CatalogState.Event.QueryChanged(it)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(queryFocusRequester),
+                        placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = {
+                            keyboardController?.hide()
+                            onEvent(CatalogState.Event.SearchSubmitted)
+                        }),
+                        trailingIcon = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (state.query.isNotEmpty()) {
+                                    CatalogMobileClearButton(
+                                        onClick = { onEvent(CatalogState.Event.QueryChanged("")) },
+                                    )
+                                }
+                                CatalogMobileFilterButton(
+                                    activeCount = state.filters.activeCount,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    onClick = {
+                                        keyboardController?.hide()
+                                        onEvent(CatalogState.Event.OpenFilters)
+                                    },
                                 )
                             }
-                            CatalogMobileFilterButton(
-                                activeCount = state.filters.activeCount,
-                                modifier = Modifier.padding(end = 6.dp),
-                                onClick = {
-                                    keyboardController?.hide()
-                                    onEvent(CatalogState.Event.OpenFilters)
-                                },
-                            )
-                        }
-                    },
-                )
-            }
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = "submit_button") {
-                Button(
-                    onClick = {
-                        keyboardController?.hide()
-                        onEvent(CatalogState.Event.SearchSubmitted)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        if (state.filters.activeCount > 0) {
-                            stringResource(
-                                R.string.search_mobile_submit_with_filters,
-                                state.filters.activeCount,
-                            )
-                        } else {
-                            stringResource(R.string.search_mobile_submit)
                         },
                     )
                 }
-            }
-            if (state.query.isEmpty() && state.searchHistory.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "search_history") {
-                    CatalogMobileSearchHistory(
-                        queries = state.searchHistory,
-                        onQuerySelected = {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "submit_button") {
+                    Button(
+                        onClick = {
                             keyboardController?.hide()
-                            onEvent(CatalogState.Event.SearchHistorySelected(it))
+                            onEvent(CatalogState.Event.SearchSubmitted)
                         },
-                        onClear = { onEvent(CatalogState.Event.SearchHistoryCleared) },
-                    )
-                }
-            }
-            val isFirstPageLoading = state.isSearchPending ||
-                (hasActiveSearch && refreshState is LoadState.Loading && results.itemCount == 0)
-            // Лоадер внутри сетки: полноэкранный увёл бы поле поиска из-под пальца при наборе
-            if (isFirstPageLoading && results.itemCount == 0) {
-                items(count = CATALOG_SKELETON_ITEMS, contentType = { "poster_skeleton" }) {
-                    if (isRowLayout) {
-                        MobileTitleRowSkeleton(shimmer = rememberSkeletonShimmer())
-                    } else {
-                        MobilePosterCardSkeleton(
-                            shimmer = rememberSkeletonShimmer(),
-                            modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            if (state.filters.activeCount > 0) {
+                                stringResource(
+                                    R.string.search_mobile_submit_with_filters,
+                                    state.filters.activeCount,
+                                )
+                            } else {
+                                stringResource(R.string.search_mobile_submit)
+                            },
                         )
                     }
                 }
-            } else if (isFirstPageLoading) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
-                    MobileSectionLoading()
+                if (state.query.isEmpty() && state.searchHistory.isNotEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "search_history") {
+                        CatalogMobileSearchHistory(
+                            queries = state.searchHistory,
+                            onQuerySelected = {
+                                keyboardController?.hide()
+                                onEvent(CatalogState.Event.SearchHistorySelected(it))
+                            },
+                            onClear = { onEvent(CatalogState.Event.SearchHistoryCleared) },
+                        )
+                    }
                 }
-            }
-            if (hasActiveSearch && refreshState is LoadState.NotLoading && results.itemCount == 0) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "empty_state") {
-                    val hasFilters = state.filters.activeCount > 0
-                    MobileMessage(
-                        title = stringResource(R.string.search_empty),
-                        icon = Icons.Filled.SearchOff,
-                        actionLabel = stringResource(R.string.search_mobile_reset_filters)
-                            .takeIf { hasFilters },
-                        onAction = { onEvent(CatalogState.Event.ResetFilters) }.takeIf { hasFilters },
-                        fillMaxSize = false,
-                    )
+                val isFirstPageLoading = state.isSearchPending ||
+                    (hasActiveSearch && refreshState is LoadState.Loading && results.itemCount == 0)
+                // Лоадер внутри сетки: полноэкранный увёл бы поле поиска из-под пальца при наборе
+                if (isFirstPageLoading && results.itemCount == 0) {
+                    items(count = CATALOG_SKELETON_ITEMS, contentType = { "poster_skeleton" }) {
+                        if (isRowLayout) {
+                            MobileTitleRowSkeleton(shimmer = rememberSkeletonShimmer())
+                        } else {
+                            MobilePosterCardSkeleton(
+                                shimmer = rememberSkeletonShimmer(),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                } else if (isFirstPageLoading) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
+                        MobileSectionLoading()
+                    }
                 }
-            }
-            // Ошибка внутри сетки: экран корневой, строка поиска не должна пропадать
-            if (initialError != null) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "refresh_error") {
-                    MobileMessage(
-                        title = initialError,
-                        actionLabel = stringResource(CoreR.string.common_retry),
-                        onAction = {
-                            onEvent(CatalogState.Event.RetrySelected)
-                            results.retry()
-                        },
-                        fillMaxSize = false,
-                    )
+                if (hasActiveSearch && refreshState is LoadState.NotLoading && results.itemCount == 0) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "empty_state") {
+                        val hasFilters = state.filters.activeCount > 0
+                        MobileMessage(
+                            title = stringResource(R.string.search_empty),
+                            icon = Icons.Filled.SearchOff,
+                            actionLabel = stringResource(R.string.search_mobile_reset_filters)
+                                .takeIf { hasFilters },
+                            onAction = { onEvent(CatalogState.Event.ResetFilters) }.takeIf { hasFilters },
+                            fillMaxSize = false,
+                        )
+                    }
                 }
-            }
-            val error = (appendState as? LoadState.Error)?.error
-            if (error != null && results.itemCount > 0) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_error") {
-                    ErrorBanner(
-                        message = error.uiMessage(),
-                        onRetry = { results.retry() },
-                    )
+                // Ошибка внутри сетки: экран корневой, строка поиска не должна пропадать
+                if (initialError != null) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "refresh_error") {
+                        MobileMessage(
+                            title = initialError,
+                            actionLabel = stringResource(CoreR.string.common_retry),
+                            onAction = {
+                                onEvent(CatalogState.Event.RetrySelected)
+                                results.retry()
+                            },
+                            fillMaxSize = false,
+                        )
+                    }
                 }
-            }
-            items(
-                count = results.itemCount,
-                key = results.safeItemKey("search") { it.id },
-                contentType = { if (isRowLayout) "title_row" else "poster" },
-            ) { index ->
-                results.getOrNull(index)?.let { item ->
-                    if (isRowLayout) {
-                        MobileTitleRowCard(
+                val error = (appendState as? LoadState.Error)?.error
+                if (error != null && results.itemCount > 0) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_error") {
+                        ErrorBanner(
+                            message = error.uiMessage(),
+                            onRetry = { results.retry() },
+                        )
+                    }
+                }
+                items(
+                    count = results.itemCount,
+                    key = results.safeItemKey("search") { it.id },
+                    contentType = { if (isRowLayout) "title_row" else "poster" },
+                ) { index ->
+                    results.getOrNull(index)?.let { item ->
+                        if (isRowLayout) {
+                            MobileTitleRowCard(
+                                title = item.title,
+                                posterUrls = item.poster.posterUrls(),
+                                description = item.description,
+                                year = item.year,
+                                rating = item.rating,
+                                animeId = item.id,
+                                onClick = { onEvent(CatalogState.Event.ItemSelected(item.id)) },
+                            )
+                        } else MobilePosterCard(
                             title = item.title,
                             posterUrls = item.poster.posterUrls(),
-                            description = item.description,
-                            year = item.year,
-                            rating = item.rating,
                             animeId = item.id,
+                            rating = item.rating,
+                            posterOverlay = {
+                                item.year?.takeIf { state.showTitleYear }?.let { MobilePosterYear(it) }
+                            },
                             onClick = { onEvent(CatalogState.Event.ItemSelected(item.id)) },
                         )
-                    } else MobilePosterCard(
-                        title = item.title,
-                        posterUrls = item.poster.posterUrls(),
-                        animeId = item.id,
-                        rating = item.rating,
-                        posterOverlay = {
-                            item.year?.takeIf { state.showTitleYear }?.let { MobilePosterYear(it) }
-                        },
-                        onClick = { onEvent(CatalogState.Event.ItemSelected(item.id)) },
-                    )
+                    }
                 }
-            }
-            if (appendState is LoadState.Loading && results.itemCount > 0) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_loader") {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                if (appendState is LoadState.Loading && results.itemCount > 0) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_loader") {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            YummyLoadingIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        }
                     }
                 }
             }

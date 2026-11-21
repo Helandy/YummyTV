@@ -17,11 +17,18 @@ import java.util.concurrent.ConcurrentHashMap
  * хоста ждут один общий поход в [fallback]. Остальные хосты всегда идут в системный DNS.
  */
 class BlockedHostDns(
-    private val hosts: Set<String>,
+    private val isTargetHost: (String) -> Boolean,
     private val fallback: Dns,
     private val system: Dns = Dns.SYSTEM,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : Dns {
+
+    constructor(
+        hosts: Set<String>,
+        fallback: Dns,
+        system: Dns = Dns.SYSTEM,
+        nowMillis: () -> Long = System::currentTimeMillis,
+    ) : this({ host -> host in hosts }, fallback, system, nowMillis)
 
     private class Cached(val addresses: List<InetAddress>, val expiresAtMs: Long)
 
@@ -30,7 +37,7 @@ class BlockedHostDns(
     private val locks = ConcurrentHashMap<String, Any>()
 
     override fun lookup(hostname: String): List<InetAddress> {
-        if (hostname !in hosts) return system.lookup(hostname)
+        if (!isTargetHost(hostname)) return system.lookup(hostname)
 
         val systemResult = runCatching { system.lookup(hostname) }
         systemResult.getOrNull()?.takeIf { addresses -> addresses.isNotEmpty() && addresses.none { it.isBlockedAnswer() } }

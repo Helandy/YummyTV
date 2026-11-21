@@ -14,6 +14,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.HttpException
 import coil3.request.ImageRequest
 import su.afk.yummy.tv.core.model.anime.utils.isPosterMirrorUrl
+import su.afk.yummy.tv.core.model.anime.utils.yaniPosterCacheKey
 import java.io.IOException
 
 /**
@@ -23,6 +24,7 @@ import java.io.IOException
  *
  * [cacheKey] — стабильный ключ кэша для строковых моделей: все ссылки цепочки пишутся и читаются под одним ключом
  * (память и диск), поэтому картинка из любого источника при следующем показе берётся из кэша, а не из сети.
+ * Если [cacheKey] не задан, а ссылка ведёт на постер yani, ключ строится по id постера ([yaniPosterCacheKey]).
  */
 @Composable
 fun FallbackAsyncImage(
@@ -37,9 +39,10 @@ fun FallbackAsyncImage(
     var index by remember(models) { mutableIntStateOf(0) }
     val context = LocalPlatformContext.current
     val model = models.getOrNull(index)
-    val request = remember(model, cacheKey, context) {
-        if (cacheKey != null && model is String) {
-            ImageRequest.Builder(context).data(model).memoryCacheKey(cacheKey).diskCacheKey(cacheKey).build()
+    val key = cacheKey ?: (model as? String)?.let(::yaniPosterCacheKey)
+    val request = remember(model, key, context) {
+        if (key != null && model is String) {
+            ImageRequest.Builder(context).data(model).memoryCacheKey(key).diskCacheKey(key).build()
         } else {
             model
         }

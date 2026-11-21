@@ -96,4 +96,15 @@ class StaticAssetCacheStrategyTest : BaseUnitTest() {
         val response = cached(200, null, ageDays = 20)
         assertSame(response, read(response, "https://x.io/static/a.webp").response)
     }
+
+    @Test
+    fun `постер yani с id остаётся свежим сколько угодно долго`() = runTest {
+        val response = cached(200, "image/avif", ageDays = 400)
+        assertSame(response, read(response, "https://imgproxy.yani.tv/posters/mega/1636759364.avif?v=5").response)
+    }
+
+    @Test
+    fun `битый ответ постера всё равно уходит в стратегию по умолчанию`() = runTest {
+        assertSame(delegated, read(cached(404, "image/avif", ageDays = 400), "https://static.yani.tv/posters/mega/1.avif"))
+    }
 }

@@ -89,4 +89,25 @@ class HostTimeoutInterceptorTest {
         assertTrue(shortensTimeouts(interceptor, "https://static.yani.tv/posters/mega/1.avif"))
         assertFalse(shortensTimeouts(interceptor, "https://static.example/img/still/a.avif"))
     }
+
+    @Test
+    fun `any yani subdomain except the api is treated as an image cdn`() {
+        val interceptor = imageHostTimeouts(staticHost = "")
+
+        assertTrue(shortensTimeouts(interceptor, "https://imgproxy.yani.tv/posters/mega/1.avif"))
+        assertTrue(shortensTimeouts(interceptor, "https://some-new-host.yani.tv/posters/mega/1.avif"))
+        assertTrue(shortensTimeouts(interceptor, "https://IMGPROXY.YANI.TV/posters/mega/1.avif"))
+        assertFalse(shortensTimeouts(interceptor, "https://api.yani.tv/feed"))
+        assertFalse(shortensTimeouts(interceptor, "https://notyani.tv/a.avif"))
+        assertFalse(shortensTimeouts(interceptor, "https://yani.tv.evil.example/a.avif"))
+    }
+
+    @Test
+    fun `only image requests of yani subdomains get short timeouts`() {
+        val interceptor = imageHostTimeouts(staticHost = "")
+
+        assertTrue(shortensTimeouts(interceptor, "https://static.yani.tv/users/full/1.avif?v=2"))
+        assertFalse(shortensTimeouts(interceptor, "https://alloha.yani.tv/?token_movie=1&episode=1"))
+        assertFalse(shortensTimeouts(interceptor, "https://static.yani.tv/api/data"))
+    }
 }
