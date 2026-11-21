@@ -8,6 +8,7 @@ import javax.inject.Inject
 /**
  * Ищет аниме по запросу, фильтрам и параметрам страницы.
  * По умолчанию результаты отсортированы по топу, как в каталоге на сайте, в том числе при поиске по тексту.
+При [forceRefresh] кэш пропускается и страница берётся из сети (кэш остаётся запасным при ошибке).
  */
 class SearchUseCase @Inject constructor(private val repository: SearchRepository) {
     suspend operator fun invoke(
@@ -15,5 +16,6 @@ class SearchUseCase @Inject constructor(private val repository: SearchRepository
         filters: SearchFilters = SearchFilters.EMPTY,
         limit: Int = 40,
         offset: Int = 0,
-    ): SearchPage = repository.search(query, filters, limit, offset)
+        forceRefresh: Boolean = false,
+    ): SearchPage = repository.search(query, filters, limit, offset, forceRefresh)
 }

@@ -144,6 +144,7 @@ class CatalogViewModel @Inject internal constructor(
 
             CatalogState.Event.SearchSubmitted -> onSearchSubmitted()
             CatalogState.Event.RetrySelected -> analytics.eventRetry()
+            CatalogState.Event.PullRefreshed -> forceNetworkNext = true
             CatalogState.Event.RandomAnimeSelected -> openRandomAnime()
             CatalogState.Event.OpenFilters -> {
                 analytics.eventFiltersOpened()
@@ -326,6 +327,10 @@ class CatalogViewModel @Inject internal constructor(
         setState { copy(draftFilters = draftFilters.update()) }
     }
 
+    /** Одноразовый флаг: следующая первая страница берётся из сети в обход кэша (pull-to-refresh). */
+    @Volatile
+    private var forceNetworkNext = false
+
     private fun setSearchResults(rawQuery: String, filters: SearchFilters) {
         // Сервер отвечает 400 на запрос короче двух символов — не отправляем его.
         val query = rawQuery.takeIf { it.length >= MIN_QUERY_LENGTH }.orEmpty()
@@ -357,7 +362,9 @@ class CatalogViewModel @Inject internal constructor(
         // Первую страницу показываем из кэша даже просроченной, а обновляем в фоне: так каталог
         // не держит скелетоны, пока идёт сеть. Следующие страницы берём как раньше, иначе старые
         // и новые страницы одной выдачи смешались бы.
-        if (offset == 0) {
+        val forceNetwork = offset == 0 && forceNetworkNext
+        if (forceNetwork) forceNetworkNext = false
+        if (offset == 0 && !forceNetwork) {
             val cached = runSuspendCatching { getCachedSearchPage(query, filters, limit, offset) }.getOrNull()
             if (cached != null) {
                 if (!cached.isFresh) refreshShownPage(query, filters, limit, cached.page, onRefreshed)
@@ -365,7 +372,7 @@ class CatalogViewModel @Inject internal constructor(
             }
         }
         return runSuspendCatching {
-            search(query, filters, limit, offset)
+            search(query, filters, limit, offset, forceRefresh = forceNetwork)
         }.fold(
             onSuccess = SearchPage::toOffsetPage,
             onFailure = { error ->

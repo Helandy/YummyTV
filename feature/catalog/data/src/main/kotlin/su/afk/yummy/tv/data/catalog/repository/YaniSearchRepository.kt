@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.model.settings.withYaniContentLanguage
+import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
+import su.afk.yummy.tv.core.network.yani.withMirrorTrace
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
@@ -17,8 +19,6 @@ import su.afk.yummy.tv.data.catalog.storage.mapper.toSearchPageCache
 import su.afk.yummy.tv.domain.catalog.model.CachedSearchPage
 import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
-import su.afk.yummy.tv.core.network.yani.MirrorDataSkippedException
-import su.afk.yummy.tv.core.network.yani.withMirrorTrace
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
 import su.afk.yummy.tv.domain.catalog.model.SearchPage
 import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
@@ -44,10 +44,12 @@ class YaniSearchRepository(
         filters: SearchFilters,
         limit: Int,
         offset: Int,
+        forceRefresh: Boolean,
     ): SearchPage = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
         val pageKey = searchCacheKey(query, filters, limit, offset, language)
         offlineFirstCache(
+            forceRefresh = forceRefresh,
             read = { searchStorage.getPage(pageKey) },
             isFresh = { it.isFresh(SEARCH_RESULTS_TTL_MS) },
             toDomain = { it.toStoredSearchPage() },

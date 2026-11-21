@@ -1,13 +1,19 @@
 package su.afk.yummy.tv.feature.catalog
 
 import androidx.navigation3.runtime.NavKey
+import androidx.recyclerview.widget.ListUpdateCallback
+import androidx.paging.AsyncPagingDataDiffer
+import androidx.recyclerview.widget.DiffUtil
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -25,6 +31,7 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.catalog.model.SearchFilters
 import su.afk.yummy.tv.domain.catalog.model.SearchItem
+import su.afk.yummy.tv.domain.catalog.model.SearchPage
 import su.afk.yummy.tv.domain.catalog.model.SearchSort
 import su.afk.yummy.tv.domain.catalog.repository.SearchHistoryRepository
 import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
@@ -93,6 +100,36 @@ class CatalogViewModelTest : BaseUnitTest() {
         addSearchHistoryQuery = AddSearchHistoryQueryUseCase(historyRepository),
         clearSearchHistory = ClearSearchHistoryUseCase(historyRepository),
     )
+
+    @Test
+    fun `pull refresh loads the first page from the network bypassing the cache`() = runTest {
+        coEvery { repository.getCachedSearchPage(any(), any(), any(), any()) } returns null
+        coEvery { repository.search(any(), any(), any(), any(), any()) } returns SearchPage(emptyList(), 0, false)
+        val vm = createViewModel()
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val differ = AsyncPagingDataDiffer(
+            diffCallback = object : DiffUtil.ItemCallback<SearchItem>() {
+                override fun areItemsTheSame(a: SearchItem, b: SearchItem) = a.id == b.id
+                override fun areContentsTheSame(a: SearchItem, b: SearchItem) = a == b
+            },
+            updateCallback = object : ListUpdateCallback {
+                override fun onInserted(position: Int, count: Int) = Unit
+                override fun onRemoved(position: Int, count: Int) = Unit
+                override fun onMoved(fromPosition: Int, toPosition: Int) = Unit
+                override fun onChanged(position: Int, count: Int, payload: Any?) = Unit
+            },
+            mainDispatcher = dispatcher,
+            workerDispatcher = dispatcher,
+        )
+        val job = launch(dispatcher) { vm.currentState.results.collect { differ.submitData(it) } }
+        coVerify(exactly = 0) { repository.search(any(), any(), any(), any(), true) }
+
+        vm.setEvent(Event.PullRefreshed)
+        differ.refresh()
+
+        coVerify(exactly = 1) { repository.search(any(), any(), any(), 0, true) }
+        job.cancel()
+    }
 
     @Test
     fun `starts with loaded filter options and the catalog`() {

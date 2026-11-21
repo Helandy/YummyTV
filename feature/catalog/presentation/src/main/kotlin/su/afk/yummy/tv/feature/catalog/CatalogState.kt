@@ -54,6 +54,9 @@ class CatalogState {
         /** Пользователь отправил текущий поисковый запрос. */
         data object SearchSubmitted : Event
 
+        /** Пользователь потянул список вниз: первая страница берётся из сети в обход кэша. */
+        data object PullRefreshed : Event
+
         /** Пользователь запросил повторную загрузку результатов. */
         data object RetrySelected : Event
 

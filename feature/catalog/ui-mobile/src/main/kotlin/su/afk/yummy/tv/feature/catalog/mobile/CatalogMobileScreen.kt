@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.ErrorBanner
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
@@ -72,6 +76,9 @@ import su.afk.yummy.tv.core.designsystem.components.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.catalog.presentation.R
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+
+/** Предел ожидания конца pull-to-refresh: индикатор не должен зависнуть при потерянной смене состояния. */
+private const val PULL_REFRESH_TIMEOUT_MS = 15_000L
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -108,17 +115,16 @@ fun CatalogMobileScreen(
         ?.uiMessage()
     val gridState = rememberLazyGridState()
     // Индикатор тянем только за свайп пользователя: фоновая загрузка первой страницы (поиск, фильтры) его не показывает.
-    // Гасим, когда обновление прошло через Loading и закончилось (успехом или ошибкой).
+    // Гасим на первом не-Loading после старта обновления; таймаут страхует от зависшего индикатора.
     var isPullRefreshing by remember { mutableStateOf(false) }
-    var pullRefreshStarted by remember { mutableStateOf(false) }
-    LaunchedEffect(refreshState) {
+    LaunchedEffect(isPullRefreshing) {
         if (!isPullRefreshing) return@LaunchedEffect
-        if (refreshState is LoadState.Loading) {
-            pullRefreshStarted = true
-        } else if (pullRefreshStarted) {
-            isPullRefreshing = false
-            pullRefreshStarted = false
+        withTimeoutOrNull(PULL_REFRESH_TIMEOUT_MS) {
+            snapshotFlow { results.loadState.refresh is LoadState.Loading }
+                .dropWhile { !it }
+                .first { !it }
         }
+        isPullRefreshing = false
     }
     val keyboardController = LocalSoftwareKeyboardController.current
     val queryFocusRequester = remember { FocusRequester() }
@@ -148,6 +154,7 @@ fun CatalogMobileScreen(
             isRefreshing = isPullRefreshing,
             onRefresh = {
                 isPullRefreshing = true
+                onEvent(CatalogState.Event.PullRefreshed)
                 results.refresh()
             },
             modifier = Modifier.fillMaxSize(),
