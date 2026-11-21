@@ -282,6 +282,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил минималистичный вид деталки на ТВ. */
+    fun eventMinimalDetailsToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_MINIMAL_DETAILS_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /** Пользователь включил или выключил пометки «филлер» и «рекап» у серий. */
     fun eventShowEpisodeFlagsToggled(enabled: Boolean) {
         tracker.track(
@@ -523,6 +531,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_SCREEN_OPENED = "settings_screen"
         const val EVENT_SHOW_CATALOG_TITLE_YEAR_TOGGLED =
             "settings_show_top_title_year_toggled"
+        const val EVENT_MINIMAL_DETAILS_TOGGLED = "settings_minimal_details_toggled"
         const val EVENT_SHOW_EPISODE_FLAGS_TOGGLED =
             "settings_show_episode_flags_toggled"
         const val EVENT_SHOW_LIBRARY_TITLE_YEAR_TOGGLED =

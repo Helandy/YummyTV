@@ -335,6 +335,16 @@ class SettingsViewModelTest : BaseUnitTest() {
     }
 
     @Test
+    fun `minimal details toggle writes the opposite value and reports it`() {
+        val vm = createViewModel()
+
+        vm.setEvent(Event.MinimalDetailsToggled)
+
+        coVerify(exactly = 1) { settingsStore.setMinimalDetails(true) }
+        verify(exactly = 1) { analytics.eventMinimalDetailsToggled(true) }
+    }
+
+    @Test
     fun `toggles write the opposite value to the store`() {
         val vm = createViewModel()
 

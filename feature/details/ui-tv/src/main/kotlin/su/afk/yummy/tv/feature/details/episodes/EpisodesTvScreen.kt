@@ -40,6 +40,8 @@ private fun EpisodesTvScreenDefaultPreview() = ScreenPreviewTheme {
 fun EpisodesTvScreen(
     state: EpisodesState.State,
     effect: Flow<EpisodesState.Effect>,
+    /** Встроен вкладкой в упрощённую деталку: без своего «Назад», фона и заголовка. */
+    embedded: Boolean = false,
     onEvent: (EpisodesState.Event) -> Unit,
 ) {
     var restoreEpisodesFocusRequest by remember { mutableIntStateOf(0) }
@@ -68,26 +70,28 @@ fun EpisodesTvScreen(
             dismissDubbingPicker()
         } else if (balancerPicker != null) {
             dismissBalancerPicker()
-        } else {
+        } else if (!embedded) {
             onEvent(EpisodesState.Event.BackSelected)
         }
     }
+    val hasOverlay = episodeAction != null || dubbingPicker != null || balancerPicker != null
 
     // «Назад» — только через BackHandler. Ловить Key.Back в onPreviewKeyEvent нельзя: при
     // predictive back система отдаёт KeyUp в OnBackInvokedCallback мимо view-дерева, и одно
     // нажатие срабатывает дважды — закрывается и экран серий, и деталка под ним.
     // Escape системой как «назад» не обрабатывается, его ловим сами.
-    BackHandler { handleBack() }
+    // Встроенный экран закрывает «Назад» только свои оверлеи — сам экран живёт внутри деталки.
+    BackHandler(enabled = !embedded || hasOverlay) { handleBack() }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { event ->
-                if (event.key != Key.Escape) return@onPreviewKeyEvent false
+                if (event.key != Key.Escape || (embedded && !hasOverlay)) return@onPreviewKeyEvent false
                 if (event.type == KeyEventType.KeyDown) handleBack()
                 true
             }
-            .background(MaterialTheme.colorScheme.background),
+            .then(if (embedded) Modifier else Modifier.background(MaterialTheme.colorScheme.background)),
     ) {
         EpisodesSection(
             state = state.videosState,

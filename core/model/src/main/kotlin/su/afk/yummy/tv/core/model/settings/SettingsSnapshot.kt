@@ -8,6 +8,7 @@ data class SettingsSnapshot(
     val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
     val showCatalogTitleYear: Boolean,
     val showEpisodeFlags: Boolean = true,
+    val minimalDetails: Boolean = false,
     val newEpisodesSectionEnabled: Boolean,
     val newEpisodesSources: Set<NewEpisodesSource>,
     val showLibraryTitleYear: Boolean,

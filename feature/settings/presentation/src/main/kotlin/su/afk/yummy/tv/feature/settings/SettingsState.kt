@@ -51,6 +51,7 @@ class SettingsState {
         val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
         val showCatalogTitleYear: Boolean = false,
         val showEpisodeFlags: Boolean = true,
+        val minimalDetails: Boolean = false,
         val newEpisodesSectionEnabled: Boolean = true,
         val seasonalDecorationsEnabled: Boolean = true,
         val seasonalTheme: SeasonalTheme = SeasonalTheme.NONE,
@@ -161,6 +162,9 @@ class SettingsState {
 
         /** Пользователь переключил пометки «филлер» и «рекап» у серий. */
         data object ShowEpisodeFlagsToggled : Event
+
+        /** Пользователь переключил минималистичный вид деталки на ТВ. */
+        data object MinimalDetailsToggled : Event
 
         /** Пользователь включил или выключил праздничное оформление. */
         data object SeasonalDecorationsToggled : Event

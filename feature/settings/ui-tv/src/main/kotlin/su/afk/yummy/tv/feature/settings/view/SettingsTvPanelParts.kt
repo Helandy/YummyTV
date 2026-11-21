@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.settings.common.utils.color
 
 /** Отступ между блоками внутри одной категории настроек. */
 @Composable
@@ -24,7 +23,7 @@ internal fun SettingsSectionTitle(text: String) {
         text = text,
         style = MaterialTheme.typography.bodyLarge,
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onBackground,
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
     )
 }

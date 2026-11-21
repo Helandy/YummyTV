@@ -149,6 +149,9 @@ class DetailsViewModel @AssistedInject internal constructor(
         screenDataHandler.detailsSections
             .onEach { sections -> setState { copy(sections = sections.toImmutableList()) } }
             .launchIn(viewModelScope)
+        screenDataHandler.minimalDetails
+            .onEach { minimal -> setState { copy(minimalDetails = minimal) } }
+            .launchIn(viewModelScope)
         appLifecycleSettingsStore.onboardingToursSeen
             .map { tours -> DETAILS_ONBOARDING_TOUR_ID !in tours }
             .onEach { pending -> setState { copy(onboardingTourPending = pending) } }

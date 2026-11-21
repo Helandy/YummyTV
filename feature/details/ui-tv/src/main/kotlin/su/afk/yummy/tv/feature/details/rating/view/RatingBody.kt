@@ -38,9 +38,12 @@ internal fun RatingBody(
     selectedUserRating: Int?,
     onRatingSelected: (Int) -> Unit,
     onRatingDeleted: () -> Unit,
+    /** Во вкладке деталки фокус сам не забираем и фон не рисуем. */
+    embedded: Boolean = false,
 ) {
     val ratingFocusRequesters = remember { List(10) { FocusRequester() } }
     LaunchedEffect(selectedUserRating) {
+        if (embedded) return@LaunchedEffect
         val focusIndex = ((selectedUserRating ?: 10) - 1).coerceIn(0, 9)
         requestFocusUntilTimeout(ratingFocusRequesters[focusIndex])
     }
@@ -48,7 +51,7 @@ internal fun RatingBody(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.98f))
+            .then(if (embedded) Modifier else Modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.98f)))
             .padding(horizontal = TvScreenPadding.Horizontal, vertical = TvScreenPadding.Vertical),
     ) {
         Column(

@@ -71,11 +71,13 @@ internal fun SimilarTab(
     onVote: (Int, AnimeRecommendationVote) -> Unit,
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
+    /** Вкладка в упрощённой деталке: карточки ужимаются по высоте, чтобы кнопки голосования не обрезались. */
+    fitHeight: Boolean = false,
 ) {
     val sourceToggleFocusRequester = remember { FocusRequester() }
 
     Column(
-        modifier = modifier.padding(vertical = 24.dp),
+        modifier = modifier.padding(vertical = if (fitHeight) 8.dp else 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -177,8 +179,19 @@ internal fun SimilarTab(
                     onDispose { registerPreferredContentFocusRequester?.invoke(null) }
                 }
 
-                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(if (fitHeight) Modifier.weight(1f) else Modifier),
+                ) {
                     val sideInset = ((maxWidth - RelatedCardWidth) / 2).coerceAtLeast(24.dp)
+                    // Постер 2:3, под ним подпись и голосование: ширина — чтобы всё это влезло в высоту.
+                    val cardWidth = if (fitHeight) {
+                        ((maxHeight - SimilarCardFooterReserve) / 1.5f)
+                            .coerceIn(SimilarCardMinWidth, RelatedTitleCardWidth)
+                    } else {
+                        RelatedTitleCardWidth
+                    }
                     CompositionLocalProvider(
                         LocalBringIntoViewSpec provides TvCenteredCarouselBringIntoViewSpec,
                     ) {
@@ -204,7 +217,7 @@ internal fun SimilarTab(
                                     title = item.title,
                                     posterUrls = posterUrls,
                                     onClick = { onAnimeSelected(item.animeId) },
-                                    width = RelatedTitleCardWidth,
+                                    width = cardWidth,
                                     subtitle = meta,
                                     animeId = item.animeId,
                                     posterOverlay = {
@@ -305,3 +318,6 @@ private fun ToggleChip(
         )
     }
 }
+
+private val SimilarCardFooterReserve = 150.dp
+private val SimilarCardMinWidth = 110.dp

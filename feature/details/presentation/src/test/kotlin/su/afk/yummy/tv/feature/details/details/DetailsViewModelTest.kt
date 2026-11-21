@@ -127,6 +127,7 @@ class DetailsViewModelTest : BaseUnitTest() {
         every { stringProvider.get(any<Int>()) } returns "load error"
         every { screenDataHandler.yaniUserId } returns flowOf(0)
         every { screenDataHandler.detailsSections } returns flowOf(DetailsSectionKind.entries)
+        every { screenDataHandler.minimalDetails } returns flowOf(false)
         every { screenDataHandler.anime4kDubbing(any()) } returns flowOf(null)
         every { screenDataHandler.observeLibraryState(any()) } returns libraryState
         every { screenDataHandler.observeWatchProgress(any()) } returns flowOf(emptyList())

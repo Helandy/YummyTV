@@ -106,6 +106,7 @@ class SettingsViewModel @Inject internal constructor(
                         titleCardLayout = snapshot.titleCardLayout,
                         showCatalogTitleYear = snapshot.showCatalogTitleYear,
                         showEpisodeFlags = snapshot.showEpisodeFlags,
+                        minimalDetails = snapshot.minimalDetails,
                         newEpisodesSectionEnabled = snapshot.homeBlocks.any {
                             it.kind == HomeBlockKind.MY_NEW_EPISODES && it.enabled
                         },
@@ -311,6 +312,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.showEpisodeFlags
                 analytics.eventShowEpisodeFlagsToggled(enabled)
                 settingsStore.setShowEpisodeFlags(enabled)
+            }
+
+            SettingsState.Event.MinimalDetailsToggled -> viewModelScope.launch {
+                val enabled = !currentState.minimalDetails
+                analytics.eventMinimalDetailsToggled(enabled)
+                settingsStore.setMinimalDetails(enabled)
             }
 
             SettingsState.Event.ShowLibraryTitleYearToggled -> viewModelScope.launch {

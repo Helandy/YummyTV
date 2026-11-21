@@ -70,6 +70,7 @@
     <string name="settings_mobile_poster_size">Розмір постерів</string>
     <string name="settings_show_catalog_title_year">Показувати рік у тайтлів у каталозі</string>
     <string name="settings_show_episode_flags">Позначати філери та рекапи у серій</string>
+    <string name="settings_minimal_details">Мінімалістична деталка</string>
     <string name="settings_show_library_title_year">Показувати рік у тайтлів у бібліотеці</string>
     <string name="settings_player_orientation_title">Орієнтація плеєра</string>
     <string name="settings_player_orientation_system">Системна</string>

@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterRating
 import su.afk.yummy.tv.core.designsystem.tv.TvPosterType
@@ -30,6 +31,9 @@ internal fun ViewingOrderCard(
     selected: Boolean = false,
     /** В ленте хронологии номер и год показывает нода таймлайна, на постере они дублировали бы её. */
     showIndexAndYear: Boolean = true,
+    width: Dp = RelatedTitleCardWidth,
+    /** Строк под подпись связи (резерв высоты): в тесном ряду деталки хватает одной. */
+    captionMinLines: Int = 2,
 ) {
     var focused by remember { mutableStateOf(false) }
 
@@ -47,9 +51,9 @@ internal fun ViewingOrderCard(
                 },
             ),
         caption = item.relation,
-        captionMinLines = 2,
+        captionMinLines = captionMinLines,
         onFocused = onFocused,
-        width = RelatedTitleCardWidth,
+        width = width,
         animeId = item.animeId,
         posterOverlay = {
             item.type?.takeIf { it.isNotBlank() }?.let { TvPosterType(it) }

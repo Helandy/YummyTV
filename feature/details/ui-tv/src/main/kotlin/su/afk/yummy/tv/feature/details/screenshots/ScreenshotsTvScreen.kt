@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -73,15 +74,17 @@ fun ScreenshotsTvScreen(
 
     state: ScreenshotsState.State,
     effect: Flow<ScreenshotsState.Effect>,
+    /** Встроен вкладкой в упрощённую деталку: без своего «Назад», фона и заголовка. */
+    embedded: Boolean = false,
     onEvent: (ScreenshotsState.Event) -> Unit,
 
     ) {
-    BackHandler { onEvent(ScreenshotsState.Event.BackSelected) }
+    BackHandler(enabled = !embedded) { onEvent(ScreenshotsState.Event.BackSelected) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .then(if (embedded) Modifier else Modifier.background(MaterialTheme.colorScheme.background)),
     ) {
         when {
             state.isLoading -> TvLoadingScreen()
@@ -182,12 +185,16 @@ fun ScreenshotsTvScreen(
                             },
                     ) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            Text(
-                                text = state.title.ifBlank { stringResource(R.string.details_screenshots_title) },
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                modifier = gridStartExtent.measure.padding(bottom = 2.dp),
-                            )
+                            if (embedded) {
+                                Spacer(modifier = gridStartExtent.measure)
+                            } else {
+                                Text(
+                                    text = state.title.ifBlank { stringResource(R.string.details_screenshots_title) },
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = gridStartExtent.measure.padding(bottom = 2.dp),
+                                )
+                            }
                         }
                         itemsIndexed(
                             items = state.screenshots,

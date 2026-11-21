@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
+import su.afk.yummy.tv.feature.details.details.view.DetailsMinimalBody
 import su.afk.yummy.tv.feature.details.details.view.DetailsTvSkeleton
 import su.afk.yummy.tv.feature.details.details.view.LibraryListPickerOverlay
 import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
@@ -120,41 +121,79 @@ fun DetailsTvScreen(
                 )
 
                 DetailsScreenState.Content -> if (details != null) {
-                    DetailsBody(
-                        state = state,
-                        details = details,
-                        videosState = state.videosState,
-                        isWatchLoading = state.isWatchLaunchPending || state.isWatchDataLoading,
-                        watchProgress = state.watchProgress,
-                        isInLibrary = state.isInLibrary,
-                        isFavorite = state.isFavorite,
-                        libraryList = state.libraryList,
-                        userRating = state.userRating,
-                        canSubscribe = state.isSignedIn,
-                        restoreButtonFocusRequest = restoreButtonFocusRequest,
-                        onEvent = onEvent,
-                        onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
-                        onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
-                        onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
-                        onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
-                        onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
-                        onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
-                        onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
-                        onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
-                        onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
-                        onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
-                        onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
-                        onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
-                        onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
-                        onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
-                        onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
-                        onRandomAnimeSelected = if (state.isRandomAnimeEnabled) {
-                            { onEvent(DetailsState.Event.RandomAnimeSelected) }
-                        } else {
-                            null
-                        },
-                        isRandomAnimeLoading = state.isRandomAnimeLoading,
-                    )
+                    if (state.minimalDetails) {
+                        DetailsMinimalBody(
+                            state = state,
+                            details = details,
+                            videosState = state.videosState,
+                            isWatchLoading = state.isWatchLaunchPending || state.isWatchDataLoading,
+                            watchProgress = state.watchProgress,
+                            isInLibrary = state.isInLibrary,
+                            isFavorite = state.isFavorite,
+                            libraryList = state.libraryList,
+                            userRating = state.userRating,
+                            canSubscribe = state.isSignedIn,
+                            restoreButtonFocusRequest = restoreButtonFocusRequest,
+                            onEvent = onEvent,
+                            onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
+                            onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                            onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                            onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
+                            onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
+                            onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
+                            onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
+                            onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
+                            onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
+                            onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
+                            onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                            onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                            onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
+                            onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                            onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                            onRandomAnimeSelected = if (state.isRandomAnimeEnabled) {
+                                { onEvent(DetailsState.Event.RandomAnimeSelected) }
+                            } else {
+                                null
+                            },
+                            isRandomAnimeLoading = state.isRandomAnimeLoading,
+                        )
+                    } else {
+                        DetailsBody(
+                            state = state,
+                            details = details,
+                            videosState = state.videosState,
+                            isWatchLoading = state.isWatchLaunchPending || state.isWatchDataLoading,
+                            watchProgress = state.watchProgress,
+                            isInLibrary = state.isInLibrary,
+                            isFavorite = state.isFavorite,
+                            libraryList = state.libraryList,
+                            userRating = state.userRating,
+                            canSubscribe = state.isSignedIn,
+                            restoreButtonFocusRequest = restoreButtonFocusRequest,
+                            onEvent = onEvent,
+                            onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
+                            onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                            onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                            onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
+                            onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
+                            onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
+                            onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
+                            onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
+                            onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
+                            onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
+                            onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                            onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                            onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
+                            onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                            onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                            onRandomAnimeSelected = if (state.isRandomAnimeEnabled) {
+                                { onEvent(DetailsState.Event.RandomAnimeSelected) }
+                            } else {
+                                null
+                            },
+                            isRandomAnimeLoading = state.isRandomAnimeLoading,
+                        )
+                    }
                 }
             }
         }

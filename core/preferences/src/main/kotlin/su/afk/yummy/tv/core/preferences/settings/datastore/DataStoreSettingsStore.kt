@@ -50,6 +50,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferre
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showCatalogTitleYearKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.minimalDetailsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showEpisodeFlagsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
@@ -106,6 +107,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             titleCardLayout = prefs.enum(titleCardLayoutKey, TitleCardLayout.TILE),
             showCatalogTitleYear = prefs[showCatalogTitleYearKey] ?: false,
             showEpisodeFlags = prefs[showEpisodeFlagsKey] ?: true,
+            minimalDetails = prefs[minimalDetailsKey] ?: false,
             newEpisodesSectionEnabled = prefs[newEpisodesSectionEnabledKey] ?: true,
             newEpisodesSources = prefs[newEpisodesSourcesKey].toNewEpisodesSources(),
             showLibraryTitleYear = prefs[showLibraryTitleYearKey] ?: false,

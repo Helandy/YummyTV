@@ -36,6 +36,9 @@ class DetailsScreenDataHandler @Inject constructor(
         .map { sections -> sections.filter { it.enabled }.map { it.kind } }
         .distinctUntilChanged()
 
+    /** Минималистичный вид деталки на ТВ: hero и вкладки вместо ленты секций. */
+    val minimalDetails: Flow<Boolean> = settingsStore.minimalDetails.distinctUntilChanged()
+
     /** Озвучка 4K, в которой тайтл смотрели раньше. */
     fun anime4kDubbing(animeId: Int): Flow<String?> = settingsStore.anime4kDubbing(animeId)
 

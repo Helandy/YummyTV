@@ -23,6 +23,9 @@ interface AppearanceSettingsStore {
 
     /** Показывать у серий пометки «филлер» и «рекап». */
     val showEpisodeFlags: Flow<Boolean>
+
+    /** Минималистичный вид деталки на ТВ: hero и одна строка вкладок вместо ленты секций. */
+    val minimalDetails: Flow<Boolean>
     val showLibraryTitleYear: Flow<Boolean>
     val libraryContinueWatchingCardSize: Flow<LibraryContinueWatchingCardSize>
     val librarySort: Flow<LibrarySort>
@@ -53,6 +56,7 @@ interface AppearanceSettingsStore {
     suspend fun setTitleCardLayout(layout: TitleCardLayout)
     suspend fun setShowCatalogTitleYear(enabled: Boolean)
     suspend fun setShowEpisodeFlags(enabled: Boolean)
+    suspend fun setMinimalDetails(enabled: Boolean)
     suspend fun setShowLibraryTitleYear(enabled: Boolean)
     suspend fun setLibraryContinueWatchingCardSize(size: LibraryContinueWatchingCardSize)
     suspend fun setLibrarySort(sort: LibrarySort)

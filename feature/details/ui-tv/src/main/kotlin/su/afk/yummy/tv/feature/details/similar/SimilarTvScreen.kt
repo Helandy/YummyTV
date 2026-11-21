@@ -31,10 +31,12 @@ private fun SimilarTvScreenDefaultPreview() = ScreenPreviewTheme {
 fun SimilarTvScreen(
     state: SimilarState.State,
     effect: Flow<SimilarState.Effect>,
+    /** Встроен вкладкой в упрощённую деталку: без своего «Назад», фона и заголовка. */
+    embedded: Boolean = false,
     onEvent: (SimilarState.Event) -> Unit,
 ) {
     val context = LocalContext.current
-    BackHandler { onEvent(SimilarState.Event.BackSelected) }
+    BackHandler(enabled = !embedded) { onEvent(SimilarState.Event.BackSelected) }
 
     effect.collectAsEffect { event ->
         when (event) {
@@ -46,7 +48,7 @@ fun SimilarTvScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .then(if (embedded) Modifier else Modifier.background(MaterialTheme.colorScheme.background)),
     ) {
         SimilarTab(
             state = state.similarState,
@@ -62,6 +64,7 @@ fun SimilarTvScreen(
             onVote = { id, vote -> onEvent(SimilarState.Event.VoteSelected(id, vote)) },
             modifier = Modifier.fillMaxSize(),
             onRetry = { onEvent(SimilarState.Event.RetrySelected) },
+            fitHeight = embedded,
         )
     }
 }

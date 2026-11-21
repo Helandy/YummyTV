@@ -61,11 +61,13 @@ private fun RatingTvScreenErrorPreview() = ScreenPreviewTheme {
 fun RatingTvScreen(
     state: RatingState.State,
     effect: Flow<RatingState.Effect>,
+    /** Встроен вкладкой в упрощённую деталку: без своего «Назад», фона и заголовка. */
+    embedded: Boolean = false,
     onEvent: (RatingState.Event) -> Unit,
 ) {
     val error = state.error?.asString()
     val context = LocalContext.current
-    BackHandler { onEvent(RatingState.Event.BackSelected) }
+    BackHandler(enabled = !embedded) { onEvent(RatingState.Event.BackSelected) }
 
     effect.collectAsEffect { event ->
         when (event) {
@@ -88,6 +90,7 @@ fun RatingTvScreen(
                 selectedUserRating = state.selectedUserRating,
                 onRatingSelected = { rating -> onEvent(RatingState.Event.RatingSelected(rating)) },
                 onRatingDeleted = { onEvent(RatingState.Event.RatingDeleted) },
+                embedded = embedded,
             )
         }
     }

@@ -70,6 +70,7 @@
     <string name="settings_mobile_poster_size">Poster size</string>
     <string name="settings_show_catalog_title_year">Show title year in Catalog</string>
     <string name="settings_show_episode_flags">Show filler and recap marks on episodes</string>
+    <string name="settings_minimal_details">Minimal details</string>
     <string name="settings_show_library_title_year">Show title year in Library</string>
     <string name="settings_player_orientation_title">Player orientation</string>
     <string name="settings_player_orientation_system">System</string>

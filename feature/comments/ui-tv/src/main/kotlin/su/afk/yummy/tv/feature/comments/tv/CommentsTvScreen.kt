@@ -48,6 +48,8 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 fun CommentsTvScreen(
     state: CommentsState.State,
     effect: Flow<CommentsState.Effect>,
+    /** Встроен вкладкой в упрощённую ТВ-деталку: без своего «Назад», заголовка и автофокуса. */
+    embedded: Boolean = false,
     onEvent: (CommentsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
@@ -74,10 +76,10 @@ fun CommentsTvScreen(
         }
     }
     LaunchedEffect(Unit) {
-        requestFocusUntilTimeout(headerFocusRequester)
+        if (!embedded) requestFocusUntilTimeout(headerFocusRequester)
     }
     LaunchedEffect(refreshState) {
-        if (refreshState is LoadState.Error && visibleComments.isEmpty()) {
+        if (!embedded && refreshState is LoadState.Error && visibleComments.isEmpty()) {
             requestFocusUntilTimeout(retryFocusRequester)
         }
     }
@@ -96,7 +98,7 @@ fun CommentsTvScreen(
         }
     }
 
-    BackHandler(enabled = state.pendingDelete == null && state.pendingReport == null) {
+    BackHandler(enabled = !embedded && state.pendingDelete == null && state.pendingReport == null) {
         onEvent(CommentsState.Event.BackSelected)
     }
 
@@ -115,11 +117,13 @@ fun CommentsTvScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = stringResource(R.string.comments_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
+            if (!embedded) {
+                Text(
+                    text = stringResource(R.string.comments_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+            }
             CommentsHeader(
                 selectedSort = state.sort,
                 initialFocusRequester = headerFocusRequester,

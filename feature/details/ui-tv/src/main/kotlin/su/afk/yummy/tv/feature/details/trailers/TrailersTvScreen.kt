@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -63,14 +64,16 @@ private fun TrailersTvScreenDefaultPreview() = ScreenPreviewTheme {
 fun TrailersTvScreen(
     state: TrailersState.State,
     effect: Flow<TrailersState.Effect>,
+    /** Встроен вкладкой в упрощённую деталку: без своего «Назад», фона и заголовка. */
+    embedded: Boolean = false,
     onEvent: (TrailersState.Event) -> Unit,
 ) {
-    BackHandler { onEvent(TrailersState.Event.BackSelected) }
+    BackHandler(enabled = !embedded) { onEvent(TrailersState.Event.BackSelected) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .then(if (embedded) Modifier else Modifier.background(MaterialTheme.colorScheme.background)),
     ) {
         when {
             state.isLoading -> TvLoadingScreen()
@@ -121,12 +124,16 @@ fun TrailersTvScreen(
                             .tvFocusRestorer(),
                     ) {
                         item(span = { GridItemSpan(maxLineSpan) }, contentType = { "header" }) {
-                            Text(
-                                text = stringResource(R.string.details_trailers),
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                modifier = gridStartExtent.measure.padding(bottom = 2.dp),
-                            )
+                            if (embedded) {
+                                Spacer(modifier = gridStartExtent.measure)
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.details_trailers),
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = gridStartExtent.measure.padding(bottom = 2.dp),
+                                )
+                            }
                         }
                         itemsIndexed(
                             items = state.trailers,

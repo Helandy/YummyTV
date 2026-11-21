@@ -76,6 +76,8 @@ class DetailsState {
         val onboardingTourPending: Boolean = false,
         /** Блоки ленты под шапкой в порядке, выбранном пользователем; скрытых здесь нет. */
         val sections: ImmutableList<DetailsSectionKind> = DetailsSectionKind.entries.toImmutableList(),
+        /** Минималистичный вид ТВ-деталки: вкладки вместо ленты секций. */
+        val minimalDetails: Boolean = false,
     ) : UiState {
         /** Скриншоты для ряда и галереи: TMDB и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
         val screenshots: List<AnimeScreenshot>
