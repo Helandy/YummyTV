@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.analytics.utils
 
+import io.ktor.client.plugins.ResponseException
+import io.ktor.http.HttpStatusCode
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -17,3 +19,10 @@ fun Throwable.analyticsType(): String =
  */
 fun Throwable.isReportableError(): Boolean =
     this !is CancellationException && this !is IOException
+
+/**
+ * HTTP 404 от API — штатный ответ («аниме удалено/нет такого»), а не сбой приложения.
+ * Его шлют отдельным событием, а не error-логом.
+ */
+fun Throwable.isHttpNotFound(): Boolean =
+    this is ResponseException && response.status == HttpStatusCode.NotFound

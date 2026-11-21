@@ -12,5 +12,6 @@ android {
 
 dependencies {
     implementation(libs.appmetrica.analytics)
+    implementation(libs.ktor.client.core)
     implementation(libs.kotlinx.coroutines.android)
 }
