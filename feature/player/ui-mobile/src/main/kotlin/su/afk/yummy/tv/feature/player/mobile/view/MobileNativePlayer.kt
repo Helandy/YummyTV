@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -739,8 +740,15 @@ internal fun MobileNativePlayer(
             },
         )
 
-        val skipButtonBottomPadding by animateDpAsState(
-            targetValue = if (overlay.visible && !isInPictureInPictureMode) 132.dp + overlayExtraBottom else 36.dp,
+        // State без делегата: значение читается только в offset {} (фаза раскладки). Чтение через `by`
+        // в композиции перекомпоновывало бы весь MobileNativePlayer на каждом кадре 220-мс анимации,
+        // что давало микро-лаг при открытии/закрытии ленты серий.
+        val skipButtonBottomPadding = animateDpAsState(
+            targetValue = if (overlay.visible && !isInPictureInPictureMode) {
+                132.dp + (if (episodesStripVisible) EPISODES_STRIP_HEIGHT else 0.dp)
+            } else {
+                36.dp
+            },
             animationSpec = tween(durationMillis = 220),
             label = "skipButtonBottomPadding",
         )
@@ -763,7 +771,8 @@ internal fun MobileNativePlayer(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .windowInsetsPadding(WindowInsets.navigationBars)
-                .padding(end = 18.dp, bottom = skipButtonBottomPadding),
+                .padding(end = 18.dp)
+                .offset { IntOffset(0, -skipButtonBottomPadding.value.roundToPx()) },
         )
 
         MobilePlayerSeekRipple(

@@ -1,12 +1,9 @@
 package su.afk.yummy.tv.core.designsystem.mobile.cards
 
-import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
-import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
-import androidx.compose.runtime.remember
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -23,6 +20,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+import su.afk.yummy.tv.core.designsystem.mobile.input.pressScale
+import su.afk.yummy.tv.core.designsystem.seasonal.seasonalCardDecor
 
 @Composable
 fun MobileProgressMediaCard(
@@ -114,6 +114,9 @@ fun MobileProgressMediaCard(
         ) {
             Text(
                 text = title,
+                // Всегда резервируем 2 строки: иначе карточки с 1 и 2 строками дают разную высоту,
+                // и LazyRow (а с ним всё, что ниже) дёргается при прокрутке.
+                minLines = 2,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyMedium,
