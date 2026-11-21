@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -105,7 +105,7 @@ private fun NewsCategoryBadge(text: String, modifier: Modifier = Modifier) {
         modifier = modifier,
         shape = MaterialTheme.shapes.small,
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        contentColor = MaterialTheme.colorScheme.primary,
     ) {
         Text(
             text = text,
