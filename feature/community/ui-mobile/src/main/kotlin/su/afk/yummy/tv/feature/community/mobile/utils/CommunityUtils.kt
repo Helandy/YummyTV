@@ -5,10 +5,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.ui.graphics.vector.ImageVector
 import su.afk.yummy.tv.feature.community.model.CommunitySection
@@ -20,8 +20,8 @@ internal fun CommunitySection.icon(): ImageVector = when (this) {
     CommunitySection.COLLECTIONS -> Icons.Filled.CollectionsBookmark
     CommunitySection.SCHEDULE -> Icons.Filled.DateRange
     CommunitySection.CHAT -> Icons.Filled.Forum
-    CommunitySection.FRIENDS -> Icons.Filled.PersonAdd
-    CommunitySection.USERS -> Icons.Filled.Groups
+    CommunitySection.FRIENDS -> Icons.Filled.People
+    CommunitySection.USERS -> Icons.Filled.PersonSearch
     CommunitySection.ABOUT -> Icons.Filled.Info
     CommunitySection.GLOSSARY -> Icons.Filled.MenuBook
 }
