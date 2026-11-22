@@ -491,15 +491,16 @@ class EpisodesViewModelTest : BaseUnitTest() {
     @Test
     fun `permission request is remembered and the downloads screen opens and dismisses download sheets`() {
         val vm = createViewModel()
-        val v1 = mockAnimeVideo(id = 1, episode = "1")
-        val download = EpisodesState.EpisodeDownloadUiStatus(
-            status = EpisodesState.EpisodeDownloadUiStatus.Downloaded,
-            progressPercent = 100,
+        val v1 = video(id = 1, episode = "1", dubbing = "Anilibria")
+        val download = EpisodesState.EpisodeDownloadUiState(
             downloadId = 9L,
             dubbing = "Anilibria",
             playerName = "Kodik",
             qualityLabel = "1080p",
             bytesDownloaded = 1024L,
+            status = EpisodesState.EpisodeDownloadUiStatus.Downloaded,
+            progress = 1f,
+            errorMessage = null,
         )
         vm.setEvent(Event.DownloadedEpisodeSelected(listOf(v1), download))
         assertNotNull(vm.currentState.pendingDownloadedEpisodeAction)
