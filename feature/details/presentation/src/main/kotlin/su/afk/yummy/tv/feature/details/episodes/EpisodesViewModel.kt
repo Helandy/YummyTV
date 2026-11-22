@@ -1,29 +1,26 @@
 package su.afk.yummy.tv.feature.details.episodes
 
-import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
-import su.afk.yummy.tv.feature.details.utils.withStars
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.minus
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.plus
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.async
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
@@ -43,17 +40,16 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeEpisodeInfoUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeEpisodeFlagsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
 import su.afk.yummy.tv.domain.watchlater.usecase.ObserveWatchLaterEpisodesUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
-import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
-import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
@@ -65,18 +61,21 @@ import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadPrepareResult
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchLaterHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeRanges
 import su.afk.yummy.tv.feature.details.episodes.utils.filterEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.isActive
 import su.afk.yummy.tv.feature.details.episodes.utils.resolveDownloadStatuses
 import su.afk.yummy.tv.feature.details.episodes.utils.uiStatusKey
+import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.mapper.toUiState
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.mostWatchedDubbing
 import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
+import su.afk.yummy.tv.feature.details.utils.withStars
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
@@ -398,8 +397,17 @@ class EpisodesViewModel @AssistedInject internal constructor(
             EpisodesState.Event.BalancerPickerDismissed ->
                 setState { copy(pendingBalancerSelection = null) }
 
-            EpisodesState.Event.OpenDownloadsScreenSelected ->
+            EpisodesState.Event.OpenDownloadsScreenSelected -> {
+                setState {
+                    copy(
+                        pendingDownloadedEpisodeAction = null,
+                        pendingDownloadQualitySelection = null,
+                        pendingDownloadBalancerSelection = null,
+                        pendingDownloadDubbingSelection = null,
+                    )
+                }
                 nav.navigate(videoDownloadNavigator.getVideoDownloadDest())
+            }
         }
     }
 

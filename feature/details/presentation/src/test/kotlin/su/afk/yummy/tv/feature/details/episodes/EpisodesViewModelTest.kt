@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.feature.details.episodes
 
-import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
-import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import androidx.navigation3.runtime.NavKey
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -34,6 +32,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.SourceStarsSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -51,6 +50,7 @@ import su.afk.yummy.tv.domain.watchlater.usecase.ObserveWatchLaterEpisodesUseCas
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.animeDetails
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
+import su.afk.yummy.tv.feature.details.details.handler.SourceStarsHandler
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState.Effect
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState.Event
@@ -489,13 +489,26 @@ class EpisodesViewModelTest : BaseUnitTest() {
     }
 
     @Test
-    fun `permission request is remembered and the downloads screen opens`() {
+    fun `permission request is remembered and the downloads screen opens and dismisses download sheets`() {
         val vm = createViewModel()
+        val v1 = mockAnimeVideo(id = 1, episode = "1")
+        val download = EpisodesState.EpisodeDownloadUiStatus(
+            status = EpisodesState.EpisodeDownloadUiStatus.Downloaded,
+            progressPercent = 100,
+            downloadId = 9L,
+            dubbing = "Anilibria",
+            playerName = "Kodik",
+            qualityLabel = "1080p",
+            bytesDownloaded = 1024L,
+        )
+        vm.setEvent(Event.DownloadedEpisodeSelected(listOf(v1), download))
+        assertNotNull(vm.currentState.pendingDownloadedEpisodeAction)
 
         vm.setEvent(Event.NotificationPermissionRequested)
         vm.setEvent(Event.OpenDownloadsScreenSelected)
         vm.setEvent(Event.BackSelected)
 
+        assertNull(vm.currentState.pendingDownloadedEpisodeAction)
         coVerify(exactly = 1) { appLifecycleSettingsStore.markNotificationPermissionRequested() }
         verify(exactly = 1) { nav.navigate(navKey) }
         verify(exactly = 1) { nav.back() }
