@@ -2,9 +2,10 @@ package su.afk.yummy.tv.feature.details.episodes.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,12 +18,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.focus.consumeLongPressRelease
+import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.core.designsystem.focus.tvBackKeyForwarding
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 /** Действия над серией по удержанию OK на карточке: пока это только отметка о просмотре. */
 @Composable
@@ -44,12 +45,15 @@ internal fun EpisodeActionsTvDialog(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
-            modifier = Modifier.tvBackKeyForwarding()
+            modifier = Modifier
+                .tvBackKeyForwarding()
                 .widthIn(max = 560.dp)
                 .consumeLongPressRelease(),
         ) {
             Column(
-                modifier = Modifier.padding(28.dp),
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(28.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 Text(
@@ -60,7 +64,7 @@ internal fun EpisodeActionsTvDialog(
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                EpisodeActionsFlow {
                     TvRetryButton(
                         text = stringResource(CoreR.string.common_cancel),
                         onClick = onDismiss,
@@ -80,15 +84,15 @@ internal fun EpisodeActionsTvDialog(
                             onClick = onClearWatched,
                         )
                     }
+                    TvRetryButton(
+                        text = if (action.isWatched) {
+                            stringResource(R.string.details_unmark_episodes_up_to_watched)
+                        } else {
+                            stringResource(R.string.details_mark_episodes_up_to_watched)
+                        },
+                        onClick = onToggleWatchedUpTo,
+                    )
                 }
-                TvRetryButton(
-                    text = if (action.isWatched) {
-                        stringResource(R.string.details_unmark_episodes_up_to_watched)
-                    } else {
-                        stringResource(R.string.details_mark_episodes_up_to_watched)
-                    },
-                    onClick = onToggleWatchedUpTo,
-                )
             }
         }
     }
