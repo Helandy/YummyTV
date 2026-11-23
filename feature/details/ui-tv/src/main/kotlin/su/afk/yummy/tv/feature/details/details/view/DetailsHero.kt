@@ -4,7 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import su.afk.yummy.tv.core.designsystem.components.FallbackAsyncImage
 import su.afk.yummy.tv.core.designsystem.components.UserRatingChip
 import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
@@ -94,6 +94,7 @@ internal fun DetailsHero(
     onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
+    onInfoSelected: () -> Unit,
     /** Кубик «ещё случайный тайтл»; `null` — деталка открыта не из кубика каталога. */
     onRandomAnimeSelected: (() -> Unit)?,
     isRandomAnimeLoading: Boolean,
@@ -252,10 +253,16 @@ internal fun DetailsHero(
                             modifier = Modifier
                                 .weight(1f)
                                 .alignByBaseline()
+                                .border(
+                                    width = 2.dp,
+                                    color = if (titleFocused) MaterialTheme.colorScheme.primary else androidx.compose.ui.graphics.Color.Transparent,
+                                    shape = RoundedCornerShape(8.dp),
+                                )
                                 .focusRequester(titleFocusRequester)
                                 .focusProperties { down = downFocusRequester }
-                                .focusable()
-                                .onFocusChanged { fs -> titleFocused = fs.isFocused },
+                                .onFocusChanged { fs -> titleFocused = fs.isFocused }
+                                .clickable(onClick = onInfoSelected)
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
                         )
                         userRating?.let { userRating ->
                             // По первой строке заголовка, а не по центру двух строк.

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.utils.system.copyToClipboard
-import su.afk.yummy.tv.feature.details.mobile.details.utils.groupTitlesByScript
+import su.afk.yummy.tv.feature.details.utils.groupTitlesByScript
 import su.afk.yummy.tv.feature.details.presentation.R
 
 /** Шторка (i) у названия: другие названия тайтла, сгруппированные по письменности. */

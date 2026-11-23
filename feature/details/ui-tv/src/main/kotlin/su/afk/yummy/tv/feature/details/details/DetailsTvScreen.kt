@@ -29,6 +29,7 @@ import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 import su.afk.yummy.tv.feature.details.view.common.DubbingPickerOverlay
+import su.afk.yummy.tv.feature.details.details.view.OtherTitlesDialog
 import java.io.IOException
 
 @Preview(
@@ -186,6 +187,7 @@ fun DetailsTvScreen(
                             onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
                             onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
                             onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                            onInfoSelected = { onEvent(DetailsState.Event.InfoSelected) },
                             onRandomAnimeSelected = if (state.isRandomAnimeEnabled) {
                                 { onEvent(DetailsState.Event.RandomAnimeSelected) }
                             } else {
@@ -209,6 +211,15 @@ fun DetailsTvScreen(
                 onStarToggled = { option -> onEvent(DetailsState.Event.BalancerStarToggled(option.playerName)) },
                 onDismiss = ::dismissBalancerPicker,
             )
+        }
+
+        if (state.showInfoSheet) {
+            details?.let { anime ->
+                OtherTitlesDialog(
+                    titles = (listOf(anime.title) + anime.otherTitles).filter(String::isNotBlank).distinct(),
+                    onDismiss = { onEvent(DetailsState.Event.InfoDismissed) },
+                )
+            }
         }
 
         val dubbingPicker = state.pendingDubbingSelection

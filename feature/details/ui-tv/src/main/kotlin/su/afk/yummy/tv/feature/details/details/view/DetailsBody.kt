@@ -90,6 +90,7 @@ internal fun DetailsBody(
     onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
+    onInfoSelected: () -> Unit,
     /** Кубик «ещё случайный тайтл»; `null` — деталка открыта не из кубика каталога. */
     onRandomAnimeSelected: (() -> Unit)?,
     isRandomAnimeLoading: Boolean,
@@ -352,6 +353,7 @@ internal fun DetailsBody(
                         onCommentsSelected = onCommentsSelected,
                         onReviewsSelected = onReviewsSelected,
                         onBloggerVideosSelected = onBloggerVideosSelected,
+                        onInfoSelected = onInfoSelected,
                         onRandomAnimeSelected = onRandomAnimeSelected,
                         isRandomAnimeLoading = isRandomAnimeLoading,
                         onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
