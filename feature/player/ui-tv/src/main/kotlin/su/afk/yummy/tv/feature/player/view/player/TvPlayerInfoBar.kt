@@ -80,7 +80,7 @@ internal fun TvPlayerInfoBar(
 private val TvFlagFillerColor = Color(0xFFFFC107)
 private val TvFlagRecapColor = Color(0xFF90CAF9)
 
-/** Правый верхний угол: имя плеера и под ним пометка текущей серии («Филлер»/«Рекап»). */
+/** Правый верхний угол: время, имя плеера и пометка текущей серии. */
 @Composable
 internal fun TvPlayerNameBadge(
     visible: Boolean,
@@ -100,7 +100,7 @@ internal fun TvPlayerNameBadge(
         else -> null
     }
     AnimatedVisibility(
-        visible = visible && (badgeText.isNotBlank() || flagLabel != null),
+        visible = visible,
         modifier = modifier
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(top = 16.dp, end = 16.dp),
@@ -111,6 +111,7 @@ internal fun TvPlayerNameBadge(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
+            TvPlayerClock()
             if (badgeText.isNotBlank()) {
                 Text(
                     text = badgeText.uppercase(),
