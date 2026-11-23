@@ -95,6 +95,16 @@
     <td><img src="site/screenshots/tv/balancers.webp" width="320" alt="TV balancers screen" /></td>
     <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="TV viewing order screen" /></td>
   </tr>
+  <tr>
+    <td align="center"><b>Каталог</b></td>
+    <td align="center"><b>Библиотека</b></td>
+    <td align="center"><b>Коллекции</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/tv/catalog.webp" width="320" alt="Каталог аниме TV" /></td>
+    <td><img src="site/screenshots/tv/library.webp" width="320" alt="Библиотека TV" /></td>
+    <td><img src="site/screenshots/tv/collections.webp" width="320" alt="Коллекции TV" /></td>
+  </tr>
 </table>
 
 <p align="center">
@@ -129,7 +139,24 @@
     <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
     <td><img src="site/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
   </tr>
+  <tr>
+    <td align="center"><b>Информация о тайтле</b></td>
+    <td align="center"><b>Озвучки</b></td>
+    <td align="center"><b>Каталог</b></td>
+    <td align="center"><b>Сообщество</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/mobile/title-info.webp" width="210" alt="Информация о тайтле mobile" /></td>
+    <td><img src="site/screenshots/mobile/voices.webp" width="210" alt="Выбор озвучки mobile" /></td>
+    <td><img src="site/screenshots/mobile/catalog.webp" width="210" alt="Каталог аниме mobile" /></td>
+    <td><img src="site/screenshots/mobile/community.webp" width="210" alt="Новости и сообщество mobile" /></td>
+  </tr>
 </table>
+
+<p align="center">
+  <b>Настройки плеера</b><br/>
+  <img src="site/screenshots/mobile/player-settings.webp" width="210" alt="Настройки плеера mobile" />
+</p>
 
 <p align="center">
   <b>Плеер</b><br/>

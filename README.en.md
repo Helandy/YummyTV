@@ -96,6 +96,16 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td><img src="site/screenshots/tv/balancers.webp" width="320" alt="TV balancers screen" /></td>
     <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="TV viewing order screen" /></td>
   </tr>
+  <tr>
+    <td align="center"><b>Catalog</b></td>
+    <td align="center"><b>Library</b></td>
+    <td align="center"><b>Collections</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/tv/catalog.webp" width="320" alt="TV anime catalog" /></td>
+    <td><img src="site/screenshots/tv/library.webp" width="320" alt="TV library" /></td>
+    <td><img src="site/screenshots/tv/collections.webp" width="320" alt="TV collections" /></td>
+  </tr>
 </table>
 
 <p align="center">
@@ -130,7 +140,24 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
     <td><img src="site/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
   </tr>
+  <tr>
+    <td align="center"><b>Title information</b></td>
+    <td align="center"><b>Voice tracks</b></td>
+    <td align="center"><b>Catalog</b></td>
+    <td align="center"><b>Community</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/mobile/title-info.webp" width="210" alt="Mobile title information" /></td>
+    <td><img src="site/screenshots/mobile/voices.webp" width="210" alt="Mobile voice track selection" /></td>
+    <td><img src="site/screenshots/mobile/catalog.webp" width="210" alt="Mobile anime catalog" /></td>
+    <td><img src="site/screenshots/mobile/community.webp" width="210" alt="Mobile news and community" /></td>
+  </tr>
 </table>
+
+<p align="center">
+  <b>Player settings</b><br/>
+  <img src="site/screenshots/mobile/player-settings.webp" width="210" alt="Mobile player settings" />
+</p>
 
 <p align="center">
   <b>Player</b><br/>
