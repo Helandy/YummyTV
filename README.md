@@ -78,32 +78,28 @@
   <tr>
     <td align="center"><b>Главная</b></td>
     <td align="center"><b>Страница тайтла</b></td>
-    <td align="center"><b>Топ</b></td>
-  </tr>
-  <tr>
-    <td><img src="site/screenshots/tv/home.webp" width="320" alt="TV home screen" /></td>
-    <td><img src="site/screenshots/tv/details.webp" width="320" alt="TV details screen" /></td>
-    <td><img src="site/screenshots/tv/top.webp" width="320" alt="TV top screen" /></td>
-  </tr>
-  <tr>
     <td align="center"><b>Серии</b></td>
-    <td align="center"><b>Балансеры</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/tv/home.webp" width="320" alt="Главная" /></td>
+    <td><img src="site/screenshots/tv/details.webp" width="320" alt="Страница тайтла" /></td>
+    <td><img src="site/screenshots/tv/episodes.webp" width="320" alt="Серии" /></td>
+  </tr>
+  <tr>
     <td align="center"><b>Порядок просмотра</b></td>
-  </tr>
-  <tr>
-    <td><img src="site/screenshots/tv/episodes.webp" width="320" alt="TV episodes screen" /></td>
-    <td><img src="site/screenshots/tv/balancers.webp" width="320" alt="TV balancers screen" /></td>
-    <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="TV viewing order screen" /></td>
-  </tr>
-  <tr>
     <td align="center"><b>Каталог</b></td>
     <td align="center"><b>Библиотека</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="Порядок просмотра" /></td>
+    <td><img src="site/screenshots/tv/catalog.webp" width="320" alt="Каталог" /></td>
+    <td><img src="site/screenshots/tv/library.webp" width="320" alt="Библиотека" /></td>
+  </tr>
+  <tr>
     <td align="center"><b>Коллекции</b></td>
   </tr>
   <tr>
-    <td><img src="site/screenshots/tv/catalog.webp" width="320" alt="Каталог аниме TV" /></td>
-    <td><img src="site/screenshots/tv/library.webp" width="320" alt="Библиотека TV" /></td>
-    <td><img src="site/screenshots/tv/collections.webp" width="320" alt="Коллекции TV" /></td>
+    <td><img src="site/screenshots/tv/collections.webp" width="320" alt="Коллекции" /></td>
   </tr>
 </table>
 
@@ -118,45 +114,35 @@
   <tr>
     <td align="center"><b>Главная</b></td>
     <td align="center"><b>Страница тайтла</b></td>
-    <td align="center"><b>Топ</b></td>
-    <td align="center"><b>Библиотека</b></td>
-  </tr>
-  <tr>
-    <td><img src="site/screenshots/mobile/home.webp" width="210" alt="Mobile home screen" /></td>
-    <td><img src="site/screenshots/mobile/details.webp" width="210" alt="Mobile details screen" /></td>
-    <td><img src="site/screenshots/mobile/top.webp" width="210" alt="Mobile top screen" /></td>
-    <td><img src="site/screenshots/mobile/library.webp" width="210" alt="Mobile library screen" /></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Серии</b></td>
-    <td align="center"><b>Загрузки</b></td>
-    <td align="center"><b>Профиль</b></td>
-    <td align="center"><b>Балансеры</b></td>
-  </tr>
-  <tr>
-    <td><img src="site/screenshots/mobile/episodes.webp" width="210" alt="Mobile episodes screen" /></td>
-    <td><img src="site/screenshots/mobile/downloads.webp" width="210" alt="Mobile downloads screen" /></td>
-    <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Mobile profile screen" /></td>
-    <td><img src="site/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers screen" /></td>
-  </tr>
-  <tr>
     <td align="center"><b>Информация о тайтле</b></td>
     <td align="center"><b>Озвучки</b></td>
-    <td align="center"><b>Каталог</b></td>
-    <td align="center"><b>Сообщество</b></td>
   </tr>
   <tr>
-    <td><img src="site/screenshots/mobile/title-info.webp" width="210" alt="Информация о тайтле mobile" /></td>
-    <td><img src="site/screenshots/mobile/voices.webp" width="210" alt="Выбор озвучки mobile" /></td>
-    <td><img src="site/screenshots/mobile/catalog.webp" width="210" alt="Каталог аниме mobile" /></td>
-    <td><img src="site/screenshots/mobile/community.webp" width="210" alt="Новости и сообщество mobile" /></td>
+    <td><img src="site/screenshots/mobile/home.webp" width="210" alt="Главная" /></td>
+    <td><img src="site/screenshots/mobile/details.webp" width="210" alt="Страница тайтла" /></td>
+    <td><img src="site/screenshots/mobile/title-info.webp" width="210" alt="Информация о тайтле" /></td>
+    <td><img src="site/screenshots/mobile/voices.webp" width="210" alt="Озвучки" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Каталог</b></td>
+    <td align="center"><b>Сообщество</b></td>
+    <td align="center"><b>Загрузки</b></td>
+    <td align="center"><b>Профиль</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/mobile/catalog.webp" width="210" alt="Каталог" /></td>
+    <td><img src="site/screenshots/mobile/community.webp" width="210" alt="Сообщество" /></td>
+    <td><img src="site/screenshots/mobile/downloads.webp" width="210" alt="Загрузки" /></td>
+    <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Профиль" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Настройки плеера</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/mobile/player-settings.webp" width="210" alt="Настройки плеера" /></td>
   </tr>
 </table>
 
-<p align="center">
-  <b>Настройки плеера</b><br/>
-  <img src="site/screenshots/mobile/player-settings.webp" width="210" alt="Настройки плеера mobile" />
-</p>
 
 <p align="center">
   <b>Плеер</b><br/>
