@@ -308,8 +308,10 @@ internal fun DetailsButtonBar(
     }
     val availableButtons = (listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons + randomButtons)
         .associateBy { it.action }
-    val buttons = (DetailsButtonAction.defaultOrder.filterNot { it in hiddenActions } +
-        randomButtons.map { it.action })
+    val buttons = (
+        DetailsButtonAction.defaultOrder.filterNot { it in hiddenActions } +
+            randomButtons.map { it.action }
+        )
         .mapNotNull { availableButtons[it] }
     // Главные действия — крупными пилюлями («Любимое» — одним сердечком). Во втором ряду сначала
     // пилюли с текстом («Серии», «Подписки»), затем круглые иконки с подписью при фокусе.
@@ -358,10 +360,12 @@ internal fun DetailsButtonBar(
     }
 
     var iconRowFocused by remember { mutableStateOf(false) }
-    val hasIconButtons = secondRowButtons.any { it.value.action !in LabeledActions }
+    val hasIconButtons = secondRowButtons.any {
+        it.value.action !in LabeledActions && it.value.action != DetailsButtonAction.RANDOM_ANIME
+    }
     // У пилюль текст и так виден — подпись только для круглых иконок.
     val iconCaption = buttons.getOrNull(currentFocusedIndex)
-        ?.takeIf { iconRowFocused && it.action !in LabeledActions }
+        ?.takeIf { iconRowFocused && it.action !in LabeledActions && it.action != DetailsButtonAction.RANDOM_ANIME }
         ?.label
         .orEmpty()
     // Из нижнего ряда «вниз» ведёт прямо на чипы: поиск фокуса сам их не находит.
@@ -471,7 +475,7 @@ internal fun DetailsButtonBar(
                         }
                     }
                 }
-                // Строка подписи нужна только круглым иконкам: у одних пилюль её место было бы пустой дырой.
+                // Кубику подпись не нужна: место под ней оставляем только для остальных круглых иконок.
                 if (hasIconButtons) {
                     Text(
                         text = iconCaption,

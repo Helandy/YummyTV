@@ -189,7 +189,7 @@
     <string name="settings_content_language_ukrainian">Украинский</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Токен приложения</string>
-    <string name="settings_yani_application_token_hint">По умолчанию используется публичный токен. Укажите свой публичный токен из https://ru.yummyani.me/dev/applications, чтобы заменить его.\nОн нужен для авторизации приложения и отправляется в заголовке X-Application. Все запросы API используют JSON, включая тело запроса.</string>
+    <string name="settings_yani_application_token_hint">По умолчанию используется публичный токен. Укажите свой публичный токен из https://ru.yummyani.me/dev/applications, чтобы заменить его.\nОн нужен для авторизации приложения и отправляется в заголовке X-Application.</string>
     <string name="settings_yani_application_token_reset">Сбросить токен</string>
     <string name="settings_yani_application_token_reset_hint">Вернуться к встроенному публичному токену</string>
     <string name="settings_version_label">Версия</string>
