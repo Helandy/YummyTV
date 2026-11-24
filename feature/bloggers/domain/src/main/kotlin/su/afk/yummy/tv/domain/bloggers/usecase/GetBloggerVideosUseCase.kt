@@ -12,5 +12,6 @@ class GetBloggerVideosUseCase @Inject constructor(private val repository: Blogge
         sort: BloggerVideoSort = BloggerVideoSort.NEW,
         limit: Int = 20,
         offset: Int = 0,
-    ) = repository.getVideos(category, bloggerId, sort, limit, offset)
+        forceRefresh: Boolean = false,
+    ) = repository.getVideos(category, bloggerId, sort, limit, offset, forceRefresh)
 }

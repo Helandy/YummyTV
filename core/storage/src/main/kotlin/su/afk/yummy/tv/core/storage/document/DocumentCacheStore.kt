@@ -59,6 +59,8 @@ internal class DocumentCacheStore(private val dao: DocumentCacheDao) : DocumentC
         val users: AtomicInteger = AtomicInteger(),
     )
 
+    override suspend fun read(cacheKey: String): String? = dao.get(cacheKey)?.payload
+
     override suspend fun delete(cacheKey: String) {
         invalidationVersion.incrementAndGet()
         dao.delete(cacheKey)

@@ -12,6 +12,8 @@ interface DocumentCacheStorage {
         fetch: suspend () -> T,
     ): T
 
+    suspend fun read(cacheKey: String): String?
+
     suspend fun delete(cacheKey: String)
 
     suspend fun deleteByPrefix(prefix: String)

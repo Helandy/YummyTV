@@ -24,13 +24,19 @@ class YaniBloggerVideosRepository @Inject constructor(
         bloggerId: Int?,
         sort: BloggerVideoSort,
         limit: Int,
-        offset: Int
+        offset: Int,
+        forceRefresh: Boolean,
     ) = cache.cached<BloggerVideosResponseDto>(
         namespace = BLOGGER_CACHE_NAMESPACE,
         key = "videos:$category:${bloggerId ?: 0}:${sort.apiValue}:$limit:$offset",
         ttlMs = BLOGGER_FEED_TTL_MS,
+        forceRefresh = forceRefresh,
     ) { api.getVideos(category, bloggerId, sort.apiValue, limit, offset) }
         .response.map { it.toDomain() }
+
+    override suspend fun cachedVideos(category: String, bloggerId: Int?, sort: BloggerVideoSort, limit: Int, offset: Int) =
+        cache.read<BloggerVideosResponseDto>(BLOGGER_CACHE_NAMESPACE, "videos:$category:${bloggerId ?: 0}:${sort.apiValue}:$limit:$offset")
+            ?.response?.map { it.toDomain() }
 
     override suspend fun getAnimeVideos(animeId: Int, limit: Int, offset: Int) =
         cache.cached<BloggerVideosResponseDto>(

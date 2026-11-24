@@ -16,8 +16,11 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
+import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
+import su.afk.yummy.tv.domain.bloggers.usecase.CachedBloggerVideosUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.posts.model.PostSort
+import su.afk.yummy.tv.domain.posts.usecase.CachedPostsUseCase
 import su.afk.yummy.tv.domain.posts.usecase.GetPostsUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
@@ -51,6 +54,8 @@ class CommunityViewModel @Inject constructor(
     private val scheduleNavigator: IScheduleNavigator,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val getPosts: GetPostsUseCase,
+    private val cachedPosts: CachedPostsUseCase,
+    private val cachedBloggerVideos: CachedBloggerVideosUseCase,
     private val getBloggerVideos: GetBloggerVideosUseCase,
 ) : BaseViewModel<CommunityState.State, CommunityState.Event, CommunityState.Effect>() {
 
@@ -107,14 +112,22 @@ class CommunityViewModel @Inject constructor(
         if (currentState.isRefreshing) return
         viewModelScope.launch {
             setState { copy(isRefreshing = true) }
-            joinAll(loadNews(), loadVideos())
+            joinAll(loadNews(forceRefresh = true), loadVideos(forceRefresh = true))
             setState { copy(isRefreshing = false) }
         }
     }
 
-    private fun loadNews(): Job = viewModelScope.launch {
+    private fun loadNews(forceRefresh: Boolean = false): Job = viewModelScope.launch {
         setState { copy(isNewsLoading = news.isEmpty(), newsError = null) }
-        runSuspendCatching { getPosts(null, PostSort.NEW.apiValue, COMMUNITY_FEED_LIMIT, 0) }.fold(
+        if (currentState.news.isEmpty()) {
+            runSuspendCatching { cachedPosts(null, PostSort.NEW.apiValue, COMMUNITY_FEED_LIMIT, 0) }
+                .getOrNull()?.let { posts ->
+                    setState { copy(news = posts.toImmutableList(), isNewsLoading = false) }
+                }
+        }
+        runSuspendCatching {
+            getPosts(null, PostSort.NEW.apiValue, COMMUNITY_FEED_LIMIT, 0, forceRefresh)
+        }.fold(
             onSuccess = { posts ->
                 setState { copy(news = posts.toImmutableList(), isNewsLoading = false) }
             },
@@ -134,9 +147,17 @@ class CommunityViewModel @Inject constructor(
         )
     }
 
-    private fun loadVideos(): Job = viewModelScope.launch {
+    private fun loadVideos(forceRefresh: Boolean = false): Job = viewModelScope.launch {
         setState { copy(isVideosLoading = videos.isEmpty(), videosError = null) }
-        runSuspendCatching { getBloggerVideos(limit = COMMUNITY_FEED_LIMIT) }.fold(
+        if (currentState.videos.isEmpty()) {
+            runSuspendCatching { cachedBloggerVideos("all", null, BloggerVideoSort.NEW, COMMUNITY_FEED_LIMIT, 0) }
+                .getOrNull()?.let { videos ->
+                    setState { copy(videos = videos.toImmutableList(), isVideosLoading = false) }
+                }
+        }
+        runSuspendCatching {
+            getBloggerVideos(limit = COMMUNITY_FEED_LIMIT, forceRefresh = forceRefresh)
+        }.fold(
             onSuccess = { videos ->
                 setState { copy(videos = videos.toImmutableList(), isVideosLoading = false) }
             },

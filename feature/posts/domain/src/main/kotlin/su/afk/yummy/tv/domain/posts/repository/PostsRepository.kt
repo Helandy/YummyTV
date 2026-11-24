@@ -8,7 +8,8 @@ import su.afk.yummy.tv.domain.posts.model.PostVote
 
 interface PostsRepository {
     suspend fun categories(): List<PostCategory>
-    suspend fun posts(category: String?, sort: String, limit: Int, skip: Int): List<PostSummary>
+    suspend fun posts(category: String?, sort: String, limit: Int, skip: Int, forceRefresh: Boolean = false): List<PostSummary>
+    suspend fun cachedPosts(category: String?, sort: String, limit: Int, skip: Int): List<PostSummary>?
     suspend fun details(postId: Int): PostDetails
     suspend fun vote(postId: Int, vote: PostVote): PostReaction
     suspend fun removeVote(postId: Int): PostReaction

@@ -14,7 +14,10 @@ interface BloggerVideosRepository {
         sort: BloggerVideoSort = BloggerVideoSort.NEW,
         limit: Int = 20,
         offset: Int = 0,
+        forceRefresh: Boolean = false,
     ): List<BloggerVideo>
+
+    suspend fun cachedVideos(category: String, bloggerId: Int?, sort: BloggerVideoSort, limit: Int, offset: Int): List<BloggerVideo>?
 
     suspend fun getAnimeVideos(animeId: Int, limit: Int = 24, offset: Int = 0): List<BloggerVideo>
     suspend fun getDirectory(limit: Int = 40): BloggerDirectory

@@ -23,12 +23,17 @@ class YaniPostsRepository @Inject constructor(
         ttlMs = POST_CATEGORIES_TTL_MS,
     ) { api.categories() }.response.map(YaniPostCategoryDto::domain)
 
-    override suspend fun posts(category: String?, sort: String, limit: Int, skip: Int) =
+    override suspend fun posts(category: String?, sort: String, limit: Int, skip: Int, forceRefresh: Boolean) =
         cache.cached<YaniPostsResponseDto>(
             namespace = POST_CACHE_NAMESPACE,
             key = "feed:${category.orEmpty()}:$sort:$limit:$skip",
             ttlMs = POST_FEED_TTL_MS,
+            forceRefresh = forceRefresh,
         ) { api.posts(category, sort, limit, skip) }.response.map(YaniPostSummaryDto::domain)
+
+    override suspend fun cachedPosts(category: String?, sort: String, limit: Int, skip: Int) =
+        cache.read<YaniPostsResponseDto>(POST_CACHE_NAMESPACE, "feed:${category.orEmpty()}:$sort:$limit:$skip")
+            ?.response?.map(YaniPostSummaryDto::domain)
 
     override suspend fun details(postId: Int) = cache.cached<YaniPostDetailsResponseDto>(
         namespace = POST_CACHE_NAMESPACE,

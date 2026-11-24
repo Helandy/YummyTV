@@ -29,12 +29,20 @@ class UserScopedCache @Inject constructor(
         namespace: String,
         key: String,
         ttlMs: Long,
+        forceRefresh: Boolean = false,
         crossinline fetch: suspend () -> T,
     ): T = cache.getOrFetchJson(
         cacheKey = prefix(namespace) + key,
         ttlMs = ttlMs,
+        forceRefresh = forceRefresh,
         fetch = { fetch() },
     )
+
+    /** Читает сохранённое значение независимо от срока его действия. */
+    suspend inline fun <reified T> read(namespace: String, key: String): T? {
+        val payload = cache.read(prefix(namespace) + key) ?: return null
+        return runCatching { DocumentCacheJson.decodeFromString<T>(payload) }.getOrNull()
+    }
 
     /** Удаляет один ключ в namespace текущего пользователя. */
     suspend fun delete(namespace: String, key: String) =

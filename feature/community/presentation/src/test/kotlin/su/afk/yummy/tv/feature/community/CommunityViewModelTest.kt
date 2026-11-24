@@ -23,9 +23,11 @@ import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 import su.afk.yummy.tv.domain.bloggers.repository.BloggerVideosRepository
+import su.afk.yummy.tv.domain.bloggers.usecase.CachedBloggerVideosUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.posts.model.PostSummary
 import su.afk.yummy.tv.domain.posts.repository.PostsRepository
+import su.afk.yummy.tv.domain.posts.usecase.CachedPostsUseCase
 import su.afk.yummy.tv.domain.posts.usecase.GetPostsUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
@@ -76,8 +78,8 @@ class CommunityViewModelTest : BaseUnitTest() {
         every { accountNavigator.getUserFriendsDest(any()) } returns navKey
         every { scheduleNavigator.getScheduleDest() } returns navKey
         every { accountRepository.observeSession() } returns session
-        coEvery { postsRepository.posts(any(), any(), any(), any()) } returns listOf(post)
-        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any()) } returns listOf(video)
+        coEvery { postsRepository.posts(any(), any(), any(), any(), any()) } returns listOf(post)
+        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any(), any()) } returns listOf(video)
     }
 
     private fun createViewModel() = CommunityViewModel(
@@ -95,6 +97,8 @@ class CommunityViewModelTest : BaseUnitTest() {
         scheduleNavigator = scheduleNavigator,
         observeAccountSession = ObserveAccountSessionUseCase(accountRepository),
         getPosts = GetPostsUseCase(postsRepository),
+        cachedPosts = CachedPostsUseCase(postsRepository),
+        cachedBloggerVideos = CachedBloggerVideosUseCase(videosRepository),
         getBloggerVideos = GetBloggerVideosUseCase(videosRepository),
     )
 
@@ -112,14 +116,14 @@ class CommunityViewModelTest : BaseUnitTest() {
 
     @Test
     fun `failed news load shows an error and retry recovers`() {
-        coEvery { postsRepository.posts(any(), any(), any(), any()) } throws IllegalStateException("boom")
+        coEvery { postsRepository.posts(any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
         val vm = createViewModel()
 
         assertTrue(vm.currentState.news.isEmpty())
         assertNotNull(vm.currentState.newsError)
         assertEquals(listOf(video), vm.currentState.videos)
 
-        coEvery { postsRepository.posts(any(), any(), any(), any()) } returns listOf(post)
+        coEvery { postsRepository.posts(any(), any(), any(), any(), any()) } returns listOf(post)
         vm.setEvent(CommunityState.Event.NewsRetrySelected)
 
         assertEquals(listOf(post), vm.currentState.news)
@@ -128,13 +132,13 @@ class CommunityViewModelTest : BaseUnitTest() {
 
     @Test
     fun `failed videos load shows an error and retry recovers`() {
-        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
+        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
         val vm = createViewModel()
 
         assertTrue(vm.currentState.videos.isEmpty())
         assertNotNull(vm.currentState.videosError)
 
-        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any()) } returns listOf(video)
+        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any(), any()) } returns listOf(video)
         vm.setEvent(CommunityState.Event.VideosRetrySelected)
 
         assertEquals(listOf(video), vm.currentState.videos)
@@ -144,8 +148,8 @@ class CommunityViewModelTest : BaseUnitTest() {
     @Test
     fun `failed refresh keeps the feeds that are already shown`() {
         val vm = createViewModel()
-        coEvery { postsRepository.posts(any(), any(), any(), any()) } throws IllegalStateException("boom")
-        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
+        coEvery { postsRepository.posts(any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
+        coEvery { videosRepository.getVideos(any(), any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
 
         vm.setEvent(CommunityState.Event.RefreshSelected)
 

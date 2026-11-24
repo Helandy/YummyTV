@@ -55,7 +55,7 @@ class BloggerDetailsViewModelTest : BaseUnitTest() {
         every { settingsStore.yaniUserId } returns userId
         every { navigator.video(any()) } returns videoKey
         coEvery { repository.getBlogger(BLOGGER_ID) } returns blogger()
-        coEvery { repository.getVideos(any(), any(), any(), any(), any()) } returns listOf(video(1), video(2))
+        coEvery { repository.getVideos(any(), any(), any(), any(), any(), any()) } returns listOf(video(1), video(2))
     }
 
     private fun createViewModel() = BloggerDetailsViewModel(
@@ -96,7 +96,7 @@ class BloggerDetailsViewModelTest : BaseUnitTest() {
 
     @Test
     fun `loads the blogger with the deduplicated videos`() {
-        coEvery { repository.getVideos(any(), any(), any(), any(), any()) } returns listOf(video(1), video(1), video(2))
+        coEvery { repository.getVideos(any(), any(), any(), any(), any(), any()) } returns listOf(video(1), video(1), video(2))
 
         val state = createViewModel().currentState
 
