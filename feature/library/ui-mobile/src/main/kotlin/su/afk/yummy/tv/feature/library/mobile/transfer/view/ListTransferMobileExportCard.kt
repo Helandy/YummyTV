@@ -70,14 +70,14 @@ internal fun ListTransferMobileExportCard(
                 )
             }
         } else {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Button(
                     onClick = { onEvent(ListTransferState.Event.ExportSaveClicked) },
                     enabled = !state.isBusy,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.SaveAlt,
@@ -90,7 +90,7 @@ internal fun ListTransferMobileExportCard(
                 OutlinedButton(
                     onClick = { onEvent(ListTransferState.Event.ExportShareClicked) },
                     enabled = !state.isBusy,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
