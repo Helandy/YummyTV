@@ -12,7 +12,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Плашка «год · сезон» в углу постера (настройка «Отображать год у тайтлов в библиотеке»). */
+/** Плашка «год · сезон» в углу постера (настройка «Показывать год в библиотеке»). */
 @Composable
 fun MobilePosterYearBadge(
     text: String,

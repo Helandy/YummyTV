@@ -176,14 +176,6 @@ fun PosterCardSize.label(): String = stringResource(
     },
 )
 
-@Composable
-fun PosterCardSize.hint(): String = optionalStringResource(
-    when (this) {
-        PosterCardSize.COMPACT -> R.string.settings_poster_card_size_compact_hint
-        PosterCardSize.STANDARD -> null
-        PosterCardSize.LARGE -> null
-    },
-)
 
 @Composable
 fun LibraryContinueWatchingCardSize.label(): String = stringResource(

@@ -15,7 +15,6 @@ import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.presentation.R
-import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
@@ -59,7 +58,7 @@ internal fun SettingsTvAppearanceContent(
     SettingsSectionTitle(text = stringResource(R.string.settings_section_posters))
     SettingsTvIconChoiceRow(
         label = stringResource(R.string.settings_poster_size_title),
-        hint = state.posterCardSize.hint(),
+        hint = "",
         choices = PosterCardSize.entries.map { SettingsTvIconChoice(it, it.icon(), it.label()) },
         selected = state.posterCardSize,
         onSelected = { onEvent(SettingsState.Event.PosterCardSizeSelected(it)) },
@@ -106,7 +105,7 @@ internal fun SettingsTvAppearanceContent(
     SettingsSectionTitle(text = stringResource(R.string.settings_mobile_section_library))
     SettingsTvIconChoiceRow(
         label = stringResource(R.string.settings_library_continue_watching_card_size_title),
-        hint = state.libraryContinueWatchingCardSize.hint(),
+        hint = "",
         choices = LibraryContinueWatchingCardSize.entries.map {
             SettingsTvIconChoice(it, it.icon(), it.label())
         },

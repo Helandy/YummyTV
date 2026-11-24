@@ -14,7 +14,6 @@ import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
 import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
-import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileIconChoice
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileIconChoiceRow
@@ -65,7 +64,7 @@ internal fun SettingsMobileAppearanceContent(
         SettingsMobileSection(title = stringResource(R.string.settings_section_posters)) {
             SettingsMobileIconChoiceRow(
                 label = stringResource(R.string.settings_mobile_poster_size),
-                hint = state.posterCardSize.hint(),
+                hint = "",
                 choices = PosterCardSize.entries.map { SettingsMobileIconChoice(it, it.icon(), it.label()) },
                 selected = state.posterCardSize,
                 onSelected = { onEvent(SettingsState.Event.PosterCardSizeSelected(it)) },
@@ -96,7 +95,7 @@ internal fun SettingsMobileAppearanceContent(
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_library)) {
             SettingsMobileIconChoiceRow(
                 label = stringResource(R.string.settings_library_continue_watching_card_size_title),
-                hint = state.libraryContinueWatchingCardSize.hint(),
+                hint = "",
                 choices = LibraryContinueWatchingCardSize.entries.map {
                     SettingsMobileIconChoice(it, it.icon(), it.label())
                 },

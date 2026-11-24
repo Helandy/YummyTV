@@ -68,10 +68,10 @@
     <string name="settings_interface_confirm">Switch</string>
     <string name="settings_interface_restart_failed">The interface will change the next time you open the app</string>
     <string name="settings_mobile_poster_size">Poster size</string>
-    <string name="settings_show_catalog_title_year">Show title year in Catalog</string>
-    <string name="settings_show_episode_flags">Show filler and recap marks on episodes</string>
+    <string name="settings_show_catalog_title_year">Show year in catalog</string>
+    <string name="settings_show_episode_flags">Show fillers/recaps</string>
     <string name="settings_minimal_details">Minimal details</string>
-    <string name="settings_show_library_title_year">Show title year in Library</string>
+    <string name="settings_show_library_title_year">Show year in library</string>
     <string name="settings_player_orientation_title">Player orientation</string>
     <string name="settings_player_orientation_system">System</string>
     <string name="settings_player_orientation_system_hint">Follow the system rotation setting</string>
@@ -124,7 +124,6 @@
     <string name="settings_theme_dynamic">Dynamic color</string>
     <string name="settings_theme_dynamic_hint">Material You palette from your wallpaper (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Compact</string>
-    <string name="settings_poster_card_size_compact_hint">Fits more cards in each row</string>
     <string name="settings_poster_card_size_standard">Standard</string>
     <string name="settings_poster_card_size_large">Large</string>
     <string name="settings_title_card_layout_title">Title cards</string>
@@ -135,7 +134,6 @@
     <string name="settings_library_continue_watching_card_size_title">Continue watching</string>
     <string name="settings_library_continue_watching_card_size_compact">Compact</string>
     <string name="settings_library_continue_watching_card_size_standard">Standard</string>
-    <string name="settings_library_continue_watching_card_size_standard_hint">Balanced width for the library</string>
     <string name="settings_library_continue_watching_card_size_large">Large</string>
         <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>

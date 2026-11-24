@@ -68,10 +68,10 @@
     <string name="settings_interface_confirm">Перемкнути</string>
     <string name="settings_interface_restart_failed">Інтерфейс зміниться під час наступного запуску застосунку</string>
     <string name="settings_mobile_poster_size">Розмір постерів</string>
-    <string name="settings_show_catalog_title_year">Показувати рік у тайтлів у каталозі</string>
-    <string name="settings_show_episode_flags">Позначати філери та рекапи у серій</string>
+    <string name="settings_show_catalog_title_year">Показувати рік у каталозі</string>
+    <string name="settings_show_episode_flags">Показувати філери/рекапи</string>
     <string name="settings_minimal_details">Мінімалістична деталка</string>
-    <string name="settings_show_library_title_year">Показувати рік у тайтлів у бібліотеці</string>
+    <string name="settings_show_library_title_year">Показувати рік у бібліотеці</string>
     <string name="settings_player_orientation_title">Орієнтація плеєра</string>
     <string name="settings_player_orientation_system">Системна</string>
     <string name="settings_player_orientation_system_hint">Слідувати системному налаштуванню повороту екрана</string>
@@ -124,7 +124,6 @@
     <string name="settings_theme_dynamic">Dynamic color</string>
     <string name="settings_theme_dynamic_hint">Палітра Material You з шпалер системи (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Компактний</string>
-    <string name="settings_poster_card_size_compact_hint">Більше карток у рядку</string>
     <string name="settings_poster_card_size_standard">Стандартний</string>
     <string name="settings_poster_card_size_large">Великий</string>
     <string name="settings_title_card_layout_title">Картки тайтлів</string>
@@ -135,7 +134,6 @@
     <string name="settings_library_continue_watching_card_size_title">Продовжити перегляд</string>
     <string name="settings_library_continue_watching_card_size_compact">Компактні</string>
     <string name="settings_library_continue_watching_card_size_standard">Стандартні</string>
-    <string name="settings_library_continue_watching_card_size_standard_hint">Збалансована ширина для бібліотеки</string>
     <string name="settings_library_continue_watching_card_size_large">Великі</string>
         <string name="settings_auto_skip_label">Автопропуск опенінгу та ендінгу</string>
     <string name="settings_auto_skip_enabled">Пропускати, якщо для серії є тайм-коди</string>

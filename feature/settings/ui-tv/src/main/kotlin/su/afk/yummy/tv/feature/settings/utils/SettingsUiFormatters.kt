@@ -10,7 +10,6 @@ import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
-import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -22,21 +21,7 @@ import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.common.utils.hint
-import su.afk.yummy.tv.feature.settings.common.utils.optionalStringResource
 
-@Composable
-internal fun LibraryContinueWatchingCardSize.hint(): String = optionalStringResource(
-    when (this) {
-        LibraryContinueWatchingCardSize.COMPACT ->
-            null
-
-        LibraryContinueWatchingCardSize.STANDARD ->
-            R.string.settings_library_continue_watching_card_size_standard_hint
-
-        LibraryContinueWatchingCardSize.LARGE ->
-            null
-    },
-)
 
 /**
  * Возврат фокуса из панели контента к списку категорий слева (D-pad влево).

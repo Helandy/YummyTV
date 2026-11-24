@@ -32,7 +32,6 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
-import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.core.designsystem.theme.previewColor
 import su.afk.yummy.tv.feature.settings.common.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.common.utils.color
