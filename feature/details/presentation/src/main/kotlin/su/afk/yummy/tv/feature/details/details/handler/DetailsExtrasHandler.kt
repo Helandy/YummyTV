@@ -47,6 +47,27 @@ internal class DetailsExtrasHandler @Inject constructor(
     suspend fun loadEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
         runSuspendCatching { getAnimeEpisodeFrames(animeId) }.getOrDefault(AnimeEpisodeFrames())
 
+    suspend fun refreshTrailers(animeId: Int, trailersCount: Int?): Result<List<AnimeTrailer>> =
+        runSuspendCatching {
+            if (trailersCount == 0) emptyList() else getAnimeTrailers(animeId, forceRefresh = true)
+        }
+
+    suspend fun refreshCollections(animeId: Int): Result<DetailsCollections> = runSuspendCatching {
+        val items = getAnimeCollections(animeId, limit = COLLECTIONS_PAGE_LIMIT, forceRefresh = true)
+        DetailsCollections(badge = collectionsBadge(items.size, COLLECTIONS_PAGE_LIMIT), items = items.distinctBy { it.id })
+    }
+
+    suspend fun refreshEpisodeFrames(animeId: Int): Result<AnimeEpisodeFrames> =
+        runSuspendCatching { getAnimeEpisodeFrames(animeId, forceRefresh = true) }
+
+    suspend fun refreshRatingOverview(animeId: Int): Result<DetailsRatingOverview?> = runSuspendCatching {
+        coroutineScope {
+            val summary = async { getAnimeRatingSummary(animeId, forceRefresh = true) }
+            val stats = async { getAnimeListStats(animeId, forceRefresh = true) }
+            detailsRatingOverview(summary.await(), stats.await())
+        }
+    }
+
     /** Ошибки блоков тихие: что не загрузилось, то просто не показывается. */
     suspend fun loadRatingOverview(animeId: Int): DetailsRatingOverview? = coroutineScope {
         val summary = async { runSuspendCatching { getAnimeRatingSummary(animeId) } }

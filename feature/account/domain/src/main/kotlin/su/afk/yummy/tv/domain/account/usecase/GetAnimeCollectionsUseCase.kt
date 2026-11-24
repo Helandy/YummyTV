@@ -6,6 +6,6 @@ import javax.inject.Inject
 
 /** Загружает краткие данные коллекций, в которых есть выбранное аниме. */
 class GetAnimeCollectionsUseCase @Inject constructor(private val repository: AnimeExtrasRepository) {
-    suspend operator fun invoke(animeId: Int, limit: Int = 20, offset: Int = 0): List<AnimeCollectionSummary> =
-        repository.getCollections(animeId, limit, offset)
+    suspend operator fun invoke(animeId: Int, limit: Int = 20, offset: Int = 0, forceRefresh: Boolean = false): List<AnimeCollectionSummary> =
+        repository.getCollections(animeId, limit, offset, forceRefresh)
 }

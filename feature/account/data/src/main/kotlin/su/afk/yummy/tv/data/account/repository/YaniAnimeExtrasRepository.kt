@@ -38,9 +38,10 @@ class YaniAnimeExtrasRepository(
     private val settingsStore: YaniAccountSettingsStore,
 ) : AnimeExtrasRepository {
 
-    override suspend fun getRatingSummary(animeId: Int): AnimeRatingSummary =
+    override suspend fun getRatingSummary(animeId: Int, forceRefresh: Boolean): AnimeRatingSummary =
         withContext(Dispatchers.IO) {
             offlineFirstCache(
+                forceRefresh = forceRefresh,
                 read = { accountStorage.getRatingBuckets(animeId) },
                 isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
                 toDomain = { it.toRatingSummary() },
@@ -80,9 +81,10 @@ class YaniAnimeExtrasRepository(
         accountStorage.deleteRatingBuckets(animeId)
     }
 
-    override suspend fun getListStats(animeId: Int): AnimeListStats =
+    override suspend fun getListStats(animeId: Int, forceRefresh: Boolean): AnimeListStats =
         withContext(Dispatchers.IO) {
             offlineFirstCache(
+                forceRefresh = forceRefresh,
                 read = { accountStorage.getListStats(animeId) },
                 isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
                 toDomain = { it.toAnimeListStats() },
@@ -100,7 +102,8 @@ class YaniAnimeExtrasRepository(
     override suspend fun getCollections(
         animeId: Int,
         limit: Int,
-        offset: Int
+        offset: Int,
+        forceRefresh: Boolean,
     ): List<AnimeCollectionSummary> =
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
@@ -108,6 +111,7 @@ class YaniAnimeExtrasRepository(
             getCollectionsPage(
                 pageKey = pageKey,
                 languageCode = languageCode,
+                forceRefresh = forceRefresh,
                 fetch = {
                     api.getAnimeCollections(animeId, limit, offset)
                 },
@@ -150,8 +154,10 @@ class YaniAnimeExtrasRepository(
     private suspend fun getCollectionsPage(
         pageKey: String,
         languageCode: String,
+        forceRefresh: Boolean,
         fetch: suspend () -> List<YaniCollectionSummaryDto>,
     ): List<AnimeCollectionSummary> = offlineFirstCache(
+        forceRefresh = forceRefresh,
         read = { accountStorage.getCollections(pageKey) },
         isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
         toDomain = { it.toCollectionSummaries() },
@@ -176,7 +182,7 @@ class YaniAnimeExtrasRepository(
                 userId = userId,
                 animeId = animeId,
                 cachedAt = System.currentTimeMillis(),
-            )
+            ),
         )
     }
 
@@ -184,7 +190,7 @@ class YaniAnimeExtrasRepository(
         animeId: Int,
         limit: Int,
         offset: Int,
-        language: String
+        language: String,
     ): String =
         "anime:$animeId:$limit:$offset:$language"
 }

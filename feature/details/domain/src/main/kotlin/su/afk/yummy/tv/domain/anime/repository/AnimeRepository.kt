@@ -16,7 +16,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationReference
 
 interface AnimeRepository {
-    suspend fun getAnimeDetails(animeId: Int): AnimeDetails
+    suspend fun getAnimeDetails(animeId: Int, forceRefresh: Boolean = false): AnimeDetails
     suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails?
     suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo>
 
@@ -36,7 +36,7 @@ interface AnimeRepository {
     suspend fun getAnimeTmdbImages(animeId: Int): AnimeTmdbImages
 
     /** Кадры серии 1 из TMDB для ряда «Скриншоты»; пустая модель, если данных нет. */
-    suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames
+    suspend fun getAnimeEpisodeFrames(animeId: Int, forceRefresh: Boolean = false): AnimeEpisodeFrames
 
     /**
      * Пометки филлер/рекап по номеру серии (MyAnimeList). У длинных тайтлов сначала приходит первая страница серий,
@@ -44,7 +44,7 @@ interface AnimeRepository {
      */
     fun observeAnimeEpisodeFlags(animeId: Int): Flow<Map<String, EpisodeFlags>>
 
-    suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer>
+    suspend fun getAnimeTrailers(animeId: Int, forceRefresh: Boolean = false): List<AnimeTrailer>
     suspend fun getAnimeRelation(reference: AnimeRelationReference): AnimeRelation
     suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation>
     suspend fun setAnimeRecommendationIgnored(animeId: Int, ignored: Boolean): Boolean

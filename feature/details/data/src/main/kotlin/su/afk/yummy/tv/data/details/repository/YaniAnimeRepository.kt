@@ -133,10 +133,10 @@ class YaniAnimeRepository(
     private val videosInFlight = ConcurrentHashMap<String, Deferred<AnimeVideosCache>>()
     private val detailsScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
+    override suspend fun getAnimeDetails(animeId: Int, forceRefresh: Boolean): AnimeDetails = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
         val stored = animeStorage.getDetails(animeId, languageCode)
-        if (stored?.isFresh(ANIME_DETAILS_TTL_MS) == true) {
+        if (!forceRefresh && stored?.isFresh(ANIME_DETAILS_TTL_MS) == true) {
             return@withContext stored.toStoredAnimeDetails()
         }
 
@@ -197,7 +197,7 @@ class YaniAnimeRepository(
     override suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo> =
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
-            withExtraVideos(animeId, allowNetwork = true) {
+            withExtraVideos(animeId, allowNetwork = true, forceExtras = true) {
                 offlineFirstCache(
                     forceRefresh = true,
                     read = { animeStorage.getVideos(animeId, languageCode) },
@@ -400,8 +400,8 @@ class YaniAnimeRepository(
             }
         }
 
-    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
-        getAnimeTmdbImages(animeId).let {
+    override suspend fun getAnimeEpisodeFrames(animeId: Int, forceRefresh: Boolean): AnimeEpisodeFrames =
+        (if (forceRefresh) loadYummyEpisodes(animeId, forceRefresh = true)?.toAnimeTmdbImages() ?: AnimeTmdbImages() else getAnimeTmdbImages(animeId)).let {
             AnimeEpisodeFrames(
                 tmdbStillUrls = it.firstEpisodeStillUrls,
                 tmdbStillMirrorUrls = it.firstEpisodeStillMirrorUrls,
@@ -413,7 +413,7 @@ class YaniAnimeRepository(
      * которую TMDB хранит сквозной нумерацией (3-й сезон «Монолога фармацевта» начинается с 37-й серии), сервер
      * считает сам, клиент его не присылает.
      */
-    private suspend fun loadYummyEpisodes(animeId: Int): YummyEpisodesDto? {
+    private suspend fun loadYummyEpisodes(animeId: Int, forceRefresh: Boolean = false): YummyEpisodesDto? {
         val details = getAnimeDetails(animeId)
         val malId = details.malId ?: return null
         val language = settingsStore.currentLanguageCode()
@@ -421,6 +421,7 @@ class YaniAnimeRepository(
             // Язык в ключе: смена языка интерфейса не должна показывать описания в старом
             cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId:$language",
             ttlMs = ANIME_EPISODE_INFO_TTL_MS,
+            forceRefresh = forceRefresh,
             fetch = { episodesApi.getEpisodes(malId, language) },
         )
     }
@@ -473,15 +474,16 @@ class YaniAnimeRepository(
             fetch = { episodeFlagsBackupApi.getFlags(malId) },
         ).toEpisodeFlagsByNumber()
 
-    override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> =
+    override suspend fun getAnimeTrailers(animeId: Int, forceRefresh: Boolean): List<AnimeTrailer> =
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
+                forceRefresh = forceRefresh,
                 read = { animeStorage.getTrailers(animeId, languageCode) },
                 isFresh = { it.isFresh(ANIME_PUBLIC_EXTRAS_TTL_MS) },
                 toDomain = { it.toStoredAnimeTrailers() },
                 fetchAndSave = { fetchTrailersFromNetwork(animeId, languageCode) },
-                onMissing = { emptyList() },
+                onMissing = { error -> if (forceRefresh) throw error else emptyList() },
             )
         }
 

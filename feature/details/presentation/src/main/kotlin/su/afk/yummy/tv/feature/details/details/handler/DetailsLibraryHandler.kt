@@ -32,8 +32,8 @@ internal class DetailsLibraryHandler @Inject constructor(
     private val removeAnimeList: RemoveAnimeListUseCase,
     private val pendingMutationQueue: PendingMutationQueue,
 ) {
-    suspend fun refreshAuthorizedState(animeId: Int): Result<DetailsLibraryState?> =
-        runSuspendCatching { getAnimeListState(animeId) }
+    suspend fun refreshAuthorizedState(animeId: Int, forceRefresh: Boolean = false): Result<DetailsLibraryState?> =
+        runSuspendCatching { getAnimeListState(animeId, forceRefresh) }
             .map { state ->
                 state ?: return@map null
                 DetailsLibraryState(

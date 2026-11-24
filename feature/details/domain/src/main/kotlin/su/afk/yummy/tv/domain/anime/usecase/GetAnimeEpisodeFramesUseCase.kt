@@ -11,5 +11,5 @@ import javax.inject.Inject
 class GetAnimeEpisodeFramesUseCase @Inject constructor(
     private val animeRepository: AnimeRepository,
 ) {
-    suspend operator fun invoke(animeId: Int): AnimeEpisodeFrames = animeRepository.getAnimeEpisodeFrames(animeId)
+    suspend operator fun invoke(animeId: Int, forceRefresh: Boolean = false): AnimeEpisodeFrames = animeRepository.getAnimeEpisodeFrames(animeId, forceRefresh)
 }

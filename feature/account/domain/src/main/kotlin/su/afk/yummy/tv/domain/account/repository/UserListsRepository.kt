@@ -22,7 +22,7 @@ interface UserListsRepository {
 
     suspend fun hasCachedUserLists(userId: Int): Boolean
 
-    suspend fun getAnimeListState(animeId: Int): UserAnimeListItem?
+    suspend fun getAnimeListState(animeId: Int, forceRefresh: Boolean = false): UserAnimeListItem?
     suspend fun setAnimeList(animeId: Int, list: UserAnimeList)
     suspend fun removeAnimeList(animeId: Int)
     suspend fun setFavorite(animeId: Int, favorite: Boolean)

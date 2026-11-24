@@ -53,8 +53,8 @@ class DetailsScreenDataHandler @Inject constructor(
 
     fun observeAccountSession(): Flow<AccountSession> = observeAccountSession.invoke()
 
-    suspend fun loadDetails(animeId: Int): Result<AnimeDetails> =
-        runSuspendCatching { getAnimeDetails(animeId) }
+    suspend fun loadDetails(animeId: Int, forceRefresh: Boolean = false): Result<AnimeDetails> =
+        runSuspendCatching { getAnimeDetails(animeId, forceRefresh) }
 
     suspend fun refreshLibraryMetadata(
         animeId: Int,

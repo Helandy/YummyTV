@@ -6,5 +6,5 @@ import javax.inject.Inject
 
 /** Загружает iframe-ссылки трейлеров для выбранного аниме. */
 class GetAnimeTrailersUseCase @Inject constructor(private val repo: AnimeRepository) {
-    suspend operator fun invoke(animeId: Int): List<AnimeTrailer> = repo.getAnimeTrailers(animeId)
+    suspend operator fun invoke(animeId: Int, forceRefresh: Boolean = false): List<AnimeTrailer> = repo.getAnimeTrailers(animeId, forceRefresh)
 }

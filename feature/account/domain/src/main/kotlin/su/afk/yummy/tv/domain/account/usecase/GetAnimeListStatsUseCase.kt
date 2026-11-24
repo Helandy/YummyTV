@@ -8,5 +8,5 @@ import javax.inject.Inject
 class GetAnimeListStatsUseCase @Inject constructor(
     private val repository: AnimeExtrasRepository,
 ) {
-    suspend operator fun invoke(animeId: Int): AnimeListStats = repository.getListStats(animeId)
+    suspend operator fun invoke(animeId: Int, forceRefresh: Boolean = false): AnimeListStats = repository.getListStats(animeId, forceRefresh)
 }

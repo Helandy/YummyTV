@@ -6,5 +6,5 @@ import javax.inject.Inject
 
 /** Загружает состояние выбранного аниме в списках текущего пользователя. */
 class GetAnimeListStateUseCase @Inject constructor(private val repository: UserListsRepository) {
-    suspend operator fun invoke(animeId: Int): UserAnimeListItem? = repository.getAnimeListState(animeId)
+    suspend operator fun invoke(animeId: Int, forceRefresh: Boolean = false): UserAnimeListItem? = repository.getAnimeListState(animeId, forceRefresh)
 }

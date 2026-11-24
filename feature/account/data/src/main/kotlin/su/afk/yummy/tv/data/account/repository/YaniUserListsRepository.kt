@@ -79,12 +79,13 @@ class YaniUserListsRepository(
             accountStorage.hasUserListCache(userId)
         }
 
-    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? =
+    override suspend fun getAnimeListState(animeId: Int, forceRefresh: Boolean): UserAnimeListItem? =
         withContext(Dispatchers.IO) {
             val userId = settingsStore.currentUserId()
             if (userId <= 0) return@withContext null
 
             offlineFirstCache(
+                forceRefresh = forceRefresh,
                 read = { accountStorage.getAnimeListState(userId, animeId) },
                 isFresh = { it.isFresh(ANIME_LIST_STATE_TTL_MS) },
                 toDomain = { it.toStoredUserListItem() },

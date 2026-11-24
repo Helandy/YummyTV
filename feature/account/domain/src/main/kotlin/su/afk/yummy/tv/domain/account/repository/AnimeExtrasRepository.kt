@@ -6,12 +6,12 @@ import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 
 interface AnimeExtrasRepository {
-    suspend fun getRatingSummary(animeId: Int): AnimeRatingSummary
+    suspend fun getRatingSummary(animeId: Int, forceRefresh: Boolean = false): AnimeRatingSummary
     suspend fun getUserRating(animeId: Int): Int?
     fun observeUserRating(animeId: Int): Flow<Int?>
     suspend fun setRating(animeId: Int, rating: Int)
     suspend fun deleteRating(animeId: Int)
-    suspend fun getListStats(animeId: Int): AnimeListStats
+    suspend fun getListStats(animeId: Int, forceRefresh: Boolean = false): AnimeListStats
     suspend fun getCachedListStats(animeId: Int): AnimeListStats?
-    suspend fun getCollections(animeId: Int, limit: Int = 20, offset: Int = 0): List<AnimeCollectionSummary>
+    suspend fun getCollections(animeId: Int, limit: Int = 20, offset: Int = 0, forceRefresh: Boolean = false): List<AnimeCollectionSummary>
 }

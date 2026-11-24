@@ -7,6 +7,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.SharingStarted
@@ -126,6 +129,7 @@ class DetailsViewModel @AssistedInject internal constructor(
      */
     private var pendingFavorite: Boolean? = null
     private var pendingSkeletonExtras = 2
+    private var loadJob: Job? = null
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var starredDubbings: Set<String> = emptySet()
     private var starredBalancers: Set<String> = emptySet()
@@ -247,6 +251,7 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     override fun onEvent(event: DetailsState.Event) {
         when (event) {
+            DetailsState.Event.RefreshSelected -> refresh()
             DetailsState.Event.BackSelected -> nav.back()
             DetailsState.Event.ShareSelected -> shareAnime()
             DetailsState.Event.NewSearchSelected -> catalogSearchOpener.openSearch()
@@ -505,16 +510,57 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun load() {
-        viewModelScope.launch {
-            loadDetails()
-            // Счётчик трейлеров приходит в деталях; остальные блоки от деталей не зависят.
-            loadTrailers()
+        loadJob?.cancel()
+        pendingSkeletonExtras = 2
+        loadJob = viewModelScope.launch {
+            supervisorScope {
+                launch {
+                    loadDetails()
+                    loadTrailers()
+                }
+                launch { loadRatingOverview() }
+                launch { loadCollections() }
+                launch { loadEpisodeFrames() }
+                launch { refreshLibraryState() }
+                launch { loadVideosIfCacheMissing() }
+            }
         }
-        viewModelScope.launch { loadRatingOverview() }
-        viewModelScope.launch { loadCollections() }
-        viewModelScope.launch { loadEpisodeFrames() }
-        viewModelScope.launch { refreshLibraryState() }
-        viewModelScope.launch { loadVideosIfCacheMissing() }
+    }
+
+    private fun refresh() {
+        if (currentState.isRefreshing || currentState.details == null) return
+        setState { copy(isRefreshing = true) }
+        val previousLoad = loadJob
+        loadJob = viewModelScope.launch {
+            try {
+                previousLoad?.cancelAndJoin()
+                setState { copy(isExtrasLoading = false) }
+                supervisorScope {
+                    launch {
+                        loadDetails(forceRefresh = true)
+                        launch {
+                            extrasHandler.refreshEpisodeFrames(animeId)
+                                .onSuccess { frames -> setState { copy(episodeFrames = frames) } }
+                        }
+                        extrasHandler.refreshTrailers(animeId, currentState.details?.trailersCount)
+                            .onSuccess { trailers -> setState { copy(trailers = trailers.toImmutableList()) } }
+                    }
+                    launch {
+                        extrasHandler.refreshRatingOverview(animeId)
+                            .onSuccess { overview -> setState { copy(ratingOverview = overview) } }
+                    }
+                    launch {
+                        extrasHandler.refreshCollections(animeId).onSuccess { collections ->
+                            setState { copy(collectionsBadge = collections.badge, collections = collections.items.toImmutableList()) }
+                        }
+                    }
+                    launch { refreshLibraryState(forceRefresh = true) }
+                    launch { refreshVideosFromNetwork() }
+                }
+            } finally {
+                setState { copy(isRefreshing = false) }
+            }
+        }
     }
 
     private suspend fun loadTrailers() {
@@ -570,11 +616,11 @@ class DetailsViewModel @AssistedInject internal constructor(
         )
     }
 
-    private suspend fun refreshLibraryState() {
+    private suspend fun refreshLibraryState(forceRefresh: Boolean = false) {
         if (!currentState.isSignedIn) return
         val libraryVersion = libraryMutationVersion
         val favoriteVersion = favoriteMutationVersion
-        libraryHandler.refreshAuthorizedState(animeId)
+        libraryHandler.refreshAuthorizedState(animeId, forceRefresh)
             .onSuccess { refreshed ->
                 setState {
                     var next = this
@@ -592,9 +638,9 @@ class DetailsViewModel @AssistedInject internal constructor(
             }
     }
 
-    private suspend fun loadDetails() {
+    private suspend fun loadDetails(forceRefresh: Boolean = false) {
         setState { copy(isLoading = true, error = null) }
-        screenDataHandler.loadDetails(animeId).fold(
+        screenDataHandler.loadDetails(animeId, forceRefresh).fold(
             onSuccess = { details ->
                 setState { copy(isLoading = false, details = details) }
                 screenDataHandler.refreshLibraryMetadata(
@@ -689,6 +735,10 @@ class DetailsViewModel @AssistedInject internal constructor(
                 setVideos(result)
                 if (currentState.isWatchLaunchPending) {
                     openInitialVideo(result.videos)
+                }
+            }.onFailure { error ->
+                if (currentState.videosState !is VideosUiState.Content) {
+                    setState { copy(videosState = VideosUiState.Error(UiText.Failure(error)), isWatchLaunchPending = false) }
                 }
             }
         } finally {

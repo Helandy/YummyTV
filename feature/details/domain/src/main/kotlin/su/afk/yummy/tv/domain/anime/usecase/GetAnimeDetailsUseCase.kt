@@ -8,6 +8,6 @@ import javax.inject.Inject
 class GetAnimeDetailsUseCase @Inject constructor(
     private val animeRepository: AnimeRepository,
 ) {
-    suspend operator fun invoke(animeId: Int): AnimeDetails =
-        animeRepository.getAnimeDetails(animeId)
+    suspend operator fun invoke(animeId: Int, forceRefresh: Boolean = false): AnimeDetails =
+        animeRepository.getAnimeDetails(animeId, forceRefresh)
 }

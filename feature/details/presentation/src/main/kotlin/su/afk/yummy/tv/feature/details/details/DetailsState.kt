@@ -28,6 +28,7 @@ class DetailsState {
     @Immutable
     data class State(
         val isLoading: Boolean = true,
+        val isRefreshing: Boolean = false,
         val details: AnimeDetails? = null,
         val videosState: VideosUiState = VideosUiState.NotLoaded,
         val error: UiText? = null,
@@ -100,6 +101,8 @@ class DetailsState {
     /** Пользовательские действия на основном экране деталей аниме. */
     sealed interface Event : UiEvent {
         /** Пользователь нажал кнопку возврата. */
+        data object RefreshSelected : Event
+
         data object BackSelected : Event
 
         /** Кубик: заменить текущий тайтл новым случайным. */

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -175,217 +176,223 @@ fun DetailsMobileScreen(
         },
     ) {
         val details = requireNotNull(state.details)
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .mobileContentMaxWidth()
-                .fillMaxSize()
-                .testTag("details_root"),
-            // Нижний отступ у ленты, а не у блока: последним может оказаться любой раздел.
-            contentPadding = PaddingValues(
-                bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = { onEvent(DetailsState.Event.RefreshSelected) },
+            modifier = Modifier.fillMaxSize(),
         ) {
-            item(key = "hero") {
-                // Фон шапки остаётся под статус-баром, плашка лежит поверх него, а контент шапки сдвинут вниз.
-                var bannerHeightPx by remember { mutableIntStateOf(0) }
-                Box {
-                    DetailsMobileHero(
-                        state = state,
-                        details = details,
-                        onBack = { onEvent(DetailsState.Event.BackSelected) },
-                        onShare = { onEvent(DetailsState.Event.ShareSelected) },
-                        onNewSearch = { onEvent(DetailsState.Event.NewSearchSelected) },
-                        onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
-                        onInfoClick = { onEvent(DetailsState.Event.InfoSelected) },
-                        onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
-                        onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
-                        onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
-                        topExtra = with(LocalDensity.current) { bannerHeightPx.toDp() },
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .statusBarsPadding()
-                            .onSizeChanged { bannerHeightPx = it.height },
-                    ) {
-                        OfflineBanner(isOffline = isOffline)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .fillMaxSize()
+                    .testTag("details_root"),
+                // Нижний отступ у ленты, а не у блока: последним может оказаться любой раздел.
+                contentPadding = PaddingValues(
+                    bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                item(key = "hero") {
+                    // Фон шапки остаётся под статус-баром, плашка лежит поверх него, а контент шапки сдвинут вниз.
+                    var bannerHeightPx by remember { mutableIntStateOf(0) }
+                    Box {
+                        DetailsMobileHero(
+                            state = state,
+                            details = details,
+                            onBack = { onEvent(DetailsState.Event.BackSelected) },
+                            onShare = { onEvent(DetailsState.Event.ShareSelected) },
+                            onNewSearch = { onEvent(DetailsState.Event.NewSearchSelected) },
+                            onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
+                            onInfoClick = { onEvent(DetailsState.Event.InfoSelected) },
+                            onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
+                            onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                            onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                            topExtra = with(LocalDensity.current) { bannerHeightPx.toDp() },
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .statusBarsPadding()
+                                .onSizeChanged { bannerHeightPx = it.height },
+                        ) {
+                            OfflineBanner(isOffline = isOffline)
+                        }
                     }
                 }
-            }
-            item(key = "actions") {
-                DetailsSecondaryActions(
-                    state = state,
-                    onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsRouteSelected) },
-                    onSubscriptionsLockedSelected = {
-                        onEvent(DetailsState.Event.SubscriptionsSignInPromptSelected)
-                    },
-                    onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-            val hasRelations = details.studios.any { it.title.isNotBlank() } ||
-                details.creators.any { it.title.isNotBlank() } ||
-                details.genres.any { it.title.isNotBlank() }
-            state.sections.forEachIndexed { index, section ->
-                when (section) {
-                    DetailsSectionKind.INFO -> {
-                        if (hasRelations) {
-                            // Сразу под описанием студии и жанры стоят плотнее, как одна карточка с ним.
-                            val followsDescription = details.description.isNotBlank() &&
-                                state.sections.getOrNull(index - 1) == DetailsSectionKind.DESCRIPTION
-                            item(key = "relations") {
-                                DetailsRelationsBlock(
-                                    details = details,
-                                    onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
-                                    onStudioSelected = { id, url ->
-                                        onEvent(DetailsState.Event.StudioSelected(id, url))
-                                    },
-                                    onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
-                                    modifier = Modifier
-                                        .padding(horizontal = 16.dp)
-                                        .tightenVerticalSpacing(top = if (followsDescription) 14.dp else Dp.Hairline),
+                item(key = "actions") {
+                    DetailsSecondaryActions(
+                        state = state,
+                        onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsRouteSelected) },
+                        onSubscriptionsLockedSelected = {
+                            onEvent(DetailsState.Event.SubscriptionsSignInPromptSelected)
+                        },
+                        onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+                val hasRelations = details.studios.any { it.title.isNotBlank() } ||
+                    details.creators.any { it.title.isNotBlank() } ||
+                    details.genres.any { it.title.isNotBlank() }
+                state.sections.forEachIndexed { index, section ->
+                    when (section) {
+                        DetailsSectionKind.INFO -> {
+                            if (hasRelations) {
+                                // Сразу под описанием студии и жанры стоят плотнее, как одна карточка с ним.
+                                val followsDescription = details.description.isNotBlank() &&
+                                    state.sections.getOrNull(index - 1) == DetailsSectionKind.DESCRIPTION
+                                item(key = "relations") {
+                                    DetailsRelationsBlock(
+                                        details = details,
+                                        onGenreSelected = { onEvent(DetailsState.Event.GenreSelected(it)) },
+                                        onStudioSelected = { id, url ->
+                                            onEvent(DetailsState.Event.StudioSelected(id, url))
+                                        },
+                                        onDirectorSelected = { onEvent(DetailsState.Event.DirectorSelected(it)) },
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp)
+                                            .tightenVerticalSpacing(top = if (followsDescription) 14.dp else Dp.Hairline),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.DESCRIPTION -> {
+                            if (details.description.isNotBlank()) {
+                                // Сразу под студиями и жанрами описание стоит плотнее, как одна карточка с ними.
+                                val followsRelations = hasRelations &&
+                                    state.sections.getOrNull(index - 1) == DetailsSectionKind.INFO
+                                item(key = "description") {
+                                    DetailsDescriptionBlock(
+                                        description = details.description,
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp)
+                                            .tightenVerticalSpacing(top = if (followsRelations) 14.dp else Dp.Hairline),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.SCREENSHOTS -> {
+                            if (state.screenshots.isNotEmpty()) {
+                                item(key = "screenshots") {
+                                    DetailsScreenshotsRow(
+                                        screenshots = state.screenshots,
+                                        onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.VIDEO -> {
+                            val isTrailersLoading = state.isExtrasLoading && details.trailersCount > 0
+                            // Пустой элемент всё равно занял бы шаг ленты и удвоил отступ между соседями.
+                            if (state.trailers.isNotEmpty() || isTrailersLoading || details.bloggerVideosCount > 0) {
+                                item(key = "video") {
+                                    DetailsVideoSection(
+                                        trailers = state.trailers,
+                                        bloggerVideosImageModels = details.poster.posterUrls(),
+                                        isTrailersLoading = isTrailersLoading,
+                                        hasBloggerVideos = details.bloggerVideosCount > 0,
+                                        onTrailersClick = { onEvent(DetailsState.Event.TrailersSelected) },
+                                        onBloggerVideosClick = { onEvent(DetailsState.Event.BloggerVideosSelected) },
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.RATING -> {
+                            val ratingOverview = state.ratingOverview
+                            if (ratingOverview != null) {
+                                item(key = "rating") {
+                                    DetailsRatingOverviewCard(
+                                        overview = ratingOverview,
+                                        userRating = state.userRating,
+                                        onClick = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                    )
+                                }
+                            } else if (state.isExtrasLoading) {
+                                item(key = "rating") {
+                                    DetailsRatingOverviewSkeleton(modifier = Modifier.padding(horizontal = 16.dp))
+                                }
+                            }
+                        }
+                        DetailsSectionKind.UNIVERSE -> {
+                            state.details?.takeIf { it.viewingOrder.size > 1 }?.let { details ->
+                                item(key = "universe") {
+                                    DetailsUniverseSection(
+                                        items = details.viewingOrder,
+                                        currentAnimeId = details.id,
+                                        onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
+                                        onShowAllClick = { onEvent(DetailsState.Event.ViewingOrderSelected) },
+                                    )
+                                }
+                            }
+                        }
+                        DetailsSectionKind.SIMILAR -> {
+                            // Ближе к «Вселенной» выше и к коллекциям ниже, чем общий шаг ленты.
+                            val previous = state.sections.getOrNull(index - 1)
+                            val next = state.sections.getOrNull(index + 1)
+                            item(key = "similar") {
+                                DetailsLinkRow(
+                                    link = similarDetailsLink { onEvent(DetailsState.Event.SimilarSelected) },
+                                    modifier = Modifier.tightenVerticalSpacing(
+                                        top = if (previous == DetailsSectionKind.UNIVERSE && details.viewingOrder.size > 1) {
+                                            12.dp
+                                        } else {
+                                            Dp.Hairline
+                                        },
+                                        bottom = if (next == DetailsSectionKind.COLLECTIONS && state.collections.isNotEmpty()) {
+                                            8.dp
+                                        } else {
+                                            Dp.Hairline
+                                        },
+                                    ),
                                 )
                             }
                         }
-                    }
-                    DetailsSectionKind.DESCRIPTION -> {
-                        if (details.description.isNotBlank()) {
-                            // Сразу под студиями и жанрами описание стоит плотнее, как одна карточка с ними.
-                            val followsRelations = hasRelations &&
-                                state.sections.getOrNull(index - 1) == DetailsSectionKind.INFO
-                            item(key = "description") {
-                                DetailsDescriptionBlock(
-                                    description = details.description,
-                                    modifier = Modifier
-                                        .padding(horizontal = 16.dp)
-                                        .tightenVerticalSpacing(top = if (followsRelations) 14.dp else Dp.Hairline),
-                                )
+                        DetailsSectionKind.COLLECTIONS -> {
+                            if (state.collections.isNotEmpty()) {
+                                item(key = "collections") {
+                                    DetailsCollectionsSection(
+                                        collections = state.collections,
+                                        onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
+                                        onShowAllClick = { onEvent(DetailsState.Event.CollectionsSelected) },
+                                    )
+                                }
                             }
                         }
-                    }
-                    DetailsSectionKind.SCREENSHOTS -> {
-                        if (state.screenshots.isNotEmpty()) {
-                            item(key = "screenshots") {
-                                DetailsScreenshotsRow(
-                                    screenshots = state.screenshots,
-                                    onScreenshotClick = { onEvent(DetailsState.Event.ScreenshotSelected(it)) },
-                                )
+                        DetailsSectionKind.REVIEWS -> {
+                            if (details.reviewsCount > 0) {
+                                item(key = "links") {
+                                    DetailsLinksCard(
+                                        links = buildDetailsLinks(
+                                            reviewsCount = details.reviewsCount,
+                                            reviewsBadge = details.reviewsCount.toCompactCount(),
+                                            onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                                        ),
+                                    )
+                                }
                             }
                         }
-                    }
-                    DetailsSectionKind.VIDEO -> {
-                        val isTrailersLoading = state.isExtrasLoading && details.trailersCount > 0
-                        // Пустой элемент всё равно занял бы шаг ленты и удвоил отступ между соседями.
-                        if (state.trailers.isNotEmpty() || isTrailersLoading || details.bloggerVideosCount > 0) {
-                            item(key = "video") {
-                                DetailsVideoSection(
-                                    trailers = state.trailers,
-                                    bloggerVideosImageModels = details.poster.posterUrls(),
-                                    isTrailersLoading = isTrailersLoading,
-                                    hasBloggerVideos = details.bloggerVideosCount > 0,
-                                    onTrailersClick = { onEvent(DetailsState.Event.TrailersSelected) },
-                                    onBloggerVideosClick = { onEvent(DetailsState.Event.BloggerVideosSelected) },
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                )
-                            }
-                        }
-                    }
-                    DetailsSectionKind.RATING -> {
-                        val ratingOverview = state.ratingOverview
-                        if (ratingOverview != null) {
-                            item(key = "rating") {
-                                DetailsRatingOverviewCard(
-                                    overview = ratingOverview,
-                                    userRating = state.userRating,
-                                    onClick = { onEvent(DetailsState.Event.RatingScreenSelected) },
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                )
-                            }
-                        } else if (state.isExtrasLoading) {
-                            item(key = "rating") {
-                                DetailsRatingOverviewSkeleton(modifier = Modifier.padding(horizontal = 16.dp))
-                            }
-                        }
-                    }
-                    DetailsSectionKind.UNIVERSE -> {
-                        state.details?.takeIf { it.viewingOrder.size > 1 }?.let { details ->
-                            item(key = "universe") {
-                                DetailsUniverseSection(
-                                    items = details.viewingOrder,
-                                    currentAnimeId = details.id,
-                                    onAnimeClick = { onEvent(DetailsState.Event.AnimeSelected(it)) },
-                                    onShowAllClick = { onEvent(DetailsState.Event.ViewingOrderSelected) },
-                                )
-                            }
-                        }
-                    }
-                    DetailsSectionKind.SIMILAR -> {
-                        // Ближе к «Вселенной» выше и к коллекциям ниже, чем общий шаг ленты.
-                        val previous = state.sections.getOrNull(index - 1)
-                        val next = state.sections.getOrNull(index + 1)
-                        item(key = "similar") {
-                            DetailsLinkRow(
-                                link = similarDetailsLink { onEvent(DetailsState.Event.SimilarSelected) },
-                                modifier = Modifier.tightenVerticalSpacing(
-                                    top = if (previous == DetailsSectionKind.UNIVERSE && details.viewingOrder.size > 1) {
-                                        12.dp
-                                    } else {
-                                        Dp.Hairline
-                                    },
-                                    bottom = if (next == DetailsSectionKind.COLLECTIONS && state.collections.isNotEmpty()) {
-                                        8.dp
-                                    } else {
-                                        Dp.Hairline
-                                    },
-                                ),
-                            )
-                        }
-                    }
-                    DetailsSectionKind.COLLECTIONS -> {
-                        if (state.collections.isNotEmpty()) {
-                            item(key = "collections") {
-                                DetailsCollectionsSection(
-                                    collections = state.collections,
-                                    onCollectionClick = { onEvent(DetailsState.Event.CollectionSelected(it)) },
-                                    onShowAllClick = { onEvent(DetailsState.Event.CollectionsSelected) },
-                                )
-                            }
-                        }
-                    }
-                    DetailsSectionKind.REVIEWS -> {
-                        if (details.reviewsCount > 0) {
-                            item(key = "links") {
-                                DetailsLinksCard(
-                                    links = buildDetailsLinks(
-                                        reviewsCount = details.reviewsCount,
-                                        reviewsBadge = details.reviewsCount.toCompactCount(),
-                                        onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                        DetailsSectionKind.COMMENTS -> {
+                            item(key = "comments") {
+                                DetailsCommentsBar(
+                                    commentsDetailsLink(
+                                        commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
+                                        onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
                                     ),
                                 )
                             }
                         }
                     }
-                    DetailsSectionKind.COMMENTS -> {
-                        item(key = "comments") {
-                            DetailsCommentsBar(
-                                commentsDetailsLink(
-                                    commentsBadge = details.commentsCount.takeIf { it > 0 }?.toCompactCount(),
-                                    onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
-                                ),
-                            )
-                        }
-                    }
                 }
-            }
-            state.error?.let { error ->
-                item(key = "soft_error") {
-                    MobileMessage(
-                        title = error.asString(),
-                        actionLabel = stringResource(CoreR.string.common_retry),
-                        onAction = { onEvent(DetailsState.Event.RetrySelected) },
-                    )
+                state.error?.let { error ->
+                    item(key = "soft_error") {
+                        MobileMessage(
+                            title = error.asString(),
+                            actionLabel = stringResource(CoreR.string.common_retry),
+                            onAction = { onEvent(DetailsState.Event.RetrySelected) },
+                        )
+                    }
                 }
             }
         }
