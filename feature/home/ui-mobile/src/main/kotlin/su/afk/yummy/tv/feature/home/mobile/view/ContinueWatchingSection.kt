@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -58,6 +59,7 @@ internal fun ContinueWatchingSection(
                     title = entry.animeTitle.ifBlank { episodeTitle },
                     imageModels = imageModels,
                     subtitle = entry.episodeSubtitle(),
+                    subtitleColor = MaterialTheme.colorScheme.secondary,
                     trailingSubtitle = entry.timingSubtitle(),
                     progress = entry.watchProgress(),
                     isLoading = entry.animeId == launchingAnimeId,

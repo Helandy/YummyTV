@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.home.view
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -52,6 +53,7 @@ internal fun ContinueWatchingCard(
         title = entry.animeTitle,
         imageModels = imageModels,
         subtitle = episodeLabel,
+        subtitleColor = MaterialTheme.colorScheme.secondary,
         trailingSubtitle = timingLabel,
         progress = progress,
         onClick = onClick,

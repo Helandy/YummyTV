@@ -58,6 +58,7 @@ fun TvProgressMediaCard(
     onFocused: () -> Unit = {},
     focusedScale: Float = 1.04f,
     progressColor: Color = MaterialTheme.colorScheme.primary,
+    subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     imageOverlay: @Composable BoxScope.() -> Unit = {},
     isLoading: Boolean = false,
 ) {
@@ -165,7 +166,7 @@ fun TvProgressMediaCard(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = subtitleColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
