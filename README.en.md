@@ -79,20 +79,24 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
   <tr>
     <td align="center"><b>Home</b></td>
     <td align="center"><b>Title details</b></td>
-    <td align="center"><b>Episodes</b></td>
   </tr>
   <tr>
     <td><img src="site/screenshots/tv/home.webp" width="320" alt="Home" /></td>
     <td><img src="site/screenshots/tv/details.webp" width="320" alt="Title details" /></td>
-    <td><img src="site/screenshots/tv/episodes.webp" width="320" alt="Episodes" /></td>
   </tr>
   <tr>
+    <td align="center"><b>Episodes</b></td>
     <td align="center"><b>Viewing order</b></td>
+  </tr>
+  <tr>
+    <td><img src="site/screenshots/tv/episodes.webp" width="320" alt="Episodes" /></td>
+    <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="Viewing order" /></td>
+  </tr>
+  <tr>
     <td align="center"><b>Catalog</b></td>
     <td align="center"><b>Library</b></td>
   </tr>
   <tr>
-    <td><img src="site/screenshots/tv/viewing-order.webp" width="320" alt="Viewing order" /></td>
     <td><img src="site/screenshots/tv/catalog.webp" width="320" alt="Catalog" /></td>
     <td><img src="site/screenshots/tv/library.webp" width="320" alt="Library" /></td>
   </tr>
@@ -116,30 +120,30 @@ it supports bottom navigation, player gestures, and Picture-in-Picture.
     <td align="center"><b>Home</b></td>
     <td align="center"><b>Title details</b></td>
     <td align="center"><b>Title information</b></td>
-    <td align="center"><b>Voice tracks</b></td>
   </tr>
   <tr>
     <td><img src="site/screenshots/mobile/home.webp" width="210" alt="Home" /></td>
     <td><img src="site/screenshots/mobile/details.webp" width="210" alt="Title details" /></td>
     <td><img src="site/screenshots/mobile/title-info.webp" width="210" alt="Title information" /></td>
-    <td><img src="site/screenshots/mobile/voices.webp" width="210" alt="Voice tracks" /></td>
   </tr>
   <tr>
+    <td align="center"><b>Voice tracks</b></td>
     <td align="center"><b>Catalog</b></td>
     <td align="center"><b>Community</b></td>
-    <td align="center"><b>Downloads</b></td>
-    <td align="center"><b>Profile</b></td>
   </tr>
   <tr>
+    <td><img src="site/screenshots/mobile/voices.webp" width="210" alt="Voice tracks" /></td>
     <td><img src="site/screenshots/mobile/catalog.webp" width="210" alt="Catalog" /></td>
     <td><img src="site/screenshots/mobile/community.webp" width="210" alt="Community" /></td>
-    <td><img src="site/screenshots/mobile/downloads.webp" width="210" alt="Downloads" /></td>
-    <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Profile" /></td>
   </tr>
   <tr>
+    <td align="center"><b>Downloads</b></td>
+    <td align="center"><b>Profile</b></td>
     <td align="center"><b>Player settings</b></td>
   </tr>
   <tr>
+    <td><img src="site/screenshots/mobile/downloads.webp" width="210" alt="Downloads" /></td>
+    <td><img src="site/screenshots/mobile/profile.webp" width="210" alt="Profile" /></td>
     <td><img src="site/screenshots/mobile/player-settings.webp" width="210" alt="Player settings" /></td>
   </tr>
 </table>
