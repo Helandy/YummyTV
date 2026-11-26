@@ -13,12 +13,12 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
+import su.afk.yummy.tv.domain.home.model.hasPlayableTarget
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveRequestedPlaybackUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.navigator.ContinueWatchingLaunchDestination
-import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
 

@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_functions_description">Find anime, check release schedules, and resume watching.</string>
     <string name="app_name">YummyTV</string>
     <string name="search_hint">Search anime</string>
     <string name="search_settings_description">Search YummyTV catalog</string>

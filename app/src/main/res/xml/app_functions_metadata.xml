@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
+    appfn:displayDescription="@string/app_functions_description"
+    appfn:instructions="Use YummyTV catalog IDs from search or schedule results. When a title matches several anime, confirm the intended result before requesting playback." />

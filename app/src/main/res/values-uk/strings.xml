@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_functions_description">Шукайте аніме, переглядайте розклад серій і продовжуйте перегляд.</string>
     <string name="app_name">YummyTV</string>
     <string name="search_hint">Пошук аніме</string>
     <string name="search_settings_description">Пошук по каталогу YummyTV</string>

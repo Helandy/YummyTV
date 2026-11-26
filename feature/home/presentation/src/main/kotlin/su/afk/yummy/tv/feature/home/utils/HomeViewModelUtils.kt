@@ -1,13 +1,12 @@
 package su.afk.yummy.tv.feature.home.utils
 
-import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import su.afk.yummy.tv.core.model.settings.BoostyPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.CommunityPromptSnapshot
 import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
-import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
@@ -31,7 +30,7 @@ fun HomeBlockKind.toSectionType(): HomeFeedSectionType? = when (this) {
     HomeBlockKind.HERO,
     HomeBlockKind.CONTINUE_WATCHING,
     HomeBlockKind.QUICK_ACTIONS,
-    -> null
+        -> null
 }
 
 /** Убирает из блока рекомендаций тайтлы, скрытые пользователем. */
@@ -70,9 +69,6 @@ internal fun HomeFeed.withMyNewEpisodes(
     val section = HomeFeedSection(HomeFeedSectionType.MY_NEW_EPISODES, title, items)
     return copy(sections = listOf(section) + sections)
 }
-
-internal fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
-    videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()
 
 private val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
 

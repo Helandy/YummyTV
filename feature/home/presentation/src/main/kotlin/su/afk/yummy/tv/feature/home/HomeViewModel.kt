@@ -31,6 +31,7 @@ import su.afk.yummy.tv.core.utils.system.BOOSTY_URL
 import su.afk.yummy.tv.core.utils.system.COMMUNITY_TELEGRAM_URL
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.hasPlayableTarget
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
@@ -51,7 +52,6 @@ import su.afk.yummy.tv.feature.home.model.PromptSchedule
 import su.afk.yummy.tv.feature.home.navigator.HomeRecommendationsDestination
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.enabledKinds
-import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.toVisibleFeed
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -221,11 +221,13 @@ class HomeViewModel @Inject internal constructor(
                 hideCommunityPrompt()
                 setEffect(HomeState.Effect.OpenUri(COMMUNITY_TELEGRAM_URL))
             }
+
             HomeState.Event.BoostyPromptDismissed -> hideBoostyPrompt()
             HomeState.Event.BoostyPromptSupportClicked -> {
                 hideBoostyPrompt()
                 setEffect(HomeState.Effect.OpenUri(BOOSTY_URL))
             }
+
             HomeState.Event.PreviewChannelPromptAccepted -> answerPreviewChannelPrompt(accepted = true)
             HomeState.Event.PreviewChannelPromptDismissed -> answerPreviewChannelPrompt(accepted = false)
 
@@ -277,9 +279,9 @@ class HomeViewModel @Inject internal constructor(
     private fun setContinueWatchingRemovalPending(animeId: Int, pending: Boolean) {
         setState {
             val ids = if (pending) {
-                pendingContinueWatchingRemovalIds.add(animeId)
+                pendingContinueWatchingRemovalIds.adding(animeId)
             } else {
-                pendingContinueWatchingRemovalIds.remove(animeId)
+                pendingContinueWatchingRemovalIds.removing(animeId)
             }
             copy(
                 pendingContinueWatchingRemovalIds = ids,

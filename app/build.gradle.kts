@@ -222,6 +222,7 @@ dependencies {
     implementation(project(":feature:player:ui-tv"))
     implementation(project(":feature:player:data"))
     implementation(project(":feature:player:extractor"))
+    implementation(project(":feature:schedule:domain"))
     implementation(project(":feature:schedule:api"))
     implementation(project(":feature:schedule:ui-mobile"))
     implementation(project(":feature:schedule:ui-tv"))
@@ -273,6 +274,8 @@ dependencies {
     implementation(libs.androidx.tracing.ktx)
 
     baselineProfile(project(":baselineprofile"))
+    implementation(libs.androidx.appfunctions.runtime)
+    add("ksp", libs.androidx.appfunctions.compiler)
     add("ksp", libs.hilt.work.compiler)
 
     testImplementation(project(":core:testing"))

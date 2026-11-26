@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_functions_description">Ищите аниме, смотрите расписание серий и продолжайте просмотр.</string>
     <string name="app_name">YummyTV</string>
     <string name="search_hint">Поиск аниме</string>
     <string name="search_settings_description">Поиск по каталогу YummyTV</string>

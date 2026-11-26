@@ -5,7 +5,7 @@ android-compileSdk = "37"
 android-compileSdkMinor = "1"
 android-minSdk = "24"
 
-agp = "9.5.2"
+agp = "9.5.3"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin
@@ -74,7 +74,11 @@ mockk = "1.14.12"
 org-json = "20260814"
 androidx-uiautomator = "2.4.1"
 
+appfunctions = "1.0.0"
+
 [libraries]
+androidx-appfunctions-runtime = { module = "androidx.appfunctions:appfunctions", version.ref = "appfunctions" }
+androidx-appfunctions-compiler = { module = "androidx.appfunctions:appfunctions-compiler", version.ref = "appfunctions" }
 stability-analyzer-gradle-plugin = { module = "com.github.skydoves.compose.stability.analyzer:com.github.skydoves.compose.stability.analyzer.gradle.plugin", version.ref = "stability-analyzer" }
 
 # Build plugins
