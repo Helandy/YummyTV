@@ -3,7 +3,9 @@ package su.afk.yummy.tv.core.storage.watchprogress
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(
     tableName = "continue_watching_suppressions",
     indices = [

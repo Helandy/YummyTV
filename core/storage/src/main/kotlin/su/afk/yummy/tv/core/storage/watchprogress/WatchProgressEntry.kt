@@ -2,7 +2,9 @@ package su.afk.yummy.tv.core.storage.watchprogress
 
 import androidx.room.Entity
 import androidx.room.Index
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(
     tableName = "watch_progress",
     primaryKeys = ["animeId", "episode"],

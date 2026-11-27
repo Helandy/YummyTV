@@ -1,5 +1,6 @@
 plugins {
     id("yummytv.android.library")
+    alias(libs.plugins.kotlinSerialization)
     id("yummytv.android.hilt")
 }
 
@@ -20,6 +21,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
 
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.bundles.room)
 
     add("ksp", libs.room.compiler)

@@ -12,6 +12,12 @@ interface WatchProgressDao {
     @Query("SELECT * FROM watch_progress WHERE animeId = :animeId AND episode = :episode")
     suspend fun get(animeId: Int, episode: String): WatchProgressEntry?
 
+    @Query("SELECT * FROM watch_progress ORDER BY updatedAt DESC, animeId, episode LIMIT 100")
+    suspend fun latestForBackup(): List<WatchProgressEntry>
+
+    @Query("SELECT * FROM continue_watching_suppressions WHERE animeId IN (:animeIds)")
+    suspend fun suppressionsFor(animeIds: List<Int>): List<ContinueWatchingSuppressionEntry>
+
     @Query("SELECT * FROM watch_progress")
     fun observeAll(): Flow<List<WatchProgressEntry>>
 

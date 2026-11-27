@@ -43,6 +43,8 @@
     <application
         android:name=".android.YummyTvApplication"
         android:allowBackup="true"
+        android:backupAgent="su.afk.yummy.tv.core.storage.watchprogress.WatchProgressBackupAgent"
+        android:fullBackupOnly="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:banner="@drawable/app_banner"
