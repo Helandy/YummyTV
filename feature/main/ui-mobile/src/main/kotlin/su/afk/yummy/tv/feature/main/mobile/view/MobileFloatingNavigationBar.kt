@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.main.mobile.view
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
@@ -33,10 +34,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
@@ -69,18 +73,39 @@ internal fun <T> MobileFloatingNavigationBar(
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .padding(horizontal = 4.dp),
         ) {
-            // На узком экране приоритет у областей нажатия, а не у полной подписи.
-            val extraWeight = if (menuItems.isEmpty()) 0f else
-                (maxWidth / 48.dp - menuItems.size).coerceIn(0f, 1f)
+            val textStyle = MaterialTheme.typography.labelLarge
+            val textMeasurer = rememberTextMeasurer()
+            val density = LocalDensity.current
+            // Одна ширина для любого выбранного пункта: соседние иконки едут плавно, без скачка
+            // при переходе от короткого названия к длинному и обратно.
+            val labelWidths = menuItems.map { item ->
+                with(density) {
+                    textMeasurer.measure(item.label, style = textStyle, maxLines = 1, softWrap = false).size.width.toDp()
+                }
+            }
+            val longestLabel = labelWidths.maxOrNull() ?: 0.dp
+            val widths = floatingNavigationWidths(maxWidth, menuItems.size, longestLabel)
+            val hasSelection = menuItems.any { it.destination == selectedDestination }
             val colors = seasonalNavigationBarItemColors()
             Row(modifier = Modifier.fillMaxSize().selectableGroup(), verticalAlignment = Alignment.CenterVertically) {
-                menuItems.forEach { item ->
+                menuItems.forEachIndexed { index, item ->
                     val selected = item.destination == selectedDestination
-                    val weight by animateFloatAsState(
-                        targetValue = 1f + if (selected) extraWeight else 0f,
+                    val width by animateDpAsState(
+                        targetValue = when {
+                            !hasSelection -> maxWidth / menuItems.size
+                            selected -> widths.selected
+                            else -> widths.unselected
+                        },
                         animationSpec = tween(220),
                         label = "navigation item width",
                     )
+                    val availableLabel = (widths.selected - FloatingItemContentWidth).coerceAtLeast(0.dp)
+                    val labelWidth = labelWidths[index]
+                    val textScale = if (labelWidth > 0.dp) {
+                        (availableLabel / labelWidth).coerceIn(0.72f, 1f)
+                    } else {
+                        1f
+                    }
                     val indicator by animateColorAsState(
                         targetValue = if (selected) colors.selectedIndicatorColor else Color.Transparent,
                         animationSpec = tween(220),
@@ -88,7 +113,7 @@ internal fun <T> MobileFloatingNavigationBar(
                     )
                     Box(
                         modifier = Modifier
-                            .weight(weight)
+                            .width(width)
                             .height(48.dp)
                             .testTag("main_tab")
                             .onboardingTarget(mobileMainTabTargetId(item.destination))
@@ -117,7 +142,7 @@ internal fun <T> MobileFloatingNavigationBar(
                                     Text(
                                         text = item.label,
                                         modifier = Modifier.padding(start = 6.dp).clearAndSetSemantics {}.sizeIn(minWidth = 0.dp),
-                                        style = MaterialTheme.typography.labelLarge,
+                                        style = textStyle.copy(fontSize = textStyle.fontSize * textScale),
                                         maxLines = 1,
                                         softWrap = false,
                                         overflow = TextOverflow.Ellipsis,
@@ -132,3 +157,22 @@ internal fun <T> MobileFloatingNavigationBar(
         }
     }
 }
+
+/** Ширина выбранного пункта зависит от самой длинной подписи, а не от текущей вкладки. */
+internal data class FloatingNavigationWidths(val selected: Dp, val unselected: Dp)
+
+internal fun floatingNavigationWidths(available: Dp, count: Int, longestLabel: Dp): FloatingNavigationWidths {
+    if (count <= 0) return FloatingNavigationWidths(0.dp, 0.dp)
+    if (count == 1) return FloatingNavigationWidths(available, 0.dp)
+
+    // Обычно у каждого пункта 48 dp; на узком экране допускаем 44 dp, чтобы название не обрезалось.
+    val minUnselected = minOf(48.dp, (available - longestLabel - FloatingItemContentWidth) / (count - 1))
+        .coerceAtLeast(minOf(44.dp, available / count))
+    val selected = (longestLabel + FloatingItemContentWidth)
+        .coerceAtLeast(48.dp.coerceAtMost(available / count))
+        .coerceAtMost(available - minUnselected * (count - 1))
+    return FloatingNavigationWidths(selected, (available - selected) / (count - 1))
+}
+
+// Иконка/аватар до 26 dp, отступы по 8 dp и 6 dp между иконкой и подписью.
+private val FloatingItemContentWidth = 48.dp
