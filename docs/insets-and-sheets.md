@@ -23,7 +23,7 @@ WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizont
 
 | Член                        | Значение                                                   |
 |-----------------------------|------------------------------------------------------------|
-| `BarHeight`                 | `64.dp`: высота бара без системного инсета                 |
+| `BarHeight`                 | `56.dp`: высота бара без системного инсета                 |
 | `ExtraContentBottomPadding` | `16.dp`                                                    |
 | `contentBottomPadding`      | Зависит от `LocalMobileNavigationLayout`                   |
 
@@ -34,10 +34,14 @@ WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizont
 | `MobileNavigationLayout` | Что означает                                         | `contentBottomPadding`     |
 |--------------------------|------------------------------------------------------|----------------------------|
 | `BottomBar`              | Нижний бар на компактной ширине                      | `16.dp`                    |
+| `FloatingBottomBar`      | Панель поверх контента, без выделенной полосы          | `navigationBars` + `56.dp` + `16.dp` |
 | `Rail`                   | Боковая рейка (планшет, развёрнутый складной)        | `navigationBars` + `16.dp` |
 | `Hidden`                 | Вне корня таба, в плеере, на обязательном обновлении | `navigationBars` + `16.dp` |
 
-`LocalMobileNavigationLayout` предоставляет `MobileMainScaffold`.
+`LocalMobileNavigationLayout` предоставляет `MobileMainScaffold`. Плавающая панель рисуется над
+контентом и скрывается при открытой клавиатуре; последним элементам списка оставлен отступ, а
+кнопка случайного аниме поднимается над панелью. `rootContentBottomPadding` для плавающей и скрытой
+навигации одинаков, чтобы не менять предел прокрутки при открытии вложенного экрана.
 
 ## Шторки
 
