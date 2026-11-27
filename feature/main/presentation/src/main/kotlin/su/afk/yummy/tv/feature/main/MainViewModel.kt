@@ -149,6 +149,7 @@ class MainViewModel @Inject internal constructor(
                         appTheme = snapshot.appTheme,
                         backgroundStyle = snapshot.backgroundStyle,
                         navTransitionStyle = snapshot.navTransitionStyle,
+                        mobileNavigationBarStyle = snapshot.mobileNavigationBarStyle,
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
                         posterCardSize = snapshot.posterCardSize,
                         yaniNickname = snapshot.yaniNickname,

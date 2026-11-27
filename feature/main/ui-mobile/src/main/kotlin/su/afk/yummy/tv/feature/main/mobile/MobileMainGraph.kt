@@ -115,6 +115,7 @@ class MobileMainGraph @Inject internal constructor(
                     )
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
+                        navigationBarStyle = state.mobileNavigationBarStyle,
                         menuItems = mobileMenuItems(
                             state.unreadNotificationsCount,
                             if (state.isYaniSignedIn) state.yaniAvatarUrl else "",

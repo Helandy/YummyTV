@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusR
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileNavigationLayout
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileNavigationLayout
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
 /**
@@ -34,6 +35,7 @@ import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 @Composable
 internal fun <T> MobileMainScaffold(
     selectedDestination: T,
+    navigationBarStyle: MobileNavigationBarStyle,
     menuItems: List<MobileMenuItem<T>>,
     showBottomBar: Boolean,
     showRail: Boolean,
@@ -81,6 +83,7 @@ internal fun <T> MobileMainScaffold(
             } else {
                 MobileMainNavigationBar(
                     selectedDestination = selectedDestination,
+                    style = navigationBarStyle,
                     menuItems = menuItems,
                     containerColor = surface,
                     upFocusRequester = bottomBarUpFocusRequester,
