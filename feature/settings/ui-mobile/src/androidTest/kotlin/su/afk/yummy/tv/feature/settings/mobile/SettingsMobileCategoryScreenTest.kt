@@ -13,6 +13,7 @@ import org.junit.Rule
 import org.junit.Test
 import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.titleRes
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
@@ -86,6 +87,16 @@ class SettingsMobileCategoryScreenTest {
         composeRule.onNodeWithText(string(R.string.settings_auto_play_next_episode_label)).performScrollTo().performClick()
 
         assertTrue(SettingsState.Event.AutoPlayNextEpisodeToggled in events)
+    }
+
+    @Test
+    fun appearanceNavigationStylePickerSendsEvent() {
+        setScreen(SettingsCategory.APPEARANCE)
+
+        composeRule.onNodeWithText(string(R.string.settings_mobile_navigation_bar_title)).performScrollTo().performClick()
+        composeRule.onNodeWithText(string(R.string.settings_mobile_navigation_bar_floating)).performClick()
+
+        assertTrue(SettingsState.Event.MobileNavigationBarStyleSelected(MobileNavigationBarStyle.FLOATING) in events)
     }
 
     @Test

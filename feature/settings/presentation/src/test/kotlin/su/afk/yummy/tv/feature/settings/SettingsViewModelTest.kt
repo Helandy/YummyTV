@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -371,6 +372,18 @@ class SettingsViewModelTest : BaseUnitTest() {
         coVerify(exactly = 1) { settingsStore.setAppTheme(AppTheme.entries.last()) }
         coVerify(exactly = 1) { settingsStore.setAutoSkipDelaySeconds(7) }
         coVerify(exactly = 1) { settingsStore.setTitleCardLayout(TitleCardLayout.ROW) }
+    }
+
+    @Test
+    fun `mobile navigation style is observed and saved`() {
+        val vm = createViewModel()
+        assertEquals(MobileNavigationBarStyle.STANDARD, vm.currentState.mobileNavigationBarStyle)
+
+        vm.setEvent(Event.MobileNavigationBarStyleSelected(MobileNavigationBarStyle.FLOATING))
+        coVerify(exactly = 1) { settingsStore.setMobileNavigationBarStyle(MobileNavigationBarStyle.FLOATING) }
+
+        snapshot.value = snapshot.value.copy(mobileNavigationBarStyle = MobileNavigationBarStyle.FLOATING)
+        assertEquals(MobileNavigationBarStyle.FLOATING, vm.currentState.mobileNavigationBarStyle)
     }
 
     @Test
