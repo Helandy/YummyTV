@@ -388,4 +388,7 @@
     <string name="settings_section_anime_list">Список аніме</string>
     <string name="settings_list_transfer_title">Імпорт та експорт списку</string>
     <string name="settings_list_transfer_hint">Перенесення файлів списків Shikimori та MyAnimeList</string>
+    <string name="settings_mobile_navigation_bar_title">Нижня панель</string>
+    <string name="settings_mobile_navigation_bar_standard">Стандартна</string>
+    <string name="settings_mobile_navigation_bar_floating">Плавуча</string>
 </resources>

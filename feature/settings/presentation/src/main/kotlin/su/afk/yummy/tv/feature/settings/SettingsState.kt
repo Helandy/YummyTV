@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.model.settings.HomeBlockConfig
 import su.afk.yummy.tv.core.model.settings.HomeBlockKind
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -47,6 +48,7 @@ class SettingsState {
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
         val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
+        val mobileNavigationBarStyle: MobileNavigationBarStyle = MobileNavigationBarStyle.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val titleCardLayout: TitleCardLayout = TitleCardLayout.TILE,
         val showCatalogTitleYear: Boolean = false,
@@ -145,6 +147,9 @@ class SettingsState {
         /** Пользователь выбрал цвет фона интерфейса. */
         data class BackgroundStyleSelected(val style: BackgroundStyle) : Event
         data class NavTransitionStyleSelected(val style: NavTransitionStyle) : Event
+
+        /** Оформление нижней панели мобильного интерфейса. */
+        data class MobileNavigationBarStyleSelected(val style: MobileNavigationBarStyle) : Event
 
         /** Пользователь подтвердил смену типа интерфейса. */
         data class InterfaceModeSelected(val mode: AppInterfaceMode) : Event

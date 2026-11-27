@@ -102,6 +102,7 @@ class SettingsViewModel @Inject internal constructor(
                         appTheme = snapshot.appTheme,
                         backgroundStyle = snapshot.backgroundStyle,
                         navTransitionStyle = snapshot.navTransitionStyle,
+                        mobileNavigationBarStyle = snapshot.mobileNavigationBarStyle,
                         posterCardSize = snapshot.posterCardSize,
                         titleCardLayout = snapshot.titleCardLayout,
                         showCatalogTitleYear = snapshot.showCatalogTitleYear,
@@ -273,6 +274,10 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.NavTransitionStyleSelected -> viewModelScope.launch {
                 analytics.eventNavTransitionStyleSelected(event.style)
                 settingsStore.setNavTransitionStyle(event.style)
+            }
+
+            is SettingsState.Event.MobileNavigationBarStyleSelected -> viewModelScope.launch {
+                settingsStore.setMobileNavigationBarStyle(event.style)
             }
 
             is SettingsState.Event.PosterCardSizeSelected -> viewModelScope.launch {

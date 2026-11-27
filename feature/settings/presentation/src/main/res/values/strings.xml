@@ -391,4 +391,7 @@ Search indexer: https://jac-red.ru or Jackett: https://github.com/jackett/jacket
     <string name="settings_section_anime_list">Anime list</string>
     <string name="settings_list_transfer_title">Import &amp; export list</string>
     <string name="settings_list_transfer_hint">Transfer list files for Shikimori and MyAnimeList</string>
+    <string name="settings_mobile_navigation_bar_title">Bottom navigation</string>
+    <string name="settings_mobile_navigation_bar_standard">Standard</string>
+    <string name="settings_mobile_navigation_bar_floating">Floating</string>
 </resources>
