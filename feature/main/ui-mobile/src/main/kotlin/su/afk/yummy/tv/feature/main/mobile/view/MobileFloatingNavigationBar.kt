@@ -84,7 +84,8 @@ internal fun <T> MobileFloatingNavigationBar(
                 }
             }
             val longestLabel = labelWidths.maxOrNull() ?: 0.dp
-            val widths = floatingNavigationWidths(maxWidth, menuItems.size, longestLabel)
+            val availableWidth = maxWidth
+            val widths = floatingNavigationWidths(availableWidth, menuItems.size, longestLabel)
             val hasSelection = menuItems.any { it.destination == selectedDestination }
             val colors = seasonalNavigationBarItemColors()
             Row(modifier = Modifier.fillMaxSize().selectableGroup(), verticalAlignment = Alignment.CenterVertically) {
@@ -92,7 +93,7 @@ internal fun <T> MobileFloatingNavigationBar(
                     val selected = item.destination == selectedDestination
                     val width by animateDpAsState(
                         targetValue = when {
-                            !hasSelection -> maxWidth / menuItems.size
+                            !hasSelection -> availableWidth / menuItems.size
                             selected -> widths.selected
                             else -> widths.unselected
                         },
