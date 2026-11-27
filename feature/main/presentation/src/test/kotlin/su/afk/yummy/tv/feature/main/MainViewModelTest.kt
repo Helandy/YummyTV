@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.YaniApplicationTokenState
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
@@ -146,6 +147,16 @@ class MainViewModelTest : BaseUnitTest() {
         assertTrue(state.isYaniAuthResolved)
         verify(exactly = 1) { analytics.eventScreenOpened() }
         verify(exactly = 1) { analytics.eventAppSession(true, YaniApplicationTokenState.DEFAULT) }
+    }
+
+    @Test
+    fun `mobile navigation style follows settings changes`() {
+        val vm = createViewModel()
+        assertEquals(MobileNavigationBarStyle.STANDARD, vm.currentState.mobileNavigationBarStyle)
+
+        snapshot.value = snapshot.value.copy(mobileNavigationBarStyle = MobileNavigationBarStyle.FLOATING)
+
+        assertEquals(MobileNavigationBarStyle.FLOATING, vm.currentState.mobileNavigationBarStyle)
     }
 
     @Test

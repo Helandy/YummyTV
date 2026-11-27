@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.TorrentSort
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -133,6 +134,17 @@ internal fun SettingsMobileDialogsHost(
             onDismiss = { dialogs.activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.NavTransitionStyleSelected(it))
+                dialogs.activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.MOBILE_NAVIGATION_BAR -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_mobile_navigation_bar_title),
+            selectedValue = state.mobileNavigationBarStyle,
+            options = MobileNavigationBarStyle.entries.map { SettingsMobilePickerOption(it, it.label()) },
+            onDismiss = { dialogs.activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.MobileNavigationBarStyleSelected(it))
                 dialogs.activePicker = null
             },
         )

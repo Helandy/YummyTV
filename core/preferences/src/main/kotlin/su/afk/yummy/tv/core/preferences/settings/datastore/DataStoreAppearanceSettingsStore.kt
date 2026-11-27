@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobileNavigationBarStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
@@ -78,6 +80,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     override val backgroundStyle: Flow<BackgroundStyle> =
         store.enumFlow(backgroundStyleKey, BackgroundStyle.DARK)
 
+    override val mobileNavigationBarStyle: Flow<MobileNavigationBarStyle> =
+        store.enumFlow(mobileNavigationBarStyleKey, MobileNavigationBarStyle.STANDARD)
+
     override val navTransitionStyle: Flow<NavTransitionStyle> =
         store.enumFlow(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE)
 
@@ -124,6 +129,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setLibrarySortDirection(direction: LibrarySortDirection) =
         store.setEnum(librarySortDirectionKey, direction)
+
+    override suspend fun setMobileNavigationBarStyle(style: MobileNavigationBarStyle) =
+        store.setEnum(mobileNavigationBarStyleKey, style)
 
     override suspend fun setAppTheme(theme: AppTheme) = store.setEnum(appThemeKey, theme)
 

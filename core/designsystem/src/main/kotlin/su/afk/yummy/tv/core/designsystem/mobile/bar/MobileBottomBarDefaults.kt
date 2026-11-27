@@ -14,6 +14,14 @@ object MobileBottomBarDefaults {
 
     val ExtraContentBottomPadding: Dp = 16.dp
 
+    /** Дополнительный отступ для плавающих элементов над оверлейной панелью. */
+    val floatingBarExtraPadding: Dp
+        @Composable get() = if (LocalMobileNavigationLayout.current == MobileNavigationLayout.FloatingBottomBar) {
+            BarHeight
+        } else {
+            0.dp
+        }
+
     /**
      * Отступ снизу для скроллящегося контента корневых экранов табов. Нижний бар сам занимает
      * место вместе с инсетом системной навигации, поэтому над ним нужен только зазор; при рейке
@@ -22,6 +30,7 @@ object MobileBottomBarDefaults {
     val contentBottomPadding: Dp
         @Composable get() = when (LocalMobileNavigationLayout.current) {
             MobileNavigationLayout.BottomBar -> ExtraContentBottomPadding
+            MobileNavigationLayout.FloatingBottomBar -> navigationBarsInset() + BarHeight + ExtraContentBottomPadding
             MobileNavigationLayout.Rail,
             MobileNavigationLayout.Hidden,
             -> navigationBarsInset() + ExtraContentBottomPadding
@@ -38,6 +47,7 @@ object MobileBottomBarDefaults {
         @Composable get() = when (LocalMobileNavigationLayout.current) {
             MobileNavigationLayout.BottomBar -> ExtraContentBottomPadding
             MobileNavigationLayout.Rail -> navigationBarsInset() + ExtraContentBottomPadding
+            MobileNavigationLayout.FloatingBottomBar,
             MobileNavigationLayout.Hidden -> navigationBarsInset() + BarHeight + ExtraContentBottomPadding
         }
 

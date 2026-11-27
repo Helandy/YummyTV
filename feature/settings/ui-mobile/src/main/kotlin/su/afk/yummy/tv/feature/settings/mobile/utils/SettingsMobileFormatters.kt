@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryTabKind
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -50,3 +51,11 @@ internal fun PlayerOrientationMode.icon(): ImageVector = when (this) {
     PlayerOrientationMode.SENSOR_LANDSCAPE -> Icons.Rounded.StayCurrentLandscape
     PlayerOrientationMode.PORTRAIT -> Icons.Rounded.StayCurrentPortrait
 }
+
+@Composable
+internal fun MobileNavigationBarStyle.label(): String = stringResource(
+    when (this) {
+        MobileNavigationBarStyle.STANDARD -> R.string.settings_mobile_navigation_bar_standard
+        MobileNavigationBarStyle.FLOATING -> R.string.settings_mobile_navigation_bar_floating
+    },
+)

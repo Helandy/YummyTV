@@ -22,16 +22,23 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.onboarding.onboardingTarget
 import su.afk.yummy.tv.feature.main.mobile.utils.mobileMainTabTargetId
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalBarDecoration
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
 @Composable
 internal fun <T> MobileMainNavigationBar(
     selectedDestination: T,
+    style: MobileNavigationBarStyle,
     menuItems: List<MobileMenuItem<T>>,
     containerColor: Color,
     upFocusRequester: FocusRequester?,
     onDestinationSelected: (T) -> Unit,
 ) {
+    if (style == MobileNavigationBarStyle.FLOATING) {
+        MobileFloatingNavigationBar(selectedDestination, menuItems, upFocusRequester, onDestinationSelected)
+        return
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()

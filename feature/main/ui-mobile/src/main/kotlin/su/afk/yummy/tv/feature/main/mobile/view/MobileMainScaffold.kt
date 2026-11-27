@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -17,23 +18,27 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileNavigationLayout
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileNavigationLayout
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
 /**
  * Корневой каркас мобильного UI: на компактной ширине — нижний бар, на планшете, развёрнутом
  * складном и в широком окне — боковая рейка. [showBottomBar] и [showRail] задаются раздельно:
- * бар занимает высоту контента и уходит вне корня таба, рейка остаётся рядом с деталями.
+ * обычный бар занимает высоту контента, плавающий рисуется поверх; рейка остаётся рядом с деталями.
  */
 @Composable
 internal fun <T> MobileMainScaffold(
     selectedDestination: T,
+    navigationBarStyle: MobileNavigationBarStyle,
     menuItems: List<MobileMenuItem<T>>,
     showBottomBar: Boolean,
     showRail: Boolean,
@@ -51,6 +56,7 @@ internal fun <T> MobileMainScaffold(
     val layout = when {
         !isVisible -> MobileNavigationLayout.Hidden
         isRail -> MobileNavigationLayout.Rail
+        navigationBarStyle == MobileNavigationBarStyle.FLOATING -> MobileNavigationLayout.FloatingBottomBar
         else -> MobileNavigationLayout.BottomBar
     }
 
@@ -61,6 +67,7 @@ internal fun <T> MobileMainScaffold(
     val suiteState = rememberNavigationSuiteScaffoldState()
 
     val surface = MaterialTheme.colorScheme.surface
+    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     NavigationSuiteScaffoldLayout(
         navigationSuiteType = if (isRail) {
             NavigationSuiteType.NavigationRail
@@ -69,7 +76,7 @@ internal fun <T> MobileMainScaffold(
         },
         state = suiteState,
         navigationSuite = {
-            if (!isVisible) {
+            if (!isVisible || layout == MobileNavigationLayout.FloatingBottomBar) {
                 Unit
             } else if (isRail) {
                 MobileMainNavigationRail(
@@ -81,6 +88,7 @@ internal fun <T> MobileMainScaffold(
             } else {
                 MobileMainNavigationBar(
                     selectedDestination = selectedDestination,
+                    style = navigationBarStyle,
                     menuItems = menuItems,
                     containerColor = surface,
                     upFocusRequester = bottomBarUpFocusRequester,
@@ -105,6 +113,15 @@ internal fun <T> MobileMainScaffold(
             ) {
                 content()
                 if (showSeasonalOverlay) SeasonalOverlay()
+                if (layout == MobileNavigationLayout.FloatingBottomBar && !isImeVisible) {
+                    MobileFloatingNavigationBar(
+                        selectedDestination = selectedDestination,
+                        menuItems = menuItems,
+                        upFocusRequester = bottomBarUpFocusRequester,
+                        onDestinationSelected = onDestinationSelected,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
                 GlobalToastOverlay(
                     text = toastMessage,
                     modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),

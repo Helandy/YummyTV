@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.designsystem.components
 
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
@@ -12,6 +13,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 
 /** Кубик «случайное аниме» для мобильных экранов (каталог и деталка, открытая из кубика). */
 @Composable
@@ -24,6 +26,7 @@ fun RandomAnimeFloatingButton(
         onClick = { if (!isLoading) onClick() },
         modifier = Modifier
             .navigationBarsPadding()
+            .padding(bottom = MobileBottomBarDefaults.floatingBarExtraPadding)
             .semantics {
                 contentDescription = description
                 if (isLoading) disabled()

@@ -5,6 +5,9 @@ plugins {
 
 android {
     namespace = "su.afk.yummy.tv.feature.main.mobile"
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 dependencies {
@@ -52,4 +55,12 @@ dependencies {
     implementation(libs.compose.material3.adaptive.navigation3)
     implementation(libs.compose.material3.navigationSuite)
     implementation(libs.androidx.material.icons.extended)
+
+    testImplementation(libs.junit)
+
+    debugImplementation(libs.compose.uiTest.manifest)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.compose.uiTest.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
