@@ -46,18 +46,18 @@ import su.afk.yummy.tv.core.designsystem.seasonal.seasonalNavigationBarItemColor
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 import su.afk.yummy.tv.feature.main.mobile.utils.mobileMainTabTargetId
 
-/** Тот же размер области, что и у обычного бара: не меняет viewport и нижние inset-ы экранов. */
+/** Панель без фона вокруг капсулы: корневой каркас размещает её поверх контента. */
 @Composable
 internal fun <T> MobileFloatingNavigationBar(
     selectedDestination: T,
     menuItems: List<MobileMenuItem<T>>,
     upFocusRequester: FocusRequester?,
     onDestinationSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
             .navigationBarsPadding(),
     ) {
         BoxWithConstraints(
