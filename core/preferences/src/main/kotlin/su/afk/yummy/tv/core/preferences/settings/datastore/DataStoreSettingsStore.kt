@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
+import su.afk.yummy.tv.core.model.settings.MobileNavigationBarStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -37,6 +38,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBloc
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.keepVideoEnhancementOnFrameDropsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobileNavigationBarStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navTransitionStyleKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
@@ -103,6 +105,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
             navTransitionStyle = prefs.enum(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE),
+            mobileNavigationBarStyle = prefs.enum(mobileNavigationBarStyleKey, MobileNavigationBarStyle.STANDARD),
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
             titleCardLayout = prefs.enum(titleCardLayoutKey, TitleCardLayout.TILE),
             showCatalogTitleYear = prefs[showCatalogTitleYearKey] ?: false,
@@ -167,6 +170,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
             navTransitionStyle = prefs.enum(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE),
+            mobileNavigationBarStyle = prefs.enum(mobileNavigationBarStyleKey, MobileNavigationBarStyle.STANDARD),
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
             yaniNickname = prefs[yaniNicknameKey].orEmpty(),
             yaniAvatarUrl = prefs[yaniAvatarUrlKey].orEmpty(),
